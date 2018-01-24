@@ -13,7 +13,7 @@ using WebApp.ViewModels;
 namespace WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Account")]
+    [Route("api/[controller]")]
     public class AccountController : Controller
     {
         private readonly IMapper mapper;
@@ -35,14 +35,11 @@ namespace WebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userIdentity = mapper.Map<User>(model);
+            User userIdentity = mapper.Map<User>(model);
 
-            var result = await  userManager.CreateAsync(userIdentity, model.Password);
+            var result = await userManager.CreateAsync(userIdentity, model.Password);
 
             if (!result.Succeeded) return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
-
-            await dbContext.Students.AddAsync(new User{ StudentID = model.StudentID,});
-            //await dbContext.SaveChangesAsync();
 
             return new OkObjectResult("Account created");
         }
