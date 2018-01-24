@@ -41,7 +41,7 @@ namespace WebApp.Controllers
 
             if (!result.Succeeded) return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
 
-            await dbContext.Students.AddAsync(new User{ StudentID = model.StudentID,});
+            //await dbContext.Students.AddAsync(new User{ StudentID = model.StudentID,});
             //await dbContext.SaveChangesAsync();
 
             return new OkObjectResult("Account created");
