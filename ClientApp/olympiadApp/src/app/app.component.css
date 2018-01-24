@@ -1,0 +1,21 @@
+.gContainer {
+    display: grid;
+    grid-template-columns: 30% auto;
+    grid-template-areas: "header header" "menu content"
+}
+
+div {
+    border: 1px solid black;
+}
+
+.header {
+    text-align: center;
+    grid-area: header;
+}
+
+.menu {
+    grid-area: menu;
+}
+.content {
+    grid-area: content;
+}
