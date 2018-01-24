@@ -11,7 +11,7 @@ namespace Models
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
-
         public DbSet<User> Students { get; set; }
+        public DbSet<Exercise> Exercises { get; set; }
     }
 }
