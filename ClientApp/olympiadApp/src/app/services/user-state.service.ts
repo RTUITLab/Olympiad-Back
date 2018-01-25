@@ -12,8 +12,8 @@ export class UserStateService {
   constructor(private http: HttpClient) { }
 
   private _logs = new BehaviorSubject<User>(undefined);
-  public currentUser = this._logs.asObservable();
-
+  public currentUserStream = this._logs.asObservable();
+  public currentUser: User;
   public Login(model: LoginViewModel): Observable<string> {
     let observer: Subscriber<string>;
     const observable = new Observable<string>(obs => {
@@ -22,15 +22,16 @@ export class UserStateService {
     this.http.post('http://localhost:65086/api/auth/login', model, { responseType: 'text' })
       .subscribe(
       event => {
-        this._logs.next(
-          {
-            FirstName: 'FirstName hah',
-            StudentID: 'Student ID TEST',
-            id: 'big guid',
-            Token: 'big token',
-            UserName: 'tester@test.com'
-          }
-        );
+        const user: User = {
+          FirstName: 'FirstName hah',
+          StudentID: 'Student ID TEST',
+          id: 'big guid',
+          Token: 'big token',
+          UserName: 'tester@test.com'
+        };
+        this._logs.next(user);
+        this.currentUser = user;
+
         observer.next(event);
       },
       error => observer.error('Неверные email/пароль')

@@ -1,3 +1,10 @@
+<ngx-loading [show]="loading"></ngx-loading>
 <h3>
   Доступные задания
 </h3>
+
+<ul>
+  <li *ngFor="let ex of exercises">
+    {{ex.Score}}:{{ex.ExerciseName}}:{{ex.ExerciseTask}}
+  </li>
+</ul>

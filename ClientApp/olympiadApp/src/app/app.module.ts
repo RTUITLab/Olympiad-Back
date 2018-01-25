@@ -11,6 +11,8 @@ import { HeaderComponent } from './components/header/header.component';
 import { LoginComponent } from './components/login/login.component';
 import { UserStateService } from './services/user-state.service';
 import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
+import { ExerciseService } from './services/exercise.service';
+import { AuthGuardService } from './services/auth-guard.service';
 
 const routes: Route[] = [
   {
@@ -23,7 +25,8 @@ const routes: Route[] = [
   },
   {
     path: 'exercises',
-    component: ExercisesListComponent
+    component: ExercisesListComponent,
+    canActivate: [AuthGuardService]
   },
   {
     path: '',
@@ -49,7 +52,7 @@ const routes: Route[] = [
       animationType: ANIMATION_TYPES.cubeGrid
     })
   ],
-  providers: [UserStateService],
+  providers: [UserStateService, ExerciseService, AuthGuardService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

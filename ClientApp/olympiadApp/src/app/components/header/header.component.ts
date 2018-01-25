@@ -20,7 +20,7 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['register']);
   }
   ngOnInit() {
-    this.usersService.currentUser.subscribe(U => this.user = U);
+    this.usersService.currentUserStream.subscribe(U => this.user = U);
   }
 
 }
