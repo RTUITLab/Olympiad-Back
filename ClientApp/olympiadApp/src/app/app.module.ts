@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
@@ -9,7 +9,7 @@ import { HeaderComponent } from './header/header.component';
 import { LoginComponent } from './login/login.component';
 import { UserStateService } from './user-state.service';
 
-const routes = [
+const routes: Route[] = [
   {
     path: 'register',
     component: RegistrationComponent
@@ -17,6 +17,11 @@ const routes = [
   {
     path: 'login',
     component: LoginComponent
+  },
+  {
+    path: '',
+    pathMatch: 'prefix',
+    redirectTo: '/login'
   }
 ];
 

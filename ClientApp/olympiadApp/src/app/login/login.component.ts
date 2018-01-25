@@ -10,12 +10,10 @@ export class LoginComponent implements OnInit {
 
   constructor() { }
   model = LoginViewModel.Default();
-  submitted = false;
 
-  onSubmit() { this.submitted = true;
+  onSubmit() {
     console.log('Some');
   }
   ngOnInit() {
   }
-  get diagnostic() { return JSON.stringify(this.model); }
 }
