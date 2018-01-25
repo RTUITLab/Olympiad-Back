@@ -10,3 +10,10 @@
     display: grid;
     /* grid-template-rows: auto auto auto; */
 }
+
+.alert-danger {
+  background: #da7b7a56;
+  border-radius: 20px;
+  width: 40%;
+  text-align: center;
+}

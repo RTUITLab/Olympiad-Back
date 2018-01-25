@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { LoginViewModel } from '../../models/ViewModels/LoginViewModel';
+import { UserStateService } from '../user-state.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -7,12 +9,23 @@ import { LoginViewModel } from '../../models/ViewModels/LoginViewModel';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-
-  constructor() { }
-  model = LoginViewModel.Default();
+  errorMessage: string;
+  loading = false;
+  constructor(private userState: UserStateService, private router: Router) { }
+  model = new LoginViewModel('tester@test.com', '123456');
 
   onSubmit() {
-    console.log('Some');
+    this.loading = true;
+    this.userState.Login(this.model).subscribe(
+      success => {
+        this.router.navigate(['exercises']);
+        this.loading = false;
+      },
+      error => {
+        this.errorMessage = error;
+        this.loading = false;
+      }
+    );
   }
   ngOnInit() {
   }
