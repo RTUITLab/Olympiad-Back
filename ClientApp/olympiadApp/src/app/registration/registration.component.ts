@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { RegisterViewModel } from '../../models/ViewModels/RegisterViewModel';
 
 @Component({
   selector: 'app-registration',
@@ -7,9 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RegistrationComponent implements OnInit {
 
+  model: RegisterViewModel = RegisterViewModel.Default();
   constructor() { }
 
   ngOnInit() {
   }
-
+  onSubmit() {
+    console.log('Registration with model ' + JSON.stringify(this.model));
+  }
 }
