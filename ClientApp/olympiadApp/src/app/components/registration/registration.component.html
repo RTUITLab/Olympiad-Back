@@ -1,6 +1,6 @@
 <div class="container">
   <h3>Регистрация</h3>
-
+  <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   <form #registerForm="ngForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for=" Email">Электронная почта</label>
@@ -39,6 +39,7 @@
           </div>
         </div>
       </div>
-      <button type="submit" class="btn btn-success" [disabled]="!registerForm.form.valid">Войти</button>
+      <button type="submit" class="btn btn-success" [disabled]="!registerForm.form.valid">Зарегистрироваться</button>
   </form>
+  <ngx-loading [show]="loading"></ngx-loading>
 </div>

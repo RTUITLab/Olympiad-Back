@@ -1,7 +1,6 @@
 <div class="container">
   <h3>Вход в систему</h3>
-  {{diagnostic}}
-
+  <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   <form #loginForm="ngForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="UserName">Электронная почта</label>
@@ -21,4 +20,5 @@
     </div>
     <button type="submit" class="btn btn-success" [disabled]="!loginForm.form.valid">Войти</button>
   </form>
+  
 </div>

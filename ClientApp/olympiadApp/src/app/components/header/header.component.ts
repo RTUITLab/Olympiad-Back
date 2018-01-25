@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { User } from '../../models/User';
-import { UserStateService } from '../user-state.service';
+import { UserStateService } from '../../services/user-state.service';
 
 @Component({
   selector: 'app-header',
@@ -20,7 +20,7 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['register']);
   }
   ngOnInit() {
-    this.usersService.currentUser.subscribe(U => this.user = U);
+    this.usersService.currentUserStream.subscribe(U => this.user = U);
   }
 
 }

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using WebApp.Helpers;
 using Microsoft.AspNetCore.Identity;
 using WebApp.Auth;
+using Newtonsoft.Json.Serialization;
 
 namespace WebApp
 {
@@ -85,20 +86,23 @@ namespace WebApp
 
 
             // add identity
-           services.AddIdentity<User, IdentityRole>(o =>
-            {
-                // configure identity options
-                o.Password.RequireDigit = false;
-                o.Password.RequireLowercase = false;
-                o.Password.RequireUppercase = false;
-                o.Password.RequireNonAlphanumeric = false;
-                o.Password.RequiredLength = 6;
-            })
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+            services.AddIdentity<User, IdentityRole>(o =>
+             {
+                 // configure identity options
+                 o.Password.RequireDigit = false;
+                 o.Password.RequireLowercase = false;
+                 o.Password.RequireUppercase = false;
+                 o.Password.RequireNonAlphanumeric = false;
+                 o.Password.RequiredLength = 6;
+             })
+                 .AddEntityFrameworkStores<ApplicationDbContext>()
+                 .AddDefaultTokenProviders();
 
             services.AddAutoMapper();
-            services.AddMvc();
+            services.AddMvc()
+                .AddJsonOptions(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver());
+
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -112,6 +116,12 @@ namespace WebApp
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            app.UseCors(builder =>
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
 
             app.UseStaticFiles();
 
