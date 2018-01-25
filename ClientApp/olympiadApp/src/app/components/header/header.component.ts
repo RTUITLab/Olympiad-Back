@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { User } from '../../models/User';
-import { UserStateService } from '../user-state.service';
+import { UserStateService } from '../../services/user-state.service';
 
 @Component({
   selector: 'app-header',

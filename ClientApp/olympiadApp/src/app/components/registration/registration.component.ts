@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { RegisterViewModel } from '../../models/ViewModels/RegisterViewModel';
-import { UserStateService } from '../user-state.service';
+import { UserStateService } from '../../services/user-state.service';
 import { Router } from '@angular/router';
 
 @Component({

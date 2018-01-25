@@ -5,12 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { LoadingModule, ANIMATION_TYPES } from 'ngx-loading';
 
-import { AppComponent } from './app.component';
-import { RegistrationComponent } from './registration/registration.component';
-import { HeaderComponent } from './header/header.component';
-import { LoginComponent } from './login/login.component';
-import { UserStateService } from './user-state.service';
-import { ExercisesListComponent } from './exercises/exercises-list/exercises-list.component';
+import { AppComponent } from './components/app.component';
+import { RegistrationComponent } from './components/registration/registration.component';
+import { HeaderComponent } from './components/header/header.component';
+import { LoginComponent } from './components/login/login.component';
+import { UserStateService } from './services/user-state.service';
+import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
 
 const routes: Route[] = [
   {
