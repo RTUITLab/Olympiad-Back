@@ -1,6 +1,7 @@
 export class User {
     public id: string;
-    public name: string;
+    public FirstName: string;
+    public UserName: string;
     public StudentID: string;
-    public token: string;
+    public Token: string;
 }

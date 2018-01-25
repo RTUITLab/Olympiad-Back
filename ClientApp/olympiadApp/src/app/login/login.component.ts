@@ -9,7 +9,7 @@ import { LoginViewModel } from '../../models/ViewModels/LoginViewModel';
 export class LoginComponent implements OnInit {
 
   constructor() { }
-  model = new LoginViewModel('test@test.com', '');
+  model = LoginViewModel.Default();
   submitted = false;
 
   onSubmit() { this.submitted = true;

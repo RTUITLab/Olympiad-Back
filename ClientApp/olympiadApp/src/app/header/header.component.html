@@ -1,7 +1,7 @@
 <div class="container">
   <h3>Олимпиада по программированию</h3>
   <div>
-    <div *ngIf="user; else buttonsBlock" >LOLAS</div>
+    <div *ngIf="user; else buttonsBlock" >{{user.FirstName}}</div>
     <ng-template #buttonsBlock>
       <div class="buttons">
         <button (click)="login()">Войти в систему</button>
