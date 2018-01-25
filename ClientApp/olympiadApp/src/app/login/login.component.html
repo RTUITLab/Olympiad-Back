@@ -1,3 +1,30 @@
-<p>
-  login works!
-</p>
+<div class="container">
+    <h3> Вход в систему</h3>
+    {{diagnostic}}
+
+    <form #loginForm="ngForm" (ngSubmit)="onSubmit()" >
+      <div class="form-group">
+        <label for="UserName">Электронная почта</label>
+        <input type="text" class="form-control" id="UserName" required [(ngModel)]="model.UserName" name="UserName"
+        #userName="ngModel">
+        <div [hidden]="userName.valid || userName.pristine"
+        class="alert alert-danger">Необходима почта</div>
+      </div>
+
+      <div class="form-group">
+        <label for="Password">Пароль</label>
+        <input type="password" class="form-control" id="Password"
+        required minlength="6" [(ngModel)]="model.Password" name="Password"
+        #pass="ngModel">
+        <div *ngIf="pass.invalid && (pass.dirty || pass.touched)"
+             class="alert alert-danger">
+             <div *ngIf="pass.errors.minlength">
+                Пароль не может быть короче 6-и символов
+              </div>
+        </div>
+             
+      </div>
+      {{model.Password.errors}}
+      <button type="submit" class="btn btn-success" [disabled]="!loginForm.form.valid">Войти</button>
+    </form>
+</div>

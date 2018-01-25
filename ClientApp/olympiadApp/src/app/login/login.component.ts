@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { LoginViewModel } from '../../models/ViewModels/LoginViewModel';
 
 @Component({
   selector: 'app-login',
@@ -8,8 +9,13 @@ import { Component, OnInit } from '@angular/core';
 export class LoginComponent implements OnInit {
 
   constructor() { }
+  model = new LoginViewModel('test@test.com', '');
+  submitted = false;
 
+  onSubmit() { this.submitted = true;
+    console.log('Some');
+  }
   ngOnInit() {
   }
-
+  get diagnostic() { return JSON.stringify(this.model); }
 }
