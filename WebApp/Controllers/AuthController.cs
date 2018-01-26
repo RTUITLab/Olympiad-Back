@@ -60,7 +60,8 @@ namespace WebApp.Controllers
             if (userToVerify == null) return await Task.FromResult<ClaimsIdentity>(null);
 
             // check the credentials
-            if (await _userManager.CheckPasswordAsync(userToVerify, password))
+            if (await _userManager.CheckPasswordAsync(userToVerify, password) &&
+                await _userManager.IsEmailConfirmedAsync(userToVerify))
             {
                 return await Task.FromResult(_jwtFactory.GenerateClaimsIdentity(userName, userToVerify.Id));
             }
