@@ -51,6 +51,7 @@ namespace WebApp.Controllers
                 return BadRequest();
             }
         }
+        
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]RegistrationViewModel model)

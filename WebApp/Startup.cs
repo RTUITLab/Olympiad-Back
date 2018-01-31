@@ -88,7 +88,7 @@ namespace WebApp
 
 
             // add identity
-            services.AddIdentity<User, IdentityRole>(o =>
+            services.AddIdentity<User, IdentityRole<Guid>>(o =>
              {
                  // configure identity options
                  o.Password.RequireDigit = false;
