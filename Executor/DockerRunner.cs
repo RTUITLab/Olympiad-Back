@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Executor
@@ -13,6 +14,7 @@ namespace Executor
             var testDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             Console.WriteLine($"new dir is {testDir.FullName}");
             File.Copy(@"C:\Users\maksa\Desktop\test\Program.cs", Path.Combine(testDir.FullName, "Program.cs"));
+            
             var proccess = new Process()
             {
                 StartInfo = new ProcessStartInfo
@@ -21,7 +23,7 @@ namespace Executor
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     FileName = "docker",
-                    Arguments = "run --rm microsoft/dotnet:sdk echo lol"
+                    Arguments = $"run --rm -v {testDir.FullName}:/home/src runner:dotnet"
                 },
             };
             
@@ -34,8 +36,11 @@ namespace Executor
             //proccess.StandardInput.WriteLine("echo lolka");
             //proccess.StandardInput.WriteLine("exit");
             proccess.WaitForExit();
+            Console.WriteLine($"ENDED PROCESS");
+            var publishDir = testDir.GetDirectories("publicated").FirstOrDefault();
+
+            Directory.Move(publishDir.FullName, @"C:\New folder");
             testDir.Delete(true);
-            Console.WriteLine($"ENDED");
         }
 
         private void Proccess_ErrorDataReceived(object sender, DataReceivedEventArgs e)

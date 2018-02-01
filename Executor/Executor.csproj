@@ -10,6 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\dotnet\builder\DockerFile" />
+    <None Remove="Images\dotnet\runner\DockerFile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Images\dotnet\builder\DockerFile" />
+    <Compile Include="Images\dotnet\runner\DockerFile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Docker.DotNet" Version="3.125.0" />
   </ItemGroup>
 

@@ -6,10 +6,11 @@ import { RegisterViewModel } from '../models/ViewModels/RegisterViewModel';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
+import { EndPoints } from './EndPoints';
 @Injectable()
-export class UserStateService {
+export class UserStateService extends EndPoints {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { super(); }
 
   private _logs = new BehaviorSubject<User>(undefined);
   public currentUserStream = this._logs.asObservable();
@@ -19,7 +20,7 @@ export class UserStateService {
     const observable = new Observable<string>(obs => {
       observer = obs;
     });
-    this.http.post('http://localhost:65086/api/auth/login', model, { responseType: 'text' })
+    this.http.post(`http://${this.ip}:${this.port}/api/auth/login`, model, { responseType: 'text' })
       .subscribe(
       event => {
         const user: User = {
@@ -44,7 +45,7 @@ export class UserStateService {
     const observable = new Observable<string>(obs => {
       observer = obs;
     });
-    this.http.post('http://localhost:65086/api/account', model, { responseType: 'text' })
+    this.http.post(`http://${this.ip}:${this.port}/api/account`, model, { responseType: 'text' })
       .subscribe(
       event => observer.next(event),
       error => observer.error('Email занят')
