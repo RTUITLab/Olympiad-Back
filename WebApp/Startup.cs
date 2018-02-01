@@ -17,6 +17,8 @@ using WebApp.Helpers;
 using Microsoft.AspNetCore.Identity;
 using WebApp.Auth;
 using Newtonsoft.Json.Serialization;
+using WebApp.Services.Interfaces;
+using WebApp.Services;
 
 namespace WebApp
 {
@@ -86,7 +88,7 @@ namespace WebApp
 
 
             // add identity
-            services.AddIdentity<User, IdentityRole>(o =>
+            services.AddIdentity<User, IdentityRole<Guid>>(o =>
              {
                  // configure identity options
                  o.Password.RequireDigit = false;
@@ -103,6 +105,7 @@ namespace WebApp
                 .AddJsonOptions(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
             services.AddCors();
+            services.AddSingleton<IEmailSender, EmailService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
