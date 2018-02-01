@@ -1,0 +1,5 @@
+﻿FROM microsoft/dotnet:sdk
+
+RUN cd /home && dotnet new console && rm Program.cs
+
+CMD [ "/usr/bin/dotnet", "publish", "/home/home.csproj", "-o", "/home/src/publicated",  "--no-restore", "-c", "Release", "--no-dependencies"]

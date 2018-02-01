@@ -13,6 +13,7 @@ namespace Executor
         static async Task Main(string[] args)
         {
             new DockerRunner().test();
+            Console.WriteLine("Program end");
             Console.ReadLine();
         }
     }
