@@ -11,9 +11,10 @@ using System;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180201115655_Status")]
+    partial class Status
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -139,22 +140,6 @@ namespace WebApp.Migrations
                     b.HasKey("ExerciseID");
 
                     b.ToTable("Exercises");
-                });
-
-            modelBuilder.Entity("Models.ExerciseData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<Guid>("ExerciseId");
-
-                    b.Property<string>("InData");
-
-                    b.Property<string>("OutData");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TestData");
                 });
 
             modelBuilder.Entity("Models.Solution", b =>

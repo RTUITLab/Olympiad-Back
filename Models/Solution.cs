@@ -11,5 +11,6 @@ namespace Models
         public string Raw { get; set; }
         public Guid UserId { get; set; }
         public Guid ExerciseId { get; set; }
+        public SolutionStatus Status { get; set; }
     }
 }

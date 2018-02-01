@@ -24,11 +24,9 @@ namespace WebApp.Auth
         {
             var claims = new[]
          {
-                 new Claim(JwtRegisteredClaimNames.Sub, userName),
                  new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                  new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
-                 identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Rol),
-                 identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Id)
+                 identity.FindFirst(ClaimTypes.NameIdentifier)
              };
 
             // Create the JWT security token and encode it.
@@ -49,8 +47,7 @@ namespace WebApp.Auth
         {
             return new ClaimsIdentity(new GenericIdentity(userName, "Token"), new[]
             {
-                new Claim(Helpers.Constants.Strings.JwtClaimIdentifiers.Id, id),
-                new Claim(Helpers.Constants.Strings.JwtClaimIdentifiers.Rol, Helpers.Constants.Strings.JwtClaims.ApiAccess)
+                new Claim(ClaimTypes.NameIdentifier, id)
             });
         }
 
