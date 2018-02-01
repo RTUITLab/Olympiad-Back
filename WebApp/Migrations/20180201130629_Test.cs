@@ -4,29 +4,29 @@ using System.Collections.Generic;
 
 namespace WebApp.Migrations
 {
-    public partial class Exercise : Migration
+    public partial class Test : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Exercises",
+                name: "TestData",
                 columns: table => new
                 {
-                    ExerciseID = table.Column<Guid>(nullable: false),
-                    ExerciseName = table.Column<string>(nullable: true),
-                    ExerciseTask = table.Column<string>(nullable: true),
-                    Score = table.Column<int>(nullable: false)
+                    Id = table.Column<Guid>(nullable: false),
+                    ExerciseId = table.Column<Guid>(nullable: false),
+                    InData = table.Column<string>(nullable: true),
+                    OutData = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Exercises", x => x.ExerciseID);
+                    table.PrimaryKey("PK_TestData", x => x.Id);
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Exercises");
+                name: "TestData");
         }
     }
 }
