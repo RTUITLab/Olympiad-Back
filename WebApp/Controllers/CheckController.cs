@@ -42,26 +42,35 @@ namespace WebApp.Controllers
             {
                 return BadRequest();
             }
-
+            Console.WriteLine("id is" + (userManager.GetUserId(User)));
             Solution solution = new Solution()
             {
                 Raw = fileBody,
                 Language = language,
                 ExerciseId = exerciseId,
                 UserId = Guid.Parse(userManager.GetUserId(User)),
+                Status = SolutionStatus.InQueue
             };
+
             await context.Solutions.AddAsync(solution);
             await context.SaveChangesAsync();
 
-            Console.WriteLine(fileBody);
-            Console.WriteLine(language + exerciseId);
-            return Ok();
+            return Content(solution.Id.ToString());
         }
 
+        [HttpGet]
+        public IActionResult Get()
+        {
+            var id = Guid.Parse(userManager.GetUserId(User));
+            return Json(context.Solutions.Where(P => P.UserId == id).ToList());
+        }
 
-
-
-
-
+        [HttpGet]
+        [Route("{solutionId}")]
+        public IActionResult Get(Guid solutionId)
+        {
+            var id = Guid.Parse(userManager.GetUserId(User));
+            return Json(context.Solutions.FirstOrDefault(P => P.Id == solutionId && P.UserId == id));
+        }
     }
 }

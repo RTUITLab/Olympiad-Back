@@ -15,7 +15,7 @@ namespace WebApp.Helpers
         {
             var response = new
             {
-                id = identity.Claims.Single(c => c.Type == "id").Value,
+                id = identity.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value,
                 auth_token = await jwtFactory.GenerateEncodedToken(userName, identity),
                 expires_in = (int)jwtOptions.ValidFor.TotalSeconds
             };
