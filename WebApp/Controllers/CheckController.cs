@@ -42,7 +42,7 @@ namespace WebApp.Controllers
             {
                 return BadRequest();
             }
-            Console.WriteLine("id is" + (userManager.GetUserId(User)));
+
             Solution solution = new Solution()
             {
                 Raw = fileBody,
