@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 using WebApp.ViewModels;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Exercises")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ExercisesController : Controller
     {
         private readonly IMapper mapper;

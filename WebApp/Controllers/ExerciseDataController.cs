@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
@@ -12,6 +13,7 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/ExerciseData")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class ExerciseDataController : Controller
     {
         private readonly ApplicationDbContext context;
@@ -25,6 +27,11 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public async Task<IActionResult> Post(IFormFile inFile, IFormFile outFile, Guid exerciseId)
         {
+            if (inFile == null || outFile == null || inFile.Length > 5120 || outFile.Length > 5120)
+            {
+                return BadRequest("Отсутствует файл входных данных или исходных данных. Проверьте размер передаваемого файла. Он не должен превышать 5MB");
+            }
+
             var inStream = inFile.OpenReadStream();
             var outStream = outFile.OpenReadStream();
             ExerciseData exerciseData = new ExerciseData();
