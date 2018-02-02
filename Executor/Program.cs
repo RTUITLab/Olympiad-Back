@@ -29,5 +29,17 @@ namespace Executor
 
                 Console.ReadLine();
         }
+
+        static void ListenSolutions(ApplicationDbContext db)
+        {
+            while (true)
+            {
+                var solutions = db
+                    .Solutions
+                    .Where(S => S.Status == SolutionStatus.InQueue)
+                    .ToList();
+
+            }
+        }
     }
 }
