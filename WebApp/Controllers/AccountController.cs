@@ -52,7 +52,6 @@ namespace WebApp.Controllers
             }
         }
         
-
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]RegistrationViewModel model)
         {
