@@ -6,9 +6,18 @@
   border-left: 5px solid #a94442; /* red */
 }
 
-.form-group {
+.form-group, .form-header {
+    width: 70%;
     display: grid;
+    margin: 1%;
     /* grid-template-rows: auto auto auto; */
+}
+.form-group select, input {
+  width: 30%;
+}
+
+.form-group button {
+  width: 20%;
 }
 
 .alert-danger {

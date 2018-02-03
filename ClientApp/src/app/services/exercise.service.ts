@@ -6,6 +6,7 @@ import { Subscriber } from 'rxjs/Subscriber';
 import { error } from 'util';
 import { EndPoints } from './EndPoints';
 import { UserStateService } from './user-state.service';
+import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
 
 @Injectable()
 export class ExerciseService extends EndPoints {
@@ -17,18 +18,47 @@ export class ExerciseService extends EndPoints {
     const observable = new Observable<Array<Exercise>>(obs => {
       observer = obs;
     });
-    const headers = new HttpHeaders ({
-      'Authorization': `Bearer ${this.userService.currentUser.Token}`
-    });
-    this.http.get<Array<Exercise>>(`http://${this.ip}:${this.port}/api/exercises`, { headers: headers}).subscribe(
+    this.http.get<Array<Exercise>>(
+      `http://${this.ip}:${this.port}/api/exercises`,
+      { headers: this.userService.authHeaders() })
+      .subscribe(
       success => {
+        console.log(success);
         observer.next(success);
       },
       err => {
         observer.next([]);
         console.log(err);
       }
-    );
+      );
+    return observable;
+  }
+
+
+  sendSolution(data: SolutionViewModel): Observable<string> {
+    let observer: Subscriber<string>;
+    const observable = new Observable<string>(obs => {
+      observer = obs;
+    });
+
+    const formData: FormData = new FormData();
+    formData.append('file', data.File, data.File.name);
+
+    this.http.post(
+      `http://${this.ip}:${this.port}/api/check/${data.Language}/${data.ExerciseId}`,
+      formData, { headers: this.userService.authHeaders() })
+      .subscribe(
+      success => {
+        console.log(success);
+        console.log('sended');
+      },
+      fail => {
+        console.log(fail);
+        console.log('failed');
+      }
+      );
+
+
     return observable;
   }
 

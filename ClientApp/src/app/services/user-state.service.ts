@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { User } from '../models/User';
 import { LoginViewModel } from '../models/ViewModels/LoginViewModel';
 import { RegisterViewModel } from '../models/ViewModels/RegisterViewModel';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
 import { EndPoints } from './EndPoints';
@@ -31,6 +31,7 @@ export class UserStateService extends EndPoints {
           Token: event.auth_token,
           UserName: event.id
         };
+        localStorage.setItem('userToken', event.auth_token);
         console.log(event);
         this._logs.next(user);
         this.currentUser = user;
@@ -53,5 +54,13 @@ export class UserStateService extends EndPoints {
       error => observer.error('Email занят')
       );
     return observable;
+  }
+
+
+
+  public authHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      'Authorization': `Bearer ${this.currentUser.Token}`
+    });
   }
 }

@@ -3,7 +3,7 @@ import {Guid} from 'guid';
 export class Exercise {
     constructor(
         ExerciseName?: string,
-        ExerciseId?: Guid,
+        ExerciseID?: Guid,
         ExerciseTask?: string,
         Score?: number
     ) {}

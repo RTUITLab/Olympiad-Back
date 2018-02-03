@@ -13,6 +13,7 @@ import { UserStateService } from './services/user-state.service';
 import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
 import { ExerciseService } from './services/exercise.service';
 import { AuthGuardService } from './services/auth-guard.service';
+import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
 
 const routes: Route[] = [
   {
@@ -29,6 +30,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'exercises/:ExerciseID',
+    component: ExerciseInfoComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: '',
     pathMatch: 'prefix',
     redirectTo: '/register'
@@ -41,7 +47,8 @@ const routes: Route[] = [
     RegistrationComponent,
     HeaderComponent,
     LoginComponent,
-    ExercisesListComponent
+    ExercisesListComponent,
+    ExerciseInfoComponent
   ],
   imports: [
     BrowserModule,
