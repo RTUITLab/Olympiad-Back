@@ -32,7 +32,12 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Post(IFormFile file, string language, Guid exerciseId)
         {
             string fileBody;
+            if (file == null || file.Length > 5120)
+            {
+                return BadRequest("Отсутствует файл или его размер превышает 5MB");
+            }
             var stream = file.OpenReadStream();
+
             using (var streamReader = new StreamReader(stream, Encoding.UTF8))
             {
                 fileBody = await streamReader.ReadToEndAsync();
@@ -42,7 +47,7 @@ namespace WebApp.Controllers
             {
                 return BadRequest();
             }
-            Console.WriteLine("id is" + (userManager.GetUserId(User)));
+
             Solution solution = new Solution()
             {
                 Raw = fileBody,
