@@ -29,21 +29,27 @@
     </div>
     <div class="form-group">
       <label for="Source">Код программы</label>
-      <input type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas"/>
+      <input type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas" />
 
     </div>
     <div class="form-group">
-      <button>Отправить решение</button>
+      <button [disabled]="submitDisabled">Отправить решение</button>
     </div>
   </form>
   <table>
-    <tr>
-      <th>Язык</th>
-      <th>Статус</th>
-    </tr>
-    <tr *ngFor="let sol of solutions">
-      <td>{{sol.Language}}</td>
-      <td>{{solutionStatusPresent(sol.Status)}}</td>
-    </tr>
+    <thead>
+      <tr>
+        <th>Время отправки</th>
+        <th>Язык</th>
+        <th>Статус</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let sol of solutions">
+        <td>Какое-то время</td>
+        <td>{{sol.Language}}</td>
+        <td>{{solutionStatusPresent(sol.Status)}}</td>
+      </tr>
+    </tbody>
   </table>
 </div>

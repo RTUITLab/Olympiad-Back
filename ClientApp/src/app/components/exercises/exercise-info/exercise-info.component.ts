@@ -26,6 +26,10 @@ export class ExerciseInfoComponent implements OnInit {
       Status: SolutionStatus.InQueue
     }
   ];
+
+  get submitDisabled() {
+    return !this.model.File;
+  }
   model: SolutionViewModel = new SolutionViewModel();
   ngOnInit() {
     this.model.Language = 'Java';

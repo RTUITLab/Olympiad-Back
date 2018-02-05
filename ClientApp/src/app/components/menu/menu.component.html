@@ -12,7 +12,7 @@
 </ul>
 <hr>
 <ul *ngIf="exercises">
-  <h4>Задания для выполнения</h4>
+  <h2>Задания для выполнения</h2>
   <li *ngFor="let ex of exercises">
     <button (click)="goToExercise(ex.ExerciseID)" class="exerciseTask">{{ex.ExerciseName}}</button>
   </li>
