@@ -12,5 +12,6 @@ namespace Models
         public Guid UserId { get; set; }
         public Guid ExerciseId { get; set; }
         public SolutionStatus Status { get; set; }
+        public DateTime Time { get; set; }
     }
 }
