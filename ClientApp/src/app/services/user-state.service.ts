@@ -13,9 +13,11 @@ export class UserStateService extends EndPoints {
 
   constructor(private http: HttpClient) { super(); }
 
-  private _logs = new BehaviorSubject<User>(undefined);
-  public currentUserStream = this._logs.asObservable();
+  private usersBehavior = new BehaviorSubject<User>(undefined);
+  public currentUserStream = this.usersBehavior.asObservable();
   public currentUser: User;
+
+
   public Login(model: LoginViewModel): Observable<LoginResponse> {
     let observer: Subscriber<LoginResponse>;
     const observable = new Observable<LoginResponse>(obs => {
@@ -33,7 +35,7 @@ export class UserStateService extends EndPoints {
         };
         localStorage.setItem('userToken', event.auth_token);
         console.log(event);
-        this._logs.next(user);
+        this.usersBehavior.next(user);
         this.currentUser = user;
 
         observer.next(event);

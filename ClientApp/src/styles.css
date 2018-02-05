@@ -1,5 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
-
-html {
-    background: rgb(228, 228, 228);
+button {
+    border-radius: 8px;
+    background-color: #008CBA;
+    color: white;
+    padding: 5px 3px;
+    font-size: 16px;
 }

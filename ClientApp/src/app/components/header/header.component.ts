@@ -13,12 +13,6 @@ export class HeaderComponent implements OnInit {
   user: User;
 
   constructor(private router: Router, private usersService: UserStateService) { }
-  login() {
-    this.router.navigate(['login']);
-  }
-  register() {
-    this.router.navigate(['register']);
-  }
   ngOnInit() {
     this.usersService.currentUserStream.subscribe(U => this.user = U);
   }

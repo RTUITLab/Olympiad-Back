@@ -1,0 +1,19 @@
+<ul>
+  <li>
+    <button (click)="overView()">Общие положения</button>
+  </li>
+  <li>
+    <button *ngIf="user; else buttonsBlock" class="greeting">Текущий прогресс</button>
+    <ng-template #buttonsBlock>
+      <button (click)="login()">Войти в систему</button>
+      <button (click)="register()">Зарегестрироваться</button>
+    </ng-template>
+  </li>
+</ul>
+<hr>
+<ul *ngIf="exercises">
+  <h4>Задания для выполнения</h4>
+  <li *ngFor="let ex of exercises">
+    <button (click)="goToExercise(ex.ExerciseID)" class="exerciseTask">{{ex.ExerciseName}}</button>
+  </li>
+</ul>
