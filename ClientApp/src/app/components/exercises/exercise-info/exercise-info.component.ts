@@ -7,6 +7,7 @@ import { ParamMap } from '@angular/router/src/shared';
 import { Solution } from '../../../models/Solution';
 import { SolutionStatus } from '../../../models/SolutionStatus';
 import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusConverter';
+import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 
 @Component({
   selector: 'app-exercise-info',
@@ -17,6 +18,9 @@ export class ExerciseInfoComponent implements OnInit {
 
   constructor(private exercisesService: ExerciseService,
     private route: ActivatedRoute) { }
+
+  availableLanguages = LanguageConverter.languages();
+
   solutions: Solution[] = [
     {
       Language: 'Java',
@@ -28,7 +32,7 @@ export class ExerciseInfoComponent implements OnInit {
   ];
 
   get submitDisabled() {
-    return !this.model.File;
+    return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
   }
   model: SolutionViewModel = new SolutionViewModel();
   ngOnInit() {
@@ -46,6 +50,6 @@ export class ExerciseInfoComponent implements OnInit {
   }
 
   solutionStatusPresent(status: SolutionStatus): string {
-    return SolutionStatusConverter.convert(status);
+    return SolutionStatusConverter.convertToPretty(status);
   }
 }

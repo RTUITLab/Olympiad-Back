@@ -19,12 +19,7 @@
     <div class="form-group">
       <label for="Language">Язык программирования</label>
       <select id="Language" class="form-control" [(ngModel)]="model.Language" name="Language">
-        <option>C#</option>
-        <option>Java</option>
-        <option>Pascal ABC</option>
-        <option>C</option>
-        <option>C++</option>
-        <option>Python</option>
+        <option *ngFor="let lang of availableLanguages">{{lang}}</option>
       </select>
     </div>
     <div class="form-group">

@@ -9,6 +9,7 @@ import { UserStateService } from './user-state.service';
 import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
+import { LanguageConverter } from '../models/Common/LanguageConverter';
 
 @Injectable()
 export class ExerciseService extends EndPoints implements OnInit {
@@ -57,7 +58,7 @@ export class ExerciseService extends EndPoints implements OnInit {
     formData.append('file', data.File, data.File.name);
 
     this.http.post(
-      `http://${this.ip}:${this.port}/api/check/${data.Language}/${data.ExerciseId}`,
+      `http://${this.ip}:${this.port}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
       formData, { headers: this.userService.authHeaders() })
       .subscribe(
       success => {
