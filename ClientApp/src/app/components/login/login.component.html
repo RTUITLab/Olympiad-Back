@@ -1,5 +1,5 @@
 <div class="container">
-  <h3>Вход в систему</h3>
+  <h3 class="form-header">Вход в систему</h3>
   <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
   <form #loginForm="ngForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
@@ -18,7 +18,9 @@
         </div>
       </div>
     </div>
-    <button type="submit" class="btn btn-success" [disabled]="!loginForm.form.valid">Войти</button>
+    <div class="form-group">
+      <button type="submit" class="btn btn-success" [disabled]="!loginForm.form.valid">Войти</button>
+    </div>
   </form>
-  
+
 </div>

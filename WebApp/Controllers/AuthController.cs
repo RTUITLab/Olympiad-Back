@@ -45,8 +45,8 @@ namespace WebApp.Controllers
                 return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));
             }
 
-            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, _jwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });
-         //   return new OkObjectResult(jwt);
+            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, _jwtOptions);
+            return Json(jwt);
         }
 
         private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)

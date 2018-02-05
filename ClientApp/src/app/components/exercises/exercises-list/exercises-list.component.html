@@ -5,6 +5,8 @@
 
 <ul>
   <li *ngFor="let ex of exercises">
-    {{ex.Score}}:{{ex.ExerciseName}}:{{ex.ExerciseTask}}
+      <a [routerLink]="['/exercises', ex.ExerciseID]">
+      {{ex.Score}}:{{ex.ExerciseName}}
+    </a>
   </li>
 </ul>
