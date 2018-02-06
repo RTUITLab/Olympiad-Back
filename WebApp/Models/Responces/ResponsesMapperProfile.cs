@@ -20,6 +20,8 @@ namespace WebApp.Models.Responces
                 .ForMember(R => R.Name, map => map.MapFrom(E => E.ExerciseName))
                 .ForMember(R => R.Score, map => map.MapFrom(E => E.Score))
                 .ForMember(R => R.TaskText, map => map.MapFrom(E => E.ExerciseTask));
+            CreateMap<User, LoginResponse>()
+                .ForMember(R => R.StudentId, map => map.MapFrom(E => E.StudentID));
         }
     }
 }
