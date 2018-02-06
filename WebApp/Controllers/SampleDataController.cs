@@ -3,42 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Models;
+using WebApp.Models.Responces;
 
 namespace WebApp.Controllers
 {
     [Route("api/[controller]")]
     public class SampleDataController : Controller
     {
-        private static string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly ApplicationDbContext dbContext;
 
-        [HttpGet("[action]")]
-        public IEnumerable<WeatherForecast> WeatherForecasts()
+        public SampleDataController(ApplicationDbContext dbContext)
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                DateFormatted = DateTime.Now.AddDays(index).ToString("d"),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            });
+            this.dbContext = dbContext;
         }
 
-        public class WeatherForecast
+        public IActionResult Get()
         {
-            public string DateFormatted { get; set; }
-            public int TemperatureC { get; set; }
-            public string Summary { get; set; }
+            var userId = Guid.Parse("5E3BAAFF-3E3A-4F0A-4508-08D5695FFE7F");
 
-            public int TemperatureF
-            {
-                get
+            var exerciseId = Guid.Parse("4C25F76A-681B-42AB-7E08-08D569610788");
+            return Json(
+                dbContext
+                .Exercises
+                .Select(E => new ExerciseListResponse
                 {
-                    return 32 + (int)(TemperatureC / 0.5556);
-                }
-            }
+                    Id = E.ExerciseID,
+                    Name = E.ExerciseName,
+                    Score = E.Score,
+                    Status = E.Solution
+                        .Where(S => S.UserId == userId)
+                        .Select(S => S.Status)
+                        .Max()
+                }));
         }
     }
 }
