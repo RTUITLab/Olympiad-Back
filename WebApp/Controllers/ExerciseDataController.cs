@@ -34,7 +34,16 @@ namespace WebApp.Controllers
 
             var inStream = inFile.OpenReadStream();
             var outStream = outFile.OpenReadStream();
-            ExerciseData exerciseData = new ExerciseData();
+
+            if (!context.Exercises.Any(P => P.ExerciseID == exerciseId))
+            {
+                return BadRequest();
+            }
+
+            ExerciseData exerciseData = new ExerciseData()
+            {
+                ExerciseId = exerciseId
+            };
 
             using (var inStreamReader = new StreamReader(inStream, Encoding.UTF8))
             {
