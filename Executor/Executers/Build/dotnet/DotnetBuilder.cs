@@ -36,8 +36,8 @@ namespace Executor.Executers.Build.dotnet
                     Arguments = $"run --rm -v {testDir.FullName}:/home/src builder:dotnet"
                 },
             };
-
-            proccess.OutputDataReceived += (E, A) => Console.WriteLine("OUTPUT " + A.Data);
+            SolutionStatus solStatus = SolutionStatus.InProcessing;
+            proccess.OutputDataReceived += (D, E) => Proccess_OutputDataReceived(D, E, ref solStatus);
             proccess.ErrorDataReceived += (E, A) => Console.WriteLine("ERROR " + A.Data);
             var success = proccess.Start();
             proccess.BeginErrorReadLine();
@@ -45,11 +45,24 @@ namespace Executor.Executers.Build.dotnet
             Console.WriteLine($"Started bool {success}");
             proccess.WaitForExit();
             Console.WriteLine($"ENDED PROCESS");
+            if (solStatus == SolutionStatus.CompileError)
+            {
+                solution.Status = SolutionStatus.CompileError;
+                return null;
+            }
             var publishDir = testDir.GetDirectories("publicated").FirstOrDefault();
             var nextFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.Move(publishDir.FullName, nextFolderPath);
             testDir.Delete(true);
             return new DirectoryInfo(nextFolderPath);
+        }
+
+        private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
+        {
+            if (e.Data?.Contains("Build FAILED") == true)
+            {
+                status = SolutionStatus.CompileError;
+            }
         }
     }
 

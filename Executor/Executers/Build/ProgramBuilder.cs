@@ -46,6 +46,11 @@ namespace Executor.Executers.Build
                     solution.Status = SolutionStatus.InProcessing;
                     proccessSolution();
                     var result = Build(solution);
+                    if (solution.Status == SolutionStatus.CompileError)
+                    {
+                        proccessSolution();
+                        continue;
+                    }
                     finishBuildSolution(result, solution);
                 }
             }
