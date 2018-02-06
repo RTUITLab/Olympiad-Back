@@ -7,12 +7,24 @@ import { error } from 'util';
 import { EndPoints } from './EndPoints';
 import { UserStateService } from './user-state.service';
 import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
+import { LanguageConverter } from '../models/Common/LanguageConverter';
 
 @Injectable()
-export class ExerciseService extends EndPoints {
+export class ExerciseService extends EndPoints implements OnInit {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
+  private exercisesBehavior = new BehaviorSubject<Array<Exercise>>(undefined);
+  public exercisesStream = this.exercisesBehavior.asObservable();
 
+  currentExercises: Array<Exercise>;
+
+  ngOnInit(): void {
+    this.exercisesStream.subscribe(exs => {
+      this.currentExercises = exs;
+    });
+  }
   getExercises(): Observable<Array<Exercise>> {
     let observer: Subscriber<Exercise>;
     const observable = new Observable<Array<Exercise>>(obs => {
@@ -24,6 +36,7 @@ export class ExerciseService extends EndPoints {
       .subscribe(
       success => {
         console.log(success);
+        this.exercisesBehavior.next(success);
         observer.next(success);
       },
       err => {
@@ -45,7 +58,7 @@ export class ExerciseService extends EndPoints {
     formData.append('file', data.File, data.File.name);
 
     this.http.post(
-      `http://${this.ip}:${this.port}/api/check/${data.Language}/${data.ExerciseId}`,
+      `http://${this.ip}:${this.port}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
       formData, { headers: this.userService.authHeaders() })
       .subscribe(
       success => {

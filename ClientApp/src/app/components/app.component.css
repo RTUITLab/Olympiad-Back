@@ -1,12 +1,12 @@
 .gContainer {
     display: grid;
-    grid-template-columns: 30% auto;
+    grid-template-columns: 20% auto;
     grid-template-areas: "header header" "menu content"
 }
 
-div {
+/* div {
     border: 1px solid black;
-}
+} */
 
 .header {
     text-align: center;

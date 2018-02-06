@@ -1,0 +1,11 @@
+ul {
+    list-style: none;
+    margin: 0px;
+    padding: 10px;
+    /* border-bottom: 2px solid gray; */
+}
+
+button {
+    margin: 3px;
+    width: 100%;
+}

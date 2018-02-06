@@ -1,0 +1,3 @@
+﻿FROM microsoft/dotnet:runtime
+
+CMD dotnet /home/home.dll 1> /home/out.txt 2> /home/err.txt 0< /home/in.txt

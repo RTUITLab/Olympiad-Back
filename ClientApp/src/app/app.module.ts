@@ -4,6 +4,7 @@ import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { LoadingModule, ANIMATION_TYPES } from 'ngx-loading';
+import { MarkdownModule } from 'angular2-markdown';
 
 import { AppComponent } from './components/app.component';
 import { RegistrationComponent } from './components/registration/registration.component';
@@ -14,6 +15,8 @@ import { ExercisesListComponent } from './components/exercises/exercises-list/ex
 import { ExerciseService } from './services/exercise.service';
 import { AuthGuardService } from './services/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
+import { MenuComponent } from './components/menu/menu.component';
+import { OverviewComponent } from './components/overview/overview.component';
 
 const routes: Route[] = [
   {
@@ -23,6 +26,10 @@ const routes: Route[] = [
   {
     path: 'login',
     component: LoginComponent
+  },
+  {
+    path: 'overview',
+    component: OverviewComponent
   },
   {
     path: 'exercises',
@@ -37,7 +44,7 @@ const routes: Route[] = [
   {
     path: '',
     pathMatch: 'prefix',
-    redirectTo: '/register'
+    redirectTo: '/overview'
   },
 ];
 
@@ -48,7 +55,9 @@ const routes: Route[] = [
     HeaderComponent,
     LoginComponent,
     ExercisesListComponent,
-    ExerciseInfoComponent
+    ExerciseInfoComponent,
+    MenuComponent,
+    OverviewComponent
   ],
   imports: [
     BrowserModule,
@@ -57,7 +66,8 @@ const routes: Route[] = [
     HttpClientModule,
     LoadingModule.forRoot({
       animationType: ANIMATION_TYPES.cubeGrid
-    })
+    }),
+    MarkdownModule.forRoot()
   ],
   providers: [UserStateService, ExerciseService, AuthGuardService],
   bootstrap: [AppComponent]
