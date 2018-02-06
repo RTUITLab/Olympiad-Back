@@ -6,11 +6,11 @@ namespace Models
 {
     public enum SolutionStatus
     {
+        WrongAnswer,
+        RunTimeError,
+        CompileError,
         InQueue,
         InProcessing,
-        CompileError,
-        RunTimeError,
-        Sucessful,
-        WrongAnswer
+        Sucessful
     }
 }

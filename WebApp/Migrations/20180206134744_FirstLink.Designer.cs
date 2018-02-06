@@ -11,9 +11,10 @@ using System;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180206134744_FirstLink")]
+    partial class FirstLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,10 +179,6 @@ namespace WebApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExerciseId");
-
-                    b.HasIndex("UserId");
-
                     b.ToTable("Solutions");
                 });
 
@@ -287,22 +284,9 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("Models.ExerciseData", b =>
                 {
-                    b.HasOne("Models.Exercise")
+                    b.HasOne("Models.Exercise", "Exercise")
                         .WithMany("ExerciseDatas")
                         .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Models.Solution", b =>
-                {
-                    b.HasOne("Models.Exercise")
-                        .WithMany("Solution")
-                        .HasForeignKey("ExerciseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Models.User")
-                        .WithMany("Solutions")
-                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
