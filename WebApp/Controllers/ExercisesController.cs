@@ -26,9 +26,16 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public List<Exercise> Get()
+        [Route("{exerciseId}")]
+        public IActionResult Get(Guid exerciseId)
         {
-            return applicationDbContext.Exercises.ToList();
+            return Json(applicationDbContext.Exercises.FirstOrDefault(P => P.ExerciseID == exerciseId));
+        }
+
+        [HttpGet]
+        public IActionResult Get()
+        {
+            return Ok();
         }
 
         [HttpPost]
