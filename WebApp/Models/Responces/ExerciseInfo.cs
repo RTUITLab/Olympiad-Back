@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace WebApp.Models.Responces
 {
-    public class ExerciseResponce
+    public class ExerciseInfo
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public int Score { get; set; }
-        public SolutionStatus Status { get; set; }
+        public string TaskText { get; set; }
+        public IEnumerable<Solution> Solutions { get; set; }
     }
 }
