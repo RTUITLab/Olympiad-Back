@@ -7,7 +7,6 @@ namespace Models
     public class ExerciseData
     {
         public Guid Id { get; set; }
-        // public Exercise Exercise { get; set; }
         public Guid ExerciseId { get; set; }
         public string InData { get; set; }
         public string OutData { get; set; }

@@ -51,10 +51,20 @@ namespace WebApp.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var exercises = applicationDbContext
+            return Json(
+                applicationDbContext
                 .Exercises
-                .Select(mapper.Map<ExerciseListResponse>);
-            return Json(exercises);
+                .Select(E => new ExerciseListResponse
+                {
+                    Id = E.ExerciseID,
+                    Name = E.ExerciseName,
+                    Score = E.Score,
+                    Status = E.Solution
+                        .Where(S => S.UserId == UserId)
+                        .Select(S => S.Status)
+                        .Max()
+
+                }));
         }
 
         [HttpPost]
