@@ -24,13 +24,15 @@ namespace WebApp.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IJwtFactory _jwtFactory;
         private readonly IMapper mapper;
+        private readonly ApplicationDbContext context;
         private readonly JwtIssuerOptions _jwtOptions;
 
-        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions, IMapper mapper)
+        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions, IMapper mapper, ApplicationDbContext context)
         {
             _userManager = userManager;
             _jwtFactory = jwtFactory;
             this.mapper = mapper;
+            this.context = context;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -53,6 +55,14 @@ namespace WebApp.Controllers
 
             var loginInfo = mapper.Map<LoginResponse>(user);
             loginInfo.Token = jwt;
+
+            var sum = context
+                 .Exercises
+                 .Where(E => E.Solution.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
+                 .Sum(E => E.Score);
+
+            loginInfo.Token = jwt;
+            loginInfo.TotalScore = sum;
             return Json(loginInfo);
         }
 

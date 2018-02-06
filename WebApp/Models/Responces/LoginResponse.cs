@@ -16,5 +16,7 @@ namespace WebApp.Models.Responces
         public string Token { get; set; }
 
         public string StudentId { get; set; }
+
+        public int TotalScore { get; set; }
     }
 }
