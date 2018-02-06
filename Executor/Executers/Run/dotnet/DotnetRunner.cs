@@ -37,10 +37,15 @@ namespace Executor.Executers.Run.dotnet
             proccess.BeginOutputReadLine();
             Console.WriteLine($"Started bool {success}");
             proccess.WaitForExit();
+
+            var errorData = File.ReadAllText(Path.Combine(binaries.FullName, "err.txt")).TrimEnd();
+            if (errorData != string.Empty)
+                return SolutionStatus.RunTimeError;
+
             var outData = File.ReadAllText(Path.Combine(binaries.FullName, "out.txt")).TrimEnd();
-            Console.WriteLine(outData);
             if (outData == testData.OutData.TrimEnd())
                 return SolutionStatus.Sucessful;
+
             return SolutionStatus.WrongAnswer;
         }
     }
