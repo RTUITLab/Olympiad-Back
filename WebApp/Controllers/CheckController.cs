@@ -38,14 +38,14 @@ namespace WebApp.Controllers
             }
             var stream = file.OpenReadStream();
 
-            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
-            {
-                fileBody = await streamReader.ReadToEndAsync();
-            }
-
             if (!context.Exercises.Any(p => p.ExerciseID == exerciseId))
             {
                 return BadRequest();
+            }
+
+            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+            {
+                fileBody = await streamReader.ReadToEndAsync();
             }
 
             Solution solution = new Solution()
@@ -54,7 +54,8 @@ namespace WebApp.Controllers
                 Language = language,
                 ExerciseId = exerciseId,
                 UserId = Guid.Parse(userManager.GetUserId(User)),
-                Status = SolutionStatus.InQueue
+                Status = SolutionStatus.InQueue,
+                Time = DateTime.Now
             };
 
             await context.Solutions.AddAsync(solution);

@@ -1,0 +1,5 @@
+﻿FROM microsoft/dotnet:sdk
+
+RUN cd /home && dotnet new console && rm Program.cs
+
+CMD dotnet build /home/home.csproj -o /home/src/publicated -c Release --no-dependencies --no-restore
