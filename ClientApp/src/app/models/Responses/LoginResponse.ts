@@ -1,5 +1,7 @@
 export class LoginResponse {
-    id: string;
-    auth_token: string;
-    expires_in: number;
+    Id: string;
+    FirstName: string;
+    Email: string;
+    Token: string;
+    StudentId: string;
 }

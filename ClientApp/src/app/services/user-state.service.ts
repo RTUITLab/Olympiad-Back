@@ -27,13 +27,13 @@ export class UserStateService extends EndPoints {
       .subscribe(
       event => {
         const user: User = {
-          FirstName: event.id,
-          StudentID: event.expires_in.toString(),
-          id: event.id,
-          Token: event.auth_token,
-          UserName: event.id
+          FirstName: event.FirstName,
+          StudentID: event.StudentId,
+          id: event.Id,
+          Token: event.Token,
+          Email: event.Email
         };
-        localStorage.setItem('userToken', event.auth_token);
+        // localStorage.setItem('userToken', event.auth_token);
         console.log(event);
         this.usersBehavior.next(user);
         this.currentUser = user;
