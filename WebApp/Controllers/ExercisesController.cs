@@ -10,18 +10,21 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using WebApp.Models.Responces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Exercises")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ExercisesController : Controller
+    public class ExercisesController : AuthorizeController
     {
         private readonly IMapper mapper;
         private readonly ApplicationDbContext applicationDbContext;
 
-        public ExercisesController(ApplicationDbContext applicationDbContext, IMapper mapper)
+        public ExercisesController(
+            ApplicationDbContext applicationDbContext,
+            IMapper mapper,
+            UserManager<User> userManager) : base(userManager)
         {
             this.applicationDbContext = applicationDbContext;
             this.mapper = mapper;
@@ -31,7 +34,18 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public IActionResult Get(Guid exerciseId)
         {
-            return Json(applicationDbContext.Exercises.FirstOrDefault(P => P.ExerciseID == exerciseId));
+            var ex = applicationDbContext.Exercises.FirstOrDefault(P => P.ExerciseID == exerciseId);
+            if (ex == null)
+            {
+                return NotFound();
+            }
+            var exView = mapper.Map<ExerciseInfo>(ex);
+            var solutions = applicationDbContext
+                .Solutions
+                .Where(S => S.ExerciseId == exView.Id)
+                .Where(S => S.UserId == UserId);
+            exView.Solutions = solutions;
+            return Json(exView);
         }
 
         [HttpGet]
@@ -39,7 +53,7 @@ namespace WebApp.Controllers
         {
             var exercises = applicationDbContext
                 .Exercises
-                .Select(mapper.Map<ExerciseResponce>);
+                .Select(mapper.Map<ExerciseListResponse>);
             return Json(exercises);
         }
 

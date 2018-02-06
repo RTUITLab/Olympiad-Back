@@ -15,16 +15,15 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Check")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    public class CheckController : Controller
+    public class CheckController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
-        private readonly UserManager<User> userManager;
 
-        public CheckController(ApplicationDbContext context, UserManager<User> userManager)
+        public CheckController(
+            ApplicationDbContext context, 
+            UserManager<User> userManager) : base(userManager)
         {
             this.context = context;
-            this.userManager = userManager;
         }
 
         [HttpPost]
@@ -53,7 +52,7 @@ namespace WebApp.Controllers
                 Raw = fileBody,
                 Language = language,
                 ExerciseId = exerciseId,
-                UserId = Guid.Parse(userManager.GetUserId(User)),
+                UserId = UserId,
                 Status = SolutionStatus.InQueue,
                 Time = DateTime.Now
             };
@@ -67,7 +66,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var id = Guid.Parse(userManager.GetUserId(User));
+            var id = UserId;
             return Json(context.Solutions.Where(P => P.UserId == id).ToList());
         }
 
@@ -75,8 +74,7 @@ namespace WebApp.Controllers
         [Route("{solutionId}")]
         public IActionResult Get(Guid solutionId)
         {
-            var id = Guid.Parse(userManager.GetUserId(User));
-            return Json(context.Solutions.FirstOrDefault(P => P.Id == solutionId && P.UserId == id));
+            return Json(context.Solutions.FirstOrDefault(P => P.Id == solutionId && P.UserId == UserId));
         }
     }
 }
