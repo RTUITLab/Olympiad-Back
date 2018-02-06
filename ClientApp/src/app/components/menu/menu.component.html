@@ -14,6 +14,6 @@
 <ul *ngIf="exercises">
   <h2>Задания для выполнения</h2>
   <li *ngFor="let ex of exercises">
-    <button (click)="goToExercise(ex.ExerciseID)" class="exerciseTask">{{ex.ExerciseName}}</button>
+    <button (click)="goToExercise(ex.Id)" class="exerciseTask">{{ex.Name}}</button>
   </li>
 </ul>

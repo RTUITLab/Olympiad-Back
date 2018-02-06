@@ -10,6 +10,7 @@ import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { LanguageConverter } from '../models/Common/LanguageConverter';
+import { ExerciseListResponse } from '../models/Responses/ExerciseListResponse';
 
 @Injectable()
 export class ExerciseService extends EndPoints implements OnInit {
@@ -25,12 +26,12 @@ export class ExerciseService extends EndPoints implements OnInit {
       this.currentExercises = exs;
     });
   }
-  getExercises(): Observable<Array<Exercise>> {
+  getExercises(): Observable<Array<ExerciseListResponse>> {
     let observer: Subscriber<Exercise>;
-    const observable = new Observable<Array<Exercise>>(obs => {
+    const observable = new Observable<Array<ExerciseListResponse>>(obs => {
       observer = obs;
     });
-    this.http.get<Array<Exercise>>(
+    this.http.get<Array<ExerciseListResponse>>(
       `http://${this.ip}:${this.port}/api/exercises`,
       { headers: this.userService.authHeaders() })
       .subscribe(

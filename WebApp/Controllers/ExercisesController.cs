@@ -8,6 +8,8 @@ using Models;
 using WebApp.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using WebApp.Models.Responces;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApp.Controllers
 {
@@ -35,7 +37,10 @@ namespace WebApp.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok();
+            var exercises = applicationDbContext
+                .Exercises
+                .Select(mapper.Map<ExerciseResponce>);
+            return Json(exercises);
         }
 
         [HttpPost]
