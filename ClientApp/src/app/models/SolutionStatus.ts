@@ -1,8 +1,8 @@
 export enum SolutionStatus {
-    InQueue,
-    InProcessing,
     CompileError,
     RunTimeError,
-    Sucessful,
-    WrongAnswer
+    WrongAnswer,
+    InQueue,
+    InProcessing,
+    Sucessful
 }

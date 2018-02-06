@@ -9,3 +9,13 @@ button {
     margin: 3px;
     width: 100%;
 }
+
+.exersiceLi {
+    display: grid;
+    grid-template-columns: 70% auto;
+    width: 100%;
+}
+img {
+    padding: 6px;
+    width: 50%;
+}
