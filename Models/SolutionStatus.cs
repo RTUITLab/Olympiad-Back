@@ -11,6 +11,6 @@ namespace Models
         WrongAnswer,
         InQueue,
         InProcessing,
-        Sucessful,
+        Sucessful
     }
 }
