@@ -11,6 +11,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { LanguageConverter } from '../models/Common/LanguageConverter';
 import { ExerciseListResponse } from '../models/Responses/ExerciseListResponse';
+import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
 
 @Injectable()
 export class ExerciseService extends EndPoints implements OnInit {
@@ -75,5 +76,23 @@ export class ExerciseService extends EndPoints implements OnInit {
 
     return observable;
   }
-
+  getExercise(exId: string): Observable<ExerciseInfo> {
+    let observer: Subscriber<ExerciseInfo>;
+    const observable = new Observable<ExerciseInfo>(obs => {
+      observer = obs;
+    });
+    this.http.get<ExerciseInfo>(
+      `http://${this.ip}:${this.port}/api/exercises/${exId}`,
+      { headers: this.userService.authHeaders() })
+      .subscribe(
+      success => {
+        console.log(success);
+        observer.next(success);
+      },
+      err => {
+        observer.next(undefined);
+        console.log(err);
+      });
+    return observable;
+  }
 }

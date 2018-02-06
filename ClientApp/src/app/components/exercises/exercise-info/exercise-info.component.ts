@@ -8,6 +8,8 @@ import { Solution } from '../../../models/Solution';
 import { SolutionStatus } from '../../../models/SolutionStatus';
 import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusConverter';
 import { LanguageConverter } from '../../../models/Common/LanguageConverter';
+import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'app-exercise-info',
@@ -19,17 +21,8 @@ export class ExerciseInfoComponent implements OnInit {
   constructor(private exercisesService: ExerciseService,
     private route: ActivatedRoute) { }
 
+  exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
-
-  solutions: Solution[] = [
-    {
-      Language: 'Java',
-      ExerciseId: 'lolId',
-      Id: 'LolIf',
-      Raw: 'Source',
-      Status: SolutionStatus.InQueue
-    }
-  ];
 
   get submitDisabled() {
     return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
@@ -40,6 +33,17 @@ export class ExerciseInfoComponent implements OnInit {
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
+        console.log(this.model.ExerciseId);
+        this.exercisesService.getExercise(this.model.ExerciseId)
+        .subscribe(
+          exInfo => {
+            this.exerciseInfo = exInfo;
+            console.log(exInfo);
+          },
+          fail => {
+            console.log(fail);
+          }
+        );
       });
   }
   setFile(event) {
@@ -51,5 +55,9 @@ export class ExerciseInfoComponent implements OnInit {
 
   solutionStatusPresent(status: SolutionStatus): string {
     return SolutionStatusConverter.convertToPretty(status);
+  }
+
+  prettyTime(time: string): string {
+    return Solution.prettyTime(time);
   }
 }
