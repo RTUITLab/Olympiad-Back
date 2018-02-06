@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ using Models;
 using Newtonsoft.Json;
 using WebApp.Auth;
 using WebApp.Helpers;
+using WebApp.Models.Responces;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers
@@ -21,12 +23,14 @@ namespace WebApp.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly IJwtFactory _jwtFactory;
+        private readonly IMapper mapper;
         private readonly JwtIssuerOptions _jwtOptions;
 
-        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions)
+        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions, IMapper mapper)
         {
             _userManager = userManager;
             _jwtFactory = jwtFactory;
+            this.mapper = mapper;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -39,36 +43,39 @@ namespace WebApp.Controllers
                 return BadRequest(ModelState);
             }
 
-            var identity = await GetClaimsIdentity(credentials.UserName, credentials.Password);
+            var (identity, user) = await GetClaimsIdentity(credentials.UserName, credentials.Password);
             if (identity == null)
             {
                 return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));
             }
 
-            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, _jwtOptions);
-            return Json(jwt);
+            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName);
+
+            var loginInfo = mapper.Map<LoginResponse>(user);
+            loginInfo.Token = jwt;
+            return Json(loginInfo);
         }
 
-        private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
+        private async Task<(ClaimsIdentity, User)> GetClaimsIdentity(string userName, string password)
         {
             if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
-                return await Task.FromResult<ClaimsIdentity>(null);
+                return (null, null);
 
             // get the user to verifty
             var userToVerify = await _userManager.FindByNameAsync(userName);
 
-            if (userToVerify == null) return await Task.FromResult<ClaimsIdentity>(null);
+            if (userToVerify == null) return (null, null);
 
             // check the credentials
-            if (await _userManager.CheckPasswordAsync(userToVerify, password) 
+            if (await _userManager.CheckPasswordAsync(userToVerify, password)
                 //&& await _userManager.IsEmailConfirmedAsync(userToVerify)
                 )
             {
-                return await Task.FromResult(_jwtFactory.GenerateClaimsIdentity(userName, userToVerify.Id.ToString()));
+                return (_jwtFactory.GenerateClaimsIdentity(userName, userToVerify.Id.ToString()), userToVerify);
             }
 
             // Credentials are invalid, or account doesn't exist
-            return await Task.FromResult<ClaimsIdentity>(null);
+            return (null, null);
         }
     }
 }
