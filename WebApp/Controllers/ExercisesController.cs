@@ -30,6 +30,36 @@ namespace WebApp.Controllers
             this.mapper = mapper;
         }
 
+        [HttpPut]
+        [Route("{exerciseId}")]
+        public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExercisesViewModel model)
+        {
+            var exe = await applicationDbContext.Exercises.FindAsync(exerciseId);
+
+            if (exe == null)
+            {
+                return NotFound();
+            }
+
+            if (model.ExerciseName != null)
+            {
+                exe.ExerciseName = model.ExerciseName;
+            }
+
+            if (model.ExerciseTask != null)
+            {
+                exe.ExerciseTask = model.ExerciseTask;
+            }
+
+            if (model.Score != -1)
+            {
+                exe.Score = model.Score;
+            }
+
+            await applicationDbContext.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpGet]
         [Route("{exerciseId}")]
         public IActionResult Get(Guid exerciseId)
