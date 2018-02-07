@@ -1,7 +1,7 @@
 .gContainer {
     display: grid;
     width: 100%;
-    grid-template-columns: 20% 80%;
+    grid-template-columns: 300px auto;
     grid-template-areas: "header header" "menu content"
 }
 
