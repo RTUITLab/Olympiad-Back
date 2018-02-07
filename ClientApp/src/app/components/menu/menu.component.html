@@ -15,6 +15,7 @@
   <h2>Задания для выполнения</h2>
   <li class="exersiceLi" *ngFor="let ex of exercises">
     <button (click)="goToExercise(ex.Id)" class="exerciseTask col{{ex.Status}}">{{ex.Name}}</button>
+    <div></div>
     <img src="assets/StatusCode/{{ex.Status}}.svg"/>
   </li>
 </ul>

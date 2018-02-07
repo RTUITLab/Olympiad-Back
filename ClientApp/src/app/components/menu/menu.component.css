@@ -9,12 +9,12 @@ button {
     margin: 3px;
     width: 100%;
     border: none;
-    
+    padding: 3px;
 }
 
 .exersiceLi {
     display: grid;
-    grid-template-columns: 80% auto;
+    grid-template-columns: auto 3% 10%;
     width: 100%;
     margin: 6px;
 }

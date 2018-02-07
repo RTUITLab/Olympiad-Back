@@ -1,8 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
+
 button {
     border-radius: 8px;
     background-color: #008CBA;
     color: white;
     padding: 5px 3px;
     font-size: 16px;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 }
