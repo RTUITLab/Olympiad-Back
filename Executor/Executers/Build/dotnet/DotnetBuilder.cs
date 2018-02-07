@@ -9,14 +9,13 @@ using System.Text;
 
 namespace Executor.Executers.Build.dotnet
 {
+    [Language("csharp")]
     class DotnetBuilder : ProgramBuilder
     {
         public DotnetBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
             : base(proccessSolution, finishBuildSolution)
         {
         }
-
-        protected override string Lang => "csharp";
 
         protected override DirectoryInfo Build(Solution solution)
         {
