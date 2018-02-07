@@ -1,3 +1,28 @@
 img {
-    width: 6%;
+    width: 60%;
+    align-self: center;
+    margin-left: 15%;
+}
+
+.statusDesc {
+    width: 60%;
+    margin: 4px;
+    display: grid;
+    grid-template-columns: 20% auto;
+    padding: 3px;
+    border-left-style: outset;
+    border-left-width: 10px;
+    border-top-left-radius:10px;
+    border-bottom-left-radius: 10px;
+}
+
+.red {
+    border-left-color: rgb(198, 60, 34);
+}
+
+.blue {
+    border-left-color: rgb(39, 59, 122);    
+}
+.green {
+    border-left-color: rgb(50, 186, 124);    
 }
