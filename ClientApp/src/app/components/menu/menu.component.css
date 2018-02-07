@@ -8,14 +8,21 @@ ul {
 button {
     margin: 3px;
     width: 100%;
+    border: none;
+    
 }
 
 .exersiceLi {
     display: grid;
-    grid-template-columns: 70% auto;
+    grid-template-columns: 80% auto;
     width: 100%;
+    margin: 6px;
 }
 img {
-    padding: 6px;
-    width: 50%;
+    margin: auto;
+    height: 80%;
+}
+.col5 {
+    /* background-color: green; */
+    background-color: rgba(50, 186, 125, 0.836);
 }

@@ -14,7 +14,7 @@
 <ul *ngIf="exercises">
   <h2>Задания для выполнения</h2>
   <li class="exersiceLi" *ngFor="let ex of exercises">
-    <button (click)="goToExercise(ex.Id)" class="exerciseTask">{{ex.Name}}</button>
-    <img src="assets/StatusIcons/{{ex.Status}}.png"/>
+    <button (click)="goToExercise(ex.Id)" class="exerciseTask col{{ex.Status}}">{{ex.Name}}</button>
+    <img src="assets/StatusCode/{{ex.Status}}.svg"/>
   </li>
 </ul>

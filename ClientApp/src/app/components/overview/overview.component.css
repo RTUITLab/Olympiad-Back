@@ -1,7 +1,7 @@
 img {
     width: 60%;
     align-self: center;
-    margin-left: 15%;
+    margin: auto;
 }
 
 .statusDesc {
@@ -17,12 +17,17 @@ img {
 }
 
 .red {
-    border-left-color: rgb(198, 60, 34);
+    border-left-color: rgb(216, 0, 39);
 }
 
 .blue {
-    border-left-color: rgb(39, 59, 122);    
+    border-left-color: rgb(38, 111, 232);    
 }
+
 .green {
     border-left-color: rgb(50, 186, 124);    
+}
+
+.container {
+    margin-left: 15px;
 }
