@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf="exerciseInfo">
   <h1>{{exerciseInfo.Name}}</h1>
   <h3>Баллы за выполнение: {{exerciseInfo.Score}}</h3>
   <p>
@@ -32,7 +32,7 @@
     <tbody *ngIf="exerciseInfo">
       <tr *ngFor="let sol of exerciseInfo.Solutions">
         <td>{{prettyTime(sol.Time)}}</td>
-        <td>{{sol.Language}}</td>
+        <td>{{normalLang(sol.Language)}}</td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>
       </tr>
     </tbody>
