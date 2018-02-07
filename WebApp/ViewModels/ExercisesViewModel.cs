@@ -10,6 +10,6 @@ namespace WebApp.ViewModels
     {
         public string ExerciseName { get; set; }
         public string ExerciseTask { get; set; }
-        public int Score { get; set; }
+        public int Score { get; set; } = -1;
     }
 }
