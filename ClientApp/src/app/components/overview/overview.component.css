@@ -1,5 +1,7 @@
 img {
+    /* height: 100%; */
     width: 60%;
+    max-height: 100px;
     /* align-self: center; */
     margin: auto;
 }
@@ -14,6 +16,11 @@ img {
     border-left-width: 10px;
     border-top-left-radius:10px;
     border-bottom-left-radius: 10px;
+}
+
+.statusDesc p {
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 .red {
