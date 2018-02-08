@@ -16,7 +16,6 @@ namespace Executor.Executers.Build
         private readonly Action proccessSolution;
         private readonly Action<DirectoryInfo, Solution> finishBuildSolution;
 
-        protected abstract string Lang { get; }
         protected abstract DirectoryInfo Build(Solution solution);
 
 
@@ -31,7 +30,6 @@ namespace Executor.Executers.Build
         }
         public void Add(Solution solution)
         {
-            if (solution.Language != Lang) throw new ArgumentException("solution language not supported");
             if (solutionsQueue.Any(S => S.Id == solution.Id)) return;
             solutionsQueue.Enqueue(solution);
             buildingSemaphore.Release();

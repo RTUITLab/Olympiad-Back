@@ -16,7 +16,6 @@ namespace Executor.Executers.Run
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
         private readonly Action proccessSolution;
 
-        protected abstract string Lang { get; }
         protected abstract SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData);
 
         private Task runningTask;
@@ -32,7 +31,6 @@ namespace Executor.Executers.Run
 
         public void Add(Solution solution, ExerciseData[] datas, DirectoryInfo binaries)
         {
-            if (solution.Language != Lang) throw new ArgumentException("solution language not supported");
             if (solutionsQueue.Any(S => S.solution.Id == solution.Id)) return;
             solutionsQueue.Enqueue((solution, datas, binaries));
             runningSemaphore.Release();
