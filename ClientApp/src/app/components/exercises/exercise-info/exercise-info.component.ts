@@ -35,7 +35,7 @@ export class ExerciseInfoComponent implements OnInit {
         this.model.ExerciseId = params.get('ExerciseID');
         console.log(this.model.ExerciseId);
         this.exercisesService.getExercise(this.model.ExerciseId)
-        .subscribe(
+          .subscribe(
           exInfo => {
             this.exerciseInfo = exInfo;
             console.log(exInfo);
@@ -43,14 +43,32 @@ export class ExerciseInfoComponent implements OnInit {
           fail => {
             console.log(fail);
           }
-        );
+          );
       });
   }
   setFile(event) {
     this.model.File = event.srcElement.files[0];
   }
   onSubmit() {
-    this.exercisesService.sendSolution(this.model);
+    this.exercisesService.sendSolution(this.model)
+      .subscribe(
+      success => {
+        setInterval(() => {
+          console.log('Go to check!');
+          this.exercisesService.checkSolution(success).subscribe(
+            solution => {
+              console.log('Checked!');
+              console.log(solution);
+              const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
+              if (!target) {
+                this.exerciseInfo.Solutions.push(solution);
+              } else {
+                target.Status = solution.Status;
+              }
+            });
+        }, 1000);
+      }
+      );
   }
 
   solutionStatusPresent(status: SolutionStatus): string {
@@ -59,5 +77,9 @@ export class ExerciseInfoComponent implements OnInit {
 
   prettyTime(time: string): string {
     return Solution.prettyTime(time);
+  }
+
+  normalLang(lang: string): string {
+    return LanguageConverter.normalFromWeb(lang);
   }
 }

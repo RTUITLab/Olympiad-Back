@@ -12,6 +12,8 @@ import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { LanguageConverter } from '../models/Common/LanguageConverter';
 import { ExerciseListResponse } from '../models/Responses/ExerciseListResponse';
 import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
+import { SolutionStatus } from '../models/SolutionStatus';
+import { Solution } from '../models/Solution';
 
 @Injectable()
 export class ExerciseService extends EndPoints implements OnInit {
@@ -61,10 +63,11 @@ export class ExerciseService extends EndPoints implements OnInit {
 
     this.http.post(
       `http://${this.ip}:${this.port}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
-      formData, { headers: this.userService.authHeaders() })
+      formData, { headers: this.userService.authHeaders(), responseType: 'text' })
       .subscribe(
       success => {
         console.log(success);
+        observer.next(success);
         console.log('sended');
       },
       fail => {
@@ -93,6 +96,21 @@ export class ExerciseService extends EndPoints implements OnInit {
         observer.next(undefined);
         console.log(err);
       });
+    return observable;
+  }
+
+  checkSolution(solutionId: string): Observable<Solution> {
+    let observer: Subscriber<Solution>;
+    const observable = new Observable<Solution>(obs => {
+      observer = obs;
+    });
+    this.http.get<Solution>(
+      `http://${this.ip}:${this.port}/api/check/${solutionId}`,
+      { headers: this.userService.authHeaders() }).subscribe(
+      success => {
+        observer.next(success);
+      }
+      );
     return observable;
   }
 }

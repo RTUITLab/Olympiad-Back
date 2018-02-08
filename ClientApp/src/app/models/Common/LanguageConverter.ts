@@ -43,6 +43,10 @@ export class LanguageConverter {
     public static webName(language: string) {
         return LanguageConverter.info.find(LI => LI.language === language).webName;
     }
+
+    public static normalFromWeb(language: string) {
+        return LanguageConverter.info.find(LI => LI.webName === language).language;
+    }
 }
 
 

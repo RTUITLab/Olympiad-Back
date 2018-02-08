@@ -7,13 +7,13 @@ using Models;
 
 namespace Executor.Executers.Run.dotnet
 {
+    [Language("csharp")]
     class DotnetRunner : ProgramRunner
     {
         public DotnetRunner(Action proccessSolution) : base(proccessSolution)
         {
         }
 
-        protected override string Lang => "csharp";
 
         protected override SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData)
         {
