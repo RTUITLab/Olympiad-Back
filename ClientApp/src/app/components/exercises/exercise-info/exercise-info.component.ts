@@ -36,13 +36,13 @@ export class ExerciseInfoComponent implements OnInit {
         console.log(this.model.ExerciseId);
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
-          exInfo => {
-            this.exerciseInfo = exInfo;
-            console.log(exInfo);
-          },
-          fail => {
-            console.log(fail);
-          }
+            exInfo => {
+              this.exerciseInfo = exInfo;
+              console.log(exInfo);
+            },
+            fail => {
+              console.log(fail);
+            }
           );
       });
   }
@@ -52,23 +52,25 @@ export class ExerciseInfoComponent implements OnInit {
   onSubmit() {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
-      success => {
-        setInterval(() => {
-          console.log('Go to check!');
-          this.exercisesService.checkSolution(success).subscribe(
-            solution => {
-              console.log('Checked!');
-              console.log(solution);
-              const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
-              if (!target) {
-                this.exerciseInfo.Solutions.push(solution);
-              } else {
-                target.Status = solution.Status;
-              }
-            });
-        }, 1000);
-      }
+        success => {
+          this.solutionCheckLoop(success);
+        }
       );
+  }
+  solutionCheckLoop(solutionId: string) {
+    this.exercisesService.checkSolution(solutionId).subscribe(
+      solution => {
+        const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
+        if (!target) {
+          this.exerciseInfo.Solutions.unshift(solution);
+        } else {
+          target.Status = solution.Status;
+        }
+        if (solution.Status === SolutionStatus.InQueue ||
+          solution.Status === SolutionStatus.InProcessing) {
+          setTimeout(this.solutionCheckLoop, 800);
+        }
+      });
   }
 
   solutionStatusPresent(status: SolutionStatus): string {

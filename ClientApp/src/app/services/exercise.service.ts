@@ -89,6 +89,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       { headers: this.userService.authHeaders() })
       .subscribe(
       success => {
+        success.Solutions = success.Solutions.reverse();
         console.log(success);
         observer.next(success);
       },

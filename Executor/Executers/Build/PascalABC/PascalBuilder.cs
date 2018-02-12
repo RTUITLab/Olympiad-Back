@@ -1,19 +1,17 @@
-﻿using Models;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Models;
 
-namespace Executor.Executers.Build.dotnet
+namespace Executor.Executers.Build.PascalABC
 {
-    [Language("csharp")]
-    class DotnetBuilder : ProgramBuilder
+    [Language("pasabc")]
+    class PascalBuilder : ProgramBuilder
     {
-        public DotnetBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
-            : base(proccessSolution, finishBuildSolution)
+        public PascalBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
         {
         }
 
@@ -21,8 +19,7 @@ namespace Executor.Executers.Build.dotnet
         {
             var testDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             Console.WriteLine($"new dir is {testDir.FullName}");
-            File.WriteAllText(Path.Combine(testDir.FullName, "Program.cs"), solution.Raw, Encoding.UTF8);
-
+            File.WriteAllText(Path.Combine(testDir.FullName, "Program.pas"), solution.Raw, Encoding.UTF8);
 
             var proccess = new Process()
             {
@@ -32,12 +29,12 @@ namespace Executor.Executers.Build.dotnet
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     FileName = "docker",
-                    Arguments = $"run --rm -v {testDir.FullName}:/home/src builder:dotnet"
+                    Arguments = $"run --rm -v {testDir.FullName}:/src builder:pasabc"
                 },
             };
             SolutionStatus solStatus = SolutionStatus.InProcessing;
             proccess.OutputDataReceived += (D, E) => Proccess_OutputDataReceived(D, E, ref solStatus);
-            proccess.ErrorDataReceived += (D, E) => Proccess_OutputDataReceived(D, E, ref solStatus);
+            proccess.ErrorDataReceived += (E, A) => Proccess_OutputDataReceived(E, A, ref solStatus);
             var success = proccess.Start();
             proccess.BeginErrorReadLine();
             proccess.BeginOutputReadLine();
@@ -49,21 +46,14 @@ namespace Executor.Executers.Build.dotnet
                 solution.Status = SolutionStatus.CompileError;
                 return null;
             }
-            var publishDir = testDir.GetDirectories("publicated").FirstOrDefault();
-            var nextFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.Move(publishDir.FullName, nextFolderPath);
-            testDir.Delete(true);
-            return new DirectoryInfo(nextFolderPath);
+            return testDir;
         }
-
         private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
         {
-            if (e.Data?.Contains("Build FAILED") == true)
+            if (e.Data?.Contains("Compile errors:") == true)
             {
                 status = SolutionStatus.CompileError;
             }
         }
     }
-
 }
-

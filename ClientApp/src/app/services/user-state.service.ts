@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
 import { EndPoints } from './EndPoints';
 import { LoginResponse } from '../models/Responses/LoginResponse';
+
 @Injectable()
 export class UserStateService extends EndPoints {
 
@@ -26,18 +27,7 @@ export class UserStateService extends EndPoints {
     this.http.post<LoginResponse>(`http://${this.ip}:${this.port}/api/auth/login`, model, { responseType: 'json' })
       .subscribe(
       event => {
-        const user: User = {
-          FirstName: event.FirstName,
-          StudentID: event.StudentId,
-          id: event.Id,
-          Token: event.Token,
-          Email: event.Email
-        };
-        // localStorage.setItem('userToken', event.auth_token);
-        console.log(event);
-        this.usersBehavior.next(user);
-        this.currentUser = user;
-
+        this.InitUser(event);
         observer.next(event);
       },
       error => observer.error('Неверные email/пароль')
@@ -57,12 +47,31 @@ export class UserStateService extends EndPoints {
       );
     return observable;
   }
+  public GetMe(token: string): void {
+    this.http.get<LoginResponse>(`http://${this.ip}:${this.port}/api/auth/getme`,
+      { headers: { 'Authorization': `Bearer ${token}` } })
+      .subscribe(
+        response => {
+          this.InitUser(response);
+        }
+      );
+  }
 
-
-
+  private InitUser(response: LoginResponse) {
+    const user: User = {
+      FirstName: response.FirstName,
+      StudentID: response.StudentId,
+      id: response.Id,
+      Token: response.Token,
+      Email: response.Email
+    };
+    localStorage.setItem('userToken', response.Token);
+    this.usersBehavior.next(user);
+    this.currentUser = user;
+  }
   public authHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'Authorization': `Bearer ${this.currentUser.Token}`
+      'Authorization': `Bearer ${localStorage.getItem('userToken')}`
     });
   }
 }

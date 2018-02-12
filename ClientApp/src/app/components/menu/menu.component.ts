@@ -21,6 +21,7 @@ export class MenuComponent implements OnInit {
 
   ngOnInit() {
     this.usersService.currentUserStream.subscribe(U => this.user = U);
+    this.exercisesService.getExercises();
     this.exercisesService.exercisesStream.subscribe(exercises => this.exercises = exercises);
   }
 

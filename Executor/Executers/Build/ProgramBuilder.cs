@@ -32,14 +32,21 @@ namespace Executor.Executers.Build
         {
             if (solutionsQueue.Any(S => S.Id == solution.Id)) return;
             solutionsQueue.Enqueue(solution);
-            buildingSemaphore.Release();
+            try
+            {
+                buildingSemaphore.Release();
+            }
+            catch (SemaphoreFullException)
+            {
+            }
+            catch { throw; }
         }
         private async Task BuildLoop()
         {
             while (true)
             {
                 await buildingSemaphore.WaitAsync();
-                while(solutionsQueue.TryDequeue(out var solution))
+                while (solutionsQueue.TryDequeue(out var solution))
                 {
                     solution.Status = SolutionStatus.InProcessing;
                     proccessSolution();

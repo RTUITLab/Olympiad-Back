@@ -1,5 +1,5 @@
 ﻿FROM mono:latest
 
-RUN curl http://pascalabc.net/downloads/PABCNETC.zip --output /home/pasabc.zip && apt-get update && apt-get install -y zip && unzip /home/pasabc.zip -d /home/pasabc && apt-get purge zip
+RUN curl http://pascalabc.net/downloads/PABCNETC.zip --output /home/pasabc.zip && apt-get update && apt-get install -y zip && unzip /home/pasabc.zip -d /pasbuilder && apt-get purge -y zip
 
-CMD mono /home/pasabc/pabcnetcclear.exe /home/pasabc/src/Program.pas
+CMD mono /pasbuilder/pabcnetcclear.exe /src/Program.pas
