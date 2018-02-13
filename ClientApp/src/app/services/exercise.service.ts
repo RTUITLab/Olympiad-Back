@@ -105,7 +105,13 @@ export class ExerciseService extends EndPoints implements OnInit {
       `http://${this.ip}:${this.port}/api/check/${solutionId}`,
       { headers: this.userService.authHeaders() }).subscribe(
       success => {
-        observer.next(success);
+        if (success) {
+          observer.next(success);
+        }
+      },
+      failure => {
+        console.log('error');
+        console.log(failure);
       }
       );
     return observable;
