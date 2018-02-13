@@ -30,10 +30,8 @@ export class ExerciseService extends EndPoints implements OnInit {
     });
   }
   getExercises(): Observable<Array<ExerciseListResponse>> {
-    let observer: Subscriber<Exercise>;
-    const observable = new Observable<Array<ExerciseListResponse>>(obs => {
-      observer = obs;
-    });
+    const observer = new BehaviorSubject<Array<ExerciseListResponse>>(undefined);
+    const observable = observer.asObservable();
     this.http.get<Array<ExerciseListResponse>>(
       `http://${this.ip}:${this.port}/api/exercises`,
       { headers: this.userService.authHeaders() })
@@ -53,10 +51,8 @@ export class ExerciseService extends EndPoints implements OnInit {
 
 
   sendSolution(data: SolutionViewModel): Observable<string> {
-    let observer: Subscriber<string>;
-    const observable = new Observable<string>(obs => {
-      observer = obs;
-    });
+    const observer = new BehaviorSubject<string>(undefined);
+    const observable = observer.asObservable();
 
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);

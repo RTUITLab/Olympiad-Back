@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,8 +17,11 @@ namespace Executor.Executers.Build
         private readonly Action proccessSolution;
         private readonly Action<DirectoryInfo, Solution> finishBuildSolution;
 
-        protected abstract DirectoryInfo Build(Solution solution);
-
+        //protected abstract DirectoryInfo Build(Solution solution);
+        protected abstract string ProgramFileName { get; }
+        protected abstract string DockerImageName { get; }
+        protected abstract string BuildFailedCondition { get; }
+        protected abstract string GetBinariesDirectory(DirectoryInfo startDir);
 
         private Task buildingTask;
         private SemaphoreSlim buildingSemaphore;
@@ -58,6 +62,49 @@ namespace Executor.Executers.Build
                     }
                     finishBuildSolution(result, solution);
                 }
+            }
+        }
+
+        private DirectoryInfo Build(Solution solution)
+        {
+            var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+            Console.WriteLine($"new dir is {sourceDir.FullName}");
+            File.WriteAllText(Path.Combine(sourceDir.FullName, ProgramFileName), solution.Raw, Encoding.UTF8);
+
+            var proccess = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    FileName = "docker",
+                    Arguments = $"run --rm -v {sourceDir.FullName}:/src/src {DockerImageName}"
+                },
+            };
+
+            SolutionStatus solStatus = SolutionStatus.InProcessing;
+            proccess.OutputDataReceived += (D, E) => Proccess_OutputDataReceived(D, E, ref solStatus);
+            proccess.ErrorDataReceived += (E, A) => Proccess_OutputDataReceived(E, A, ref solStatus);
+            var success = proccess.Start();
+            proccess.BeginErrorReadLine();
+            proccess.BeginOutputReadLine();
+            proccess.WaitForExit();
+            if (solStatus == SolutionStatus.CompileError)
+            {
+                solution.Status = SolutionStatus.CompileError;
+                return null;
+            }
+            var binPath = GetBinariesDirectory(sourceDir);
+            var newBinPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.Move(binPath, newBinPath);
+            return new DirectoryInfo(newBinPath);
+        }
+        private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
+        {
+            if (e.Data?.Contains("Compile errors:") == true)
+            {
+                status = SolutionStatus.CompileError;
             }
         }
     }

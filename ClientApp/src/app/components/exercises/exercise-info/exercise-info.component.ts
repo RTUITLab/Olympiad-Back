@@ -53,11 +53,13 @@ export class ExerciseInfoComponent implements OnInit {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
         success => {
-          this.solutionCheckLoop(success);
+          const f = () => this.solutionCheckLoop(success);
+          f();
         }
       );
   }
   solutionCheckLoop(solutionId: string) {
+    console.log(this);
     this.exercisesService.checkSolution(solutionId).subscribe(
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
