@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,8 @@ namespace Executor.Executers.Run
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
         private readonly Action proccessSolution;
 
-        protected abstract SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData);
+        protected abstract string DockerImageName { get; }
+
 
         private Task runningTask;
         private SemaphoreSlim runningSemaphore;
@@ -60,6 +62,48 @@ namespace Executor.Executers.Run
             }
             task.solution.Status = result;
             proccessSolution();
+        }
+
+        protected SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData)
+        {
+            File.WriteAllText(Path.Combine(binaries.FullName, "in.txt"), testData.InData);
+            var proccess = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    FileName = "docker",
+                    Arguments = $"run --rm -v {binaries.FullName}:/src {DockerImageName}"
+                },
+            };
+
+            proccess.OutputDataReceived += (E, A) => { };
+            proccess.ErrorDataReceived += (E, A) => { };
+            var success = proccess.Start();
+            proccess.BeginErrorReadLine();
+            proccess.BeginOutputReadLine();
+            Console.WriteLine($"Started bool {success}");
+            proccess.WaitForExit();
+
+            var status = CheckSolution(binaries.FullName, testData.OutData);
+            binaries.Delete(true);
+
+            return status;
+        }
+
+        private SolutionStatus CheckSolution(string filesPath, string correctOut)
+        {
+            var errorData = File.ReadAllText(Path.Combine(filesPath, "err.txt")).TrimEnd();
+            if (errorData != string.Empty)
+                return SolutionStatus.RunTimeError;
+
+            var outData = File.ReadAllText(Path.Combine(filesPath, "out.txt")).TrimEnd();
+            if (outData == correctOut.TrimEnd())
+                return SolutionStatus.Sucessful;
+
+            return SolutionStatus.WrongAnswer;
         }
     }
 }
