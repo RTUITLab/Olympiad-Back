@@ -36,13 +36,13 @@ export class ExerciseInfoComponent implements OnInit {
         console.log(this.model.ExerciseId);
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
-            exInfo => {
-              this.exerciseInfo = exInfo;
-              console.log(exInfo);
-            },
-            fail => {
-              console.log(fail);
-            }
+          exInfo => {
+            this.exerciseInfo = exInfo;
+            console.log(exInfo);
+          },
+          fail => {
+            console.log(fail);
+          }
           );
       });
   }
@@ -52,10 +52,10 @@ export class ExerciseInfoComponent implements OnInit {
   onSubmit() {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
-        success => {
-          const f = () => this.solutionCheckLoop(success);
-          f();
-        }
+      success => {
+        const f = () => this.solutionCheckLoop(success);
+        f();
+      }
       );
   }
   solutionCheckLoop(solutionId: string) {
@@ -70,7 +70,7 @@ export class ExerciseInfoComponent implements OnInit {
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
-          setTimeout(this.solutionCheckLoop, 800);
+          setTimeout(() => this.solutionCheckLoop(solutionId), 800);
         }
       });
   }
