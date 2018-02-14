@@ -102,7 +102,7 @@ namespace Executor.Executers.Build
         }
         private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
         {
-            if (e.Data?.Contains("Compile errors:") == true)
+            if (e.Data?.Contains(BuildFailedCondition) == true)
             {
                 status = SolutionStatus.CompileError;
             }

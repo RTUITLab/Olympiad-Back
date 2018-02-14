@@ -7,9 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Executor.Executers.Build.dotnet
+namespace Executor.Executers.Build.Java
 {
-    [Language("csharp")]
+    [Language("java")]
     class JavaBuilder : ProgramBuilder
     {
         public JavaBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
@@ -17,14 +17,14 @@ namespace Executor.Executers.Build.dotnet
         {
         }
 
-        protected override string ProgramFileName => "Program.cs";
+        protected override string ProgramFileName => "Main.java";
 
-        protected override string DockerImageName => "builder:dotnet";
+        protected override string DockerImageName => "builder:java";
 
-        protected override string BuildFailedCondition => "Build FAILED";
+        protected override string BuildFailedCondition => "errors";
 
         protected override string GetBinariesDirectory(DirectoryInfo startDir)
-            => Path.Combine(startDir.FullName, "pub");
+            => startDir.FullName;
     }
 
 }

@@ -5,15 +5,15 @@ using System.IO;
 using System.Text;
 using Models;
 
-namespace Executor.Executers.Run.dotnet
+namespace Executor.Executers.Run.Java
 {
-    [Language("csharp")]
+    [Language("java")]
     class JavaRunner : ProgramRunner
     {
         public JavaRunner(Action proccessSolution) : base(proccessSolution)
         {
         }
 
-        protected override string DockerImageName => "runner:dotnet";
+        protected override string DockerImageName => "runner:java";
     }
 }
