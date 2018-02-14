@@ -1,0 +1,3 @@
+﻿FROM openjdk
+
+CMD javac /src/src/Main.java
