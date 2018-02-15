@@ -51,7 +51,7 @@ namespace WebApp.Controllers
                 return BadRequest();
             }
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]RegistrationViewModel model)
         {
@@ -72,5 +72,4 @@ namespace WebApp.Controllers
             return new OkObjectResult("Account created");
         }
     }
-
 }

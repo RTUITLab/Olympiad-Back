@@ -15,12 +15,13 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Check")]
+    [Authorize(Roles = "User")]
     public class CheckController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
 
         public CheckController(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             UserManager<User> userManager) : base(userManager)
         {
             this.context = context;

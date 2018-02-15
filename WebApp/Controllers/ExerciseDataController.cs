@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 
@@ -13,15 +14,16 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/ExerciseData")]
-    [Authorize(AuthenticationSchemes = "Bearer")]
-    public class ExerciseDataController : Controller
+    [Authorize(Roles = "Admin")]
+    public class ExerciseDataController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
 
-        public ExerciseDataController(ApplicationDbContext context)
+        public ExerciseDataController(ApplicationDbContext context, UserManager<User> userManager) : base(userManager)
         {
             this.context = context;
         }
+
 
         [HttpPost]
         [Route("{exerciseId}")]

@@ -16,6 +16,7 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Exercises")]
+    [Authorize(Roles = "Admin")]
     public class ExercisesController : AuthorizeController
     {
         private readonly IMapper mapper;
