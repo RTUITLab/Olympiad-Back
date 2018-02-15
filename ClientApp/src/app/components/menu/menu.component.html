@@ -16,6 +16,6 @@
   <li class="exersiceLi" *ngFor="let ex of exercises">
     <button (click)="goToExercise(ex.Id)" class="exerciseTask col{{ex.Status}}">{{ex.Name}}</button>
     <div></div>
-    <img src="assets/StatusCode/{{ex.Status}}.svg"/>
+    <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg"/>
   </li>
 </ul>

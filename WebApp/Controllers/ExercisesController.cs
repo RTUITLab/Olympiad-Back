@@ -89,9 +89,10 @@ namespace WebApp.Controllers
                     Id = E.ExerciseID,
                     Name = E.ExerciseName,
                     Score = E.Score,
-                    Status = E.Solution
+                    Status = (SolutionStatus)E.Solution
                         .Where(S => S.UserId == UserId)
-                        .Select(S => S.Status)
+                        .Select(S => (int)S.Status)
+                        .DefaultIfEmpty(-1)
                         .Max()
 
                 }));

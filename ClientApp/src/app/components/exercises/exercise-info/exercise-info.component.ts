@@ -19,8 +19,6 @@ import { Subject } from 'rxjs/Subject';
 export class ExerciseInfoComponent implements OnInit {
 
 
-  displayedColumns = ['time', 'language', 'status', 'statusIcon'];
-
 
   constructor(private exercisesService: ExerciseService,
     private route: ActivatedRoute) { }
@@ -68,7 +66,7 @@ export class ExerciseInfoComponent implements OnInit {
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
         if (!target) {
-          this.exerciseInfo.Solutions.unshift(solution);
+          this.exerciseInfo.Solutions.push(solution);
         } else {
           target.Status = solution.Status;
         }
