@@ -69,7 +69,7 @@ namespace Executor.Executers.Build
         {
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             Console.WriteLine($"new dir is {sourceDir.FullName}");
-            File.WriteAllText(Path.Combine(sourceDir.FullName, ProgramFileName), solution.Raw, Encoding.UTF8);
+            File.WriteAllText(Path.Combine(sourceDir.FullName, ProgramFileName), solution.Raw, new UTF8Encoding(false));
 
             var proccess = new Process()
             {
@@ -102,7 +102,7 @@ namespace Executor.Executers.Build
         }
         private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
         {
-            if (e.Data?.Contains("Compile errors:") == true)
+            if (e.Data?.Contains(BuildFailedCondition) == true)
             {
                 status = SolutionStatus.CompileError;
             }
