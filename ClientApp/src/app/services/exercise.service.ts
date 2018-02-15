@@ -19,15 +19,10 @@ import { Solution } from '../models/Solution';
 export class ExerciseService extends EndPoints implements OnInit {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
-  private exercisesBehavior = new BehaviorSubject<Array<Exercise>>(undefined);
-  public exercisesStream = this.exercisesBehavior.asObservable();
-
-  currentExercises: Array<Exercise>;
+  private solutionsBehavior = new BehaviorSubject<Solution>(undefined);
+  public solutionStream = this.solutionsBehavior.asObservable();
 
   ngOnInit(): void {
-    this.exercisesStream.subscribe(exs => {
-      this.currentExercises = exs;
-    });
   }
   getExercises(): Observable<Array<ExerciseListResponse>> {
     const observer = new BehaviorSubject<Array<ExerciseListResponse>>(undefined);
@@ -38,7 +33,6 @@ export class ExerciseService extends EndPoints implements OnInit {
       .subscribe(
       success => {
         console.log(success);
-        this.exercisesBehavior.next(success);
         observer.next(success);
       },
       err => {
@@ -106,6 +100,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       success => {
         if (success) {
           observer.next(success);
+          this.solutionsBehavior.next(success);
         }
       },
       failure => {

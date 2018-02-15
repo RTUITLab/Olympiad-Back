@@ -4,6 +4,8 @@ import { UserStateService } from '../../services/user-state.service';
 import { User } from '../../models/User';
 import { ExerciseService } from '../../services/exercise.service';
 import { Exercise } from '../../models/Exercise';
+import { ExercisesListComponent } from '../exercises/exercises-list/exercises-list.component';
+import { ExerciseListResponse } from '../../models/Responses/ExerciseListResponse';
 
 @Component({
   selector: 'app-menu',
@@ -13,7 +15,7 @@ import { Exercise } from '../../models/Exercise';
 export class MenuComponent implements OnInit {
 
   user: User;
-  exercises: Array<Exercise>;
+  exercises: ExerciseListResponse[];
   constructor(
     private router: Router,
     private usersService: UserStateService,
@@ -21,8 +23,22 @@ export class MenuComponent implements OnInit {
 
   ngOnInit() {
     this.usersService.currentUserStream.subscribe(U => this.user = U);
-    this.exercisesService.getExercises();
-    this.exercisesService.exercisesStream.subscribe(exercises => this.exercises = exercises);
+    this.exercisesService.getExercises()
+      .subscribe(exercises => this.exercises = exercises);
+    this.exercisesService.solutionStream.subscribe(S => {
+      if (!S) {
+        return;
+      }
+      const targetEx = this.exercises.find(E => E.Id === S.ExerciseId);
+      console.log('target ex');
+      console.log(targetEx);
+      console.log(S);
+      if (targetEx) {
+        if (targetEx.Status < S.Status) {
+          targetEx.Status = S.Status;
+        }
+      }
+    });
   }
 
   login() {

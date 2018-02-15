@@ -2,9 +2,9 @@ import {Guid} from 'guid';
 
 export class Exercise {
     constructor(
-        ExerciseName?: string,
-        ExerciseID?: Guid,
-        ExerciseTask?: string,
-        Score?: number
+        public ExerciseName?: string,
+        public ExerciseID?: Guid,
+        public ExerciseTask?: string,
+        public Score?: number
     ) {}
 }
