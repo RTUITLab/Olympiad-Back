@@ -14,15 +14,15 @@ namespace Executor
 {
     class Executor
     {
-        private ApplicationDbContext db;
+        private DbManager dbManager;
         private readonly Dictionary<string, ExecuteWorker> executeWorkers;
-        private object connectionString;
 
         public Executor(string dbConnectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
             optionsBuilder.UseSqlServer(dbConnectionString);
-            db = new ApplicationDbContext(optionsBuilder.Options);
+            var db = new ApplicationDbContext(optionsBuilder.Options);
+            dbManager = new DbManager(db);
             executeWorkers = Assembly
                 .GetExecutingAssembly()
                 .GetTypes()
@@ -34,10 +34,8 @@ namespace Executor
                     G.Key,
                     G.First(T => T.BaseType == typeof(ProgramBuilder)),
                     G.First(T => T.BaseType == typeof(ProgramRunner)),
-                    () => db.SaveChanges(),
-                    I => db.TestData
-                        .Where(D => D.ExerciseId == I)
-                        .ToArray()
+                    () => dbManager.SaveChanges(),
+                    I => dbManager.GetExerciseData(I)
                     ))
                 .ToDictionary(E => E.Lang);
         }
@@ -46,11 +44,8 @@ namespace Executor
         {
             while (true)
             {
-                db
-                .Solutions
-                .Where(S => S.Status == SolutionStatus.InQueue)
-                .ToList()
-                .ForEach(S => executeWorkers[S.Language].Handle(S));
+                dbManager.GetInQueueSolutions()
+                    .ForEach(S => executeWorkers[S.Language].Handle(S));
                 Thread.Sleep(TimeSpan.FromSeconds(10));
                 Console.WriteLine("end sleep");
             }

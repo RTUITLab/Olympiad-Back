@@ -1,0 +1,3 @@
+﻿FROM openjdk
+
+CMD javac -encoding UTF8 /src/src/Main.java

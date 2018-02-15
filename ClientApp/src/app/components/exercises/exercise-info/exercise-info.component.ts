@@ -18,6 +18,8 @@ import { Subject } from 'rxjs/Subject';
 })
 export class ExerciseInfoComponent implements OnInit {
 
+
+
   constructor(private exercisesService: ExerciseService,
     private route: ActivatedRoute) { }
 
@@ -53,22 +55,26 @@ export class ExerciseInfoComponent implements OnInit {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
       success => {
-        setInterval(() => {
-          console.log('Go to check!');
-          this.exercisesService.checkSolution(success).subscribe(
-            solution => {
-              console.log('Checked!');
-              console.log(solution);
-              const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
-              if (!target) {
-                this.exerciseInfo.Solutions.push(solution);
-              } else {
-                target.Status = solution.Status;
-              }
-            });
-        }, 1000);
+        const f = () => this.solutionCheckLoop(success);
+        f();
       }
       );
+  }
+  solutionCheckLoop(solutionId: string) {
+    console.log(this);
+    this.exercisesService.checkSolution(solutionId).subscribe(
+      solution => {
+        const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
+        if (!target) {
+          this.exerciseInfo.Solutions.push(solution);
+        } else {
+          target.Status = solution.Status;
+        }
+        if (solution.Status === SolutionStatus.InQueue ||
+          solution.Status === SolutionStatus.InProcessing) {
+          setTimeout(() => this.solutionCheckLoop(solutionId), 800);
+        }
+      });
   }
 
   solutionStatusPresent(status: SolutionStatus): string {
@@ -83,3 +89,4 @@ export class ExerciseInfoComponent implements OnInit {
     return LanguageConverter.normalFromWeb(lang);
   }
 }
+

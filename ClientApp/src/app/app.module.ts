@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { LoadingModule, ANIMATION_TYPES } from 'ngx-loading';
 import { MarkdownModule } from 'angular2-markdown';
+import {MatTableModule} from '@angular/material/table';
+
 
 import { AppComponent } from './components/app.component';
 import { RegistrationComponent } from './components/registration/registration.component';
@@ -67,7 +69,8 @@ const routes: Route[] = [
     LoadingModule.forRoot({
       animationType: ANIMATION_TYPES.cubeGrid
     }),
-    MarkdownModule.forRoot()
+    MarkdownModule.forRoot(),
+    MatTableModule
   ],
   providers: [UserStateService, ExerciseService, AuthGuardService],
   bootstrap: [AppComponent]
