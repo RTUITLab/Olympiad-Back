@@ -8,9 +8,14 @@ export class Solution {
     Status: SolutionStatus;
     Time: string;
 
-    static prettyTime(time: string) {
+    static prettyTime(time: string): string {
         const date = new Date(time);
-        return `${Solution.round(date.getDate())}.${Solution.round(date.getMonth() + 1)}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+        let prettyDate = '';
+        prettyDate += `${Solution.round(date.getDate())}`;
+        prettyDate += `.${Solution.round(date.getMonth() + 1)}`;
+        prettyDate += `.${date.getFullYear()} ${date.getHours()}`;
+        prettyDate += `:${Solution.round(date.getMinutes())}`;
+        return  prettyDate;
     }
 
     static round(val: number): string {

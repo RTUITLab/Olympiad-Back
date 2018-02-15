@@ -21,20 +21,31 @@
       <button [disabled]="submitDisabled">Отправить решение</button>
     </div>
   </form>
-  <table>
-    <thead>
-      <tr>
-        <th>Время отправки</th>
-        <th>Язык</th>
-        <th>Статус</th>
-      </tr>
-    </thead>
-    <tbody *ngIf="exerciseInfo">
-      <tr *ngFor="let sol of exerciseInfo.Solutions">
-        <td>{{prettyTime(sol.Time)}}</td>
-        <td>{{normalLang(sol.Language)}}</td>
-        <td>{{solutionStatusPresent(sol.Status)}}</td>
-      </tr>
-    </tbody>
-  </table>
+  <mat-table #table [dataSource]="exerciseInfo.Solutions">>
+    <ng-container matColumnDef="time">
+      <mat-header-cell *matHeaderCellDef> Время отправки </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{prettyTime(element.Time)}} </mat-cell>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="language">
+      <mat-header-cell *matHeaderCellDef> Язык </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{normalLang(element.Language)}} </mat-cell>
+    </ng-container>
+
+    <!-- Weight Column -->
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef> Статус </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{solutionStatusPresent(element.Status)}} </mat-cell>
+    </ng-container>
+
+    <!-- Symbol Column -->
+    <ng-container matColumnDef="symbol">
+      <mat-header-cell *matHeaderCellDef> Symbol </mat-header-cell>
+      <mat-cell *matCellDef="let element"> {{element.symbol}} </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
 </div>

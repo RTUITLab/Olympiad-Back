@@ -47,14 +47,23 @@ export class UserStateService extends EndPoints {
       );
     return observable;
   }
-  public GetMe(token: string): void {
+  public GetMe(token: string): Observable<boolean> {
+    let observer: Subscriber<boolean>;
+    const observable = new Observable<boolean>(obs => {
+      observer = obs;
+    });
     this.http.get<LoginResponse>(`http://${this.ip}:${this.port}/api/auth/getme`,
       { headers: { 'Authorization': `Bearer ${token}` } })
       .subscribe(
         response => {
           this.InitUser(response);
+          observer.next(true);
+        },
+        failure => {
+          observer.next(false);
         }
       );
+      return observable;
   }
 
   private InitUser(response: LoginResponse) {
