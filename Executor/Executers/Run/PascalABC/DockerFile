@@ -1,0 +1,3 @@
+﻿FROM mono:latest
+
+CMD mono /src/Program.exe 1> /src/out.txt 2> /src/err.txt 0< /src/in.txt
