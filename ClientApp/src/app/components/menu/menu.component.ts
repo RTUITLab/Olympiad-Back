@@ -41,6 +41,10 @@ export class MenuComponent implements OnInit {
     });
   }
 
+  needMenu() {
+    return true;
+  }
+
   login() {
     this.router.navigate(['login']);
   }
