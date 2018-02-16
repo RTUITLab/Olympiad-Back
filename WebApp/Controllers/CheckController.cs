@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using WebApp.Services.Interfaces;
 
 namespace WebApp.Controllers
 {
@@ -19,12 +20,15 @@ namespace WebApp.Controllers
     public class CheckController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
+        private readonly IQueueChecker queue;
 
         public CheckController(
             ApplicationDbContext context,
+            IQueueChecker queue,
             UserManager<User> userManager) : base(userManager)
         {
             this.context = context;
+            this.queue = queue;
         }
 
         [HttpPost]
@@ -60,7 +64,7 @@ namespace WebApp.Controllers
 
             await context.Solutions.AddAsync(solution);
             await context.SaveChangesAsync();
-
+            queue.PutInQueue(solution.Id);
             return Content(solution.Id.ToString());
         }
 

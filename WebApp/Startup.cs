@@ -19,6 +19,7 @@ using WebApp.Auth;
 using Newtonsoft.Json.Serialization;
 using WebApp.Services.Interfaces;
 using WebApp.Services;
+using System.Collections.Concurrent;
 
 namespace WebApp
 {
@@ -106,6 +107,7 @@ namespace WebApp
 
             services.AddCors();
             services.AddTransient<IEmailSender, EmailService>();
+            services.AddSingleton(SP => Checker(SP));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -146,7 +148,8 @@ namespace WebApp
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-            string[] roles = { "Admin", "User" };
+            string[] roles = { "Admin", "User", "Executor" };
+            string[] maxim = { "Admin", "Executor" };
             IdentityResult roleResult;
 
             foreach (var role in roles)
@@ -160,11 +163,27 @@ namespace WebApp
 
                 var powerUser = await userManager.FindByEmailAsync(Configuration.GetSection("UserSettings")["UserEmail"]);
 
-                if (powerUser != null && !await userManager.IsInRoleAsync(powerUser, "Admin"))
+                if (powerUser != null && !await userManager.IsInRoleAsync(powerUser, "Admin")
+                    && !await userManager.IsInRoleAsync(powerUser, "Executor"))
                 {
-                    await userManager.AddToRoleAsync(powerUser, "Admin");
+                    await userManager.AddToRolesAsync(powerUser, maxim);
                 }
             }
+        }
+
+        public IQueueChecker Checker(IServiceProvider serviceProvider)
+        {
+            IQueueChecker queue = new QueueService();
+            var dbManager = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+            dbManager
+                .Solutions
+                .Where(S => S.Status == SolutionStatus.InQueue)
+                .Select(S => S.Id)
+                .ToList()
+                .ForEach(Id => queue.PutInQueue(Id));
+
+            return queue;
         }
     }
 }
