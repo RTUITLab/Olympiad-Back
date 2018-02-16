@@ -65,8 +65,9 @@ namespace WebApp.Controllers
             var result = await userManager.CreateAsync(userIdentity, model.Password);
 
             if (!result.Succeeded) return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
+            result = await userManager.AddToRoleAsync(userIdentity, "User");
             var token = await userManager.GenerateEmailConfirmationTokenAsync(userIdentity);
-            var url = $"http://localhost:62884/api/Account/{userIdentity.Id}/{token}";
+            var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
             await emailSender.SendEmailConfirm(model.Email, url);
 
             return new OkObjectResult("Account created");
