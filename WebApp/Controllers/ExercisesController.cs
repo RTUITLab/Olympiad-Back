@@ -16,7 +16,7 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Exercises")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User")]
     public class ExercisesController : AuthorizeController
     {
         private readonly IMapper mapper;
@@ -33,6 +33,7 @@ namespace WebApp.Controllers
 
         [HttpPut]
         [Route("{exerciseId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExercisesViewModel model)
         {
             var exe = await applicationDbContext.Exercises.FindAsync(exerciseId);
@@ -100,6 +101,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public void Post([FromBody] ExercisesViewModel model)
         {
             var exeIdentity = mapper.Map<Exercise>(model);

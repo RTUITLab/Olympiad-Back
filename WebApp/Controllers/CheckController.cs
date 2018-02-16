@@ -67,8 +67,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var id = UserId;
-            return Json(context.Solutions.Where(P => P.UserId == id).ToList());
+            return Json(context.Solutions.Where(P => P.UserId == UserId).ToList());
         }
 
         [HttpGet]
