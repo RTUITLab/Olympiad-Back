@@ -1,0 +1,3 @@
+﻿FROM gcc:latest
+
+CMD g++ -o /src/src/app.out /src/src/Program.cpp

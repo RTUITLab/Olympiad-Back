@@ -27,7 +27,7 @@ export class LanguageConverter {
             webName: 'cpp'
         },
         {
-            language: 'Python',
+            language: 'Python 3.6.4',
             fileExtension: '.py',
             webName: 'python'
         }
