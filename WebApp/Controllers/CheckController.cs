@@ -15,12 +15,13 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Check")]
+    [Authorize(Roles = "User")]
     public class CheckController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
 
         public CheckController(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             UserManager<User> userManager) : base(userManager)
         {
             this.context = context;
@@ -66,8 +67,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var id = UserId;
-            return Json(context.Solutions.Where(P => P.UserId == id).ToList());
+            return Json(context.Solutions.Where(P => P.UserId == UserId).ToList());
         }
 
         [HttpGet]
