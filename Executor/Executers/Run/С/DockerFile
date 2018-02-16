@@ -1,0 +1,3 @@
+﻿FROM gcc:latest
+
+CMD /src/app 1> /src/out.txt 2> /src/err.txt 0< /src/in.txt

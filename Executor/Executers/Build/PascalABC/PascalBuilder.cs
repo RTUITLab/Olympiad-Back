@@ -9,9 +9,9 @@ using Models;
 namespace Executor.Executers.Build.PascalABC
 {
     [Language("pasabc")]
-    class PascalBuilder : ProgramBuilder
+    class CBuilder : ProgramBuilder
     {
-        public PascalBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public CBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
         {
         }
 
