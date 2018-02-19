@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Executor.Executers.Run
 {
-    abstract class ProgramRunner
+    abstract class ProgramRunner : IWithDockerImage
     {
         protected readonly ConcurrentQueue<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionsQueue
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
