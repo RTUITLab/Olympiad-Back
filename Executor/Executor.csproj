@@ -42,7 +42,7 @@
     <None Update="Executers\Build\cpp\DockerFile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\dotnet\DockerFile">
+    <None Update="Executers\Build\csharp\DockerFile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Executers\Build\java\DockerFile">
@@ -54,7 +54,7 @@
     <None Update="Executers\Build\c\DockerFile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Run\dotnet\DockerFile">
+    <None Update="Executers\Run\csharp\DockerFile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Executers\Run\java\DockerFile">
@@ -67,6 +67,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Executers\Run\c\DockerFile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Executers\Run\python\DockerFile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
