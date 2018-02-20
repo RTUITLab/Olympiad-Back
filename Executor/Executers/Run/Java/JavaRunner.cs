@@ -14,6 +14,6 @@ namespace Executor.Executers.Run.Java
         {
         }
 
-        protected override string DockerImageName => "runner:java";
+        public override string DockerImageName => "runner:java";
     }
 }

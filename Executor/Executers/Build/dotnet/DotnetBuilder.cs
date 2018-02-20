@@ -19,7 +19,7 @@ namespace Executor.Executers.Build.dotnet
 
         protected override string ProgramFileName => "Program.cs";
 
-        protected override string DockerImageName => "builder:dotnet";
+        public override string DockerImageName => "builder:dotnet";
 
         protected override string BuildFailedCondition => "Build FAILED";
 

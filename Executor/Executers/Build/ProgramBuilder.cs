@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Executor.Executers.Build
 {
-    abstract class ProgramBuilder
+    abstract class ProgramBuilder : IWithDockerImage
     {
         protected readonly ConcurrentQueue<Solution> solutionsQueue = new ConcurrentQueue<Solution>();
         private readonly Action proccessSolution;
@@ -19,7 +19,7 @@ namespace Executor.Executers.Build
 
         //protected abstract DirectoryInfo Build(Solution solution);
         protected abstract string ProgramFileName { get; }
-        protected abstract string DockerImageName { get; }
+        public abstract string DockerImageName { get; }
         protected abstract string BuildFailedCondition { get; }
         protected abstract string GetBinariesDirectory(DirectoryInfo startDir);
 

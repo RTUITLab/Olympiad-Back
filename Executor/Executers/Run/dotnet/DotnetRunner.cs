@@ -14,6 +14,6 @@ namespace Executor.Executers.Run.dotnet
         {
         }
 
-        protected override string DockerImageName => "runner:dotnet";
+        public override string DockerImageName => "runner:dotnet";
     }
 }

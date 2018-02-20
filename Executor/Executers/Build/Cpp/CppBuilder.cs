@@ -17,7 +17,7 @@ namespace Executor.Executers.Build.Cpp
 
         protected override string ProgramFileName => "Program.cpp";
 
-        protected override string DockerImageName => "builder:cpp";
+        public override string DockerImageName => "builder:cpp";
 
         protected override string BuildFailedCondition => "error";
 

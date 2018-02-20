@@ -16,6 +16,6 @@ namespace Executor.Executers.Run.Cpp
         {
         }
 
-        protected override string DockerImageName => "runner:cpp";
+        public override string DockerImageName => "runner:cpp";
     }
 }
