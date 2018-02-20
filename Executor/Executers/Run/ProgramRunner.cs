@@ -17,7 +17,7 @@ namespace Executor.Executers.Run
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
         private readonly Action proccessSolution;
 
-        protected abstract string DockerImageName { get; }
+        public abstract string DockerImageName { get; }
 
 
         private Task runningTask;

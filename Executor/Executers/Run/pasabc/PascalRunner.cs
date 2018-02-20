@@ -14,6 +14,6 @@ namespace Executor.Executers.Run.PascalABC
         {
         }
 
-        protected override string DockerImageName => "runner:pasabc";
+        public override string DockerImageName => "runner:pasabc";
     }
 }

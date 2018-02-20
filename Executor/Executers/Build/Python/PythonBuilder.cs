@@ -17,7 +17,7 @@ namespace Executor.Executers.Build.Python
 
         protected override string ProgramFileName => "Program.py";
 
-        protected override string DockerImageName => "builder:python";
+        public override string DockerImageName => "builder:python";
 
         protected override string BuildFailedCondition => "error";
 

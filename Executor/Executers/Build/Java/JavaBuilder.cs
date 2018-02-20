@@ -19,7 +19,7 @@ namespace Executor.Executers.Build.Java
 
         protected override string ProgramFileName => "Main.java";
 
-        protected override string DockerImageName => "builder:java";
+        public override string DockerImageName => "builder:java";
 
         protected override string BuildFailedCondition => "errors";
 

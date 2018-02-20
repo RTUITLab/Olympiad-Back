@@ -1,4 +1,5 @@
-﻿using Executor.Executers.Build;
+﻿using Executor.Executers;
+using Executor.Executers.Build;
 using Executor.Executers.Run;
 using System;
 using System.Collections.Generic;
@@ -14,19 +15,30 @@ namespace Executor
     {
         public void CheckAndBuildImages()
         {
-            CurrentImages().ForEach(Console.WriteLine);
+            var needToBuild = NeedImages().Except(CurrentImages()).ToList();
+            needToBuild.ForEach(Console.WriteLine);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Executers");
             Directory.GetDirectories(path).ToList().ForEach(Console.WriteLine);
         }
 
         private List<string> NeedImages()
         {
-            var executeWorkers = Assembly
+            var builders = Assembly
                 .GetExecutingAssembly()
                 .GetTypes()
                 .Where(T =>
-                    T.BaseType == typeof(ProgramBuilder) ||
+                    T.BaseType == typeof(ProgramBuilder))
+                .Select(T => T.GetCustomAttribute<LanguageAttribute>().Lang)
+                .Select(L => $"builder:{L}");
+            var runners = Assembly
+                .GetExecutingAssembly()
+                .GetTypes()
+                .Where(T =>
                     T.BaseType == typeof(ProgramRunner))
+                .Select(T => T.GetCustomAttribute<LanguageAttribute>().Lang)
+                .Select(L => $"runner:{L}");
+            var l = runners.Concat(builders).ToList();
+            return l;
         }
         private List<string> CurrentImages()
         {

@@ -16,6 +16,6 @@ namespace Executor.Executers.Run.C
         {
         }
 
-        protected override string DockerImageName => "runner:c";
+        public override string DockerImageName => "runner:c";
     }
 }

@@ -17,7 +17,7 @@ namespace Executor.Executers.Build.C
 
         protected override string ProgramFileName => "Program.c";
 
-        protected override string DockerImageName => "builder:c";
+        public override string DockerImageName => "builder:c";
 
         protected override string BuildFailedCondition => "error";
 
