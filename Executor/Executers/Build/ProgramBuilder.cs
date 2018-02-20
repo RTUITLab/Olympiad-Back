@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Executor.Executers.Build
 {
-    abstract class ProgramBuilder : IWithDockerImage
+    abstract class ProgramBuilder
     {
         protected readonly ConcurrentQueue<Solution> solutionsQueue = new ConcurrentQueue<Solution>();
         private readonly Action proccessSolution;
@@ -19,7 +20,6 @@ namespace Executor.Executers.Build
 
         //protected abstract DirectoryInfo Build(Solution solution);
         protected abstract string ProgramFileName { get; }
-        public abstract string DockerImageName { get; }
         protected abstract string BuildFailedCondition { get; }
         protected abstract string GetBinariesDirectory(DirectoryInfo startDir);
 
@@ -79,7 +79,7 @@ namespace Executor.Executers.Build
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     FileName = "docker",
-                    Arguments = $"run --rm -v {sourceDir.FullName}:/src/src {DockerImageName}"
+                    Arguments = $"run --rm -v {sourceDir.FullName}:/src/src builder:{Language}"
                 },
             };
 
@@ -105,6 +105,15 @@ namespace Executor.Executers.Build
             if (e.Data?.Contains(BuildFailedCondition) == true)
             {
                 status = SolutionStatus.CompileError;
+            }
+        }
+        private string lang;
+        private string Language
+        {
+            get
+            {
+                return lang ??
+                    (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
             }
         }
     }

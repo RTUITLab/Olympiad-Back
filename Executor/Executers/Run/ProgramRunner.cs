@@ -5,19 +5,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Executor.Executers.Run
 {
-    abstract class ProgramRunner : IWithDockerImage
+    abstract class ProgramRunner
     {
         protected readonly ConcurrentQueue<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionsQueue
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
         private readonly Action proccessSolution;
-
-        public abstract string DockerImageName { get; }
 
 
         private Task runningTask;
@@ -75,7 +74,7 @@ namespace Executor.Executers.Run
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     FileName = "docker",
-                    Arguments = $"run --rm -v {binaries.FullName}:/src {DockerImageName}"
+                    Arguments = $"run --rm -v {binaries.FullName}:/src runner:{Language}"
                 },
             };
 
@@ -104,6 +103,15 @@ namespace Executor.Executers.Run
                 return SolutionStatus.Sucessful;
 
             return SolutionStatus.WrongAnswer;
+        }
+        private string lang;
+        private string Language
+        {
+            get
+            {
+                return lang ??
+                    (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
+            }
         }
     }
 }

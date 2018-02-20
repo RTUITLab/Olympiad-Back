@@ -15,7 +15,5 @@ namespace Executor.Executers.Run.C
         public CRunner(Action proccessSolution) : base(proccessSolution)
         {
         }
-
-        public override string DockerImageName => "runner:c";
     }
 }

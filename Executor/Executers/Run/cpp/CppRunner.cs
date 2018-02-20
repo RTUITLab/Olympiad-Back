@@ -15,7 +15,5 @@ namespace Executor.Executers.Run.Cpp
         public CppRunner(Action proccessSolution) : base(proccessSolution)
         {
         }
-
-        public override string DockerImageName => "runner:cpp";
     }
 }
