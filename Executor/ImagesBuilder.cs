@@ -25,7 +25,7 @@ namespace Executor
             folerPairs.ForEach(P =>
             {
                 Console.WriteLine(P.N);
-                Console.WriteLine(P.folder) 
+                Console.WriteLine(P.folder);
                 var dockerFile = Path.Combine(P.folder, "DockerFile");
                 if (File.Exists(dockerFile))
                     Console.WriteLine(File.ReadAllText(dockerFile));
