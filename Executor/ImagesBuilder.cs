@@ -18,6 +18,19 @@ namespace Executor
             var needToBuild = NeedImages().Except(CurrentImages()).ToList();
             needToBuild.ForEach(Console.WriteLine);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Executers");
+            var folerPairs = needToBuild
+                .Select(N => (N, folder: N.StartsWith("runner") ? "Run" : "Build"))
+                .Select(P => (P.N, folder: Path.Combine(path, P.folder)))
+                .ToList();
+            folerPairs.ForEach(P =>
+            {
+                Console.WriteLine(P.N);
+                Console.WriteLine(P.folder) 
+                var dockerFile = Path.Combine(P.folder, "DockerFile");
+                if (File.Exists(dockerFile))
+                    Console.WriteLine(File.ReadAllText(dockerFile));
+                Console.WriteLine(new string('-', 10));
+            });
             Directory.GetDirectories(path).ToList().ForEach(Console.WriteLine);
         }
 

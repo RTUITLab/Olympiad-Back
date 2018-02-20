@@ -65,7 +65,7 @@ namespace Executor.Executers.Build
             }
         }
 
-        private DirectoryInfo Build(Solution solution)
+        protected virtual DirectoryInfo Build(Solution solution)
         {
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             Console.WriteLine($"new dir is {sourceDir.FullName}");
