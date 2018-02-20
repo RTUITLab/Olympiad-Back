@@ -17,7 +17,6 @@ namespace Executor.Executers.Build.PascalABC
 
         protected override string ProgramFileName => "Program.pas";
 
-        public override string DockerImageName => "builder:pasabc";
 
         protected override string BuildFailedCondition => "Compile errors:";
 

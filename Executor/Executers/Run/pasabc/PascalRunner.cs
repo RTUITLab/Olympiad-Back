@@ -13,7 +13,5 @@ namespace Executor.Executers.Run.PascalABC
         public PascalRunner(Action proccessSolution) : base(proccessSolution)
         {
         }
-
-        public override string DockerImageName => "runner:pasabc";
     }
 }

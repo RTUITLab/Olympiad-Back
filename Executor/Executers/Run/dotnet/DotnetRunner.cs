@@ -13,7 +13,5 @@ namespace Executor.Executers.Run.dotnet
         public JavaRunner(Action proccessSolution) : base(proccessSolution)
         {
         }
-
-        public override string DockerImageName => "runner:dotnet";
     }
 }
