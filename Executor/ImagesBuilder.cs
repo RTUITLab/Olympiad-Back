@@ -20,7 +20,7 @@ namespace Executor
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Executers");
             var folerPairs = needToBuild
                 .Select(N => (N, folder: N.StartsWith("runner") ? "Run" : "Build"))
-                .Select(P => (P.N, folder: Path.Combine(path, P.folder)))
+                .Select(P => (P.N, folder: Path.Combine(path, P.folder, P.N.Split(":")[1])))
                 .ToList();
             folerPairs.ForEach(P =>
             {
