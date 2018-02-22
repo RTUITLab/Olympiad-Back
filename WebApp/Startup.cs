@@ -129,7 +129,7 @@ namespace WebApp
                     .AllowAnyHeader());
 
             app.UseStaticFiles();
-
+            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -142,6 +142,7 @@ namespace WebApp
             });
 
             CreateRoles(serviceProvider).Wait();
+
         }
 
         public async Task CreateRoles(IServiceProvider serviceProvider)
