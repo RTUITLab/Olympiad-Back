@@ -107,7 +107,7 @@ namespace WebApp
 
             services.AddCors();
             services.AddTransient<IEmailSender, EmailService>();
-            services.AddSingleton(SP => Checker(SP));
+            services.AddSingleton(Checker(services.BuildServiceProvider()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -150,7 +150,6 @@ namespace WebApp
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
             string[] roles = { "Admin", "User", "Executor" };
-            string[] maxim = { "Admin", "Executor" };
             IdentityResult roleResult;
 
             foreach (var role in roles)
@@ -161,14 +160,24 @@ namespace WebApp
                     var identityRole = new IdentityRole<Guid> { Name = role };
                     roleResult = await roleManager.CreateAsync(identityRole);
                 }
+            }
+            var config = Configuration.GetSection("UserSettings");
+            var waitRoles = config.GetSection("Roles")
+                .AsEnumerable()
+                .Select(KVP => KVP.Value)
+                .Where(V => V != null)
+                .ToList();
+            if (config["UserEmail"] == null || waitRoles.Count == 0)
+                return;
 
-                var powerUser = await userManager.FindByEmailAsync(Configuration.GetSection("UserSettings")["UserEmail"]);
+            var powerUser = await userManager.FindByEmailAsync(Configuration.GetSection("UserSettings")["UserEmail"]);
+            if (powerUser == null)
+                return;
 
-                if (powerUser != null && !await userManager.IsInRoleAsync(powerUser, "Admin")
-                    && !await userManager.IsInRoleAsync(powerUser, "Executor"))
-                {
-                    await userManager.AddToRolesAsync(powerUser, maxim);
-                }
+            foreach (var role in waitRoles)
+            {
+                if (!await userManager.IsInRoleAsync(powerUser, role))
+                    await userManager.AddToRoleAsync(powerUser, role);
             }
         }
 
