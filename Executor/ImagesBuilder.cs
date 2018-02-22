@@ -20,18 +20,41 @@ namespace Executor
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Executers");
             var folerPairs = needToBuild
                 .Select(N => (N, folder: N.StartsWith("runner") ? "Run" : "Build"))
-                .Select(P => (P.N, folder: Path.Combine(path, P.folder, P.N.Split(":")[1])))
+                .Select(P => (P.N, folder: Path.Combine(path, P.folder, P.N.Split(":")[1]/*, "DockerFile"*/)))
                 .ToList();
             folerPairs.ForEach(P =>
             {
                 Console.WriteLine(P.N);
                 Console.WriteLine(P.folder);
-                var dockerFile = Path.Combine(P.folder, "DockerFile");
-                if (File.Exists(dockerFile))
-                    Console.WriteLine(File.ReadAllText(dockerFile));
+                BuildImage(P.N, P.folder);
                 Console.WriteLine(new string('-', 10));
             });
-            Directory.GetDirectories(path).ToList().ForEach(Console.WriteLine);
+        }
+
+        private void BuildImage(string imageName, string dockerFilePath)
+        {
+            if(!File.Exists(dockerFilePath) && false)
+            {
+                Console.WriteLine($"file {dockerFilePath} not exists");
+                return;
+            }
+            var proccess = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    FileName = "docker",
+                    Arguments = $"build -t {imageName} {dockerFilePath}"
+                },
+            };
+            proccess.OutputDataReceived += (A, B) => Console.WriteLine("OUT " + B.Data);
+            proccess.ErrorDataReceived += (A, B) => Console.WriteLine("ERR " + B.Data);
+            proccess.Start();
+            proccess.BeginOutputReadLine();
+            proccess.BeginErrorReadLine();
+            proccess.WaitForExit();
         }
 
         private List<string> NeedImages()
@@ -50,8 +73,7 @@ namespace Executor
                     T.BaseType == typeof(ProgramRunner))
                 .Select(T => T.GetCustomAttribute<LanguageAttribute>().Lang)
                 .Select(L => $"runner:{L}");
-            var l = runners.Concat(builders).ToList();
-            return l;
+            return runners.Concat(builders).ToList();
         }
         private List<string> CurrentImages()
         {
