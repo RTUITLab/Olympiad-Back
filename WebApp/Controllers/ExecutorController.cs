@@ -33,5 +33,17 @@ namespace WebApp.Controllers
             var list = queue.GetFromQueue(10);
             return Json(dbContext.Solutions.Where(S => list.Contains(S.Id)));
         }
+
+        [HttpPost()]
+        [Route("{exerciseId}/{state}")]
+        public IActionResult Post(Guid exerciseId, SolutionStatus state)
+        {
+            var solution = dbContext.Solutions.FirstOrDefault(S => S.Id == exerciseId);
+            if (solution == null)
+                return NotFound();
+
+            solution.Status = state;
+            return Ok();
+        }
     }
 }

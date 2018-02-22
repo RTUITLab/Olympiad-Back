@@ -25,8 +25,10 @@ export class ExerciseService extends EndPoints implements OnInit {
   ngOnInit(): void {
   }
   getExercises(): Observable<Array<ExerciseListResponse>> {
-    const observer = new BehaviorSubject<Array<ExerciseListResponse>>(undefined);
-    const observable = observer.asObservable();
+    let observer = new Subscriber<Array<ExerciseListResponse>>(undefined);
+    const observable = new Observable<Array<ExerciseListResponse>>(obs => {
+      observer = obs;
+    });
     this.http.get<Array<ExerciseListResponse>>(
       `http://${this.ip}:${this.port}/api/exercises`,
       { headers: this.userService.authHeaders() })

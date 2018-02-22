@@ -15,20 +15,10 @@ export class ExercisesListComponent extends LoadingComponent implements OnInit {
 
   constructor(private exersicesManager: ExerciseService) {
     super(true);
+    this.stopLoading();
   }
 
   ngOnInit() {
-    this.exersicesManager.getExercises().subscribe(
-      getted => {
-        this.exercises = getted;
-        console.log(getted);
-        this.stopLoading();
-      },
-      err => {
-        this.exercises = err;
-        this.stopLoading();
-      }
-    );
   }
 
 }

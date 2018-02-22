@@ -22,9 +22,11 @@ export class MenuComponent implements OnInit {
     private exercisesService: ExerciseService) { }
 
   ngOnInit() {
-    this.usersService.currentUserStream.subscribe(U => this.user = U);
-    this.exercisesService.getExercises()
-      .subscribe(exercises => this.exercises = exercises);
+    this.usersService.currentUserStream.subscribe(U => {
+      this.user = U;
+      this.exercisesService.getExercises()
+        .subscribe(exercises => this.exercises = exercises);
+    });
     this.exercisesService.solutionStream.subscribe(S => {
       if (!S) {
         return;
