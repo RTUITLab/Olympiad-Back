@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Models;
 using System;
 using System.Collections.Generic;
@@ -23,11 +24,11 @@ namespace WebApp.Auth
         public async Task<string> GenerateEncodedToken(string userName, ClaimsIdentity identity)
         {
             var claims = new[]
-         {
+            {
                  new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
-                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
-                 identity.FindFirst(ClaimTypes.NameIdentifier)
-             };
+                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64)
+            }.Concat(identity.Claims).ToArray();
+
 
             // Create the JWT security token and encode it.
             var jwt = new JwtSecurityToken(
@@ -43,12 +44,15 @@ namespace WebApp.Auth
             return encodedJwt;
         }
 
-        public ClaimsIdentity GenerateClaimsIdentity(string userName, string id)
+        public ClaimsIdentity GenerateClaimsIdentity(string userName, string id, string[] roles)
         {
-            return new ClaimsIdentity(new GenericIdentity(userName, "Token"), new[]
+            var claims = new Claim[roles.Length + 1];
+            for (int i = 0; i < roles.Length; i++)
             {
-                new Claim(ClaimTypes.NameIdentifier, id)
-            });
+                claims[i] = new Claim(ClaimTypes.Role, roles[i]);
+            }
+            claims[claims.Length - 1] = new Claim(ClaimTypes.NameIdentifier, id);
+            return new ClaimsIdentity(new GenericIdentity(userName, "Token"), claims);
         }
 
         /// <returns>Date converted to seconds since Unix epoch (Jan 1, 1970, midnight UTC).</returns>
