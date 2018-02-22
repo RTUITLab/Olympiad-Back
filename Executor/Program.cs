@@ -20,8 +20,6 @@ namespace Executor
         {
             var builder = new ImagesBuilder();
             builder.CheckAndBuildImages();
-            Console.Read();
-            return;
             var options = JsonConvert.DeserializeObject<JObject>(await File.ReadAllTextAsync("appsettings.Secret.json"));
             var connectionString = options["ConnectionStrings"]["OlympDB"].ToString();
             var executor = new Executor(connectionString);
