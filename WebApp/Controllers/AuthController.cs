@@ -84,7 +84,7 @@ namespace WebApp.Controllers
                  .Sum(E => E.Score);
             loginInfo.TotalScore = sum;
             
-            var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString());
+            var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), _userManager.GetRolesAsync(user).Result.ToArray());
 
             loginInfo.Token = Tokens.GenerateJwt(identity, _jwtFactory, user.UserName).Result;
             return loginInfo;
