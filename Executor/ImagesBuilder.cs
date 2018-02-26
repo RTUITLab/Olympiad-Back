@@ -120,8 +120,14 @@ namespace Executor
                 },
             };
             var error = false;
-            proccess.ErrorDataReceived += (E, D) => error |= D.Data != null;
-            proccess.OutputDataReceived += (E, D) => { };
+            proccess.ErrorDataReceived += (E, D) => 
+		{
+			Console.WriteLine("ERROR" + D.Data ?? "NULL");
+			error |= D.Data != null;
+		};
+            proccess.OutputDataReceived += (E, D) => {
+			Console.WriteLine("OUT" + D.Data);
+		};
             try
             {
                 proccess.Start();
