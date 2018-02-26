@@ -29,7 +29,7 @@ namespace Executor
             if (!SetupConfigs(args))
                 return;
             var builder = new ImagesBuilder();
-            if (!builder.CheckAndBuildImages())
+            if (builder.CheckAndBuildImages())
             {
                 Console.WriteLine("host must have docker!");
                 return;
