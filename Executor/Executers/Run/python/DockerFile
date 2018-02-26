@@ -1,3 +1,5 @@
 ﻿FROM python:3
 
-CMD python /src/Program.py 1> /src/out.txt 2> /src/err.txt 0< /src/in.txt
+WORKDIR /src
+
+CMD cat in.txt | python ./Program.py > out.txt 2> err.txt
