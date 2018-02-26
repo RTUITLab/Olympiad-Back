@@ -10,7 +10,7 @@ namespace Executor.Executers.Run.Java
     [Language("java")]
     class JavaRunner : ProgramRunner
     {
-        public JavaRunner(Action proccessSolution) : base(proccessSolution)
+        public JavaRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
         {
         }
     }

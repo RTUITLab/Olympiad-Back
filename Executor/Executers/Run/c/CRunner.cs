@@ -12,7 +12,7 @@ namespace Executor.Executers.Run.C
     [Language("c")]
     class CRunner : ProgramRunner
     {
-        public CRunner(Action proccessSolution) : base(proccessSolution)
+        public CRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
         {
         }
     }

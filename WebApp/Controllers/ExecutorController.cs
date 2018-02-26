@@ -36,13 +36,14 @@ namespace WebApp.Controllers
 
         [HttpPost()]
         [Route("{exerciseId}/{state}")]
-        public IActionResult Post(Guid exerciseId, SolutionStatus state)
+        public async Task<IActionResult> Post(Guid exerciseId, SolutionStatus state)
         {
             var solution = dbContext.Solutions.FirstOrDefault(S => S.Id == exerciseId);
             if (solution == null)
                 return NotFound();
 
             solution.Status = state;
+            await dbContext.SaveChangesAsync();
             return Ok();
         }
     }

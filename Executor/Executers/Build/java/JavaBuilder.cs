@@ -12,7 +12,7 @@ namespace Executor.Executers.Build.Java
     [Language("java")]
     class JavaBuilder : ProgramBuilder
     {
-        public JavaBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
+        public JavaBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
             : base(proccessSolution, finishBuildSolution)
         {
         }

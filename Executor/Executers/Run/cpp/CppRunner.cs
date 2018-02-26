@@ -12,7 +12,7 @@ namespace Executor.Executers.Run.Cpp
     [Language("cpp")]
     class CppRunner : ProgramRunner
     {
-        public CppRunner(Action proccessSolution) : base(proccessSolution)
+        public CppRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
         {
         }
     }

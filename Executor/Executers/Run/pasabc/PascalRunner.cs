@@ -10,7 +10,7 @@ namespace Executor.Executers.Run.PascalABC
     [Language("pasabc")]
     class PascalRunner : ProgramRunner
     {
-        public PascalRunner(Action proccessSolution) : base(proccessSolution)
+        public PascalRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
         {
         }
     }

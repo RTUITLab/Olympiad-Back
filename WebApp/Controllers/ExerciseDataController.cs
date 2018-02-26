@@ -14,7 +14,6 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/ExerciseData")]
-    [Authorize(Roles = "Admin")]
     public class ExerciseDataController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
@@ -27,6 +26,7 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Route("{exerciseId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Post(IFormFile inFile, IFormFile outFile, Guid exerciseId)
         {
             if (inFile == null || outFile == null || inFile.Length > 5120 || outFile.Length > 5120)
@@ -64,7 +64,8 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        [Route("exerciseId")]
+        [Route("{exerciseId}")]
+        [Authorize(Roles = "Executor")]
         public IActionResult Get(Guid exerciseId)
         {
             return Json(context.TestData.Where(P => P.ExerciseId == exerciseId).ToList());

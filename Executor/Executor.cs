@@ -17,12 +17,8 @@ namespace Executor
         private DbManager dbManager;
         private readonly Dictionary<string, ExecuteWorker> executeWorkers;
 
-        public Executor(string dbConnectionString)
+        public Executor(DbManager dbManager)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseSqlServer(dbConnectionString);
-            var db = new ApplicationDbContext(optionsBuilder.Options);
-            dbManager = new DbManager(db);
             executeWorkers = Assembly
                 .GetExecutingAssembly()
                 .GetTypes()
@@ -34,10 +30,11 @@ namespace Executor
                     G.Key,
                     G.First(T => T.BaseType == typeof(ProgramBuilder)),
                     G.First(T => T.BaseType == typeof(ProgramRunner)),
-                    () => dbManager.SaveChanges(),
+                    (GUID, STATUS) => dbManager.SaveChanges(GUID, STATUS),
                     I => dbManager.GetExerciseData(I)
                     ))
                 .ToDictionary(E => E.Lang);
+            this.dbManager = dbManager;
         }
 
         public void Start(CancellationToken cancellationToken)

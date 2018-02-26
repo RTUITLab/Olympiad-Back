@@ -11,7 +11,7 @@ namespace Executor.Executers.Build.Python
     [Language("python")]
     class PythonBuilder : ProgramBuilder
     {
-        public PythonBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public PythonBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
         {
         }
 
