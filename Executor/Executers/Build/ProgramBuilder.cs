@@ -15,7 +15,7 @@ namespace Executor.Executers.Build
     abstract class ProgramBuilder
     {
         protected readonly ConcurrentQueue<Solution> solutionsQueue = new ConcurrentQueue<Solution>();
-        private readonly Action proccessSolution;
+        private readonly Action<Guid, SolutionStatus> proccessSolution;
         private readonly Action<DirectoryInfo, Solution> finishBuildSolution;
 
         //protected abstract DirectoryInfo Build(Solution solution);
@@ -25,7 +25,7 @@ namespace Executor.Executers.Build
 
         private Task buildingTask;
         private SemaphoreSlim buildingSemaphore;
-        public ProgramBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
+        public ProgramBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
         {
             buildingSemaphore = new SemaphoreSlim(0, 1);
             buildingTask = Task.Run(BuildLoop);
@@ -53,11 +53,11 @@ namespace Executor.Executers.Build
                 while (solutionsQueue.TryDequeue(out var solution))
                 {
                     solution.Status = SolutionStatus.InProcessing;
-                    proccessSolution();
+                    proccessSolution(solution.Id, SolutionStatus.InProcessing);
                     var result = Build(solution);
                     if (solution.Status == SolutionStatus.CompileError)
                     {
-                        proccessSolution();
+                        proccessSolution(solution.Id, SolutionStatus.CompileError);
                         continue;
                     }
                     finishBuildSolution(result, solution);

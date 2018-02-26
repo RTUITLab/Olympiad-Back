@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Executor.Executers.Build;
@@ -21,8 +22,11 @@ namespace Executor
             var builder = new ImagesBuilder();
             builder.CheckAndBuildImages();
             var options = JsonConvert.DeserializeObject<JObject>(await File.ReadAllTextAsync("appsettings.Secret.json"));
-            var connectionString = options["ConnectionStrings"]["OlympDB"].ToString();
-            var executor = new Executor(connectionString);
+            var userName = options["username"].ToString();
+            var password = options["password"].ToString();
+            var address = options["apiAddress"].ToString();
+            var dbManager = new DbManager(userName, password, address);
+            var executor = new Executor(dbManager);
             executor.Start(CancellationToken.None);
             Console.ReadLine();
         }

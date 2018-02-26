@@ -16,13 +16,13 @@ namespace Executor.Executers.Run
     {
         protected readonly ConcurrentQueue<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionsQueue
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
-        private readonly Action proccessSolution;
+        private readonly Action<Guid, SolutionStatus> proccessSolution;
 
 
         private Task runningTask;
         private SemaphoreSlim runningSemaphore;
 
-        public ProgramRunner(Action proccessSolution)
+        public ProgramRunner(Action<Guid, SolutionStatus> proccessSolution)
         {
             runningSemaphore = new SemaphoreSlim(0, 1);
             runningTask = Task.Run(RunLoop);
@@ -60,7 +60,7 @@ namespace Executor.Executers.Run
                 }
             }
             task.solution.Status = result;
-            proccessSolution();
+            proccessSolution(task.solution.Id, result);
         }
 
         protected SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData)

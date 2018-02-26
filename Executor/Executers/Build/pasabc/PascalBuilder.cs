@@ -11,7 +11,7 @@ namespace Executor.Executers.Build.PascalABC
     [Language("pasabc")]
     class CBuilder : ProgramBuilder
     {
-        public CBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public CBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
         {
         }
 

@@ -11,7 +11,7 @@ namespace Executor.Executers.Build.Cpp
     [Language("cpp")]
     class CppBuilder : ProgramBuilder
     {
-        public CppBuilder(Action proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public CppBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
         {
         }
 

@@ -21,7 +21,7 @@ namespace Executor.Executers
             string lang,
             Type builderType,
             Type runnerType,
-            Action proccessSolution,
+            Action<Guid, SolutionStatus> proccessSolution,
             Func<Guid, ExerciseData[]> getTests)
         {
             this.lang = lang;

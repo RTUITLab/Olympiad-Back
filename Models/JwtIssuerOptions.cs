@@ -31,7 +31,7 @@ namespace Models
         /// <summary>
         /// 4.1.5.  "nbf" (Not Before) Claim - The "nbf" (not before) claim identifies the time before which the JWT MUST NOT be accepted for processing.
         /// </summary>
-        public DateTime NotBefore { get; set; } = DateTime.UtcNow;
+        public DateTime NotBefore => DateTime.UtcNow;
 
         /// <summary>
         /// 4.1.6.  "iat" (Issued At) Claim - The "iat" (issued at) claim identifies the time at which the JWT was issued.
