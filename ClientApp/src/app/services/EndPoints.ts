@@ -1,4 +1,4 @@
 export class EndPoints {
-    protected readonly ip = '10.11.162.235';
+    protected readonly ip = 'localhost';
     protected readonly port = 5000;
 }
