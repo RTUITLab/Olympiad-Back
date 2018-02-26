@@ -13,8 +13,9 @@ namespace Executor
 {
     class ImagesBuilder
     {
-        public void CheckAndBuildImages()
+        public bool CheckAndBuildImages()
         {
+            if (!CheckDockerOnMachine()) return false;
             var needToBuild = NeedImages().Except(CurrentImages()).ToList();
             needToBuild.ForEach(Console.WriteLine);
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Executers");
@@ -29,11 +30,12 @@ namespace Executor
                 BuildImage(P.N, P.folder);
                 Console.WriteLine(new string('-', 10));
             });
+            return true;
         }
 
         private void BuildImage(string imageName, string dockerFilePath)
         {
-            if(!File.Exists(dockerFilePath) && false)
+            if (!File.Exists(dockerFilePath) && false)
             {
                 Console.WriteLine($"file {dockerFilePath} not exists");
                 return;
@@ -102,6 +104,36 @@ namespace Executor
             proccess.BeginOutputReadLine();
             proccess.WaitForExit();
             return list;
+        }
+
+        private bool CheckDockerOnMachine()
+        {
+            var proccess = new Process()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    FileName = "docker",
+                    Arguments = ""
+                },
+            };
+            var error = false;
+            proccess.ErrorDataReceived += (E, D) => error |= D.Data != null;
+            proccess.OutputDataReceived += (E, D) => { };
+            try
+            {
+                proccess.Start();
+                proccess.BeginErrorReadLine();
+                proccess.BeginOutputReadLine();
+                proccess.WaitForExit();
+            }
+            catch (System.Exception)
+            {
+                return false;
+            }
+            return !error;
         }
     }
 }
