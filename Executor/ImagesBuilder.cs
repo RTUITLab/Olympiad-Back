@@ -21,7 +21,7 @@ namespace Executor
             var path = Path.Combine(Directory.GetCurrentDirectory(), "Executers");
             var folerPairs = needToBuild
                 .Select(N => (N, folder: N.StartsWith("runner") ? "Run" : "Build"))
-                .Select(P => (P.N, folder: Path.Combine(path, P.folder, P.N.Split(":")[1]/*, "DockerFile"*/)))
+                .Select(P => (P.N, folder: Path.Combine(path, P.folder, P.N.Split(":")[1], "DockerFile"	)))
                 .ToList();
             folerPairs.ForEach(P =>
             {
@@ -48,7 +48,7 @@ namespace Executor
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     FileName = "docker",
-                    Arguments = $"build -t {imageName} {dockerFilePath}"
+                    Arguments = $"build -t {imageName} -f {dockerFilePath} ."
                 },
             };
             proccess.OutputDataReceived += (A, B) => Console.WriteLine("OUT " + B.Data);
@@ -116,7 +116,7 @@ namespace Executor
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     FileName = "docker",
-                    Arguments = ""
+                    Arguments = "--help"
                 },
             };
             var error = false;
