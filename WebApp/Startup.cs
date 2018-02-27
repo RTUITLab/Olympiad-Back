@@ -35,21 +35,22 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var c = Configuration.GetConnectionString("OlympDB");
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("OlympDB"),
                 b => b.MigrationsAssembly("WebApp")));
 
-            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
+            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
             services.AddSingleton<IJwtFactory, JwtFactory>();
 
             SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(
-                jwtAppSettingOptions[nameof(JwtIssuerOptions.SecretKey)]));
+                jwtAppSettingOptions.SecretKey));
 
             services.Configure<JwtIssuerOptions>(options =>
             {
-                options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
-                options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+                options.Issuer = jwtAppSettingOptions.Issuer;
+                options.Audience = jwtAppSettingOptions.Audience;
                 options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
             });
 
@@ -57,10 +58,10 @@ namespace WebApp
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)],
+                ValidIssuer = jwtAppSettingOptions.Issuer,
 
                 ValidateAudience = true,
-                ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
+                ValidAudience = jwtAppSettingOptions.Audience,
 
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = signingKey,
@@ -76,7 +77,7 @@ namespace WebApp
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(configureOptions =>
             {
-                configureOptions.ClaimsIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                configureOptions.ClaimsIssuer = jwtAppSettingOptions.Issuer;
                 configureOptions.TokenValidationParameters = tokenValidationParameters;
                 configureOptions.SaveToken = true;
             });
