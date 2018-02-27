@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using WebApp.Models.Responces;
 
 namespace WebApp.Controllers
 {
@@ -26,20 +27,13 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostComment(IFormFile review)
+        public async Task<IActionResult> PostComment()
         {
             string reviewBody;
 
-            if (review == null)
+            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
             {
-                return BadRequest("Вы пытаетесь оставить пустой комментарий");
-            }
-
-            var stream = review.OpenReadStream();
-
-            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
-            {
-                reviewBody = await streamReader.ReadToEndAsync();
+                reviewBody = await reader.ReadToEndAsync();
             }
 
             Comment comment = new Comment()
@@ -52,6 +46,23 @@ namespace WebApp.Controllers
             await context.Comments.AddAsync(comment);
             await context.SaveChangesAsync();
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("{pageNum}")]
+        public IActionResult GetComments(int pageNum)
+        {
+            return Json(context
+                .Comments
+                .Skip((pageNum - 1) * 10)
+                .Take(10)
+                .Select(C => new CommentResponce
+                {
+                    UserId = UserId,
+                    UserName = context.Users.FirstOrDefault(P => P.Id == C.UserId).FirstName,
+                    Raw = C.Raw,
+                    Time = C.Time
+                }));
         }
     }
 }
