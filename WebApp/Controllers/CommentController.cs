@@ -50,6 +50,7 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{pageNum}")]
+        [Authorize(Roles = "Admin")]
         public IActionResult GetComments(int pageNum)
         {
             return Json(context
