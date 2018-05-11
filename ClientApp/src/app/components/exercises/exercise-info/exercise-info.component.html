@@ -1,9 +1,7 @@
 <div class="container" *ngIf="exerciseInfo">
   <h1>{{exerciseInfo.Name}}</h1>
   <h3>Баллы за выполнение: {{exerciseInfo.Score}}</h3>
-  <p>
-    {{exerciseInfo.TaskText}}
-  </p>
+  <markdown [data]="exerciseInfo.TaskText"></markdown>
   <h2>Отправка решения</h2>
   <form (ngSubmit)="onSubmit()">
     <div class="form-group">
