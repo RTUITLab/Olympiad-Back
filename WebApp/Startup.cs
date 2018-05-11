@@ -20,6 +20,7 @@ using Newtonsoft.Json.Serialization;
 using WebApp.Services.Interfaces;
 using WebApp.Services;
 using System.Collections.Concurrent;
+using Newtonsoft.Json;
 
 namespace WebApp
 {
@@ -36,8 +37,7 @@ namespace WebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("OlympDB"),
-                b => b.MigrationsAssembly("WebApp")));
+                options.UseSqlServer(Configuration.GetConnectionString("RemoteDB")));
 
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
@@ -113,6 +113,7 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
+            System.Console.WriteLine(JsonConvert.SerializeObject(env));
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
