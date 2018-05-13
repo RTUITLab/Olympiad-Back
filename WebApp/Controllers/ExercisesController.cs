@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using WebApp.Models.Responces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using System.IO;
 
 namespace WebApp.Controllers
 {
@@ -107,6 +108,21 @@ namespace WebApp.Controllers
             var exeIdentity = mapper.Map<Exercise>(model);
             applicationDbContext.Exercises.Add(exeIdentity);
             applicationDbContext.SaveChanges();
+        }
+
+        [HttpPost("{id}")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult Post(IFormFile markdown, Guid id) 
+        {
+            System.Console.WriteLine(markdown.Length);
+            var target = applicationDbContext.Exercises.FirstOrDefault(e => e.ExerciseID == id);
+            if (target == null) return NotFound();
+            using (var reader = new StreamReader(markdown.OpenReadStream()))
+            {
+                target.ExerciseTask = reader.ReadToEnd();
+            }
+            applicationDbContext.SaveChanges();
+            return Ok();
         }
     }
 }
