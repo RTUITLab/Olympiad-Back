@@ -4,7 +4,6 @@ import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { LoadingModule, ANIMATION_TYPES } from 'ngx-loading';
-import { MarkdownModule } from 'angular2-markdown';
 import {MatTableModule} from '@angular/material/table';
 
 
@@ -19,6 +18,7 @@ import { AuthGuardService } from './services/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
 import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
+import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 
 const routes: Route[] = [
   {
@@ -69,10 +69,31 @@ const routes: Route[] = [
     LoadingModule.forRoot({
       animationType: ANIMATION_TYPES.cubeGrid
     }),
-    MarkdownModule.forRoot(),
+    MarkdownModule.forRoot({
+      provide: MarkedOptions,
+      useFactory: markedOptionsFactory,
+    }),
     MatTableModule
   ],
   providers: [UserStateService, ExerciseService, AuthGuardService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+export function markedOptionsFactory(): MarkedOptions {
+  const renderer = new MarkedRenderer();
+
+  renderer.blockquote = (text: string) => {
+    return '<blockquote style="border-color:rgb(0,140,186); color:black">' + text + '</blockquote>';
+  };
+
+  return {
+    renderer: renderer,
+    gfm: true,
+    tables: true,
+    breaks: false,
+    pedantic: false,
+    sanitize: false,
+    smartLists: true,
+    smartypants: false,
+  };
+}

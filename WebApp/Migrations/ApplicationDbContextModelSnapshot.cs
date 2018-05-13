@@ -125,6 +125,22 @@ namespace WebApp.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("Models.Comment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Raw");
+
+                    b.Property<DateTime>("Time");
+
+                    b.Property<Guid>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("Models.Exercise", b =>
                 {
                     b.Property<Guid>("ExerciseID")

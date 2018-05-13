@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace WebApp.Migrations
 {
-    public partial class NewWithGuid : Migration
+    public partial class Last : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -48,6 +48,20 @@ namespace WebApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Raw = table.Column<string>(nullable: true),
+                    Time = table.Column<DateTime>(nullable: false),
+                    UserId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,6 +192,8 @@ namespace WebApp.Migrations
                     ExerciseId = table.Column<Guid>(nullable: false),
                     Language = table.Column<string>(nullable: true),
                     Raw = table.Column<string>(nullable: true),
+                    Status = table.Column<int>(nullable: false),
+                    Time = table.Column<DateTime>(nullable: false),
                     UserId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
@@ -194,6 +210,26 @@ namespace WebApp.Migrations
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TestData",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    ExerciseId = table.Column<Guid>(nullable: false),
+                    InData = table.Column<string>(nullable: true),
+                    OutData = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TestData", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TestData_Exercises_ExerciseId",
+                        column: x => x.ExerciseId,
+                        principalTable: "Exercises",
+                        principalColumn: "ExerciseID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -245,6 +281,11 @@ namespace WebApp.Migrations
                 name: "IX_Solutions_UserId",
                 table: "Solutions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TestData_ExerciseId",
+                table: "TestData",
+                column: "ExerciseId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -265,16 +306,22 @@ namespace WebApp.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Comments");
+
+            migrationBuilder.DropTable(
                 name: "Solutions");
+
+            migrationBuilder.DropTable(
+                name: "TestData");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Exercises");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "Exercises");
         }
     }
 }
