@@ -44,7 +44,7 @@ export class MenuComponent implements OnInit {
   }
 
   needMenu() {
-    return true;
+    return this.exercises.length > 0;
   }
 
   login() {

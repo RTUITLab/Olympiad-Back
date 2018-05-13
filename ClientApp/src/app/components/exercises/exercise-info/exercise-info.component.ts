@@ -10,18 +10,21 @@ import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusCo
 import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
 import { Subject } from 'rxjs/Subject';
+import { LoadingComponent } from '../../helpers/loading-component';
 
 @Component({
   selector: 'app-exercise-info',
   templateUrl: './exercise-info.component.html',
   styleUrls: ['./exercise-info.component.css']
 })
-export class ExerciseInfoComponent implements OnInit {
+export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
 
 
 
   constructor(private exercisesService: ExerciseService,
-    private route: ActivatedRoute) { }
+    private route: ActivatedRoute) {
+    super();
+  }
 
   exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
@@ -36,11 +39,13 @@ export class ExerciseInfoComponent implements OnInit {
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
         console.log(this.model.ExerciseId);
+        this.startLoading();
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
           exInfo => {
             this.exerciseInfo = exInfo;
             console.log(exInfo);
+            this.stopLoading();
           },
           fail => {
             console.log(fail);

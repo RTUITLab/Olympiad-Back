@@ -14,7 +14,7 @@ export class LoginComponent extends LoadingComponent implements OnInit {
   constructor(private userState: UserStateService, private router: Router) {
     super();
   }
-  model = new LoginViewModel('tester@test.com', '123456');
+  model = new LoginViewModel('', '');
 
   onSubmit() {
     this.startLoading();
