@@ -27,6 +27,5 @@ namespace WebApp
                     app.AddJsonFile("appsettings.Secret.json", true))
                 .UseStartup<Startup>()
                 .Build();
-        private static string GetKeyVaultEndpoint() => Environment.GetEnvironmentVariable("KEYVAULT_ENDPOINT");
     }
 }
