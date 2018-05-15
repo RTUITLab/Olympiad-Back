@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Executor
 {
@@ -37,13 +38,13 @@ namespace Executor
             this.dbManager = dbManager;
         }
 
-        public void Start(CancellationToken cancellationToken)
+        public async Task Start(CancellationToken cancellationToken)
         {
             while (true)
             {
                 dbManager.GetInQueueSolutions()
                     .ForEach(S => executeWorkers[S.Language].Handle(S));
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 Console.WriteLine("end sleep");
             }
         }

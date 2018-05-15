@@ -36,7 +36,7 @@ namespace Executor
             };
             var dbManager = new DbManager(userName, password, address);
             var executor = new Executor(dbManager);
-            executor.Start(CancellationToken.None);
+            await executor.Start(CancellationToken.None);
             Console.ReadLine();
         }
 
