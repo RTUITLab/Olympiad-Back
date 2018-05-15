@@ -44,6 +44,10 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
           .subscribe(
           exInfo => {
             this.exerciseInfo = exInfo;
+            this.exerciseInfo
+              .Solutions
+              .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+              .forEach(s => this.solutionCheckLoop(s.Id));
             console.log(exInfo);
             this.stopLoading();
           },
