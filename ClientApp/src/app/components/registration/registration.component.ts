@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 export class RegistrationComponent implements OnInit {
   loading = false;
   errorMessage: string;
-  model: RegisterViewModel = new RegisterViewModel('test@test.com', '123456', 'FirstName hah', 'Student ID TEST');
+  model: RegisterViewModel = new RegisterViewModel('', '', '', '');
   constructor(private userService: UserStateService, private router: Router) { }
 
   ngOnInit() {
