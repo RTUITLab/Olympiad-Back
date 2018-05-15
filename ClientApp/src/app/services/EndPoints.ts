@@ -1,4 +1,4 @@
 export class EndPoints {
-    protected readonly ip = 'localhost';
+    protected readonly ip = 'ittestsback.azurewebsites.net';
     protected readonly port = 80;
 }
