@@ -2,7 +2,7 @@ FROM node as node
 WORKDIR /app
 COPY ./package.json /app/
 RUN npm install
-COPY ClientApp/ /app/
+COPY ./ /app/
 RUN npm run build
 
 FROM nginx:1.13
