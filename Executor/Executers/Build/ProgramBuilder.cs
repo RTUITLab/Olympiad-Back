@@ -25,7 +25,9 @@ namespace Executor.Executers.Build
 
         private Task buildingTask;
         private SemaphoreSlim buildingSemaphore;
-        public ProgramBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution)
+        public ProgramBuilder(
+            Action<Guid, SolutionStatus> proccessSolution,
+            Action<DirectoryInfo, Solution> finishBuildSolution)
         {
             buildingSemaphore = new SemaphoreSlim(0, 1);
             buildingTask = Task.Run(BuildLoop);
