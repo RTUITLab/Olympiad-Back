@@ -24,7 +24,7 @@ export class UserStateService extends EndPoints {
     const observable = new Observable<LoginResponse>(obs => {
       observer = obs;
     });
-    this.http.post<LoginResponse>(`http://${this.ip}:${this.port}/api/auth/login`, model, { responseType: 'json' })
+    this.http.post<LoginResponse>(`${this.ip}:${this.port}/api/auth/login`, model, { responseType: 'json' })
       .subscribe(
       event => {
         this.InitUser(event);
@@ -40,7 +40,7 @@ export class UserStateService extends EndPoints {
     const observable = new Observable<string>(obs => {
       observer = obs;
     });
-    this.http.post(`http://${this.ip}:${this.port}/api/account`, model, { responseType: 'text' })
+    this.http.post(`${this.ip}:${this.port}/api/account`, model, { responseType: 'text' })
       .subscribe(
       event => observer.next(event),
       error => observer.error('Email занят')
@@ -52,7 +52,7 @@ export class UserStateService extends EndPoints {
     const observable = new Observable<boolean>(obs => {
       observer = obs;
     });
-    this.http.get<LoginResponse>(`http://${this.ip}:${this.port}/api/auth/getme`,
+    this.http.get<LoginResponse>(`${this.ip}:${this.port}/api/auth/getme`,
       { headers: { 'Authorization': `Bearer ${token}` } })
       .subscribe(
         response => {
