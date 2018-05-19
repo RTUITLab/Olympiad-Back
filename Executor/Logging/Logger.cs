@@ -26,12 +26,17 @@ namespace Executor.Logging
             => Log(Loglevel.Debug, message);
         public void LogInformation(string message)
             => Log(Loglevel.Information, message);
+        public void LogWarning(string message, Exception ex = null)
+        { 
+            Log(Loglevel.Warning, message);
+            Log(Loglevel.Warning, ex?.StackTrace);
+        }
 
         public void Log(Loglevel level, string message)
         {
             if (level < loglevel)
                 return;
-            System.Console.WriteLine($"{level} {startMessage} {targetType.FullName}: {message}");
+            System.Console.WriteLine($"{level} | {targetType.FullName} | {startMessage} | {message}");
         }
         
     }

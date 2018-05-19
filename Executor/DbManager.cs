@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using Executor.Logging;
 
 namespace Executor
 {
@@ -16,9 +17,14 @@ namespace Executor
         private readonly string userName;
         private readonly string password;
         private string accessToken;
+        private Logger<DbManager> logger;
 
         public DbManager(string userName, string password, string remoteAdress)
         {
+            logger = Logger<DbManager>.CreateLogger(remoteAdress);
+            logger.LogInformation($"user name : {userName}");
+            logger.LogInformation($"password : {password}");
+            logger.LogInformation($"address : {remoteAdress}");
             client = new HttpClient()
             {
                 BaseAddress = new Uri(remoteAdress)
@@ -51,6 +57,7 @@ namespace Executor
                 return JsonConvert.DeserializeObject<T>(strResponse);
             } catch (Exception ex)
             {
+                logger.LogWarning($"cant invoke GET action with path >{path}<, try auth", ex);
                 Authorize();
                 return Invoke<T>(path);
             }
@@ -58,8 +65,17 @@ namespace Executor
 
         private T InvokePost<T>(string path)
         {
-            var strResponse = client.PostAsync(path, null).Result.Content.ReadAsStringAsync().Result;
-            return JsonConvert.DeserializeObject<T>(strResponse);
+            try
+            {
+                var strResponse = client.PostAsync(path, null).Result.Content.ReadAsStringAsync().Result;
+                return JsonConvert.DeserializeObject<T>(strResponse);
+            } catch (Exception ex)
+            {
+                logger.LogWarning($"cant invoke POST action with path >{path}<, try auth", ex);
+                Authorize();
+                return InvokePost<T>(path);
+            }
+            
         }
 
 
@@ -70,17 +86,20 @@ namespace Executor
                 UserName = userName,
                 Password = password
             };
-            var body = new StringContent(JsonConvert.SerializeObject(pack), Encoding.UTF8, "application/json");
+            var content = JsonConvert.SerializeObject(pack);
+            logger.LogDebug($"auth with data {content}");
+            var body = new StringContent(content, Encoding.UTF8, "application/json");
             string strResponse = "";
             try
             {
-
                 strResponse = client.PostAsync("api/auth/login", body).Result.Content.ReadAsStringAsync().Result;
             }
             catch (Exception ex)
             {
-
+                logger.LogWarning($"exception when auth", ex);
+                throw;
             }
+            logger.LogDebug($"server return {strResponse}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JsonConvert.DeserializeObject<JObject>(strResponse)["Token"].ToString());
         }
     }
