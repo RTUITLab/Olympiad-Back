@@ -4,4 +4,5 @@ export class User {
     public Email: string;
     public StudentID: string;
     public Token: string;
+    public Roles: string[];
 }

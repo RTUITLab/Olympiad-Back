@@ -19,6 +19,9 @@
       <button [disabled]="submitDisabled">Отправить решение</button>
     </div>
   </form>
+  <div *ngIf="isAdmin()">
+    <app-exercise-inout [exId]="exerciseInfo.Id"></app-exercise-inout>
+  </div>
 
   <h2>Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
   <table>
@@ -30,7 +33,7 @@
     </thead>
     <tbody>
 
-      <tr *ngFor="let sol of exerciseInfo.Solutions.reverse()">
+      <tr *ngFor="let sol of exerciseInfo.Solutions">
         <td>{{prettyTime(sol.Time)}}</td>
         <td>{{normalLang(sol.Language)}}</td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>

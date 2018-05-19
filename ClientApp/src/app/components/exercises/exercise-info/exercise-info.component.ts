@@ -11,6 +11,7 @@ import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
 import { Subject } from 'rxjs/Subject';
 import { LoadingComponent } from '../../helpers/loading-component';
+import { UserStateService } from '../../../services/user-state.service';
 
 @Component({
   selector: 'app-exercise-info',
@@ -21,7 +22,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
 
 
 
-  constructor(private exercisesService: ExerciseService,
+  constructor(
+    private userService: UserStateService,
+    private exercisesService: ExerciseService,
     private route: ActivatedRoute) {
     super();
   }
@@ -43,6 +46,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
           exInfo => {
+            exInfo.Solutions = exInfo.Solutions.reverse();
             this.exerciseInfo = exInfo;
             this.exerciseInfo
               .Solutions
@@ -75,7 +79,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
         if (!target) {
-          this.exerciseInfo.Solutions.push(solution);
+          this.exerciseInfo.Solutions.unshift(solution);
         } else {
           target.Status = solution.Status;
         }
@@ -96,6 +100,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
 
   normalLang(lang: string): string {
     return LanguageConverter.normalFromWeb(lang);
+  }
+  isAdmin(): boolean {
+    return this.userService.currentUser.Roles.indexOf('Admin') !== -1;
   }
 }
 

@@ -14,6 +14,7 @@ import { ExerciseListResponse } from '../models/Responses/ExerciseListResponse';
 import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
 import { SolutionStatus } from '../models/SolutionStatus';
 import { Solution } from '../models/Solution';
+import { ExerciseData } from '../models/ExerciseData';
 
 @Injectable()
 export class ExerciseService extends EndPoints implements OnInit {
@@ -103,6 +104,27 @@ export class ExerciseService extends EndPoints implements OnInit {
         if (success) {
           observer.next(success);
           this.solutionsBehavior.next(success);
+        }
+      },
+      failure => {
+        console.log('error');
+        console.log(failure);
+      }
+      );
+    return observable;
+  }
+
+  getExerciseInOutData(exerciseId: string): Observable<ExerciseData[]> {
+    let observer: Subscriber<ExerciseData[]>;
+    const observable = new Observable<ExerciseData[]>(obs => {
+      observer = obs;
+    });
+    this.http.get<ExerciseData[]>(
+      `${this.ip}:${this.port}/api/ExerciseData/${exerciseId}`,
+      { headers: this.userService.authHeaders() }).subscribe(
+      success => {
+        if (success) {
+          observer.next(success);
         }
       },
       failure => {
