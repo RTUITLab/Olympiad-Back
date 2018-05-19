@@ -61,14 +61,20 @@ namespace Executor.Executers.Build
                     solution.Status = SolutionStatus.InProcessing;
                     proccessSolution(solution.Id, SolutionStatus.InProcessing);
                     logger.LogInformation($"build solution {solution.Id}");
-                    var result = Build(solution);
+                    DirectoryInfo binsDirectory = default(DirectoryInfo);
+                    try {
+                        binsDirectory = Build(solution);                        
+                    } 
+                    catch (Exception ex) {
+                        logger.LogWarning($"Build solution {solution.Id} with error", ex);
+                    }
                     if (solution.Status == SolutionStatus.CompileError)
                     {
                         proccessSolution(solution.Id, SolutionStatus.CompileError);
                         continue;
                     }
                     logger.LogInformation("finish build solution");
-                    finishBuildSolution(result, solution);
+                    finishBuildSolution(binsDirectory, solution);
                 }
             }
         }
