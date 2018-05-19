@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Executor.Logging;
 namespace Executor.Executers.Run
 {
     abstract class ProgramRunner
@@ -21,9 +21,10 @@ namespace Executor.Executers.Run
 
         private Task runningTask;
         private SemaphoreSlim runningSemaphore;
-
+        private Logger<ProgramRunner> logger;
         public ProgramRunner(Action<Guid, SolutionStatus> proccessSolution)
         {
+            logger = Logger<ProgramRunner>.CreateLogger(Language);
             runningSemaphore = new SemaphoreSlim(0, 1);
             runningTask = Task.Run(RunLoop);
             this.proccessSolution = proccessSolution;
@@ -32,6 +33,7 @@ namespace Executor.Executers.Run
 
         public void Add(Solution solution, ExerciseData[] datas, DirectoryInfo binaries)
         {
+            logger.LogInformation($"add solution {solution.Id}, {datas.Length} datas");
             if (solutionsQueue.Any(S => S.solution.Id == solution.Id)) return;
             solutionsQueue.Enqueue((solution, datas, binaries));
             runningSemaphore.Release();
@@ -41,9 +43,10 @@ namespace Executor.Executers.Run
             while (true)
             {
                 await runningSemaphore.WaitAsync();
-                while (solutionsQueue.TryDequeue(out var solution))
+                while (solutionsQueue.TryDequeue(out var solutionPack))
                 {
-                    HandleSolution(solution);
+                    logger.LogInformation($"Sheck builded solution {solutionPack.solution.Id}");
+                    HandleSolution(solutionPack);
                 }
             }
         }
@@ -54,6 +57,7 @@ namespace Executor.Executers.Run
             foreach (var data in task.testData)
             {
                 result = Run(task.binaries, data);
+                logger.LogTrace($"check solution {task.solution.Id} in {data.InData} out {data.OutData} result: {result}");
                 if (result != SolutionStatus.Sucessful)
                 {
                     break;
@@ -81,11 +85,11 @@ namespace Executor.Executers.Run
             proccess.OutputDataReceived += (E, A) => { };
             proccess.ErrorDataReceived += (E, A) => { };
             var success = proccess.Start();
+            logger.LogTrace($"started proccess {proccess.Id} successs: {success}");
             proccess.BeginErrorReadLine();
             proccess.BeginOutputReadLine();
-            Console.WriteLine($"Started bool {success}");
             proccess.WaitForExit();
-
+            logger.LogTrace($"process ${proccess.Id} finish");
             var status = CheckSolution(binaries.FullName, testData.OutData);
             binaries.Delete(true);
 
