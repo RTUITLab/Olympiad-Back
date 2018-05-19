@@ -67,6 +67,7 @@ namespace Executor.Executers.Build
                         proccessSolution(solution.Id, SolutionStatus.CompileError);
                         continue;
                     }
+                    logger.LogInformation("finish build solution");
                     finishBuildSolution(result, solution);
                 }
             }
@@ -106,8 +107,8 @@ namespace Executor.Executers.Build
             }
             var binPath = GetBinariesDirectory(sourceDir);
             var newBinPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            logger.LogDebug($"path for binaries: {newBinPath}");
             Directory.Move(binPath, newBinPath);
+            logger.LogDebug($"path for binaries: {newBinPath}");
             return new DirectoryInfo(newBinPath);
         }
         private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
