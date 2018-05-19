@@ -16,8 +16,7 @@ namespace Executor
         private readonly HttpClient client;
         private readonly string userName;
         private readonly string password;
-        private string accessToken;
-        private Logger<DbManager> logger;
+        private readonly Logger<DbManager> logger;
 
         public DbManager(string userName, string password, string remoteAdress)
         {

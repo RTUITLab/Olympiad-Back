@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-
+using Executor.Logging;
 namespace Executor.Executers
 {
     class ExecuteWorker
@@ -14,6 +14,7 @@ namespace Executor.Executers
         private readonly Func<Guid, ExerciseData[]> getTests;
         private ProgramBuilder builder;
         private ProgramRunner runner;
+        private Logger<ExecuteWorker> logger;
 
         public string Lang => lang;
 
@@ -25,6 +26,7 @@ namespace Executor.Executers
             Func<Guid, ExerciseData[]> getTests)
         {
             this.lang = lang;
+            logger = Logger<ExecuteWorker>.CreateLogger(lang);
             this.getTests = getTests;
             Action<DirectoryInfo, Solution> act = BuildFinished;
             builder = Activator.CreateInstance(builderType, new object[]
@@ -45,6 +47,7 @@ namespace Executor.Executers
 
         private void BuildFinished(DirectoryInfo dirInfo, Solution solution)
         {
+            logger.LogInformation($"Finish build solution {solution.Id}, run it");
             runner.Add(solution, getTests(solution.ExerciseId), dirInfo);
         }
     }
