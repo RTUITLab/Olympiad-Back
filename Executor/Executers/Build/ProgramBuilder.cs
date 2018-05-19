@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Executor.Logging;
 namespace Executor.Executers.Build
 {
     abstract class ProgramBuilder
@@ -25,10 +25,12 @@ namespace Executor.Executers.Build
 
         private Task buildingTask;
         private SemaphoreSlim buildingSemaphore;
+        private Logger<ProgramBuilder> logger;
         public ProgramBuilder(
             Action<Guid, SolutionStatus> proccessSolution,
             Action<DirectoryInfo, Solution> finishBuildSolution)
         {
+            logger = Logger<ProgramBuilder>.CreateLogger(Language);
             buildingSemaphore = new SemaphoreSlim(0, 1);
             buildingTask = Task.Run(BuildLoop);
             this.proccessSolution = proccessSolution;
@@ -36,6 +38,7 @@ namespace Executor.Executers.Build
         }
         public void Add(Solution solution)
         {
+            logger.LogDebug($"Add solution {solution.Id}");
             if (solutionsQueue.Any(S => S.Id == solution.Id)) return;
             solutionsQueue.Enqueue(solution);
             try
@@ -51,11 +54,13 @@ namespace Executor.Executers.Build
         {
             while (true)
             {
+                logger.LogDebug("go to waiting");
                 await buildingSemaphore.WaitAsync();
                 while (solutionsQueue.TryDequeue(out var solution))
                 {
                     solution.Status = SolutionStatus.InProcessing;
                     proccessSolution(solution.Id, SolutionStatus.InProcessing);
+                    logger.LogInformation($"build solution {solution.Id}");
                     var result = Build(solution);
                     if (solution.Status == SolutionStatus.CompileError)
                     {
@@ -70,7 +75,7 @@ namespace Executor.Executers.Build
         protected virtual DirectoryInfo Build(Solution solution)
         {
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
-            Console.WriteLine($"new dir is {sourceDir.FullName}");
+            logger.LogDebug($"new dir is {sourceDir.FullName}");
             File.WriteAllText(Path.Combine(sourceDir.FullName, ProgramFileName), solution.Raw, new UTF8Encoding(false));
 
             var proccess = new Process()
@@ -89,9 +94,11 @@ namespace Executor.Executers.Build
             proccess.OutputDataReceived += (D, E) => Proccess_OutputDataReceived(D, E, ref solStatus);
             proccess.ErrorDataReceived += (E, A) => Proccess_OutputDataReceived(E, A, ref solStatus);
             var success = proccess.Start();
+            logger.LogDebug($"started proccess {proccess.Id}, success: {success}");
             proccess.BeginErrorReadLine();
             proccess.BeginOutputReadLine();
             proccess.WaitForExit();
+            logger.LogDebug($"proccess exited {proccess.Id}");
             if (solStatus == SolutionStatus.CompileError)
             {
                 solution.Status = SolutionStatus.CompileError;
@@ -99,13 +106,16 @@ namespace Executor.Executers.Build
             }
             var binPath = GetBinariesDirectory(sourceDir);
             var newBinPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            logger.LogDebug($"path for binaries: {newBinPath}");
             Directory.Move(binPath, newBinPath);
             return new DirectoryInfo(newBinPath);
         }
         private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
         {
+            logger.LogTrace($"out data: {e.Data}");
             if (e.Data?.Contains(BuildFailedCondition) == true)
             {
+                logger.LogInformation($"message {e.Data} contains {BuildFailedCondition}, generate CompileError status");
                 status = SolutionStatus.CompileError;
             }
         }
