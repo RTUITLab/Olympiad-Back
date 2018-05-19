@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Linq;
 namespace Executor.Logging
 {
     internal class Logger<T>
@@ -27,8 +29,13 @@ namespace Executor.Logging
         public void LogInformation(string message)
             => Log(Loglevel.Information, message);
         public void LogWarning(string message, Exception ex = null)
-        { 
+        {
             Log(Loglevel.Warning, message);
+            Log(Loglevel.Warning, ex?.Message);
+            Log(Loglevel.Warning, ex?.Data.Keys
+                .Cast<object>()
+                .Select(K => $"{K}: {ex.Data[K]}")
+                .Aggregate((a, b) => $"{a} {b}"));
             Log(Loglevel.Warning, ex?.StackTrace);
         }
 
