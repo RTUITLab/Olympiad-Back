@@ -72,7 +72,8 @@ export class UserStateService extends EndPoints {
       StudentID: response.StudentId,
       id: response.Id,
       Token: response.Token,
-      Email: response.Email
+      Email: response.Email,
+      Roles: this.parseJwt(response.Token)
     };
     localStorage.setItem('userToken', response.Token);
     this.usersBehavior.next(user);
@@ -82,5 +83,10 @@ export class UserStateService extends EndPoints {
     return new HttpHeaders({
       'Authorization': `Bearer ${localStorage.getItem('userToken')}`
     });
+  }
+  private parseJwt (token: string): string[] {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace('-', '+').replace('_', '/');
+    return JSON.parse(window.atob(base64))['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
   }
 }

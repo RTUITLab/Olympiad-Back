@@ -19,6 +19,7 @@ import { ExerciseInfoComponent } from './components/exercises/exercise-info/exer
 import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
+import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
 
 const routes: Route[] = [
   {
@@ -59,7 +60,8 @@ const routes: Route[] = [
     ExercisesListComponent,
     ExerciseInfoComponent,
     MenuComponent,
-    OverviewComponent
+    OverviewComponent,
+    ExerciseInoutComponent
   ],
   imports: [
     BrowserModule,

@@ -65,7 +65,7 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{exerciseId}")]
-        [Authorize(Roles = "Executor")]
+        [Authorize(Roles = "Executor,Admin")]
         public IActionResult Get(Guid exerciseId)
         {
             return Json(context.TestData.Where(P => P.ExerciseId == exerciseId).ToList());
