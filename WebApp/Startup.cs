@@ -107,7 +107,7 @@ namespace WebApp
 
             services.AddCors();
             services.AddTransient<IEmailSender, EmailService>();
-            services.AddSingleton(Checker(services.BuildServiceProvider()));
+            services.AddSingleton(Checker);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -142,7 +142,8 @@ namespace WebApp
                     defaults: new { controller = "Home", action = "Index" });
             });
 
-            CreateRoles(serviceProvider).Wait();
+            if (Configuration.GetValue<bool>("INIT_ROLES"))
+                CreateRoles(serviceProvider).Wait();
 
         }
 
