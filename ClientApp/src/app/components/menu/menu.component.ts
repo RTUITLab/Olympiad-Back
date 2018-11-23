@@ -15,7 +15,7 @@ import { ExerciseListResponse } from '../../models/Responses/ExerciseListRespons
 export class MenuComponent implements OnInit {
 
   user: User;
-  exercises: ExerciseListResponse[];
+  exercises: ExerciseListResponse[] = [];
   constructor(
     private router: Router,
     private usersService: UserStateService,
@@ -25,7 +25,7 @@ export class MenuComponent implements OnInit {
     this.usersService.currentUserStream.subscribe(U => {
       this.user = U;
       this.exercisesService.getExercises()
-        .subscribe(exercises => this.exercises = exercises);
+        .subscribe(exercises => this.exercises = exercises || []);
     });
     this.exercisesService.solutionStream.subscribe(S => {
       if (!S) {
@@ -43,10 +43,18 @@ export class MenuComponent implements OnInit {
     });
   }
 
-  needMenu() {
-    return this.exercises.length > 0;
+  needMenu(): boolean {
+    // if (!this.exercises) {
+      return true;
+    // }
+    // return this.exercises.length > 0;
   }
-
+  exCount(): number {
+    if (!this.exercises) {
+      return 0;
+    }
+    return this.exercises.length;
+  }
   login() {
     this.router.navigate(['login']);
   }

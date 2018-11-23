@@ -17,12 +17,12 @@ using WebApp.Helpers;
 using Microsoft.AspNetCore.Identity;
 using WebApp.Auth;
 using Newtonsoft.Json.Serialization;
-//using WebApp.Services.Interfaces;
 using WebApp.Services;
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
 using WebApp.Configure.Models;
 using WebApp.Configure.Models.Invokations;
+using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
 
@@ -40,6 +40,9 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.Configure<DefaultUserSettings>(Configuration.GetSection(nameof(DefaultUserSettings)));
+
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services
                     .AddDbContext<ApplicationDbContext>(options =>
@@ -67,7 +70,7 @@ namespace WebApp
 
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
+                ValidateIssuer = false,
                 ValidIssuer = jwtAppSettingOptions.Issuer,
 
                 ValidateAudience = false,

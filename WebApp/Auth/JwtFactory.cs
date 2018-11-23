@@ -47,7 +47,7 @@ namespace WebApp.Auth
         public ClaimsIdentity GenerateClaimsIdentity(string userName, string id, string[] roles)
         {
             var claims = new Claim[roles.Length + 1];
-            for (int i = 0; i < roles.Length; i++)
+            for (var i = 0; i < roles.Length; i++)
             {
                 claims[i] = new Claim(ClaimTypes.Role, roles[i]);
             }

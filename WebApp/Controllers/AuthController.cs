@@ -71,7 +71,7 @@ namespace WebApp.Controllers
             var user = await _userManager.FindByIdAsync(_userManager.GetUserId(User));
             if (user == null)
                 return StatusCode(403);
-            return Json(GenerateResponse(user));
+            return Json(await GenerateResponse(user));
         }
 
         private async Task<LoginResponse> GenerateResponse(User user, string token = "")
