@@ -31,8 +31,8 @@ namespace Executor
                     G.Key,
                     G.First(T => T.BaseType == typeof(ProgramBuilder)),
                     G.First(T => T.BaseType == typeof(ProgramRunner)),
-                    (GUID, STATUS) => dbManager.SaveChanges(GUID, STATUS),
-                    I => dbManager.GetExerciseData(I)
+                    dbManager.SaveChanges,
+                    dbManager.GetExerciseData
                     ))
                 .ToDictionary(E => E.Lang);
             this.dbManager = dbManager;
@@ -42,9 +42,9 @@ namespace Executor
         {
             while (true)
             {
-                dbManager.GetInQueueSolutions()
-                    .ForEach(S => executeWorkers[S.Language].Handle(S));
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                (await dbManager.GetInQueueSolutions())
+                    .ForEach(s => executeWorkers[s.Language].Handle(s));
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
                 Console.WriteLine("end sleep");
             }
         }

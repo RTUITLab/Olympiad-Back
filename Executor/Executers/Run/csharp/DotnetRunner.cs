@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Models;
 
 namespace Executor.Executers.Run.dotnet
@@ -10,7 +11,7 @@ namespace Executor.Executers.Run.dotnet
     [Language("csharp")]
     class JavaRunner : ProgramRunner
     {
-        public JavaRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
+        public JavaRunner(Func<Guid, SolutionStatus, Task> processSolution) : base(processSolution)
         {
         }
     }

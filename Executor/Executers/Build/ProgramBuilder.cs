@@ -14,9 +14,9 @@ namespace Executor.Executers.Build
 {
     abstract class ProgramBuilder
     {
-        protected readonly ConcurrentQueue<Solution> solutionsQueue = new ConcurrentQueue<Solution>();
-        private readonly Action<Guid, SolutionStatus> proccessSolution;
-        private readonly Action<DirectoryInfo, Solution> finishBuildSolution;
+        private readonly BlockingCollection<Solution> solutionQueue = new BlockingCollection<Solution>();
+        private readonly Func<Guid, SolutionStatus, Task> processSolution;
+        private readonly Func<DirectoryInfo, Solution, Task> finishBuildSolution;
 
         //protected abstract DirectoryInfo Build(Solution solution);
         protected abstract string ProgramFileName { get; }
@@ -24,58 +24,48 @@ namespace Executor.Executers.Build
         protected abstract string GetBinariesDirectory(DirectoryInfo startDir);
 
         private Task buildingTask;
-        private SemaphoreSlim buildingSemaphore;
-        private Logger<ProgramBuilder> logger;
+        private readonly SemaphoreSlim buildingSemaphore;
+        private readonly Logger<ProgramBuilder> logger;
         public ProgramBuilder(
-            Action<Guid, SolutionStatus> proccessSolution,
-            Action<DirectoryInfo, Solution> finishBuildSolution)
+            Func<Guid, SolutionStatus, Task> processSolution,
+            Func<DirectoryInfo, Solution, Task> finishBuildSolution)
         {
             logger = Logger<ProgramBuilder>.CreateLogger(Language);
             buildingSemaphore = new SemaphoreSlim(0, 1);
             buildingTask = Task.Run(BuildLoop);
-            this.proccessSolution = proccessSolution;
+            this.processSolution = processSolution;
             this.finishBuildSolution = finishBuildSolution;
         }
         public void Add(Solution solution)
         {
             logger.LogDebug($"Add solution {solution.Id}");
-            if (solutionsQueue.Any(S => S.Id == solution.Id)) return;
-            solutionsQueue.Enqueue(solution);
-            try
-            {
-                buildingSemaphore.Release();
-            }
-            catch (SemaphoreFullException)
-            {
-            }
-            catch { throw; }
+            if (solutionQueue.Any(s => s.Id == solution.Id)) return;
+            solutionQueue.Add(solution);
         }
         private async Task BuildLoop()
         {
-            while (true)
+            await Task.Yield();
+            foreach (var solution in solutionQueue.GetConsumingEnumerable())
             {
-                logger.LogDebug("go to waiting");
-                await buildingSemaphore.WaitAsync();
-                while (solutionsQueue.TryDequeue(out var solution))
+                solution.Status = SolutionStatus.InProcessing;
+                await processSolution(solution.Id, SolutionStatus.InProcessing);
+                logger.LogInformation($"build solution {solution.Id}");
+                var binsDirectory = default(DirectoryInfo);
+                try
                 {
-                    solution.Status = SolutionStatus.InProcessing;
-                    proccessSolution(solution.Id, SolutionStatus.InProcessing);
-                    logger.LogInformation($"build solution {solution.Id}");
-                    DirectoryInfo binsDirectory = default(DirectoryInfo);
-                    try {
-                        binsDirectory = Build(solution);                        
-                    } 
-                    catch (Exception ex) {
-                        logger.LogWarning($"Build solution {solution.Id} with error", ex);
-                    }
-                    if (solution.Status == SolutionStatus.CompileError)
-                    {
-                        proccessSolution(solution.Id, SolutionStatus.CompileError);
-                        continue;
-                    }
-                    logger.LogInformation("finish build solution");
-                    finishBuildSolution(binsDirectory, solution);
+                    binsDirectory = Build(solution);
                 }
+                catch (Exception ex)
+                {
+                    logger.LogWarning($"Build solution {solution.Id} with error", ex);
+                }
+                if (solution.Status == SolutionStatus.CompileError)
+                {
+                    await processSolution(solution.Id, SolutionStatus.CompileError);
+                    continue;
+                }
+                logger.LogInformation("finish build solution");
+                await finishBuildSolution(binsDirectory, solution);
             }
         }
 
@@ -85,7 +75,7 @@ namespace Executor.Executers.Build
             logger.LogDebug($"new dir is {sourceDir.FullName}");
             File.WriteAllText(Path.Combine(sourceDir.FullName, ProgramFileName), solution.Raw, new UTF8Encoding(false));
 
-            var proccess = new Process()
+            var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -97,15 +87,15 @@ namespace Executor.Executers.Build
                 },
             };
 
-            SolutionStatus solStatus = SolutionStatus.InProcessing;
-            proccess.OutputDataReceived += (D, E) => Proccess_OutputDataReceived(D, E, ref solStatus);
-            proccess.ErrorDataReceived += (E, A) => Proccess_OutputDataReceived(E, A, ref solStatus);
-            var success = proccess.Start();
-            logger.LogDebug($"started proccess {proccess.Id}, success: {success}");
-            proccess.BeginErrorReadLine();
-            proccess.BeginOutputReadLine();
-            proccess.WaitForExit();
-            logger.LogDebug($"proccess exited {proccess.Id}");
+            var solStatus = SolutionStatus.InProcessing;
+            process.OutputDataReceived += (d, e) => ProcessOutputDataReceived(d, e, ref solStatus);
+            process.ErrorDataReceived += (e, a) => ProcessOutputDataReceived(e, a, ref solStatus);
+            var success = process.Start();
+            logger.LogDebug($"started process {process.Id}, success: {success}");
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+            logger.LogDebug($"process exited {process.Id}");
             if (solStatus == SolutionStatus.CompileError)
             {
                 solution.Status = SolutionStatus.CompileError;
@@ -117,23 +107,15 @@ namespace Executor.Executers.Build
             logger.LogDebug($"path for binaries: {newBinPath}");
             return new DirectoryInfo(newBinPath);
         }
-        private void Proccess_OutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
+        private void ProcessOutputDataReceived(object sender, DataReceivedEventArgs e, ref SolutionStatus status)
         {
             logger.LogTrace($"out data: {e.Data}");
-            if (e.Data?.Contains(BuildFailedCondition) == true)
-            {
-                logger.LogInformation($"message {e.Data} contains {BuildFailedCondition}, generate CompileError status");
-                status = SolutionStatus.CompileError;
-            }
+            if (e.Data?.Contains(BuildFailedCondition) != true) return;
+            logger.LogInformation($"message {e.Data} contains {BuildFailedCondition}, generate CompileError status");
+            status = SolutionStatus.CompileError;
         }
         private string lang;
-        private string Language
-        {
-            get
-            {
-                return lang ??
-                    (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
-            }
-        }
+        private string Language => lang ??
+                                   (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
     }
 }

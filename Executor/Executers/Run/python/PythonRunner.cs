@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Executor.Executers.Run.python
 {
     [Language("python")]
     class PythonRunner : ProgramRunner
     {
-        public PythonRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
+        public PythonRunner(Func<Guid, SolutionStatus, Task> processSolution) : base(processSolution)
         {
         }
     }
