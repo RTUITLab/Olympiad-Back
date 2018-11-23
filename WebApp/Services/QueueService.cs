@@ -10,7 +10,7 @@ namespace WebApp.Services
 {
     public class QueueService : IQueueChecker
     {
-        ConcurrentQueue<Guid> queue = new ConcurrentQueue<Guid>();
+        private readonly ConcurrentQueue<Guid> queue = new ConcurrentQueue<Guid>();
 
         public void PutInQueue(Guid solutionId)
         {

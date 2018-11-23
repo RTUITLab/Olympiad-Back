@@ -31,7 +31,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<Array<ExerciseListResponse>>(
-      `${this.ip}:${this.port}/api/exercises`,
+      `${this.baseUrl}/api/exercises`,
       { headers: this.userService.authHeaders() })
       .subscribe(
       success => {
@@ -53,9 +53,8 @@ export class ExerciseService extends EndPoints implements OnInit {
 
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
-
     this.http.post(
-      `${this.ip}:${this.port}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
+      `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
       formData, { headers: this.userService.authHeaders(), responseType: 'text' })
       .subscribe(
       success => {
@@ -78,7 +77,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<ExerciseInfo>(
-      `${this.ip}:${this.port}/api/exercises/${exId}`,
+      `${this.baseUrl}/api/exercises/${exId}`,
       { headers: this.userService.authHeaders() })
       .subscribe(
       success => {
@@ -98,7 +97,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<Solution>(
-      `${this.ip}:${this.port}/api/check/${solutionId}`,
+      `${this.baseUrl}/api/check/${solutionId}`,
       { headers: this.userService.authHeaders() }).subscribe(
       success => {
         if (success) {
@@ -120,7 +119,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<ExerciseData[]>(
-      `${this.ip}:${this.port}/api/ExerciseData/${exerciseId}`,
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`,
       { headers: this.userService.authHeaders() }).subscribe(
       success => {
         if (success) {
