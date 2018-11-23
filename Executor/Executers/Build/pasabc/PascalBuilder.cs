@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using Models;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using Models;
+using System.Threading.Tasks;
 
 namespace Executor.Executers.Build.PascalABC
 {
     [Language("pasabc")]
     class CBuilder : ProgramBuilder
     {
-        public CBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public CBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution) : base(processSolution, finishBuildSolution)
         {
         }
 

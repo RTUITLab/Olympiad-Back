@@ -7,74 +7,75 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Tasks;
 using Executor.Logging;
+using Executor.Models.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Executor
 {
     class DbManager
     {
+        public const string DbManagerHttpClientName = nameof(DbManagerHttpClientName);
+
+        private readonly IOptions<UserInfo> options;
         private readonly HttpClient client;
-        private readonly string userName;
-        private readonly string password;
         private readonly Logger<DbManager> logger;
 
-        public DbManager(string userName, string password, string remoteAdress)
+        public DbManager(
+            IOptions<UserInfo> options,
+            IHttpClientFactory httpClientFactory)
         {
-            logger = Logger<DbManager>.CreateLogger(remoteAdress);
-            logger.LogInformation($"user name : {userName}");
-            logger.LogInformation($"password : {password}");
-            logger.LogInformation($"address : {remoteAdress}");
-            client = new HttpClient()
-            {
-                BaseAddress = new Uri(remoteAdress)
-            };
-            this.userName = userName;
-            this.password = password;
+            this.options = options;
+            logger = Logger<DbManager>.CreateLogger();
+            logger.LogInformation($"user name : {options.Value.UserName}");
+            client = httpClientFactory.CreateClient(DbManagerHttpClientName);
             Authorize();
         }
-        public ExerciseData[] GetExerciseData(Guid exId)
+        public Task<ExerciseData[]> GetExerciseData(Guid exId)
         {
             return Invoke<ExerciseData[]>($"api/ExerciseData/{exId}");
         }
 
-        public void SaveChanges(Guid solutionId, SolutionStatus status)
-        {
-            InvokePost<object>($"api/Executor/{solutionId}/{(int)status}");
-        }
+        public Task SaveChanges(Guid solutionId, SolutionStatus status)
+            => InvokePost<object>($"api/Executor/{solutionId}/{(int)status}");
 
-        public List<Solution> GetInQueueSolutions()
+
+        public Task<List<Solution>> GetInQueueSolutions()
         {
             return Invoke<List<Solution>>("api/Executor");
         }
 
 
-        private T Invoke<T>(string path)
+        private async Task<T> Invoke<T>(string path)
         {
             try
             {
-                var strResponse = client.GetStringAsync(path).Result;
+                var strResponse = await client.GetStringAsync(path);
                 return JsonConvert.DeserializeObject<T>(strResponse);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogWarning($"cant invoke GET action with path >{path}<, try auth", ex);
                 Authorize();
-                return Invoke<T>(path);
+                return await Invoke<T>(path);
             }
         }
 
-        private T InvokePost<T>(string path)
+        private async Task<T> InvokePost<T>(string path)
         {
             try
             {
-                var strResponse = client.PostAsync(path, null).Result.Content.ReadAsStringAsync().Result;
+                var strResponse = await client.PostAsync(path, null).Result.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<T>(strResponse);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogWarning($"cant invoke POST action with path >{path}<, try auth", ex);
                 Authorize();
-                return InvokePost<T>(path);
+                return await InvokePost<T>(path);
             }
-            
+
         }
 
 
@@ -82,13 +83,12 @@ namespace Executor
         {
             var pack = new
             {
-                UserName = userName,
-                Password = password
+                options.Value.UserName,
+                options.Value.Password
             };
             var content = JsonConvert.SerializeObject(pack);
-            logger.LogDebug($"auth with data {content}");
             var body = new StringContent(content, Encoding.UTF8, "application/json");
-            string strResponse = "";
+            string strResponse;
             try
             {
                 strResponse = client.PostAsync("api/auth/login", body).Result.Content.ReadAsStringAsync().Result;

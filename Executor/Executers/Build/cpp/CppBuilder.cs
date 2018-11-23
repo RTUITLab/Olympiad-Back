@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Models;
 
 namespace Executor.Executers.Build.Cpp
@@ -11,7 +12,7 @@ namespace Executor.Executers.Build.Cpp
     [Language("cpp")]
     class CppBuilder : ProgramBuilder
     {
-        public CppBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public CppBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution) : base(processSolution, finishBuildSolution)
         {
         }
 

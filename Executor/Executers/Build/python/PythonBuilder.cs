@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Models;
 
 namespace Executor.Executers.Build.Python
@@ -11,7 +12,7 @@ namespace Executor.Executers.Build.Python
     [Language("python")]
     class PythonBuilder : ProgramBuilder
     {
-        public PythonBuilder(Action<Guid, SolutionStatus> proccessSolution, Action<DirectoryInfo, Solution> finishBuildSolution) : base(proccessSolution, finishBuildSolution)
+        public PythonBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution) : base(processSolution, finishBuildSolution)
         {
         }
 

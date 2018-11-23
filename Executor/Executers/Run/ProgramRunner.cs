@@ -14,46 +14,42 @@ namespace Executor.Executers.Run
 {
     abstract class ProgramRunner
     {
-        protected readonly ConcurrentQueue<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionsQueue
+        private readonly BlockingCollection<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionQueue
+            = new BlockingCollection<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)>();
+        private readonly ConcurrentQueue<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionsQueue
             = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
-        private readonly Action<Guid, SolutionStatus> proccessSolution;
+        private readonly Func<Guid, SolutionStatus, Task> processSolution;
 
 
         private Task runningTask;
-        private SemaphoreSlim runningSemaphore;
-        private Logger<ProgramRunner> logger;
-        public ProgramRunner(Action<Guid, SolutionStatus> proccessSolution)
+        private readonly Logger<ProgramRunner> logger;
+        public ProgramRunner(Func<Guid, SolutionStatus, Task> processSolution)
         {
             logger = Logger<ProgramRunner>.CreateLogger(Language);
-            runningSemaphore = new SemaphoreSlim(0, 1);
             runningTask = Task.Run(RunLoop);
-            this.proccessSolution = proccessSolution;
+            this.processSolution = processSolution;
         }
 
 
-        public void Add(Solution solution, ExerciseData[] datas, DirectoryInfo binaries)
+        public void Add(Solution solution, ExerciseData[] data, DirectoryInfo binaries)
         {
-            logger.LogInformation($"add solution {solution.Id}, {datas.Length} datas");
-            if (solutionsQueue.Any(S => S.solution.Id == solution.Id)) return;
-            solutionsQueue.Enqueue((solution, datas, binaries));
-            runningSemaphore.Release();
+            logger.LogInformation($"add solution {solution.Id}, data count: {data.Length}");
+            if (solutionQueue.Any(s => s.solution.Id == solution.Id)) return;
+            solutionQueue.Add((solution, data, binaries));
         }
         private async Task RunLoop()
         {
-            while (true)
+            await Task.Yield();
+            foreach (var solutionPack in solutionQueue.GetConsumingEnumerable())
             {
-                await runningSemaphore.WaitAsync();
-                while (solutionsQueue.TryDequeue(out var solutionPack))
-                {
-                    logger.LogInformation($"Sheck builded solution {solutionPack.solution.Id}");
-                    HandleSolution(solutionPack);
-                }
+                logger.LogInformation($"Check built solution {solutionPack.solution.Id}");
+                await HandleSolution(solutionPack);
             }
         }
 
-        private void HandleSolution((Solution solution, ExerciseData[] testData, DirectoryInfo binaries) task)
+        private async Task HandleSolution((Solution solution, ExerciseData[] testData, DirectoryInfo binaries) task)
         {
-            SolutionStatus result = SolutionStatus.Sucessful;
+            var result = SolutionStatus.Sucessful;
             foreach (var data in task.testData)
             {
                 result = Run(task.binaries, data);
@@ -64,13 +60,13 @@ namespace Executor.Executers.Run
                 }
             }
             task.solution.Status = result;
-            proccessSolution(task.solution.Id, result);
+            await processSolution(task.solution.Id, result);
         }
 
         protected SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData)
         {
             File.WriteAllText(Path.Combine(binaries.FullName, "in.txt"), testData.InData);
-            var proccess = new Process()
+            var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
@@ -82,40 +78,31 @@ namespace Executor.Executers.Run
                 },
             };
 
-            proccess.OutputDataReceived += (E, A) => { };
-            proccess.ErrorDataReceived += (E, A) => { };
-            var success = proccess.Start();
-            logger.LogTrace($"started proccess {proccess.Id} successs: {success}");
-            proccess.BeginErrorReadLine();
-            proccess.BeginOutputReadLine();
-            proccess.WaitForExit();
-            logger.LogTrace($"process ${proccess.Id} finish");
+            process.OutputDataReceived += (e, a) => { };
+            process.ErrorDataReceived += (e, a) => { };
+            var success = process.Start();
+            logger.LogTrace($"started process {process.Id} success: {success}");
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+            logger.LogTrace($"process ${process.Id} finish");
             var status = CheckSolution(binaries.FullName, testData.OutData);
             binaries.Delete(true);
 
             return status;
         }
 
-        private SolutionStatus CheckSolution(string filesPath, string correctOut)
+        private static SolutionStatus CheckSolution(string filesPath, string correctOut)
         {
             var errorData = File.ReadAllText(Path.Combine(filesPath, "err.txt")).TrimEnd();
             if (errorData != string.Empty)
                 return SolutionStatus.RunTimeError;
 
             var outData = File.ReadAllText(Path.Combine(filesPath, "out.txt")).TrimEnd();
-            if (outData == correctOut.TrimEnd())
-                return SolutionStatus.Sucessful;
-
-            return SolutionStatus.WrongAnswer;
+            return outData == correctOut.TrimEnd() ? SolutionStatus.Sucessful : SolutionStatus.WrongAnswer;
         }
         private string lang;
-        private string Language
-        {
-            get
-            {
-                return lang ??
-                    (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
-            }
-        }
+        private string Language => lang ??
+                                   (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
     }
 }

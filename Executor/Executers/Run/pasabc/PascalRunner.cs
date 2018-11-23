@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Executor.Executers.Run.PascalABC
 {
     [Language("pasabc")]
     class PascalRunner : ProgramRunner
     {
-        public PascalRunner(Action<Guid, SolutionStatus> proccessSolution) : base(proccessSolution)
+        public PascalRunner(Func<Guid, SolutionStatus, Task> processSolution) : base(processSolution)
         {
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -9,7 +10,11 @@ using Executor.Executers.Build;
 using Executor.Executers.Build.dotnet;
 using Executor.Executers.Run;
 using Executor.Executers.Run.dotnet;
+using Executor.Models.Settings;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,75 +23,45 @@ namespace Executor
 {
     class Program
     {
-        const string settingsFileName = "appsettings.Secret.json";
-        static JObject fileContent;
-        static string address;
-        static string userName;
-        static string password;
+        private const string SettingsFileName = "appsettings.Secret.json";
+        private static IConfiguration configuration;
+
 
         static async Task Main(string[] args)
         {
-            if (!SetupConfigs(args))
-                return;
+            configuration = SetupConfigs(args);
+
+            var servicesProvider = BuildServices();
+
             var builder = new ImagesBuilder();
+
             if (!builder.CheckAndBuildImages())
             {
                 Console.WriteLine("host must have docker!");
                 return;
-            };
-            var dbManager = new DbManager(userName, password, address);
-            var executor = new Executor(dbManager);
+            }
+            var executor = servicesProvider.GetRequiredService<Executor>();
             await executor.Start(CancellationToken.None);
             Console.ReadLine();
         }
 
-        static bool SetupConfigs(string[] args)
-        {
-            if (args.Contains("-help"))
-            {
-                WriteHelp();
-                return false;
-            }
-            try
-            {
-                password = GetParameter(args, "-password") ?? GetParameter("password") ?? Throw($"Can't get info for password");
-                userName = GetParameter(args, "-username") ?? GetParameter("username") ?? Throw($"Can't get info for username");
-                address = GetParameter(args, "-host") ?? GetParameter("host") ?? Throw($"Can't get info for apiadress");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error {ex.Message}, use -help for get help");
-                return false;
-            }
-            return true;
-        }
+        private static IServiceProvider BuildServices()
+            => new ServiceCollection()
+                .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
+                .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
+                .AddTransient<DbManager>()
+                .AddTransient<Executor>()
+                .AddHttpClient(DbManager.DbManagerHttpClientName, (sp, client) =>
+                {
+                    var options = sp.GetRequiredService<IOptions<StartSettings>>();
+                    client.BaseAddress = new Uri(options.Value.Address);
+                })
+                .Services
+                .BuildServiceProvider();
 
-
-        static string GetParameter(string[] args, string paramKey)
-            => args.SkipWhile(s => s != paramKey).Skip(1).FirstOrDefault();
-
-        static string GetParameter(string paramKey)
-            => /*fileContent?[paramKey]?.ToString() ?? */
-                (File.Exists(settingsFileName) ?
-                    (fileContent = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(settingsFileName) ?? "{}"))?[paramKey]?.ToString()
-                    : null);
-        static string Throw(string message) => throw new Exception(message);
-
-        static void WriteHelp()
-        {
-            System.Console.WriteLine($"Use with parameters if need, or write in {settingsFileName} file");
-            System.Console.WriteLine($"parameters use first, file have low propoty");
-            System.Console.WriteLine("---------------");
-            System.Console.WriteLine("terminal parameters");
-            System.Console.WriteLine("host for specific host");
-            System.Console.WriteLine("username for specific username");
-            System.Console.WriteLine("password for specific password");
-
-            System.Console.WriteLine("---------------");
-            System.Console.WriteLine("json file parameters");
-            System.Console.WriteLine("-host for specific host");
-            System.Console.WriteLine("-username for specific username");
-            System.Console.WriteLine("-password for specific password");
-        }
+        private static IConfiguration SetupConfigs(string[] args)
+            => new ConfigurationBuilder()
+                .AddJsonFile(SettingsFileName)
+                .Build();
     }
 }
