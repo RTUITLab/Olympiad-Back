@@ -37,7 +37,7 @@ namespace WebApp.Controllers
             var inStream = inFile.OpenReadStream();
             var outStream = outFile.OpenReadStream();
 
-            if (!context.Exercises.Any(P => P.ExerciseID == exerciseId))
+            if (!context.Exercises.Any(e => e.ExerciseID == exerciseId))
             {
                 return BadRequest();
             }
@@ -68,7 +68,7 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Executor,Admin")]
         public IActionResult Get(Guid exerciseId)
         {
-            return Json(context.TestData.Where(P => P.ExerciseId == exerciseId).ToList());
+            return Json(context.TestData.Where(p => p.ExerciseId == exerciseId).ToList());
         }
     }
 }
