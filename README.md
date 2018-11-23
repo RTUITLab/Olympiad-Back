@@ -14,7 +14,7 @@
 ### WebApp 
 Представляет BackEnd системыв, хранящий все необходимые сведения
 
-1. Создать файл \WebApp\appsettings.Secret.json
+1. Создать файл _./WebApp/appsettings.Secret.json_
 
 2. Заполнить файл следующим содержанием
 
@@ -24,16 +24,14 @@
         "SecretKey":"Любая случайная строка, желатьельно длиной около 30-и символов"
     },
     "ConnectionStrings": {
-        "RemoteDB": "Строка подключения к SqlServer"
+        "PostgresDataBase": "Строка подключения к базе данных Postgres"
     }
 }
 ```
 
-Для поля **RemoteDB** можно использовать строку подключения к реальному удаленному SQL Server, например 
-> _Server=server_host,1433;Initial Catalog=database_name;Persist Security Info=False;User ID=user_login;Password=user_password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;_ 
+Для поля ```ConnectionStrings:PostgresDataBase``` нужно использовать сроку подключения к реальной базе Postgres, например
+> _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;Integrated Security=true;_ 
 
-Или использовать локальную базу данных, например имея строку 
-> _Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=OlympiadDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False_
 
 3. После настройки БД необходимо применить миграцию к существующей пустой БД, для этого необходимо в папке WebApp выполнить команду ```dotnet ef database update```. эта команда создаст необходимую базу данных, с необходимыми таблицами.
 
@@ -48,6 +46,30 @@
 
 Запуск:
 
-1. В папке /ClientApp выполнить команду ```npm instal``` Эта команда установит все зависимости в папку __node_modules__.
+1. В папке _./ClientApp_ выполнить команду ```npm instal``` Эта команда установит все зависимости в папку __node_modules__.
 
-2. 
+2. Для запуска сайта необходимо выполнить комманду ```npm start```. После выполнения команды в браузере можно открыть сайт по [адресу localhost:4200](http://localhost:4200), где будет видно сам сайт.
+
+### Executor
+
+Программа, которая подключается к WebApp и выполняет присланные участниками задания, и выполняет проверку.
+
+Необходимо чтобы на системе, где установлена данная программа был установлен **Docker**, так как именно с его помощью выполняется код участников.
+
+1. Создать файл _./Executor/appsettings.Secret.json_
+
+2. Заполнить файл следующим содержанием
+
+```json
+{
+    "StartSettings": {
+        "Address":"http://localhost:55471"
+    },
+    "UserInfo": {
+        "UserName":"Имя пользователя, имеющего право Executor",
+        "Password":"Пароль этого пользователя "
+    }
+}
+```
+
+3. После создания такого файла можно выполнять команту ```dotnet run``` в папке _./Executor_
