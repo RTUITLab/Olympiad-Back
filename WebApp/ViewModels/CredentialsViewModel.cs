@@ -1,4 +1,4 @@
-﻿using FluentValidation.Attributes;
+﻿using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using WebApp.ViewModels.Validations;
 
 namespace WebApp.ViewModels
 {
-    [Validator(typeof(CredentialsViewModelValidator))]
+    //[Validator(typeof(CredentialsViewModelValidator))] TODO validation
     public class CredentialsViewModel
     {
         public string UserName { get; set; }

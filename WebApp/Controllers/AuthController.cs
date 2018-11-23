@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
 using Newtonsoft.Json;
@@ -58,7 +59,7 @@ namespace WebApp.Controllers
                 return BadRequest();
             }
 
-            var loginInfo = GenerateResponse(user);
+            var loginInfo = await GenerateResponse(user);
             return Json(loginInfo);
         }
 
@@ -73,15 +74,15 @@ namespace WebApp.Controllers
             return Json(GenerateResponse(user));
         }
 
-        private LoginResponse GenerateResponse(User user, string token = "")
+        private async Task<LoginResponse> GenerateResponse(User user, string token = "")
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
             loginInfo.Token = token;
 
-            var sum = context
+            var sum = await context
                  .Exercises
-                 .Where(E => E.Solution.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
-                 .Sum(E => E.Score);
+                 .Where(e => e.Solution.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
+                 .SumAsync(e => e.Score);
             loginInfo.TotalScore = sum;
             
             var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), _userManager.GetRolesAsync(user).Result.ToArray());

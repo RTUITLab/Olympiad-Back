@@ -261,3 +261,5 @@ __pycache__/
 *.pyc
 /WebApp/appsettings.Secret.json
 /Executor/appsettings.Secret.json
+
+ClientApp/src/environments/environment\.prod\.ts

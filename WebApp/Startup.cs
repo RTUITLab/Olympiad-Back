@@ -17,10 +17,14 @@ using WebApp.Helpers;
 using Microsoft.AspNetCore.Identity;
 using WebApp.Auth;
 using Newtonsoft.Json.Serialization;
-using WebApp.Services.Interfaces;
+//using WebApp.Services.Interfaces;
 using WebApp.Services;
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
+using WebApp.Configure.Models;
+using WebApp.Configure.Models.Invokations;
+using WebApp.Services.Configure;
+using WebApp.Services.Interfaces;
 
 namespace WebApp
 {
@@ -36,8 +40,15 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("RemoteDB")));
+            if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
+                services
+                    .AddDbContext<ApplicationDbContext>(options =>
+                        options.UseInMemoryDatabase("local"));
+            else
+                services
+                .AddEntityFrameworkNpgsql()
+                .AddDbContext<ApplicationDbContext>(options =>
+                    options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
 
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
@@ -59,7 +70,7 @@ namespace WebApp
                 ValidateIssuer = true,
                 ValidIssuer = jwtAppSettingOptions.Issuer,
 
-                ValidateAudience = true,
+                ValidateAudience = false,
                 ValidAudience = jwtAppSettingOptions.Audience,
 
                 ValidateIssuerSigningKey = true,
@@ -107,7 +118,13 @@ namespace WebApp
 
             services.AddCors();
             services.AddTransient<IEmailSender, EmailService>();
-            services.AddSingleton(Checker);
+            services.AddSingleton<IQueueChecker, QueueService>();
+
+
+            services.AddWebAppConfigure()
+                .AddTransientConfigure<DefaultRolesConfigure>(Configuration.GetValue<bool>("INIT_ROLES"))
+                .AddTransientConfigure<FillQueue>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -130,6 +147,7 @@ namespace WebApp
                     .AllowAnyHeader());
 
             app.UseStaticFiles();
+            app.UseWebAppConfigure();
             app.UseAuthentication();
             app.UseMvc(routes =>
             {
@@ -141,61 +159,8 @@ namespace WebApp
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
-
-            if (Configuration.GetValue<bool>("INIT_ROLES"))
-                CreateRoles(serviceProvider).Wait();
-
         }
 
-        public async Task CreateRoles(IServiceProvider serviceProvider)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-            var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
-            string[] roles = { "Admin", "User", "Executor" };
-            IdentityResult roleResult;
 
-            foreach (var role in roles)
-            {
-                var roleExist = await roleManager.RoleExistsAsync(role);
-                if (!roleExist)
-                {
-                    var identityRole = new IdentityRole<Guid> { Name = role };
-                    roleResult = await roleManager.CreateAsync(identityRole);
-                }
-            }
-            var config = Configuration.GetSection("UserSettings");
-            var waitRoles = config.GetSection("Roles")
-                .AsEnumerable()
-                .Select(KVP => KVP.Value)
-                .Where(V => V != null)
-                .ToList();
-            if (config["UserEmail"] == null || waitRoles.Count == 0)
-                return;
-
-            var powerUser = await userManager.FindByEmailAsync(Configuration.GetSection("UserSettings")["UserEmail"]);
-            if (powerUser == null)
-                return;
-
-            foreach (var role in waitRoles)
-            {
-                if (!await userManager.IsInRoleAsync(powerUser, role))
-                    await userManager.AddToRoleAsync(powerUser, role);
-            }
-        }
-
-        public IQueueChecker Checker(IServiceProvider serviceProvider)
-        {
-            IQueueChecker queue = new QueueService();
-            var dbManager = serviceProvider.GetRequiredService<ApplicationDbContext>();
-
-            dbManager
-                .Solutions
-                .Where(S => S.Status == SolutionStatus.InQueue)
-                .Select(S => S.Id)
-                .ToList()
-                .ForEach(Id => queue.PutInQueue(Id));
-
-            return queue;
-        }
     }
 }
