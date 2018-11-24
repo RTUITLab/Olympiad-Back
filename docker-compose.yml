@@ -13,6 +13,8 @@ services:
       - 5000:80
     environment:
       - INIT_ROLES=true
+    volumes:
+      - ./WebApp/appsettings.Secret.json:/app/appsettings.Secret.json
     depends_on: 
       - postgres
   docker:
@@ -25,3 +27,5 @@ services:
     depends_on: 
       - docker
       - webapp
+    volumes:
+      - ./Executor/appsettings.Secret.json:/app/appsettings.Secret.json
