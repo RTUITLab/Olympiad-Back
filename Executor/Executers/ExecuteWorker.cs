@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Docker.DotNet;
 using Executor.Logging;
 namespace Executor.Executers
 {
@@ -24,13 +25,14 @@ namespace Executor.Executers
             Type builderType,
             Type runnerType,
             Func<Guid, SolutionStatus, Task> processSolution,
-            Func<Guid, Task<ExerciseData[]>> getTests)
+            Func<Guid, Task<ExerciseData[]>> getTests,
+            IDockerClient dockerClient)
         {
             this.lang = lang;
             logger = Logger<ExecuteWorker>.CreateLogger(lang);
             this.getTests = getTests;
             Func<DirectoryInfo, Solution, Task> act = BuildFinished;
-            builder = Activator.CreateInstance(builderType, processSolution, act) as ProgramBuilder;
+            builder = Activator.CreateInstance(builderType, processSolution, act, dockerClient) as ProgramBuilder;
             runner = Activator.CreateInstance(runnerType, processSolution) as ProgramRunner;
         }
 

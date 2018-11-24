@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Docker.DotNet;
 using Models;
 
 namespace Executor.Executers.Build.C
@@ -12,7 +13,7 @@ namespace Executor.Executers.Build.C
     [Language("c")]
     class PythonBuilder : ProgramBuilder
     {
-        public PythonBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution) : base(processSolution, finishBuildSolution)
+        public PythonBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
 
