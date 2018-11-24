@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Docker.DotNet;
 using Executor.Executers.Build;
 using Executor.Executers.Build.dotnet;
 using Executor.Executers.Run;
@@ -33,9 +34,9 @@ namespace Executor
 
             var servicesProvider = BuildServices();
 
-            var builder = new ImagesBuilder();
+            var builder = servicesProvider.GetService<ImagesBuilder>();
 
-            if (!builder.CheckAndBuildImages())
+            if (!await builder.CheckAndBuildImages())
             {
                 Console.WriteLine("host must have docker!");
                 return;
@@ -57,6 +58,12 @@ namespace Executor
                     client.BaseAddress = new Uri(options.Value.Address);
                 })
                 .Services
+                .AddSingleton<IDockerClient>(sp =>
+                {
+                    var options = sp.GetRequiredService<IOptions<StartSettings>>();
+                    return new DockerClientConfiguration(new Uri(options.Value.DockerEndPoint)).CreateClient();
+                })
+                .AddSingleton<ImagesBuilder>()
                 .BuildServiceProvider();
 
         private static IConfiguration SetupConfigs(string[] args)
