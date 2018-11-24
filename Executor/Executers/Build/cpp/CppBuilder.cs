@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Docker.DotNet;
 using Models;
 
 namespace Executor.Executers.Build.Cpp
@@ -12,7 +13,7 @@ namespace Executor.Executers.Build.Cpp
     [Language("cpp")]
     class CppBuilder : ProgramBuilder
     {
-        public CppBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution) : base(processSolution, finishBuildSolution)
+        public CppBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
 
