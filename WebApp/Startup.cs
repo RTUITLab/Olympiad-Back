@@ -125,9 +125,10 @@ namespace WebApp
 
 
             services.AddWebAppConfigure()
+                .AddTransientConfigure<AutoMigrate>()
                 .AddTransientConfigure<DefaultRolesConfigure>(Configuration.GetValue<bool>("INIT_ROLES"))
                 .AddTransientConfigure<FillQueue>();
-
+            services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -149,7 +150,6 @@ namespace WebApp
                     .AllowAnyMethod()
                     .AllowAnyHeader());
 
-            app.UseStaticFiles();
             app.UseWebAppConfigure();
             app.UseAuthentication();
             app.UseMvc(routes =>
@@ -162,6 +162,8 @@ namespace WebApp
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
+            app.UseSpaStaticFiles();
+            app.UseSpa(spa => { });
         }
 
 
