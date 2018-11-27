@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { LoadingModule, ANIMATION_TYPES } from 'ngx-loading';
+import { NgxLoadingModule, ngxLoadingAnimationTypes  } from 'ngx-loading';
 import {MatTableModule} from '@angular/material/table';
 
 
@@ -68,12 +68,14 @@ const routes: Route[] = [
     RouterModule.forRoot(routes),
     FormsModule,
     HttpClientModule,
-    LoadingModule.forRoot({
-      animationType: ANIMATION_TYPES.cubeGrid
+    NgxLoadingModule.forRoot({
+      animationType: ngxLoadingAnimationTypes.cubeGrid
     }),
     MarkdownModule.forRoot({
-      provide: MarkedOptions,
-      useFactory: markedOptionsFactory,
+      markedOptions: {
+        provide: MarkedOptions,
+        useFactory: markedOptionsFactory,
+      },
     }),
     MatTableModule
   ],
