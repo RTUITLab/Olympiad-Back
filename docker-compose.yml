@@ -10,22 +10,10 @@ services:
       context: .
       dockerfile: ./Dockerfile
     ports: 
-      - 5000:80
+      - 55471:80
     environment:
       - INIT_ROLES=true
     volumes:
       - ./WebApp/appsettings.Secret.json:/app/appsettings.Secret.json
     depends_on: 
       - postgres
-  docker:
-    image: docker:stable-dind
-    privileged: true
-  executor:
-    build:
-      context: .
-      dockerfile: ./Executor/Dockerfile
-    depends_on: 
-      - docker
-      - webapp
-    volumes:
-      - ./Executor/appsettings.Secret.json:/app/appsettings.Secret.json
