@@ -2,14 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs/';
 import { ParamMap } from '@angular/router/src/shared';
 import { Solution } from '../../../models/Solution';
 import { SolutionStatus } from '../../../models/SolutionStatus';
 import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusConverter';
 import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { UserStateService } from '../../../services/user-state.service';
 

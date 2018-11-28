@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { Exercise } from '../models/Exercise';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Subscriber } from 'rxjs/Subscriber';
+import { Subscriber } from 'rxjs';
 import { error } from 'util';
 import { EndPoints } from './EndPoints';
 import { UserStateService } from './user-state.service';
 import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { LanguageConverter } from '../models/Common/LanguageConverter';
 import { ExerciseListResponse } from '../models/Responses/ExerciseListResponse';

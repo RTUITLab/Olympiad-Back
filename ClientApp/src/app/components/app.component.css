@@ -10,7 +10,7 @@
 } */
 
 .header {
-    text-align: center;
+    /* text-align: center; */
     grid-area: header;
 }
 

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs/';
 import { User } from '../models/User';
 import { LoginViewModel } from '../models/ViewModels/LoginViewModel';
 import { RegisterViewModel } from '../models/ViewModels/RegisterViewModel';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
-import { Subscriber } from 'rxjs/Subscriber';
+import { Observable } from 'rxjs/';
+import { Subscriber } from 'rxjs/';
 import { EndPoints } from './EndPoints';
 import { LoginResponse } from '../models/Responses/LoginResponse';
 
