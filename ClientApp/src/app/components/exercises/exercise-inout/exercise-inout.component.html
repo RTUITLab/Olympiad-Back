@@ -1,10 +1,18 @@
 <table>
   <tr>
-    <th>Вход</th>
-    <th>Выход</th>
+    <th>Стандартный ввод</th>
+    <th>Стандартный вывод</th>
   </tr>
   <tr *ngFor="let exData of exerciseDatas">
-    <td>{{exData.InData}}</td>
-    <td>{{exData.OutData}}</td>
+    <td valign="top">
+      <div *ngFor="let inRow of exData.InData.split('\n')">
+        {{inRow}}
+      </div>
+    </td>
+    <td valign="top">
+        <div *ngFor="let inRow of exData.OutData.split('\n')">
+          {{inRow}}
+        </div>
+      </td>
   </tr>
 </table>
