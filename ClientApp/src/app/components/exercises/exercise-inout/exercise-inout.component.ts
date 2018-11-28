@@ -12,7 +12,7 @@ export class ExerciseInoutComponent implements OnInit {
   constructor(
     private exerciseService: ExerciseService
   ) { }
-  private exerciseDatas: ExerciseData[];
+  public exerciseDatas: ExerciseData[];
   ngOnInit() {
     console.log(this.exId);
     this.exerciseService.getExerciseInOutData(this.exId)

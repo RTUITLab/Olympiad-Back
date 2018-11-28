@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Docker.DotNet;
 
 namespace Executor
 {
@@ -18,7 +19,7 @@ namespace Executor
         private DbManager dbManager;
         private readonly Dictionary<string, ExecuteWorker> executeWorkers;
 
-        public Executor(DbManager dbManager)
+        public Executor(DbManager dbManager, IDockerClient dockerClient)
         {
             executeWorkers = Assembly
                 .GetExecutingAssembly()
@@ -32,7 +33,8 @@ namespace Executor
                     G.First(T => T.BaseType == typeof(ProgramBuilder)),
                     G.First(T => T.BaseType == typeof(ProgramRunner)),
                     dbManager.SaveChanges,
-                    dbManager.GetExerciseData
+                    dbManager.GetExerciseData,
+                    dockerClient
                     ))
                 .ToDictionary(E => E.Lang);
             this.dbManager = dbManager;
