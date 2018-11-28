@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using WebApp.Configure.Models.Configure.Interfaces;
@@ -14,19 +15,41 @@ namespace WebApp.Services.Configure
     {
         private readonly RoleManager<IdentityRole<Guid>> roleManager;
         private readonly UserManager<User> userManager;
+        private readonly ILogger<DefaultRolesConfigure> logger;
         private readonly DefaultUserSettings options;
 
         public DefaultRolesConfigure(
-            RoleManager<IdentityRole<Guid>> roleManager, 
+            RoleManager<IdentityRole<Guid>> roleManager,
             UserManager<User> userManager,
-            IOptions<DefaultUserSettings> options)
+            IOptions<DefaultUserSettings> options,
+            ILogger<DefaultRolesConfigure> logger)
         {
             this.roleManager = roleManager;
             this.userManager = userManager;
+            this.logger = logger;
             this.options = options.Value;
         }
 
         public async Task Configure()
+        {
+            if (options.CreateUser)
+                await CreateUser(options.Email, options.Name, options.StudentId, options.Password);
+            await ApplyRoles();
+        }
+
+        private async Task CreateUser(string email, string name, string studentId, string password)
+        {
+            logger.LogInformation($"Creating user {email}");
+            await userManager.CreateAsync(new User
+            {
+                Email = email,
+                UserName = email,
+                FirstName = name,
+                StudentID = studentId
+            }, password);
+        }
+
+        private async Task ApplyRoles()
         {
             string[] roles = { "Admin", "User", "Executor" };
             IdentityResult roleResult;
@@ -38,7 +61,7 @@ namespace WebApp.Services.Configure
                 var identityRole = new IdentityRole<Guid> { Name = role };
                 roleResult = await roleManager.CreateAsync(identityRole);
             }
-            
+
             if (options?.Roles == null || !options.Roles.Any())
                 return;
 

@@ -263,3 +263,5 @@ __pycache__/
 /Executor/appsettings.Secret.json
 
 ClientApp/src/environments/environment\.prod\.ts
+/Executor/Executers/Build/**/*.tar.gz
+/Executor/Executers/Run/**/*.tar.gz
