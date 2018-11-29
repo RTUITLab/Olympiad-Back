@@ -1,12 +1,12 @@
 <ul>
   <li>
-    <button (click)="overView()">Общие положения</button>
+    <button mat-button class="menu_btn" (click)="overView()">Общие положения</button>
   </li>
   <li>
     <button *ngIf="user; else buttonsBlock" class="greeting">Текущий прогресс</button>
     <ng-template #buttonsBlock>
-      <button (click)="login()">Войти в систему</button>
-      <button (click)="register()">Зарегестрироваться</button>
+      <button mat-button class="menu_btn" (click)="login()">Войти в систему</button>
+      <button mat-button class="menu_btn" (click)="register()">Зарегестрироваться</button>
     </ng-template>
   </li>
 </ul>
@@ -14,7 +14,7 @@
 <ul *ngIf="needMenu()">
   <h2>Задания для выполнения ({{exCount()}})</h2>
   <li class="exersiceLi" *ngFor="let ex of exercises">
-    <button (click)="goToExercise(ex.Id)" class="exerciseTask col{{ex.Status}}">{{ex.Name}}</button>
+    <button mat-button (click)="goToExercise(ex.Id)" class="menu_btn col{{ex.Status}}">{{ex.Name}}</button>
     <div></div>
     <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg"/>
   </li>

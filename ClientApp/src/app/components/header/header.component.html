@@ -2,14 +2,18 @@
   <div class="header_text">
     <h3>Тестирование по программированию</h3>
   </div>
-  <div class="UserSessionArea" *ngIf="user">
-    <div class="UserEmail">
-      {{user.Email}}
+    <div class="UserData" *ngIf="user">
+      <span>
+        Имя: {{user.FirstName}}
+      </span>
+      <br>
+      <span>
+        Email: {{user.Email}}
+      </span>
     </div>
-    <div class="logout_btn">
-      <button mat-button (click)="logout()">
-        <img src="./assets/icons/logout.svg">
+    <div class="logout" *ngIf="user">
+      <button mat-button class="logout_btn" (click)="logout()">
+        Выйти
       </button>
     </div>
-  </div>
 </div>
