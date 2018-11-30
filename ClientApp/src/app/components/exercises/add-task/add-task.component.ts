@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserStateService } from '../../../services/user-state.service';
+import { ExerciseInfo } from 'src/app/models/Responses/ExerciseInfo';
 
 
 @Component({
@@ -9,10 +10,10 @@ import { UserStateService } from '../../../services/user-state.service';
 })
 export class AddTaskComponent implements OnInit {
 
+  exerciseInfo: ExerciseInfo = new ExerciseInfo();
   constructor(
     private usersService: UserStateService,
   ) { }
-
   ngOnInit() {
   }
   isAdmin(): boolean {
