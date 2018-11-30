@@ -9,8 +9,16 @@
   <h3>
     Баллы за выполнение: <span id="task_score">{{exerciseInfo.Score}}</span>
   </h3>
-  <markdown id="task_text" [data]="exerciseInfo.TaskText"></markdown>
-  <markdown># asdasd</markdown>
+  <div id="markdown_edit" >
+  <button mat-button (click)="task_text_edit=true" *ngIf="isAdmin()">
+    Изменение
+  </button>
+  <button mat-button (click)="task_text_edit=false" *ngIf="isAdmin()">
+    Просмотр
+  </button>
+    <textarea id="task_text" style="width: 100%;height:60vh;" *ngIf="isAdmin() && task_text_edit===true">{{exerciseInfo.TaskText}}</textarea>
+    <markdown *ngIf="task_text_edit===false" id="task_text" [data]="exerciseInfo.TaskText"></markdown>
+  </div>
 
   <h2>Отправка решения</h2>
   <form (ngSubmit)="onSubmit()">

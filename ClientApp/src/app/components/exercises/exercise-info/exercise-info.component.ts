@@ -13,6 +13,9 @@ import { Subject } from 'rxjs';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
+import { Exercise } from 'src/app/models/Exercise';
+import { TaskEditService } from 'src/app/services/task-edit.service';
+
 
 
 @Component({
@@ -27,6 +30,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   constructor(
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
+    private taskEditServise:TaskEditService,
     private route: ActivatedRoute,
     private router: Router,) {
     super();
@@ -35,22 +39,33 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
 
+  //variable for sending data to the server
+  EditedTask:Exercise;
+
   //variables for task data
   task_name:string;
   task_text:string;
   task_score:number;
-
+  
   //variables for task html elements
   edit_task_btn_doc:HTMLElement;
   task_name_doc:HTMLElement;
   task_score_doc:HTMLElement;
   task_text_doc:HTMLElement;
+  //variable for task_text view
+  task_text_edit:boolean; 
 
   get submitDisabled() {
     return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
   }
   model: SolutionViewModel = new SolutionViewModel();
   ngOnInit() {
+     //set default value to variable for task_text view
+    this.task_text_edit=false;
+    //
+    this.EditedTask={
+
+    }
     this.model.Language = 'Java';
     this.route.paramMap
       .subscribe((params: ParamMap) => {
@@ -111,6 +126,13 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     console.log(this.task_name);
     console.log(this.task_score);
     console.log(this.task_text);
+    this.EditedTask.ExerciseName=this.task_name;
+    this.EditedTask.ExerciseTask=this.task_text;
+    this.EditedTask.Score=this.task_score;
+    console.log(this.EditedTask);
+    //send EditedTask to the server
+    this.taskEditServise.SendEditedTask(this.EditedTask);
+    
   }
   else
   {

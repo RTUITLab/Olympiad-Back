@@ -19,7 +19,7 @@
 <ul *ngIf="needMenu()">
   <h2>Задания для выполнения ({{exCount()}})</h2>
   <li class="exersiceLi" *ngFor="let ex of exercises">
-    <button mat-button class="col{{ex.Status}}" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+    <button class="col{{ex.Status}}" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
     <div></div>
     <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg"/>
   </li>

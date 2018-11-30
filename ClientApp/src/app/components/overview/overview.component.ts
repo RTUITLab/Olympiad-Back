@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { User } from '../../models/User';
+import { UserStateService } from '../../services/user-state.service';
 
 
 @Component({
@@ -8,12 +11,11 @@ import { Component, OnInit } from '@angular/core';
 })
 export class OverviewComponent implements OnInit {
 
-  constructor() { }
-  someCode = `function myFunction() {
-    document.getElementById("demo1").innerHTML = "Hello there!";
-    document.getElementById("demo2").innerHTML = "How are you?";
-  }`;
+  user: User;
+
+  constructor(private router: Router, private usersService: UserStateService) { }
   ngOnInit() {
+    this.usersService.currentUserStream.subscribe(U => this.user = U);
   }
 
 }
