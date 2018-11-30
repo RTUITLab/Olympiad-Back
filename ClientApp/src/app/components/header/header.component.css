@@ -6,7 +6,3 @@
     text-align: center;
     grid-column: 2;
 }
-.UserSessionArea{
-    display: grid;
-    justify-items: flex-end;
-}

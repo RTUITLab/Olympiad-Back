@@ -32,9 +32,9 @@ export class MenuComponent implements OnInit {
         return;
       }
       const targetEx = this.exercises.find(E => E.Id === S.ExerciseId);
-      console.log('target ex');
-      console.log(targetEx);
-      console.log(S);
+      // console.log('target ex');
+      // console.log(targetEx);
+      // console.log(S);
       if (targetEx) {
         if (targetEx.Status < S.Status) {
           targetEx.Status = S.Status;
@@ -42,7 +42,12 @@ export class MenuComponent implements OnInit {
       }
     });
   }
-
+  isAdmin(): boolean {
+    return this.usersService.IsAdmin();
+  }
+  addTask(){
+    this.router.navigate(['add-task']);
+  }
   needMenu(): boolean {
     // if (!this.exercises) {
       return true;
