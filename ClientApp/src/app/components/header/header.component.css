@@ -1,8 +1,12 @@
 .header{
     display: grid;
     grid-template-columns: 1fr 3fr 1fr;
+
 }
-.header_text{
+.header_text{ 
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    font-size: 1.5em;
     text-align: center;
     grid-column: 2;
+    font-variant: small-caps;
 }

@@ -1,21 +1,37 @@
+.container {
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    height: 100%;
+    overflow: scroll;
+}
+
+.h {
+    font-variant: small-caps;
+}
+
+hr {
+    border: none;
+    background-color:#66bb6a; 
+    height: 2px;
+    color: #66bb6a;
+}
+
+.indicators {
+    column-count: 2 ;
+    column-fill: balance;
+    padding: 10px;
+}
+
 img {
-    /* height: 100%; */
-    width: 60%;
-    max-height: 100px;
-    /* align-self: center; */
-    margin: auto;
+    width: 70%;
+    max-height: 4em;
+    align-self: left;
 }
 
 .statusDesc {
-    width: 60%;
-    margin: 4px;
+    width: 70%;
     display: grid;
-    grid-template-columns: 20% auto;
-     padding: 3px;
-    border-left-style: outset;
-    border-left-width: 10px;
-    border-top-left-radius:10px;
-    border-bottom-left-radius: 10px;
+    grid-template-columns: 40% auto; 
+     padding: 20px;
 }
 
 .statusDesc p {
@@ -24,18 +40,21 @@ img {
 }
 
 .red {
-    border-left-color: rgb(216, 0, 39);
+    font-variant: small-caps;
+    color:#ff5f50
+
 }
 
 .blue {
-    border-left-color: rgb(38, 111, 232);
+    font-variant: small-caps;
+    color:#1565c0;
 }
 
 .green {
-    border-left-color: rgb(50, 186, 124);
+    font-variant: small-caps;
+    color: #66bb6a;
 }
 
-.container {
-    height: 100%;
-    overflow: scroll;
-}
+
+
+

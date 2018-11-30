@@ -5,5 +5,7 @@
 
 export const environment = {
   production: false,
-  baseUrl: 'http://localhost:55471'
+  isAdmin: false,
+  replaceAdmin: true,
+  baseUrl: 'https://olympiad.rtuitlab.ru'
 };
