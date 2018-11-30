@@ -6,17 +6,3 @@
     text-align: center;
     grid-column: 2;
 }
-.UserData{
-    grid-column: 1;
-    grid-row:1;
-}
-.logout{
-    grid-column: 3;
-    grid-row:1;
-    justify-self: flex-end;
-}
-.logout_btn{
-    color:blue;
-    border:1px solid blue;
-    
-}

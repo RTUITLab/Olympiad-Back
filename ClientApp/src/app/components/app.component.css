@@ -1,8 +1,8 @@
 .gContainer {
     display: grid;
     width: 100%;
-    grid-template-columns: 300px auto;
-    grid-template-areas: "header header" "menu content"
+    grid-template-columns: 20% 60% 20%;
+    grid-template-areas: "header header header" "menu content user-info"
 }
 
 /* div {
@@ -16,8 +16,15 @@
 
 .menu {
     grid-area: menu;
+    grid-column: 1;
+}
+.user-info {
+    grid-area: user-info;
+    grid-column: 3;
 }
 .content {
     grid-area: content;
     margin-left: 15px;
+    margin-right: 15px;
+    grid-column: 2;
 }

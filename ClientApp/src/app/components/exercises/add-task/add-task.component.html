@@ -1,0 +1,13 @@
+<div>
+    <button id="editTask" mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask()">
+      Изменить данные задания
+    </button>
+    <h1 id="task_name">{{exerciseInfo.Name}}</h1>
+    <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
+  </div>
+  <h3>
+    Баллы за выполнение:<input matInput type="number">
+  </h3>
+  <div id="task_text">
+    {{exerciseInfo.TaskText}}
+  </div>

@@ -6,6 +6,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes  } from 'ngx-loading';
 import {MatTableModule} from '@angular/material/table';
 import { MatButtonModule } from '@angular/material';
+import {MatInputModule} from '@angular/material/input';
+
 
 
 
@@ -22,6 +24,9 @@ import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
+import { UserInfoComponent } from './components/user-info/user-info.component';
+import { AddTaskComponent } from './components/exercises/add-task/add-task.component';
+
 
 const routes: Route[] = [
   {
@@ -39,6 +44,11 @@ const routes: Route[] = [
   {
     path: 'exercises',
     component: ExercisesListComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'add-task',
+    component: AddTaskComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -63,7 +73,10 @@ const routes: Route[] = [
     ExerciseInfoComponent,
     MenuComponent,
     OverviewComponent,
-    ExerciseInoutComponent
+    ExerciseInoutComponent,
+    UserInfoComponent,
+    AddTaskComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -80,7 +93,8 @@ const routes: Route[] = [
       },
     }),
     MatTableModule,
-    MatButtonModule
+    MatButtonModule,
+    MatInputModule
   ],
   providers: [UserStateService, ExerciseService, AuthGuardService],
   bootstrap: [AppComponent]

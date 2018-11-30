@@ -11,7 +11,6 @@ ul {
 button {
     margin: 3px;
     width: 100%;
-    border: none;
     padding: 3px;
 }
 
@@ -25,11 +24,28 @@ img {
     margin: auto;
     width: 80%;
 }
-.col5 {
-    background-color: rgba(50, 186, 125, 0.836);
+.col0 {
+    color:red;
+    border:1px solid red;
 }
-
-.col-1 {
-    background-color: rgb(206, 206, 206);
-    color: black;
+.col1 {
+    color:red;
+    border:1px solid red;
+}
+.col2 {
+    color:red;
+    border:1px solid red;
+}
+.col3 {
+    color:blue;
+    border:1px solid blue;
+}
+.col4 {
+    color:blue;
+    border:1px solid blue;
+}
+.col5 {
+    /* background-color: rgba(50, 186, 125, 0.836); */
+    color:green;
+    border:1px solid green;
 }
