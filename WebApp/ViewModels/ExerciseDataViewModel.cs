@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace WebApp.ViewModels
 {
-    public class ExerciseDataViewModelcs
+    public class ExerciseDataViewModel
     {
         public string InData { get; set; }
         public string OutData { get; set; }
+        public bool IsPublic { get; set; }
     }
 }
