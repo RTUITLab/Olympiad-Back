@@ -69,6 +69,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
           );
       });
   }
+
   setFile(event) {
     this.model.File = event.srcElement.files[0];
   }

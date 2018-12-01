@@ -10,7 +10,7 @@ export class TaskEditService {
   constructor(
     private http: HttpClient,
   ) { }
-  public SendEditedTask(Task: Exercise) {
-    return this.http.post(`${environment.baseUrl}/api/Exercises/${Task}`, Task);
+  public SendEditedTask(Task: Exercise, id: string) {
+    return this.http.post(`${environment.baseUrl}/api/Exercises/${id}`, Task);
   }
 }

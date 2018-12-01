@@ -1,6 +1,12 @@
-<div *ngIf="isAdmin()">
-  <button id="editTask" mat-button class="editTask_btn"(click)="editTask()">
-    Изменить данные задания
+<div *ngIf="isAdmin() && getExercise()">
+  <button (click)="turnOnEditing()">
+    Изменение
+  </button>
+  <button (click)="turnOffEditing()">
+    Просмотр
+  </button>
+  <button (click)="sendEditedTask()">
+    Сохранить
   </button>
   <h1 id="task_name">{{exerciseInfo.Name}}</h1>
   <app-exercise-inout [exId]="exerciseInfo.Id"></app-exercise-inout>
@@ -9,12 +15,6 @@
   Баллы за выполнение: <span id="task_score">{{exerciseInfo.Score}}</span>
 </h3>
 <div id="markdown_edit" >
-<button mat-button (click)="task_text_edit=true">
-  Изменение
-</button>
-<button mat-button (click)="task_text_edit=false">
-  Просмотр
-</button>
   <textarea id="task_text" style="width: 100%;height:60vh;" *ngIf="task_text_edit===true">{{exerciseInfo.TaskText}}</textarea>
-  <markdown *ngIf="task_text_edit===false" id="task_text" [data]="exerciseInfo.TaskText"></markdown>
+  <markdown *ngIf="task_text_edit===false" [data]="exerciseInfo.TaskText"></markdown>
 </div>
