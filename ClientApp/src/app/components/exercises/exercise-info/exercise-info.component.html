@@ -1,24 +1,15 @@
 <div class="container" *ngIf="exerciseInfo">
   <div>
-    <button id="editTask" mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask()">
+    <button mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask()">
       Изменить данные задания
     </button>
-    <h1 id="task_name">{{exerciseInfo.Name}}</h1>
+    <h1>{{exerciseInfo.Name}}</h1>
     <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
   </div>
   <h3>
-    Баллы за выполнение: <span id="task_score">{{exerciseInfo.Score}}</span>
+    Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
   </h3>
-  <div id="markdown_edit" >
-  <button mat-button (click)="task_text_edit=true" *ngIf="isAdmin()">
-    Изменение
-  </button>
-  <button mat-button (click)="task_text_edit=false" *ngIf="isAdmin()">
-    Просмотр
-  </button>
-    <textarea id="task_text" style="width: 100%;height:60vh;" *ngIf="isAdmin() && task_text_edit===true">{{exerciseInfo.TaskText}}</textarea>
-    <markdown *ngIf="task_text_edit===false" id="task_text" [data]="exerciseInfo.TaskText"></markdown>
-  </div>
+    <markdown id="task_text" [data]="exerciseInfo.TaskText"></markdown>
 
   <h2>Отправка решения</h2>
   <form (ngSubmit)="onSubmit()">

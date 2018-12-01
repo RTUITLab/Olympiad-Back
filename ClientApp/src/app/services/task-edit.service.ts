@@ -8,9 +8,9 @@ import { environment } from '../../environments/environment';
 export class TaskEditService {
 
   constructor(
-    private http:HttpClient,
+    private http: HttpClient,
   ) { }
-  public SendEditedTask(Task:Exercise){
-    return this.http.post(`${environment.baseUrl}/api/Exercises/${Task.}`,Task);
+  public SendEditedTask(Task: Exercise) {
+    return this.http.post(`${environment.baseUrl}/api/Exercises/${Task}`, Task);
   }
 }

@@ -26,6 +26,7 @@ import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
 import { UserInfoComponent } from './components/user-info/user-info.component';
 import { AddTaskComponent } from './components/exercises/add-task/add-task.component';
+import { ExerciseEditComponent } from './components/exercises/exercise-edit/exercise-edit.component';
 
 
 const routes: Route[] = [
@@ -49,6 +50,11 @@ const routes: Route[] = [
   {
     path: 'add-task',
     component: AddTaskComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'edit-task',
+    component: ExerciseEditComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -76,6 +82,7 @@ const routes: Route[] = [
     ExerciseInoutComponent,
     UserInfoComponent,
     AddTaskComponent,
+    ExerciseEditComponent,
 
   ],
   imports: [
