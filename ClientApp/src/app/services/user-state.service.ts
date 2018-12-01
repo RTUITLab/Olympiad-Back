@@ -69,7 +69,7 @@ export class UserStateService extends EndPoints {
 
 
   public IsAdmin(): boolean {
-    if (environment.replaceAdmin) {
+    if (!environment.production) {
       return environment.isAdmin;
     }
     return this.currentUser.Roles.indexOf('Admin') !== -1;

@@ -10,5 +10,6 @@ namespace Models
         public Guid ExerciseId { get; set; }
         public string InData { get; set; }
         public string OutData { get; set; }
+        public bool IsPublic { get; set; }
     }
 }

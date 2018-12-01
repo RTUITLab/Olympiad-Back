@@ -87,14 +87,14 @@ namespace WebApp.Controllers
             return Json(
                 applicationDbContext
                 .Exercises
-                .Select(E => new ExerciseListResponse
+                .Select(e => new ExerciseListResponse
                 {
-                    Id = E.ExerciseID,
-                    Name = E.ExerciseName,
-                    Score = E.Score,
-                    Status = (SolutionStatus)E.Solution
-                        .Where(S => S.UserId == UserId)
-                        .Select(S => (int)S.Status)
+                    Id = e.ExerciseID,
+                    Name = e.ExerciseName,
+                    Score = e.Score,
+                    Status = (SolutionStatus)e.Solution
+                        .Where(s => s.UserId == UserId)
+                        .Select(s => (int)s.Status)
                         .DefaultIfEmpty(-1)
                         .Max()
 
