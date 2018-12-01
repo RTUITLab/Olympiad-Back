@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { TaskEditService } from 'src/app/services/task-edit.service';
 import { UserStateService } from '../../../services/user-state.service';
+import { LoadingComponent } from '../../helpers/loading-component';
+
 
 
 @Component({

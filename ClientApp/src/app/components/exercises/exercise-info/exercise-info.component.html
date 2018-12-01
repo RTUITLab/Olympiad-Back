@@ -1,6 +1,6 @@
 <div class="container" *ngIf="exerciseInfo">
   <div>
-    <button mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask()">
+    <button mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask(exerciseInfo.Id)">
       Изменить данные задания
     </button>
     <h1>{{exerciseInfo.Name}}</h1>

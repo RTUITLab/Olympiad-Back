@@ -15,7 +15,7 @@ import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { TaskEditService } from 'src/app/services/task-edit.service';
-import { timingSafeEqual } from 'crypto';
+// import { timingSafeEqual } from 'crypto';
 
 
 
@@ -82,7 +82,8 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
       );
   }
   editTask(id: string) {
-    this.router.navigate(['edit-task', id]);
+    console.log(id);
+    this.router.navigate(['exercises/edit-task/', id]);
   }
   solutionCheckLoop(solutionId: string) {
     // console.log(this);

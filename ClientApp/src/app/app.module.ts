@@ -53,7 +53,7 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
-    path: 'edit-task',
+    path: 'exercises/edit-task/:ExerciseID',
     component: ExerciseEditComponent,
     canActivate: [AuthGuardService]
   },
