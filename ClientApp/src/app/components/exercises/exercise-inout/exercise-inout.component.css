@@ -3,3 +3,7 @@ th, td {
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
+textarea{
+    height: 300px;
+    width: 150px;
+}

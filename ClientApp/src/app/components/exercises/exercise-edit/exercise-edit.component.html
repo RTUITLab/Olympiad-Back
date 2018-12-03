@@ -15,18 +15,18 @@
   <br>
 
   <!-- TASK_NAME -->
-  <textarea id="task_name"  class="task_name_area" *ngIf="task_text_edit===true"  ngDefaultControl [(ngModel)]="EditedTask.ExerciseName">
-    {{EditedTask.ExerciseName}}
+  <textarea id="task_name"  class="task_name_area" *ngIf="task_text_edit===true"  ngDefaultControl [(ngModel)]="EditedTask.Name">
+    {{EditedTask.Name}}
   </textarea>
   <h1 id="task_name" ngDefaultControl *ngIf="task_text_edit===false">
-    {{EditedTask.ExerciseName}}
+    {{EditedTask.Name}}
   </h1>
   <!-- END -->
 
   <!-- TASK_EXAMPLE -->
-    <app-exercise-inout [exId]="EditedTask.ExerciseID"></app-exercise-inout>
+    <app-exercise-inout [task_text_edit]="task_text_edit" [exId]="EditedTask.Id"></app-exercise-inout>
   <!-- END -->
-
+  
   <!-- TASK_SCORE -->
   <div *ngIf="task_text_edit===true">
     <span>
@@ -42,10 +42,10 @@
   <!-- END -->
 
   <!-- TASK_TEXT -->
-    <textarea id="task_text" *ngIf="task_text_edit===true" ngDefaultControl class="task_text_area" [(ngModel)]="EditedTask.ExerciseTask">
-      {{EditedTask.ExerciseTask}}
+    <textarea id="task_text" *ngIf="task_text_edit===true" ngDefaultControl class="task_text_area" [(ngModel)]="EditedTask.TaskText">
+      {{EditedTask.TaskText}}
     </textarea>
-    <markdown *ngIf="task_text_edit===false" [data]="EditedTask.ExerciseTask"></markdown>
+    <markdown *ngIf="task_text_edit===false" [data]="EditedTask.TaskText"></markdown>
   <!-- END -->
 
   <ngx-loading [show]="loading"></ngx-loading>

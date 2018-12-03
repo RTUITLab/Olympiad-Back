@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { TaskEditService } from 'src/app/services/task-edit.service';
@@ -9,6 +9,10 @@ import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel'
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ParamMap } from '@angular/router/src/shared';
+import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.component';
+import { ExerciseData } from '../../../models/ExerciseData';
+
+
 
 
 
@@ -17,8 +21,7 @@ import { ParamMap } from '@angular/router/src/shared';
   templateUrl: './exercise-edit.component.html',
   styleUrls: ['./exercise-edit.component.scss']
 })
-export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
-
+export class ExerciseEditComponent extends LoadingComponent  implements OnInit, AfterViewInit {
   constructor(
     private taskEditServise: TaskEditService,
     private usersService: UserStateService,
@@ -27,24 +30,23 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
     private route: ActivatedRoute,
     ) {
       super();
-     }
-    exerciseInfo: ExerciseInfo;
-    model: SolutionViewModel = new SolutionViewModel();
+    }
+    //get InOutConditionData from conditions component
+  @ViewChild(ExerciseInoutComponent) InOutConditionData;
+  public exerciseDatas: ExerciseData[];
+  ngAfterViewInit(){
+    this.exerciseDatas = this.InOutConditionData.exerciseDatas;
+  }
+
+  model: SolutionViewModel = new SolutionViewModel();
 
   //  variable for sending data to the server
-  EditedTask: Exercise;
+  EditedTask: ExerciseInfo;
 
   //  variable for task_text view
   task_text_edit: boolean;
   ngOnInit() {
-         this.EditedTask = {};
-          // deny editing task data
-         this.task_text_edit = false;
-         this.getExercise();
-  }
-  //  get exercise from server through ExerciseID from path of page
-  getExercise() {
-      this.route.paramMap
+         this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
         //  console.log(this.model.ExerciseId);
@@ -53,10 +55,8 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
           .subscribe(
           exInfo => {
             exInfo.Solutions = exInfo.Solutions.reverse();
-            this.EditedTask.ExerciseID = exInfo.Id;
-            this.EditedTask.ExerciseName = exInfo.Name;
-            this.EditedTask.ExerciseTask = exInfo.TaskText;
-            this.EditedTask.Score = exInfo.Score;
+            this.EditedTask = exInfo;
+            console.log(this.EditedTask);
             this.stopLoading();
           },
           fail => {
@@ -64,7 +64,9 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
           }
           );
       });
-    }
+          // deny editing task data
+         this.task_text_edit = false;
+  }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
@@ -86,10 +88,23 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
     // send EditedTask to the server
    this.taskEditServise.SendEditedTask(this.EditedTask).subscribe(
      _ => {
+       this.sendEditedCondition(this.EditedTask.Id);
        console.log(`sendEditedTask_complete`);
-       this.router.navigate(['exercises/',this.model.ExerciseId]);
      },
      error => console.log(error),
    );
+  }
+  sendEditedCondition(EditedTaskId: string){
+    console.log('sendEditedCondition()');
+    this.ngAfterViewInit();
+    console.log(this.exerciseDatas);
+    this.taskEditServise.SendEditedCondition(this.exerciseDatas, EditedTaskId).subscribe(
+      _ => {
+        console.log(`sendEditedCondition_complete`);
+        this.router.navigate(['exercises/',this.model.ExerciseId]);
+      },
+      error => console.log(error),
+    );
+
   }
 }

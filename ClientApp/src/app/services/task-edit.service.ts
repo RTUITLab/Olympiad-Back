@@ -2,16 +2,31 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Exercise } from '../models/Exercise';
 import { environment } from '../../environments/environment';
+import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
+import { ExerciseData } from '../models/ExerciseData';
+
 @Injectable({
   providedIn: 'root'
 })
 export class TaskEditService {
-
+  
   constructor(
     private http: HttpClient,
   ) { }
-  public SendEditedTask(EditedTask: Exercise) {
+  EditedTask: Exercise;
+  public SendEditedTask(Task: ExerciseInfo) {
     console.log(`Task-EditService_SendEditedTask`);
-    return this.http.post(`${environment.baseUrl}/api/Exercises/${EditedTask.ExerciseID}`, EditedTask);
+    this.EditedTask = {
+      ExerciseID: Task.Id,
+      ExerciseName: Task.Name,
+      ExerciseTask: Task.TaskText,
+      Score: Task.Score
+    }
+    return this.http.post(`${environment.baseUrl}/api/Exercises/${this.EditedTask.ExerciseID}`, this.EditedTask);
+  }
+  public SendEditedCondition(NewCondition: ExerciseData [], EditedTaskId: string){
+    console.log(`Task-EditService_SendEditedCondition`);
+    console.log(NewCondition);
+    return this.http.post(`${environment.baseUrl}/api/ExerciseData/${EditedTaskId}`, NewCondition);
   }
 }
