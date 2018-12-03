@@ -10,7 +10,8 @@ export class TaskEditService {
   constructor(
     private http: HttpClient,
   ) { }
-  public SendEditedTask(Task: Exercise, id: string) {
-    return this.http.post(`${environment.baseUrl}/api/Exercises/${id}`, Task);
+  public SendEditedTask(EditedTask: Exercise) {
+    console.log(`Task-EditService_SendEditedTask`);
+    return this.http.post(`${environment.baseUrl}/api/Exercises/${EditedTask.ExerciseID}`, EditedTask);
   }
 }

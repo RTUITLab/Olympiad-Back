@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { TaskEditService } from 'src/app/services/task-edit.service';
@@ -31,38 +31,32 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
     exerciseInfo: ExerciseInfo;
     model: SolutionViewModel = new SolutionViewModel();
 
-  // variable for sending data to the server
+  //  variable for sending data to the server
   EditedTask: Exercise;
 
-  // variables for task data
-  task_name: string;
-  task_text: string;
-  task_score: number;
-  // variables for task html elements
-  task_name_doc: HTMLElement;
-  task_score_doc: HTMLElement;
-  task_text_doc: HTMLElement;
-  // variable for task_text view
+  //  variable for task_text view
   task_text_edit: boolean;
   ngOnInit() {
-         // set default value to variable for task_text view
-         this.task_text_edit = false;
-         //
          this.EditedTask = {};
+          // deny editing task data
+         this.task_text_edit = false;
          this.getExercise();
   }
-    // get exercise from server through ExerciseID from path of page
-    getExercise(){
+  //  get exercise from server through ExerciseID from path of page
+  getExercise() {
       this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
-        // console.log(this.model.ExerciseId);
+        //  console.log(this.model.ExerciseId);
         this.startLoading();
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
           exInfo => {
             exInfo.Solutions = exInfo.Solutions.reverse();
-            this.exerciseInfo = exInfo;
+            this.EditedTask.ExerciseID = exInfo.Id;
+            this.EditedTask.ExerciseName = exInfo.Name;
+            this.EditedTask.ExerciseTask = exInfo.TaskText;
+            this.EditedTask.Score = exInfo.Score;
             this.stopLoading();
           },
           fail => {
@@ -74,76 +68,27 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
-  setAreasForEdit(){
-  //set variables value of documentID to interact with them
-  this.task_name_doc = document.getElementById("task_name");
-  this.task_score_doc = document.getElementById("task_score");
-  this.task_text_doc = document.getElementById("task_text");
-  }
-  turnOffEditing(){
-    console.log("turnOffEditing()");
-        //set default values for function for editing task content
-        this.setAreasForEdit();
-        console.log(this.task_text_doc);
-        this.task_name_doc.contentEditable = 'false';
-        this.task_score_doc.contentEditable = 'false';
-        this.task_text_doc.contentEditable = 'false';
-  }
   turnOnEditing() {
-    console.log("turnOnEditing()");
-    //allow editing task data
-    this.task_name_doc.contentEditable = 'true';
-    this.task_score_doc.contentEditable = 'true';
-    this.task_text_doc.contentEditable = 'true';
+    console.log('turnOnEditing()');
+    if (this.task_text_edit === false) {
+      this.task_text_edit = true;
+    }
   }
-  sendEditedTask(){
-    console.log("sendEditedTask()");
-    this.task_name=this.task_name_doc.innerHTML.toString();
-    this.task_score=parseInt(this.task_score_doc.innerHTML.toString(),10)
-    this.task_text=this.task_text_doc.innerHTML.toString();
-    console.log(this.task_name);
-    console.log(this.task_score);
-    console.log(this.task_text);
-    this.EditedTask.ExerciseName=this.task_name;
-    this.EditedTask.ExerciseTask=this.task_text;
-    this.EditedTask.Score=this.task_score;
+  turnOffEditing() {
+    console.log('turnOffEditing()');
+    if (this.task_text_edit === true) {
+      this.task_text_edit = false;
+    }
+  }
+  sendEditedTask() {
+    console.log('sendEditedTask()');
     console.log(this.EditedTask);
-    //send EditedTask to the server
-    this.taskEditServise.SendEditedTask(this.EditedTask,this.exerciseInfo.Id);
+    // send EditedTask to the server
+   this.taskEditServise.SendEditedTask(this.EditedTask).subscribe(
+     _ => {
+       console.log(`sendEditedTask_complete`);
+     },
+     error => console.log(error),
+   );
   }
-  // editTask() {
-  //   // this.router.navigate(['edit-task']);
-  //   console.log('EditTask()');
-  // // set variables value of documentID to interact with them
-  // this.edit_task_btn_doc = document.getElementById('editTask');
-  // this.task_name_doc = document.getElementById('task_name');
-  // this.task_score_doc = document.getElementById('task_score');
-  // this.task_text_doc = document.getElementById('task_text');
-
-  // if (this.task_name_doc.contentEditable === 'true') {
-  //   // set default values for function for editing task content
-  //   this.task_name_doc.contentEditable = 'false';
-  //   // change button text
-  //   this.edit_task_btn_doc.innerHTML = 'Изменить данные задания';
-  //   this.edit_task_btn_doc.style.color = '#c300ff';
-  //   this.edit_task_btn_doc.style.borderColor = '#c300ff';
-  //   // change border of blocks with task data
-  //   this.task_name_doc.style.border = 'unset';
-  //   this.task_score_doc.style.border = 'unset';
-  //   this.task_text_doc.style.border = 'unset';
-  //   // get value from site to send them to the server
-  //   this.task_name = this.task_name_doc.innerHTML.toString();
-  //   this.task_score = parseInt(this.task_score_doc.innerHTML.toString(), 10);
-  //   this.task_text = this.task_text_doc.innerHTML.toString();
-  //   console.log(this.task_name);
-  //   console.log(this.task_score);
-  //   console.log(this.task_text);
-  //   this.EditedTask.ExerciseName = this.task_name;
-  //   this.EditedTask.ExerciseTask = this.task_text;
-  //   this.EditedTask.Score = this.task_score;
-  //   console.log(this.EditedTask);
-  //   // is.task_score_doc.contentEditable = 'true';
-  //   this.task_text_doc.contentEditable = 'true';
-  //   // change button text
-  //   this.edit_task_btn_doc.innerHTML = 'Сохранить';
 }

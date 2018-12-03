@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule , ReactiveFormsModule  } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes  } from 'ngx-loading';
 import {MatTableModule} from '@angular/material/table';
@@ -89,6 +89,7 @@ const routes: Route[] = [
     BrowserModule,
     RouterModule.forRoot(routes),
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
     NgxLoadingModule.forRoot({
       animationType: ngxLoadingAnimationTypes.cubeGrid
