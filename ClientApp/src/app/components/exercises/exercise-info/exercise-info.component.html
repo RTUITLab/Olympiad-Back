@@ -36,6 +36,7 @@
     <thead>
       <th>Время отправки</th>
       <th>Язык программирования</th>
+      <th>Скачать решение</th>
       <th>Результат</th>
       <th></th>
     </thead>
@@ -44,6 +45,11 @@
       <tr *ngFor="let sol of exerciseInfo.Solutions">
         <td>{{prettyTime(sol.Time)}}</td>
         <td>{{normalLang(sol.Language)}}</td>
+        <td>
+          <button>
+            <a download="">Скачать</a>
+          </button>
+        </td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>
         <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
       </tr>
