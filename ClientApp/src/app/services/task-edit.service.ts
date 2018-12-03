@@ -22,7 +22,11 @@ export class TaskEditService {
       ExerciseTask: Task.TaskText,
       Score: Task.Score
     }
-    return this.http.post(`${environment.baseUrl}/api/Exercises/${this.EditedTask.ExerciseID}`, this.EditedTask);
+    return this.http.put(`${environment.baseUrl}/api/Exercises/${EditedTask.ExerciseID}`, EditedTask);
+  }
+  public AddTask(NewTask: Exercise) {
+    console.log(`Task-EditService_AddTask`);
+     return this.http.post(`${environment.baseUrl}/api/Exercises/`, NewTask);
   }
   public SendEditedCondition(NewCondition: ExerciseData [], EditedTaskId: string){
     console.log(`Task-EditService_SendEditedCondition`);
