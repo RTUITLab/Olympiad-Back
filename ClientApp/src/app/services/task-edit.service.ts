@@ -22,7 +22,7 @@ export class TaskEditService {
       ExerciseTask: Task.TaskText,
       Score: Task.Score
     }
-    return this.http.put(`${environment.baseUrl}/api/Exercises/${EditedTask.ExerciseID}`, EditedTask);
+    return this.http.put(`${environment.baseUrl}/api/Exercises/${this.EditedTask.ExerciseID}`, this.EditedTask);
   }
   public AddTask(NewTask: Exercise) {
     console.log(`Task-EditService_AddTask`);
