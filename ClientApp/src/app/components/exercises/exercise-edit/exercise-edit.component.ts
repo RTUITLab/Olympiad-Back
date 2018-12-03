@@ -87,6 +87,7 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
    this.taskEditServise.SendEditedTask(this.EditedTask).subscribe(
      _ => {
        console.log(`sendEditedTask_complete`);
+       this.router.navigate(['exercises/',this.model.ExerciseId]);
      },
      error => console.log(error),
    );
