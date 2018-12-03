@@ -1,13 +1,58 @@
-<div>
-    <button id="editTask" mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask()">
-      Изменить данные задания
-    </button>
-    <h1 id="task_name">{{exerciseInfo.Name}}</h1>
-    <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
+<div *ngIf="isAdmin()" class="addTaskComponent">
+
+  <!-- BUTTONS -->
+  <button (click)="turnOnEditing()">
+    Изменение
+  </button>
+  <button (click)="turnOffEditing()">
+    Просмотр
+  </button>
+  <button (click)="AddTask()">
+    Добавить
+  </button>
+  <!-- END -->
+
+  <br>
+
+  <!-- TASK_NAME -->
+  <div *ngIf="task_text_edit===true">
+    <span>
+      Название
+    </span>
+  <input type="text" id="task_name"  class="task_name_area" ngDefaultControl [(ngModel)]="NewTask.ExerciseName">
   </div>
-  <h3>
-    Баллы за выполнение:<input matInput type="number">
+  <h1 id="task_name" ngDefaultControl *ngIf="task_text_edit===false">
+    {{NewTask.ExerciseName}}
+  </h1>
+  <!-- END -->
+
+  <!-- TASK_EXAMPLE -->
+    <!-- <app-exercise-inout [exId]="NewTask.ExerciseID"></app-exercise-inout> -->
+  <!-- END -->
+
+  <!-- TASK_SCORE -->
+  <div *ngIf="task_text_edit===true">
+    <span>
+      Баллы за выполнение:
+    </span>
+    <input id="task_score" type="number" class="task_score_area" [(ngModel)]="NewTask.Score">
+  </div>
+  <h3 id="task_score" *ngIf="task_text_edit===false">
+      Баллы за выполнение:{{NewTask.Score}}
   </h3>
-  <div id="task_text">
-    {{exerciseInfo.TaskText}}
+  <!-- END -->
+
+  <!-- TASK_TEXT -->
+  <div *ngIf="task_text_edit===true">
+    <span>
+      Содержание
+    </span>
+    <textarea id="task_text" ngDefaultControl class="task_text_area" [(ngModel)]="NewTask.ExerciseTask">
+      {{NewTask.ExerciseTask}}
+    </textarea>
   </div>
+    <markdown *ngIf="task_text_edit===false" [data]="NewTask.ExerciseTask"></markdown>
+  <!-- END -->
+
+  <ngx-loading [show]="loading"></ngx-loading>
+</div>

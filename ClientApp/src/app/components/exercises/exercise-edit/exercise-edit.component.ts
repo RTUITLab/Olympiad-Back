@@ -28,7 +28,6 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
     ) {
       super();
      }
-    exerciseInfo: ExerciseInfo;
     model: SolutionViewModel = new SolutionViewModel();
 
   //  variable for sending data to the server

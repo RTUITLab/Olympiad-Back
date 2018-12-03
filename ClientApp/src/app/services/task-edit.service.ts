@@ -12,6 +12,10 @@ export class TaskEditService {
   ) { }
   public SendEditedTask(EditedTask: Exercise) {
     console.log(`Task-EditService_SendEditedTask`);
-    return this.http.post(`${environment.baseUrl}/api/Exercises/${EditedTask.ExerciseID}`, EditedTask);
+    return this.http.put(`${environment.baseUrl}/api/Exercises/${EditedTask.ExerciseID}`, EditedTask);
+  }
+  public AddTask(NewTask: Exercise) {
+    console.log(`Task-EditService_AddTask`);
+     return this.http.post(`${environment.baseUrl}/api/Exercises/`, NewTask);
   }
 }
