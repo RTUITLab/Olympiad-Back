@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, ViewChild, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
-import { TaskEditService } from 'src/app/services/task-edit.service';
 import { UserStateService } from '../../../services/user-state.service';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { ActivatedRoute } from '@angular/router';
@@ -12,6 +11,7 @@ import { ParamMap } from '@angular/router/src/shared';
 import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.component';
 import { ExerciseData } from '../../../models/ExerciseData';
 import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
+import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 
 
 
@@ -25,21 +25,7 @@ import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
   styleUrls: ['./exercise-edit.component.scss']
 })
 export class ExerciseEditComponent extends LoadingComponent  implements OnInit, AfterViewInit {
-  constructor(
-    private taskEditServise: TaskEditService,
-    private usersService: UserStateService,
-    private exercisesService: ExerciseService,
-    private router: Router,
-    private route: ActivatedRoute,
-    ) {
-      super();
-    }
-    //get InOutConditionData from conditions component
-  @ViewChild(ExerciseInoutComponent) InOutConditionData;
-  public EditedCondition: ExerciseNewCondition[];
-  ngAfterViewInit(){
-    this.EditedCondition = this.InOutConditionData.EditedCondition;
-  }
+
 
   model: SolutionViewModel = new SolutionViewModel();
 
@@ -48,6 +34,24 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
 
   //  variable for task_text view
   task_text_edit: boolean;
+
+
+  constructor(
+    private exerciseEditServise: ExerciseEditService,
+    private usersService: UserStateService,
+    private exercisesService: ExerciseService,
+    private router: Router,
+    private route: ActivatedRoute,
+    ) {
+      super();
+    }
+    // get InOutConditionData from conditions component
+  @ViewChild(ExerciseInoutComponent) InOutConditionData;
+  public EditedCondition: ExerciseNewCondition[];
+  ngAfterViewInit() {
+    this.EditedCondition = this.InOutConditionData.EditedCondition;
+  }
+
   ngOnInit() {
          this.route.paramMap
       .subscribe((params: ParamMap) => {
@@ -90,7 +94,7 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
     this.ngAfterViewInit();
     console.log(this.EditedCondition);
     // send EditedTask to the server
-   this.taskEditServise.SendEditedTask(this.EditedTask).subscribe(
+   this.exerciseEditServise.SendEditedTask(this.EditedTask).subscribe(
      _ => {
        this.sendEditedCondition(this.EditedTask.Id);
        console.log(`sendEditedTask_complete`);
@@ -102,7 +106,7 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
     console.log('sendEditedCondition()');
     this.ngAfterViewInit();
     console.log(this.EditedCondition);
-    this.taskEditServise.SendEditedCondition(this.EditedCondition, EditedTaskId).subscribe(
+    this.exerciseEditServise.SendEditedCondition(this.EditedCondition, EditedTaskId).subscribe(
       _ => {
         console.log(`sendEditedCondition_complete`);
         this.router.navigate(['exercises/',this.model.ExerciseId]);

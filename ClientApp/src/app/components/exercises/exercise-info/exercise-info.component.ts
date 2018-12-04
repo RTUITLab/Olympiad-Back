@@ -14,7 +14,7 @@ import { LoadingComponent } from '../../helpers/loading-component';
 import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
-import { TaskEditService } from 'src/app/services/task-edit.service';
+import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 // import { timingSafeEqual } from 'crypto';
 
 
@@ -31,7 +31,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   constructor(
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
-    private taskEditServise: TaskEditService,
+    private exerciseEditServise: ExerciseEditService,
     private route: ActivatedRoute,
     private router: Router, ) {
     super();
