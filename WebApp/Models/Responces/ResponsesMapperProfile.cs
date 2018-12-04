@@ -12,16 +12,16 @@ namespace WebApp.Models.Responces
         public ResponsesMapperProfile()
         {
             CreateMap<Exercise, ExerciseListResponse>()
-                .ForMember(R => R.Id, map => map.MapFrom(E => E.ExerciseID))
-                .ForMember(R => R.Name, map => map.MapFrom(E => E.ExerciseName))
-                .ForMember(R => R.Score, map => map.MapFrom(E => E.Score));
+                .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.Score));
             CreateMap<Exercise, ExerciseInfo>()
-                .ForMember(R => R.Id, map => map.MapFrom(E => E.ExerciseID))
-                .ForMember(R => R.Name, map => map.MapFrom(E => E.ExerciseName))
-                .ForMember(R => R.Score, map => map.MapFrom(E => E.Score))
-                .ForMember(R => R.TaskText, map => map.MapFrom(E => E.ExerciseTask));
+                .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.Score))
+                .ForMember(r => r.TaskText, map => map.MapFrom(e => e.ExerciseTask));
             CreateMap<User, LoginResponse>()
-                .ForMember(R => R.StudentId, map => map.MapFrom(E => E.StudentID));
+                .ForMember(r => r.StudentId, map => map.MapFrom(e => e.StudentID));
         }
     }
 }
