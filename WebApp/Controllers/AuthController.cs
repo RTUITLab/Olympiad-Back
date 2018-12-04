@@ -14,7 +14,7 @@ using Models;
 using Newtonsoft.Json;
 using WebApp.Auth;
 using WebApp.Helpers;
-using WebApp.Models.Responces;
+using WebApp.Models.Responses;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers
