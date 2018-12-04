@@ -45,8 +45,8 @@ export class MenuComponent implements OnInit {
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
-  addTask() {
-    this.router.navigate(['add-task']);
+  addExercise() {
+    this.router.navigate(['add-exercise']);
   }
   needMenu(): boolean {
     // if (!this.exercises) {

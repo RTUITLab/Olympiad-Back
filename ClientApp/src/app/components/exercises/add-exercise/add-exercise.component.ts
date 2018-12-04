@@ -16,11 +16,11 @@ import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 
 
 @Component({
-  selector: 'app-add-task',
-  templateUrl: './add-task.component.html',
-  styleUrls: ['./add-task.component.scss']
+  selector: 'app-add-exercise',
+  templateUrl: './add-exercise.component.html',
+  styleUrls: ['./add-exercise.component.scss']
 })
-export class AddTaskComponent extends LoadingComponent implements OnInit, AfterViewInit {
+export class AddExerciseComponent extends LoadingComponent implements OnInit, AfterViewInit {
 
   exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
