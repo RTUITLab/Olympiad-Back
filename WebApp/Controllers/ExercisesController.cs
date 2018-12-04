@@ -8,10 +8,10 @@ using Models;
 using WebApp.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using WebApp.Models.Responces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.IO;
+using WebApp.Models.Responses;
 
 namespace WebApp.Controllers
 {
@@ -65,19 +65,20 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{exerciseId}")]
-        public IActionResult Get(Guid exerciseId)
+        public async Task<IActionResult> Get(Guid exerciseId)
         {
-            var ex = applicationDbContext.Exercises.FirstOrDefault(p => p.ExerciseID == exerciseId);
-            if (ex == null)
+            var exercise = await applicationDbContext.Exercises.SingleOrDefaultAsync(p => p.ExerciseID == exerciseId);
+            if (exercise == null)
             {
                 return NotFound();
             }
-            var exView = mapper.Map<ExerciseInfo>(ex);
-            var solutions = applicationDbContext
+            var solutions = await applicationDbContext
                 .Solutions
-                .Where(s => s.ExerciseId == exView.Id)
-                .Where(s => s.UserId == UserId);
-            exView.Solutions = solutions;
+                .Where(s => s.ExerciseId == exerciseId)
+                .Where(s => s.UserId == UserId)
+                .ToListAsync();
+            exercise.Solution = solutions;
+            var exView = mapper.Map<ExerciseInfo>(exercise);
             return Json(exView);
         }
 

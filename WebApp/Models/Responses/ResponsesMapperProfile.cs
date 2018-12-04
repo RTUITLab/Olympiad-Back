@@ -1,11 +1,7 @@
 ﻿using AutoMapper;
 using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace WebApp.Models.Responces
+namespace WebApp.Models.Responses
 {
     public class ResponsesMapperProfile : Profile
     {
@@ -18,10 +14,12 @@ namespace WebApp.Models.Responces
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                .ForMember(r => r.Score, map => map.MapFrom(e => e.Score))
+                .ForMember(r => r.Solutions, map => map.MapFrom(e => e.Solution))
                 .ForMember(r => r.TaskText, map => map.MapFrom(e => e.ExerciseTask));
             CreateMap<User, LoginResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(e => e.StudentID));
+            CreateMap<Solution, SolutionInfo>()
+                .ForMember(si => si.SendingTime, map => map.MapFrom(s => s.Time));
         }
     }
 }

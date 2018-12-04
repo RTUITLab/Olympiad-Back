@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
+using Models;
 
-namespace Models
+namespace WebApp.Models.Responses
 {
-    public class Solution
+    public class SolutionInfo
     {
         public Guid Id { get; set; }
         public string Language { get; set; }
-        public string Raw { get; set; }
         public Guid UserId { get; set; }
         public Guid ExerciseId { get; set; }
         public SolutionStatus Status { get; set; }
-        public DateTime Time { get; set; }
+        public DateTime SendingTime { get; set; }
     }
 }

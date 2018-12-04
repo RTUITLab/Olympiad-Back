@@ -1,10 +1,6 @@
-﻿using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 
-namespace WebApp.Models.Responces
+namespace WebApp.Models.Responses
 {
     public class CommentResponce
     {
