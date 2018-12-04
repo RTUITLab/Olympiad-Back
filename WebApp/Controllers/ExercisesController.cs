@@ -67,7 +67,7 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public IActionResult Get(Guid exerciseId)
         {
-            var ex = applicationDbContext.Exercises.FirstOrDefault(P => P.ExerciseID == exerciseId);
+            var ex = applicationDbContext.Exercises.FirstOrDefault(p => p.ExerciseID == exerciseId);
             if (ex == null)
             {
                 return NotFound();
@@ -75,8 +75,8 @@ namespace WebApp.Controllers
             var exView = mapper.Map<ExerciseInfo>(ex);
             var solutions = applicationDbContext
                 .Solutions
-                .Where(S => S.ExerciseId == exView.Id)
-                .Where(S => S.UserId == UserId);
+                .Where(s => s.ExerciseId == exView.Id)
+                .Where(s => s.UserId == UserId);
             exView.Solutions = solutions;
             return Json(exView);
         }
@@ -103,11 +103,12 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public void Post([FromBody] ExercisesViewModel model)
+        public async Task<IActionResult> Post([FromBody] ExercisesViewModel model)
         {
             var exeIdentity = mapper.Map<Exercise>(model);
             applicationDbContext.Exercises.Add(exeIdentity);
-            applicationDbContext.SaveChanges();
+            await applicationDbContext.SaveChangesAsync();
+            return Json(mapper.Map<ExerciseInfo>(exeIdentity));
         }
 
         [HttpPost("{id}")]
