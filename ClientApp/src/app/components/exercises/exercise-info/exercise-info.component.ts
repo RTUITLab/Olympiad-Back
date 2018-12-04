@@ -84,7 +84,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
   editTask(id: string) {
     console.log(id);
-    this.router.navigate(['exercises/edit-task/', id]);
+    this.router.navigate(['exercises/edit/', id]);
   }
   solutionCheckLoop(solutionId: string) {
     // console.log(this);

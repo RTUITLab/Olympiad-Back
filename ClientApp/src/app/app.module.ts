@@ -42,7 +42,8 @@ const routes: Route[] = [
   },
   {
     path: 'overview',
-    component: OverviewComponent
+    component: OverviewComponent,
+    canActivate: [AuthGuardService]
   },
   {
     path: 'exercises',
@@ -55,7 +56,7 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
-    path: 'exercises/edit-task/:ExerciseID',
+    path: 'exercises/edit/:ExerciseID',
     component: ExerciseEditComponent,
     canActivate: [AuthGuardService]
   },
