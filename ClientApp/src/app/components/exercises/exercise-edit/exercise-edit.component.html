@@ -23,9 +23,6 @@
   </h1>
   <!-- END -->
 
-  <!-- TASK_EXAMPLE -->
-    <app-exercise-inout [task_text_edit]="task_text_edit" [exId]="EditedTask.Id"></app-exercise-inout>
-  <!-- END -->
   
   <!-- TASK_SCORE -->
   <div *ngIf="task_text_edit===true">
@@ -37,16 +34,19 @@
     </textarea>
   </div>
   <h3 id="task_score" *ngIf="task_text_edit===false">
-      Баллы за выполнение:{{EditedTask.Score}}
+    Баллы за выполнение:{{EditedTask.Score}}
   </h3>
   <!-- END -->
-
+  
   <!-- TASK_TEXT -->
-    <textarea id="task_text" *ngIf="task_text_edit===true" ngDefaultControl class="task_text_area" [(ngModel)]="EditedTask.TaskText">
-      {{EditedTask.TaskText}}
-    </textarea>
+  <textarea id="task_text" *ngIf="task_text_edit===true" ngDefaultControl class="task_text_area" [(ngModel)]="EditedTask.TaskText">
+    {{EditedTask.TaskText}}
+  </textarea>
     <markdown *ngIf="task_text_edit===false" [data]="EditedTask.TaskText"></markdown>
-  <!-- END -->
-
-  <ngx-loading [show]="loading"></ngx-loading>
-</div>
+    <!-- END -->
+    <!-- TASK_EXAMPLE -->
+      <app-exercise-inout [task_text_edit]="task_text_edit" [exId]="EditedTask.Id"></app-exercise-inout>
+    <!-- END -->
+    
+    <ngx-loading [show]="loading"></ngx-loading>
+  </div>

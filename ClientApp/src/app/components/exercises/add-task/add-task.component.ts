@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, AfterViewInit  } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { UserStateService } from '../../../services/user-state.service';
@@ -7,6 +7,10 @@ import { ActivatedRoute } from '@angular/router';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
 import { TaskEditService } from 'src/app/services/task-edit.service';
 import { ExerciseService } from '../../../services/exercise.service';
+import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.component';
+import { ExerciseData } from '../../../models/ExerciseData';
+import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
+
 
 
 
@@ -16,7 +20,7 @@ import { ExerciseService } from '../../../services/exercise.service';
   templateUrl: './add-task.component.html',
   styleUrls: ['./add-task.component.scss']
 })
-export class AddTaskComponent extends LoadingComponent implements OnInit {
+export class AddTaskComponent extends LoadingComponent implements OnInit, AfterViewInit  {
 
   exerciseInfo: ExerciseInfo = new ExerciseInfo();
   constructor(
@@ -28,6 +32,14 @@ export class AddTaskComponent extends LoadingComponent implements OnInit {
     ) {
       super();
      }
+         //get InOutConditionData from conditions component
+  @ViewChild(ExerciseNewCondition) InOutNewConditionData;
+  public NewCondition: ExerciseNewCondition[];
+  ngAfterViewInit(){
+    this.NewCondition = [];
+    console.log(`${this.InOutNewConditionData.NewCondition}`);
+    this.NewCondition = this.InOutNewConditionData.NewCondition;
+  }
     //  variable for sending data to the server
     NewTask: Exercise;
     //  variable for task_text view
@@ -35,6 +47,7 @@ export class AddTaskComponent extends LoadingComponent implements OnInit {
   ngOnInit() {
     this.startLoading();
     this.NewTask = {};
+    this.NewCondition = [];
     // deny editing task data
     this.task_text_edit = true;
     this.stopLoading();
@@ -54,6 +67,8 @@ export class AddTaskComponent extends LoadingComponent implements OnInit {
   AddTask() {
     console.log('AddTask()');
     console.log(this.NewTask);
+    this.ngAfterViewInit();
+   // console.log(this.NewCondition);
     // send Task to the server
    this.taskEditServise.AddTask(this.NewTask).subscribe(
      _ => {
@@ -61,6 +76,19 @@ export class AddTaskComponent extends LoadingComponent implements OnInit {
      },
      error => console.log(error),
    );
+  }
+  sendNewCondition(NewTaskId: string){
+    console.log('sendEditedCondition()');
+    this.ngAfterViewInit();
+    console.log(this.NewCondition);
+    this.taskEditServise.SendNewCondition(this.NewCondition, NewTaskId).subscribe(
+      _ => {
+        console.log(`sendEditedCondition_complete`);
+        this.router.navigate(['exercises/', NewTaskId]);
+      },
+      error => console.log(error),
+    );
+
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();

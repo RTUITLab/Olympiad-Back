@@ -27,6 +27,7 @@ import { ExerciseInoutComponent } from './components/exercises/exercise-inout/ex
 import { UserInfoComponent } from './components/user-info/user-info.component';
 import { AddTaskComponent } from './components/exercises/add-task/add-task.component';
 import { ExerciseEditComponent } from './components/exercises/exercise-edit/exercise-edit.component';
+import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
 
 
 const routes: Route[] = [
@@ -83,6 +84,7 @@ const routes: Route[] = [
     UserInfoComponent,
     AddTaskComponent,
     ExerciseEditComponent,
+    AddExerciseInOutComponent,
 
   ],
   imports: [

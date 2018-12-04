@@ -11,6 +11,9 @@ import { ExerciseService } from '../../../services/exercise.service';
 import { ParamMap } from '@angular/router/src/shared';
 import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.component';
 import { ExerciseData } from '../../../models/ExerciseData';
+import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
+
+
 
 
 
@@ -33,9 +36,9 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
     }
     //get InOutConditionData from conditions component
   @ViewChild(ExerciseInoutComponent) InOutConditionData;
-  public exerciseDatas: ExerciseData[];
+  public EditedCondition: ExerciseNewCondition[];
   ngAfterViewInit(){
-    this.exerciseDatas = this.InOutConditionData.exerciseDatas;
+    this.EditedCondition = this.InOutConditionData.EditedCondition;
   }
 
   model: SolutionViewModel = new SolutionViewModel();
@@ -54,7 +57,6 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
           exInfo => {
-            exInfo.Solutions = exInfo.Solutions.reverse();
             this.EditedTask = exInfo;
             console.log(this.EditedTask);
             this.stopLoading();
@@ -85,6 +87,8 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
   sendEditedTask() {
     console.log('sendEditedTask()');
     console.log(this.EditedTask);
+    this.ngAfterViewInit();
+    console.log(this.EditedCondition);
     // send EditedTask to the server
    this.taskEditServise.SendEditedTask(this.EditedTask).subscribe(
      _ => {
@@ -97,8 +101,8 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
   sendEditedCondition(EditedTaskId: string){
     console.log('sendEditedCondition()');
     this.ngAfterViewInit();
-    console.log(this.exerciseDatas);
-    this.taskEditServise.SendEditedCondition(this.exerciseDatas, EditedTaskId).subscribe(
+    console.log(this.EditedCondition);
+    this.taskEditServise.SendEditedCondition(this.EditedCondition, EditedTaskId).subscribe(
       _ => {
         console.log(`sendEditedCondition_complete`);
         this.router.navigate(['exercises/',this.model.ExerciseId]);

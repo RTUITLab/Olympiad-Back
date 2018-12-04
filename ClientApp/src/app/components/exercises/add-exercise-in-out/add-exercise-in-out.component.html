@@ -1,0 +1,30 @@
+<div *ngIf="task_text_edit===true">
+  <span>Сделать условие Общедоступным</span><input type="checkbox" [(ngModel)]="NewCondition.IsPublic">
+</div>
+<table>
+  <tr>
+    <th>Стандартный ввод</th>
+    <th>Стандартный вывод</th>
+  </tr>
+    <tr>
+      <td valign="top" *ngIf="task_text_edit===true" >
+        <textarea [(ngModel)]="NewCondition.InData">
+        </textarea>
+      </td>
+      <td valign="top" *ngIf="task_text_edit===false">
+          <div *ngFor="let inRow of NewCondition.InData.split('\n')">
+            {{inRow}}
+          </div>
+      </td>
+
+    <td valign="top" *ngIf="task_text_edit===true">
+        <textarea [(ngModel)]="NewCondition.OutData">
+          </textarea>
+    </td>
+    <td valign="top" *ngIf="task_text_edit===false">
+        <div *ngFor="let inRow of NewCondition.OutData.split('\n')">
+          {{inRow}}
+        </div>
+    </td>
+  </tr>
+</table>

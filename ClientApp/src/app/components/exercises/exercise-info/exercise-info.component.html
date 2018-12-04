@@ -4,13 +4,13 @@
       Изменить данные задания
     </button>
     <h1>{{exerciseInfo.Name}}</h1>
-    <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
   </div>
   <h3>
     Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
   </h3>
   <markdown id="task_text" [data]="exerciseInfo.TaskText"></markdown>
-
+  <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
+  
   <h2>Отправка решения</h2>
   <form (ngSubmit)="onSubmit()">
     <div class="form-group">
