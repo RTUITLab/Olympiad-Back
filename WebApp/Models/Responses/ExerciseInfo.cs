@@ -1,10 +1,8 @@
-﻿using Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Models;
 
-namespace WebApp.Models.Responces
+namespace WebApp.Models.Responses
 {
     public class ExerciseInfo
     {
@@ -12,6 +10,6 @@ namespace WebApp.Models.Responces
         public string Name { get; set; }
         public int Score { get; set; }
         public string TaskText { get; set; }
-        public IEnumerable<Solution> Solutions { get; set; }
+        public IEnumerable<SolutionInfo> Solutions { get; set; }
     }
 }
