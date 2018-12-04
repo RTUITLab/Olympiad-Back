@@ -8,10 +8,10 @@ using Models;
 using WebApp.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using WebApp.Models.Responces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.IO;
+using WebApp.Models.Responses;
 
 namespace WebApp.Controllers
 {
@@ -65,19 +65,20 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{exerciseId}")]
-        public IActionResult Get(Guid exerciseId)
+        public async Task<IActionResult> Get(Guid exerciseId)
         {
-            var ex = applicationDbContext.Exercises.FirstOrDefault(P => P.ExerciseID == exerciseId);
-            if (ex == null)
+            var exercise = await applicationDbContext.Exercises.SingleOrDefaultAsync(p => p.ExerciseID == exerciseId);
+            if (exercise == null)
             {
                 return NotFound();
             }
-            var exView = mapper.Map<ExerciseInfo>(ex);
-            var solutions = applicationDbContext
+            var solutions = await applicationDbContext
                 .Solutions
-                .Where(S => S.ExerciseId == exView.Id)
-                .Where(S => S.UserId == UserId);
-            exView.Solutions = solutions;
+                .Where(s => s.ExerciseId == exerciseId)
+                .Where(s => s.UserId == UserId)
+                .ToListAsync();
+            exercise.Solution = solutions;
+            var exView = mapper.Map<ExerciseInfo>(exercise);
             return Json(exView);
         }
 
@@ -103,11 +104,12 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public void Post([FromBody] ExercisesViewModel model)
+        public async Task<IActionResult> Post([FromBody] ExercisesViewModel model)
         {
             var exeIdentity = mapper.Map<Exercise>(model);
             applicationDbContext.Exercises.Add(exeIdentity);
-            applicationDbContext.SaveChanges();
+            await applicationDbContext.SaveChangesAsync();
+            return Json(mapper.Map<ExerciseInfo>(exeIdentity));
         }
 
         [HttpPost("{id}")]
