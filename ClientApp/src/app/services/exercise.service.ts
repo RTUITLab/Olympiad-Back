@@ -4,7 +4,7 @@ import { Exercise } from '../models/Exercise';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Subscriber } from 'rxjs';
 import { error } from 'util';
-import { EndPoints } from './EndPoints';
+import { BaseHttpService } from './BaseHttpService';
 import { UserStateService } from './user-state.service';
 import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
 import { BehaviorSubject } from 'rxjs';
@@ -17,7 +17,7 @@ import { Solution } from '../models/Solution';
 import { ExerciseData } from '../models/ExerciseData';
 
 @Injectable()
-export class ExerciseService extends EndPoints implements OnInit {
+export class ExerciseService extends BaseHttpService implements OnInit {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
   private solutionsBehavior = new BehaviorSubject<Solution>(undefined);
@@ -31,8 +31,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<Array<ExerciseListResponse>>(
-      `${this.baseUrl}/api/exercises`,
-      { headers: this.userService.authHeaders() })
+      `${this.baseUrl}/api/exercises`, this.userService.authOptions)
       .subscribe(
       success => {
         console.log(success);
@@ -53,9 +52,9 @@ export class ExerciseService extends EndPoints implements OnInit {
 
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
-    this.http.post(
+    this.http.post<string>(
       `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
-      formData, { headers: this.userService.authHeaders(), responseType: 'text' })
+      formData, this.userService.authOptions)
       .subscribe(
       success => {
         console.log(success);
@@ -77,8 +76,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<ExerciseInfo>(
-      `${this.baseUrl}/api/exercises/${exId}`,
-      { headers: this.userService.authHeaders() })
+      `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions)
       .subscribe(
       success => {
         console.log(success);
@@ -97,8 +95,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<Solution>(
-      `${this.baseUrl}/api/check/${solutionId}`,
-      { headers: this.userService.authHeaders() }).subscribe(
+      `${this.baseUrl}/api/check/${solutionId}`, this.userService.authOptions).subscribe(
       success => {
         if (success) {
           observer.next(success);
@@ -119,8 +116,7 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<ExerciseData[]>(
-      `${this.baseUrl}/api/ExerciseData/${exerciseId}`,
-      { headers: this.userService.authHeaders() }).subscribe(
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions).subscribe(
       success => {
         if (success) {
           observer.next(success);

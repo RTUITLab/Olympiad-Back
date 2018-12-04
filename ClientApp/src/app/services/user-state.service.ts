@@ -6,12 +6,12 @@ import { RegisterViewModel } from '../models/ViewModels/RegisterViewModel';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/';
 import { Subscriber } from 'rxjs/';
-import { EndPoints } from './EndPoints';
+import { BaseHttpService } from './BaseHttpService';
 import { LoginResponse } from '../models/Responses/LoginResponse';
 import { environment } from '../../environments/environment';
 
 @Injectable()
-export class UserStateService extends EndPoints {
+export class UserStateService extends BaseHttpService {
 
   constructor(private http: HttpClient) { super(); }
 
@@ -88,10 +88,12 @@ export class UserStateService extends EndPoints {
     this.usersBehavior.next(user);
     this.currentUser = user;
   }
-  public authHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-    });
+  public get authOptions(): object {
+    return {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      })
+    };
   }
   private parseJwt(token: string): string[] {
     const base64Url = token.split('.')[1];

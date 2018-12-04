@@ -1,16 +1,16 @@
 <div class="container" *ngIf="exerciseInfo">
   <div>
-    <button id="editTask" mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask()">
+    <button mat-button class="editTask_btn" *ngIf="isAdmin()" (click)="editTask(exerciseInfo.Id)">
       Изменить данные задания
     </button>
-    <h1 id="task_name">{{exerciseInfo.Name}}</h1>
-    <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
+    <h1>{{exerciseInfo.Name}}</h1>
   </div>
   <h3>
-    Баллы за выполнение: <span id="task_score">{{exerciseInfo.Score}}</span>
+    Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
   </h3>
   <markdown id="task_text" [data]="exerciseInfo.TaskText"></markdown>
-
+  <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
+  
   <h2>Отправка решения</h2>
   <form (ngSubmit)="onSubmit()">
     <div class="form-group">
@@ -36,6 +36,7 @@
     <thead>
       <th>Время отправки</th>
       <th>Язык программирования</th>
+      <th>Скачать решение</th>
       <th>Результат</th>
       <th></th>
     </thead>
@@ -44,6 +45,11 @@
       <tr *ngFor="let sol of exerciseInfo.Solutions">
         <td>{{prettyTime(sol.Time)}}</td>
         <td>{{normalLang(sol.Language)}}</td>
+        <td>
+          <button>
+            <a download="">Скачать</a>
+          </button>
+        </td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>
         <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
       </tr>

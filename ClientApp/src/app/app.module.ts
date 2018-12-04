@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule , ReactiveFormsModule  } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes  } from 'ngx-loading';
 import {MatTableModule} from '@angular/material/table';
@@ -25,7 +25,10 @@ import { OverviewComponent } from './components/overview/overview.component';
 import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
 import { UserInfoComponent } from './components/user-info/user-info.component';
-import { AddTaskComponent } from './components/exercises/add-task/add-task.component';
+
+import { ExerciseEditComponent } from './components/exercises/exercise-edit/exercise-edit.component';
+import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
+import { AddExerciseComponent } from './components/exercises/add-exercise/add-exercise.component';
 
 
 const routes: Route[] = [
@@ -39,7 +42,8 @@ const routes: Route[] = [
   },
   {
     path: 'overview',
-    component: OverviewComponent
+    component: OverviewComponent,
+    canActivate: [AuthGuardService]
   },
   {
     path: 'exercises',
@@ -47,8 +51,13 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
-    path: 'add-task',
-    component: AddTaskComponent,
+    path: 'add-exercise',
+    component: AddExerciseComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'exercises/edit/:ExerciseID',
+    component: ExerciseEditComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -75,13 +84,16 @@ const routes: Route[] = [
     OverviewComponent,
     ExerciseInoutComponent,
     UserInfoComponent,
-    AddTaskComponent,
+    AddExerciseComponent,
+    ExerciseEditComponent,
+    AddExerciseInOutComponent,
 
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(routes),
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
     NgxLoadingModule.forRoot({
       animationType: ngxLoadingAnimationTypes.cubeGrid

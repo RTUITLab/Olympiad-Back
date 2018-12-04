@@ -265,3 +265,5 @@ __pycache__/
 
 /Executor/Executers/Build/**/*.tar.gz
 /Executor/Executers/Run/**/*.tar.gz
+
+ClientApp/src/environments/environment\.ts
