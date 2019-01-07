@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Models.Solutions;
+using Shared.Models;
 using WebApp.Services.Interfaces;
 
 namespace WebApp.Controllers

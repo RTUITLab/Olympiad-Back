@@ -11,9 +11,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.IO;
-using WebApp.Models.Responses;
 using Models.Exercises;
 using Models.Solutions;
+using Shared.Models;
+using PublicAPI.Responses;
 
 namespace WebApp.Controllers
 {

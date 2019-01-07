@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebApp.Models.Responses
+namespace PublicAPI.Responses
 {
     public class CommentResponce
     {

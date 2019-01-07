@@ -2,8 +2,9 @@
 using Models;
 using Models.Exercises;
 using Models.Solutions;
+using PublicAPI.Responses;
 
-namespace WebApp.Models.Responses
+namespace WebApp.Formatting.ResponseMappers
 {
     public class ResponsesMapperProfile : Profile
     {
