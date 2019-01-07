@@ -10,10 +10,9 @@ namespace WebApp.Formatting.ResponseMappers
     {
         public ResponsesMapperProfile()
         {
-            CreateMap<Exercise, ExerciseListResponse>()
+            CreateMap<Exercise, ExerciseCompactResponse>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
-                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                .ForMember(r => r.Score, map => map.MapFrom(e => e.Score));
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName));
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
@@ -23,6 +22,8 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.StudentId, map => map.MapFrom(e => e.StudentID));
             CreateMap<Solution, SolutionInfo>()
                 .ForMember(si => si.SendingTime, map => map.MapFrom(s => s.Time));
+
+            CreateMap<Challenge, ChallengeResponse>();
         }
     }
 }
