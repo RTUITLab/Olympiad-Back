@@ -25,6 +25,7 @@ using WebApp.Configure.Models.Invokations;
 using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
+using WebApp.Middleware;
 
 namespace WebApp
 {
@@ -134,7 +135,6 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
-            System.Console.WriteLine(JsonConvert.SerializeObject(env));
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -152,6 +152,7 @@ namespace WebApp
 
             app.UseWebAppConfigure();
             app.UseAuthentication();
+            app.UseExceptionHandlerMiddleware();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

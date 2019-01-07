@@ -15,6 +15,7 @@ using Models.Exercises;
 using Models.Solutions;
 using Shared.Models;
 using PublicAPI.Responses;
+using WebApp.Models;
 
 namespace WebApp.Controllers
 {
@@ -68,13 +69,13 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{exerciseId}")]
-        public async Task<IActionResult> Get(Guid exerciseId)
+        public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            var exercise = await applicationDbContext.Exercises.SingleOrDefaultAsync(p => p.ExerciseID == exerciseId);
-            if (exercise == null)
-            {
-                return NotFound();
-            }
+            var exercise = await applicationDbContext
+                .Exercises
+                .SingleOrDefaultAsync(p => p.ExerciseID == exerciseId)
+                ?? throw StatusCodeException.NotFount;
+            
             var solutions = await applicationDbContext
                 .Solutions
                 .Where(s => s.ExerciseId == exerciseId)
@@ -82,7 +83,7 @@ namespace WebApp.Controllers
                 .ToListAsync();
             exercise.Solution = solutions;
             var exView = mapper.Map<ExerciseInfo>(exercise);
-            return Json(exView);
+            return exView;
         }
 
         [HttpGet]
@@ -91,7 +92,7 @@ namespace WebApp.Controllers
             return Json(
                 applicationDbContext
                 .Exercises
-                .Select(e => new ExerciseListResponse
+                .Select(e => new ExerciseCompactResponse
                 {
                     Id = e.ExerciseID,
                     Name = e.ExerciseName,

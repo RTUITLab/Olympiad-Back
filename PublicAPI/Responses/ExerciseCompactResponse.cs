@@ -3,7 +3,7 @@ using System;
 
 namespace PublicAPI.Responses
 {
-    public class ExerciseListResponse
+    public class ExerciseCompactResponse
     {
         public Guid Id { get; set; }
 

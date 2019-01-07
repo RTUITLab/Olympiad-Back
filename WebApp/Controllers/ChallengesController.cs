@@ -2,36 +2,49 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
+using PublicAPI.Responses;
+using WebApp.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApp.Controllers
 {
-    [Route("api/challanges")]
+    [Produces("application/json")]
+    [Route("api/challenges")]
     [Authorize(Roles = "User")]
-    public class ChallengesController : Controller
+    public class ChallengesController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
 
-        public ChallengesController(ApplicationDbContext context)
+        public ChallengesController(
+            UserManager<User> userManager,
+            ApplicationDbContext context
+            ) : base(userManager)
         {
             this.context = context;
         }
 
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IEnumerable<ChallengeResponse>> GetAsync()
         {
-            return null;
+            return await context.Challenges.ProjectTo<ChallengeResponse>().ToListAsync();
         }
 
-        // GET api/<controller>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{id:guid}")]
+        public async Task<ChallengeResponse> Get(Guid id)
         {
-            return "value";
+            return await context
+                .Challenges
+                .Where(c => c.Id == id)
+                .ProjectTo<ChallengeResponse>()
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
         }
 
         // POST api/<controller>
@@ -39,6 +52,7 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public void Post([FromBody]string value)
         {
+            throw new NotImplementedException();
         }
 
         // PUT api/<controller>/5
@@ -46,6 +60,7 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public void Put(int id, [FromBody]string value)
         {
+            throw new NotImplementedException();
         }
 
         // DELETE api/<controller>/5
@@ -53,6 +68,7 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public void Delete(int id)
         {
+            throw new NotImplementedException();
         }
     }
 }
