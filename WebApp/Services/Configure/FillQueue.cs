@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
+using Models.Solutions;
 using WebApp.Configure.Models.Configure.Interfaces;
 using WebApp.Models.Settings;
 using WebApp.Services.Interfaces;

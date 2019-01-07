@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using System.IO;
 using WebApp.Models.Responses;
+using Models.Exercises;
+using Models.Solutions;
 
 namespace WebApp.Controllers
 {

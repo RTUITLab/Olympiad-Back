@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Models;
+using Models.Exercises;
+using Models.Solutions;
 
 namespace WebApp.Models.Responses
 {

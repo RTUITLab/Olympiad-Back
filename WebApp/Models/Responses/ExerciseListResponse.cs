@@ -1,5 +1,6 @@
 ﻿using System;
 using Models;
+using Models.Solutions;
 
 namespace WebApp.Models.Responses
 {

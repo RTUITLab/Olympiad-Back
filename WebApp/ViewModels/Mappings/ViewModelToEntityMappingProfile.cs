@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Models;
+using Models.Exercises;
 using System;
 using System.Collections.Generic;
 using System.Linq;

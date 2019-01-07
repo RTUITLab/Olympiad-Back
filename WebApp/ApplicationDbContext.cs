@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Models.Exercises;
+using Models.Solutions;
 using System;
 using System.Collections.Generic;
 using System.Text;

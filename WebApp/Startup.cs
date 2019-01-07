@@ -126,7 +126,7 @@ namespace WebApp
 
             services.AddWebAppConfigure()
                 .AddTransientConfigure<AutoMigrate>()
-                .AddTransientConfigure<DefaultRolesConfigure>(Configuration.GetValue<bool>("INIT_ROLES"))
+                .AddTransientConfigure<DefaultRolesConfigure>()
                 .AddTransientConfigure<FillQueue>();
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
         }
