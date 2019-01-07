@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Docker.DotNet;
+using Shared.Models;
+using Models.Solutions;
 
 namespace Executor.Executers.Build.Java
 {

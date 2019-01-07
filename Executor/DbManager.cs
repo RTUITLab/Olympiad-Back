@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using Executor.Logging;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Options;
+using Models.Exercises;
+using Shared.Models;
+using Models.Solutions;
 
 namespace Executor
 {

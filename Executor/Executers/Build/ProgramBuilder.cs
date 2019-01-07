@@ -13,6 +13,7 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 using Executor.Logging;
 using Models.Solutions;
+using Shared.Models;
 
 namespace Executor.Executers.Build
 {

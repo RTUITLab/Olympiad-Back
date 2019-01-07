@@ -10,6 +10,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Executor.Logging;
+using Shared.Models;
+using Models.Solutions;
+using Models.Exercises;
+
 namespace Executor.Executers.Run
 {
     abstract class ProgramRunner

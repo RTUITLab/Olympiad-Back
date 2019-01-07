@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Models;
+using Models.Solutions;
+using Shared.Models;
 
 namespace Executor.Executers.Build.Cpp
 {

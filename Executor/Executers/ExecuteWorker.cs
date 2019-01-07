@@ -8,6 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Executor.Logging;
+using Models.Exercises;
+using Models.Solutions;
+using Shared.Models;
+
 namespace Executor.Executers
 {
     class ExecuteWorker
