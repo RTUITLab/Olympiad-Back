@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Models;
+using Shared.Models;
 
 namespace Executor.Executers.Run.Java
 {

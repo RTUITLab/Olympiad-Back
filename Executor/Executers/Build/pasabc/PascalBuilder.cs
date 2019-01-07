@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Docker.DotNet;
+using Shared.Models;
+using Models.Solutions;
 
 namespace Executor.Executers.Build.PascalABC
 {
