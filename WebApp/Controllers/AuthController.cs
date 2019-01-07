@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
+using Models.Solutions;
 using Newtonsoft.Json;
 using WebApp.Auth;
 using WebApp.Helpers;

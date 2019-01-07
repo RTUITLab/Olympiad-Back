@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.Solutions;
 using WebApp.Services.Interfaces;
 
 namespace WebApp.Controllers

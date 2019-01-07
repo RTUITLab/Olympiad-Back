@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Executor.Logging;
+using Models.Solutions;
+
 namespace Executor.Executers.Build
 {
     abstract class ProgramBuilder
