@@ -1,8 +1,7 @@
-﻿using System;
-using Models;
-using Models.Solutions;
+﻿using Shared.Models;
+using System;
 
-namespace WebApp.Models.Responses
+namespace PublicAPI.Responses
 {
     public class ExerciseListResponse
     {

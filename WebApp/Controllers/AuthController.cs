@@ -13,9 +13,10 @@ using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
 using Newtonsoft.Json;
+using PublicAPI.Responses;
+using Shared.Models;
 using WebApp.Auth;
 using WebApp.Helpers;
-using WebApp.Models.Responses;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers

@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Shared.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Models;
-using Models.Solutions;
 
-namespace WebApp.Models.Responses
+namespace PublicAPI.Responses
 {
     public class SolutionInfo
     {
