@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Exercises;
+using Models.Links;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Challenges;
 using WebApp.Models;
 
 
@@ -48,13 +50,22 @@ namespace WebApp.Controllers
         [HttpGet("{id:guid}")]
         public async Task<ChallengeResponse> Get(Guid id)
         {
-            return await context
+            var query = context
                 .Challenges
-                .Where(c => c.Id == id)
-                .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
-                            c.UserToChallenges.Any(utc => utc.UserId == UserId))
-                .ProjectTo<ChallengeResponse>()
-                .SingleOrDefaultAsync()
+                .Where(c => c.Id == id);
+            IQueryable<ChallengeResponse> resultQuery;
+            if (!await UserManager.IsInRoleAsync(await CurrentUser(), "Admin"))
+            {
+                resultQuery = query
+                    .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
+                           c.UserToChallenges.Any(utc => utc.UserId == UserId))
+                    .ProjectTo<ChallengeResponse>();
+            }
+            else
+            {
+                resultQuery = query.ProjectTo<ChallengeExtendedResponse>();
+            }
+            return await resultQuery.SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
         }
 
@@ -70,11 +81,30 @@ namespace WebApp.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [Authorize(Roles = "Admin")]
-        public void Put(int id, [FromBody]string value)
+        public async Task<ChallengeExtendedResponse> PutAsync(Guid id, [FromBody]ChallengeEditRequest request)
         {
-            throw new NotImplementedException();
+            if (request.RemovePersons != null && 
+                request.AddPersons != null &&
+                request.RemovePersons.Intersect(request.AddPersons).Any())
+                throw StatusCodeException.BadRequest;
+
+            var targetChallenge = await context
+                .Challenges
+                .Include(c => c.UserToChallenges)
+                .Where(c => c.Id == id)
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
+            mapper.Map(request, targetChallenge);
+            targetChallenge.UserToChallenges.RemoveAll(u => request.RemovePersons.Contains(u.UserId));
+            targetChallenge.UserToChallenges.AddRange(request.AddPersons.Select(pi => new UserToChallenge
+            {
+                UserId = pi,
+                ChallengeId = id
+            }));
+            await context.SaveChangesAsync();
+            return mapper.Map<ChallengeExtendedResponse>(targetChallenge);
         }
 
         [HttpDelete("{id}")]

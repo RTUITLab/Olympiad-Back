@@ -3,6 +3,8 @@ using Models;
 using Models.Exercises;
 using Models.Solutions;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Challenges;
+using System.Linq;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -19,11 +21,17 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.Solutions, map => map.MapFrom(e => e.Solution))
                 .ForMember(r => r.TaskText, map => map.MapFrom(e => e.ExerciseTask));
             CreateMap<User, LoginResponse>()
-                .ForMember(r => r.StudentId, map => map.MapFrom(e => e.StudentID));
+                .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
+            CreateMap<User, UserResponse>()
+                .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
+
             CreateMap<Solution, SolutionInfo>()
                 .ForMember(si => si.SendingTime, map => map.MapFrom(s => s.Time));
 
             CreateMap<Challenge, ChallengeResponse>();
+            CreateMap<Challenge, ChallengeExtendedResponse>()
+                //.ForMember(cer => cer.InvitedUsers, map => map.MapFrom(c => c.UserToChallenges.Select(utc => utc.User)))
+                ;
         }
     }
 }

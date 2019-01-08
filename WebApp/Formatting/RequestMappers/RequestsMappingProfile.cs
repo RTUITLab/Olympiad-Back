@@ -17,6 +17,9 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<RegistrationRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
             CreateMap<ExerciseRequest, Exercise>();
             CreateMap<ChallengeCreateRequest, Challenge>();
+            CreateMap<ChallengeEditRequest, Challenge>()
+                .ForAllMembers(opt => opt.Condition(a =>
+                    a.GetType().GetProperty(opt.DestinationMember.Name)?.GetValue(a) != null));
         }
     }
 }
