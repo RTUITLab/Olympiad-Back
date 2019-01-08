@@ -16,5 +16,7 @@ namespace WebApp.Models
         public HttpStatusCode StatusCode { get; set; }
 
         public static StatusCodeException NotFount => new StatusCodeException(HttpStatusCode.NotFound);
+
+        public static Exception BadRequest => new StatusCodeException(HttpStatusCode.BadRequest);
     }
 }

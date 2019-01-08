@@ -22,5 +22,6 @@ namespace WebApp.Controllers
         }
 
         protected Guid UserId => Guid.Parse(UserManager.GetUserId(User));
+        protected Task<User> CurrentUser() => UserManager.GetUserAsync(User);
     }
 }
