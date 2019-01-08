@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.Exercises;
+using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses;
 using WebApp.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApp.Controllers
 {
@@ -21,19 +23,26 @@ namespace WebApp.Controllers
     public class ChallengesController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
 
         public ChallengesController(
             UserManager<User> userManager,
-            ApplicationDbContext context
+            ApplicationDbContext context,
+            IMapper mapper
             ) : base(userManager)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ChallengeResponse>> GetAsync()
+        public async Task<IEnumerable<ChallengeCompactResponse>> GetAsync()
         {
-            return await context.Challenges.ProjectTo<ChallengeResponse>().ToListAsync();
+            return await context
+                .Challenges
+                .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
+                            c.UserToChallenges.Any(utc => utc.UserId == UserId))
+                .ProjectTo<ChallengeCompactResponse>().ToListAsync();
         }
 
         [HttpGet("{id:guid}")]
@@ -42,20 +51,25 @@ namespace WebApp.Controllers
             return await context
                 .Challenges
                 .Where(c => c.Id == id)
+                .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
+                            c.UserToChallenges.Any(utc => utc.UserId == UserId))
                 .ProjectTo<ChallengeResponse>()
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
         }
 
-        // POST api/<controller>
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public void Post([FromBody]string value)
+        public async Task<ChallengeResponse> PostAsync([FromBody]ChallengeCreateRequest request)
         {
-            throw new NotImplementedException();
+            var challenge = mapper.Map<Challenge>(request);
+            challenge.CreationTime = DateTime.UtcNow;
+            context.Challenges.Add(challenge);
+            await context.SaveChangesAsync();
+            return mapper.Map<ChallengeResponse>(challenge);
         }
 
-        // PUT api/<controller>/5
+
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public void Put(int id, [FromBody]string value)
@@ -63,7 +77,6 @@ namespace WebApp.Controllers
             throw new NotImplementedException();
         }
 
-        // DELETE api/<controller>/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public void Delete(int id)

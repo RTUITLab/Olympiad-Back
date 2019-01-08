@@ -40,13 +40,14 @@ namespace WebApp.Services.Configure
         private async Task CreateUser(string email, string name, string studentId, string password)
         {
             logger.LogInformation($"Creating user {email}");
-            await userManager.CreateAsync(new User
+            var createResult = await userManager.CreateAsync(new User
             {
                 Email = email,
                 UserName = email,
                 FirstName = name,
                 StudentID = studentId
             }, password);
+            logger.LogInformation($"creating {email} : {createResult.Succeeded}");
         }
 
         private async Task ApplyRoles()
