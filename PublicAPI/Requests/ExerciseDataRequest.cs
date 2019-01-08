@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebApp.ViewModels
+namespace PublicAPI.Requests
 {
-    public class ExerciseDataViewModel
+    public class ExerciseDataRequest
     {
         public string InData { get; set; }
         public string OutData { get; set; }

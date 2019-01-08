@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
 using Newtonsoft.Json;
+using PublicAPI.Requests;
 using PublicAPI.Responses;
 using Shared.Models;
 using WebApp.Auth;
@@ -42,7 +43,7 @@ namespace WebApp.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Post([FromBody]CredentialsViewModel credentials)
+        public async Task<IActionResult> Post([FromBody]CredentialsReques credentials)
         {
             if (!ModelState.IsValid)
             {

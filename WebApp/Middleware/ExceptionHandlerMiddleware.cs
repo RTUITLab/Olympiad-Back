@@ -9,7 +9,6 @@ using WebApp.Models;
 
 namespace WebApp.Middleware
 {
-    // You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
     public class ExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
@@ -36,8 +35,7 @@ namespace WebApp.Middleware
             }
         }
     }
-
-    // Extension method used to add the middleware to the HTTP request pipeline.
+    
     public static class ExceptionHandlerMiddlewareExtensions
     {
         public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder)

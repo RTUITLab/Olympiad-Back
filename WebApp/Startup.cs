@@ -121,7 +121,11 @@ namespace WebApp
                 .AddJsonOptions(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
             services.AddCors();
-            services.AddTransient<IEmailSender, EmailService>();
+            if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
+                services.AddTransient<IEmailSender, DebugEmailService>();
+            else
+                services.AddTransient<IEmailSender, EmailService>();
+
             services.AddSingleton<IQueueChecker, QueueService>();
 
 

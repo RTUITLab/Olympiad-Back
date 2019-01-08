@@ -16,6 +16,7 @@ using Models.Solutions;
 using Shared.Models;
 using PublicAPI.Responses;
 using WebApp.Models;
+using PublicAPI.Requests;
 
 namespace WebApp.Controllers
 {
@@ -39,7 +40,7 @@ namespace WebApp.Controllers
         [HttpPut]
         [Route("{exerciseId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExercisesViewModel model)
+        public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExerciseRequest model)
         {
             var exe = await applicationDbContext.Exercises.FindAsync(exerciseId);
 
@@ -108,7 +109,7 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Post([FromBody] ExercisesViewModel model)
+        public async Task<IActionResult> Post([FromBody] ExerciseRequest model)
         {
             var exeIdentity = mapper.Map<Exercise>(model);
             applicationDbContext.Exercises.Add(exeIdentity);
