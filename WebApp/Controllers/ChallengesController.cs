@@ -40,11 +40,16 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IEnumerable<ChallengeCompactResponse>> GetAsync()
         {
-            return await context
-                .Challenges
-                .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
-                            c.UsersToChallenges.Any(utc => utc.UserId == UserId))
-                .ProjectTo<ChallengeCompactResponse>().ToListAsync();
+            IQueryable<Challenge> query = context.Challenges;
+            if (!IsAdmin)
+            {
+                query = query
+                    .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
+                           c.UsersToChallenges.Any(utc => utc.UserId == UserId));
+            }
+            return await query
+                .ProjectTo<ChallengeCompactResponse>()
+                .ToListAsync();
         }
 
         [HttpGet("{id:guid}")]
@@ -55,16 +60,17 @@ namespace WebApp.Controllers
                 .Where(c => c.Id == id);
 
             IQueryable<ChallengeResponse> resultQuery;
-            if (!await UserManager.IsInRoleAsync(await CurrentUser(), "Admin"))
+            var mappingParameter = new { userId = UserId };
+            if (IsAdmin)
+            {
+                resultQuery = query.ProjectTo<ChallengeExtendedResponse>(mappingParameter);
+            }
+            else
             {
                 resultQuery = query
                     .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
                            c.UsersToChallenges.Any(utc => utc.UserId == UserId))
-                    .ProjectTo<ChallengeResponse>();
-            }
-            else
-            {
-                resultQuery = query.ProjectTo<ChallengeExtendedResponse>();
+                    .ProjectTo<ChallengeResponse>(mappingParameter);
             }
             return await resultQuery.SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;

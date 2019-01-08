@@ -22,7 +22,7 @@ namespace WebApp.Middleware
         {
             try
             {
-                await this._next(httpContext);
+                await _next(httpContext);
             }
             catch (StatusCodeException exception)
             {
@@ -33,9 +33,16 @@ namespace WebApp.Middleware
             {
                 httpContext.Response.StatusCode = (int)HttpStatusCode.NotImplemented;
             }
+            catch (Exception ex)
+            {
+                if (ex.Message?.Contains("SPA") == true)
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                else
+                    throw;
+            }
         }
     }
-    
+
     public static class ExceptionHandlerMiddlewareExtensions
     {
         public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder)

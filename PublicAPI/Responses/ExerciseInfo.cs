@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PublicAPI.Responses.Challenges;
+using System;
 using System.Collections.Generic;
 
 namespace PublicAPI.Responses
@@ -9,6 +10,10 @@ namespace PublicAPI.Responses
         public string Name { get; set; }
         public int Score { get; set; }
         public string TaskText { get; set; }
+
+        public Guid ChallengeId { get; set; }
+        public ChallengeCompactResponse Challenge { get; set; }
+
         public IEnumerable<SolutionInfo> Solutions { get; set; }
     }
 }
