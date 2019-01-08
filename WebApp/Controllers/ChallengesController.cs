@@ -43,7 +43,7 @@ namespace WebApp.Controllers
             return await context
                 .Challenges
                 .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
-                            c.UserToChallenges.Any(utc => utc.UserId == UserId))
+                            c.UsersToChallenges.Any(utc => utc.UserId == UserId))
                 .ProjectTo<ChallengeCompactResponse>().ToListAsync();
         }
 
@@ -53,12 +53,13 @@ namespace WebApp.Controllers
             var query = context
                 .Challenges
                 .Where(c => c.Id == id);
+
             IQueryable<ChallengeResponse> resultQuery;
             if (!await UserManager.IsInRoleAsync(await CurrentUser(), "Admin"))
             {
                 resultQuery = query
                     .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
-                           c.UserToChallenges.Any(utc => utc.UserId == UserId))
+                           c.UsersToChallenges.Any(utc => utc.UserId == UserId))
                     .ProjectTo<ChallengeResponse>();
             }
             else
@@ -85,24 +86,30 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ChallengeExtendedResponse> PutAsync(Guid id, [FromBody]ChallengeEditRequest request)
         {
-            if (request.RemovePersons != null && 
+            if (request.RemovePersons != null &&
                 request.AddPersons != null &&
                 request.RemovePersons.Intersect(request.AddPersons).Any())
                 throw StatusCodeException.BadRequest;
 
             var targetChallenge = await context
                 .Challenges
-                .Include(c => c.UserToChallenges)
+                .Include(c => c.UsersToChallenges)
                 .Where(c => c.Id == id)
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             mapper.Map(request, targetChallenge);
-            targetChallenge.UserToChallenges.RemoveAll(u => request.RemovePersons.Contains(u.UserId));
-            targetChallenge.UserToChallenges.AddRange(request.AddPersons.Select(pi => new UserToChallenge
-            {
-                UserId = pi,
-                ChallengeId = id
-            }));
+            if (request.RemovePersons?.Any() == true)
+                targetChallenge.UsersToChallenges.RemoveAll(u => request.RemovePersons.Contains(u.UserId));
+            if (request.AddPersons?.Any() == true)
+                targetChallenge.UsersToChallenges.AddRange(
+                    request
+                    .AddPersons
+                    .Where(uid => !targetChallenge.UsersToChallenges.Any(utc => utc.UserId == uid))
+                    .Select(uid => new UserToChallenge
+                    {
+                        UserId = uid,
+                        ChallengeId = id
+                    }));
             await context.SaveChangesAsync();
             return mapper.Map<ChallengeExtendedResponse>(targetChallenge);
         }

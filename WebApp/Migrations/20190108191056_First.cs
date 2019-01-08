@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace WebApp.Migrations
 {
-    public partial class FirstPostgres : Migration
+    public partial class First : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -50,6 +50,22 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Challenges",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    StartTime = table.Column<DateTime>(nullable: true),
+                    EndTime = table.Column<DateTime>(nullable: true),
+                    ChallengeAccessType = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Challenges", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Comments",
                 columns: table => new
                 {
@@ -61,20 +77,6 @@ namespace WebApp.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Comments", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Exercises",
-                columns: table => new
-                {
-                    ExerciseName = table.Column<string>(nullable: true),
-                    ExerciseID = table.Column<Guid>(nullable: false),
-                    ExerciseTask = table.Column<string>(nullable: true),
-                    Score = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Exercises", x => x.ExerciseID);
                 });
 
             migrationBuilder.CreateTable(
@@ -184,11 +186,56 @@ namespace WebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Exercises",
+                columns: table => new
+                {
+                    ExerciseName = table.Column<string>(nullable: true),
+                    ExerciseID = table.Column<Guid>(nullable: false),
+                    ExerciseTask = table.Column<string>(nullable: true),
+                    Score = table.Column<int>(nullable: false),
+                    ChallengeId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Exercises", x => x.ExerciseID);
+                    table.ForeignKey(
+                        name: "FK_Exercises_Challenges_ChallengeId",
+                        column: x => x.ChallengeId,
+                        principalTable: "Challenges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserToChallenge",
+                columns: table => new
+                {
+                    UserId = table.Column<Guid>(nullable: false),
+                    ChallengeId = table.Column<Guid>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserToChallenge", x => new { x.ChallengeId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_UserToChallenge_Challenges_ChallengeId",
+                        column: x => x.ChallengeId,
+                        principalTable: "Challenges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserToChallenge_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Solutions",
                 columns: table => new
                 {
-                    Language = table.Column<string>(nullable: true),
                     Id = table.Column<Guid>(nullable: false),
+                    Language = table.Column<string>(nullable: true),
                     Raw = table.Column<string>(nullable: true),
                     UserId = table.Column<Guid>(nullable: false),
                     ExerciseId = table.Column<Guid>(nullable: false),
@@ -219,7 +266,8 @@ namespace WebApp.Migrations
                     Id = table.Column<Guid>(nullable: false),
                     ExerciseId = table.Column<Guid>(nullable: false),
                     InData = table.Column<string>(nullable: true),
-                    OutData = table.Column<string>(nullable: true)
+                    OutData = table.Column<string>(nullable: true),
+                    IsPublic = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -270,6 +318,11 @@ namespace WebApp.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Exercises_ChallengeId",
+                table: "Exercises",
+                column: "ChallengeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Solutions_ExerciseId",
                 table: "Solutions",
                 column: "ExerciseId");
@@ -283,6 +336,11 @@ namespace WebApp.Migrations
                 name: "IX_TestData_ExerciseId",
                 table: "TestData",
                 column: "ExerciseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserToChallenge_UserId",
+                table: "UserToChallenge",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -312,13 +370,19 @@ namespace WebApp.Migrations
                 name: "TestData");
 
             migrationBuilder.DropTable(
+                name: "UserToChallenge");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Exercises");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Exercises");
+                name: "Challenges");
         }
     }
 }
