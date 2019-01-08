@@ -2,6 +2,7 @@
 using Models;
 using Models.Exercises;
 using PublicAPI.Requests;
+using PublicAPI.Requests.Challenges;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace WebApp.ViewModels.Mappings
         {
             CreateMap<RegistrationRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
             CreateMap<ExerciseRequest, Exercise>();
+            CreateMap<ChallengeCreateRequest, Challenge>();
         }
     }
 }
