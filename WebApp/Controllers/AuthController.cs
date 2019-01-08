@@ -84,7 +84,7 @@ namespace WebApp.Controllers
 
             var sum = await context
                  .Exercises
-                 .Where(e => e.Solution.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
+                 .Where(e => e.Solutions.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
                  .SumAsync(e => e.Score);
             loginInfo.TotalScore = sum;
             

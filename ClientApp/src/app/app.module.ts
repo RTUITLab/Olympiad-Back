@@ -1,12 +1,12 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
-import { FormsModule , ReactiveFormsModule  } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { NgxLoadingModule, ngxLoadingAnimationTypes  } from 'ngx-loading';
-import {MatTableModule} from '@angular/material/table';
+import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material';
-import {MatInputModule} from '@angular/material/input';
+import { MatInputModule } from '@angular/material/input';
 
 
 
@@ -29,6 +29,10 @@ import { UserInfoComponent } from './components/user-info/user-info.component';
 import { ExerciseEditComponent } from './components/exercises/exercise-edit/exercise-edit.component';
 import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
 import { AddExerciseComponent } from './components/exercises/add-exercise/add-exercise.component';
+import { ChallengesService } from './services/challenges.service';
+import { ChalallangesListComponent } from './components/menu/chalallanges-list/chalallanges-list.component';
+import { ExerciseStateService } from './services/exercise-state.service';
+import { ChallengeInfoComponent } from './components/challenges/challenge-info/challenge-info.component';
 
 
 const routes: Route[] = [
@@ -66,6 +70,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'challenges/:ChallengeId',
+    component: ChallengeInfoComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: '',
     pathMatch: 'prefix',
     redirectTo: '/overview'
@@ -87,6 +96,8 @@ const routes: Route[] = [
     AddExerciseComponent,
     ExerciseEditComponent,
     AddExerciseInOutComponent,
+    ChalallangesListComponent,
+    ChallengeInfoComponent,
 
   ],
   imports: [
@@ -108,7 +119,13 @@ const routes: Route[] = [
     MatButtonModule,
     MatInputModule
   ],
-  providers: [UserStateService, ExerciseService, AuthGuardService],
+  providers: [
+    UserStateService,
+    ExerciseStateService,
+    ExerciseService,
+    ChallengesService,
+    AuthGuardService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

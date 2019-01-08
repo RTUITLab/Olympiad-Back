@@ -15,6 +15,7 @@ import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
+import { Helpers } from 'src/app/Helpers/Helpers';
 // import { timingSafeEqual } from 'crypto';
 
 
@@ -108,7 +109,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
 
   prettyTime(time: string): string {
-    return Solution.prettyTime(time);
+    return Helpers.prettyTime(time);
   }
 
   normalLang(lang: string): string {

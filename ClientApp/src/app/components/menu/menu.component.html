@@ -14,11 +14,4 @@
   </li>
 </ul>
 <hr>
-<ul *ngIf="needMenu()">
-  <h2>Задания для выполнения ({{exCount()}})</h2>
-  <li class="exersiceLi" *ngFor="let ex of exercises">
-    <button class="col{{ex.Status}}" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
-    <div></div>
-    <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg" />
-  </li>
-</ul>
+<app-chalallanges-list></app-chalallanges-list>

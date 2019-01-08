@@ -15,31 +15,13 @@ import { ExerciseListResponse } from '../../models/Responses/ExerciseListRespons
 export class MenuComponent implements OnInit {
 
   user: User;
-  exercises: ExerciseListResponse[] = [];
   constructor(
     private router: Router,
-    private usersService: UserStateService,
-    private exercisesService: ExerciseService) { }
+    private usersService: UserStateService) { }
 
   ngOnInit() {
     this.usersService.currentUserStream.subscribe(U => {
       this.user = U;
-      this.exercisesService.getExercises()
-        .subscribe(exercises => this.exercises = exercises || []);
-    });
-    this.exercisesService.solutionStream.subscribe(S => {
-      if (!S) {
-        return;
-      }
-      const targetEx = this.exercises.find(E => E.Id === S.ExerciseId);
-      // console.log('target ex');
-      // console.log(targetEx);
-      // console.log(S);
-      if (targetEx) {
-        if (targetEx.Status < S.Status) {
-          targetEx.Status = S.Status;
-        }
-      }
     });
   }
   isAdmin(): boolean {
@@ -48,18 +30,7 @@ export class MenuComponent implements OnInit {
   addExercise() {
     this.router.navigate(['add-exercise']);
   }
-  needMenu(): boolean {
-    // if (!this.exercises) {
-      return true;
-    // }
-    // return this.exercises.length > 0;
-  }
-  exCount(): number {
-    if (!this.exercises) {
-      return 0;
-    }
-    return this.exercises.length;
-  }
+
   login() {
     this.router.navigate(['login']);
   }

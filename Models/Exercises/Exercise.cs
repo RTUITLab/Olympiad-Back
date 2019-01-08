@@ -16,6 +16,6 @@ namespace Models.Exercises
         public Challenge Challenge { get; set; }
 
         public List<ExerciseData> ExerciseDatas { get; set; }
-        public List<Solution> Solution { get; set; }
+        public List<Solution> Solutions { get; set; }
     }
 }

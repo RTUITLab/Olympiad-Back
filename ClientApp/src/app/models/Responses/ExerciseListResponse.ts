@@ -1,10 +1,10 @@
-import {Uuid} from 'uuid';
 import { SolutionStatus } from '../SolutionStatus';
+
 
 export class ExerciseListResponse {
     constructor(
         public Name?: string,
-        public Id?: Uuid,
+        public Id?: string,
         public Score?: number,
         public Status?: SolutionStatus
     ) {}

@@ -21,19 +21,19 @@ using PublicAPI.Requests;
 namespace WebApp.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Exercises")]
+    [Route("api/exercises")]
     [Authorize(Roles = "User")]
     public class ExercisesController : AuthorizeController
     {
         private readonly IMapper mapper;
-        private readonly ApplicationDbContext applicationDbContext;
+        private readonly ApplicationDbContext context;
 
         public ExercisesController(
             ApplicationDbContext applicationDbContext,
             IMapper mapper,
             UserManager<User> userManager) : base(userManager)
         {
-            this.applicationDbContext = applicationDbContext;
+            this.context = applicationDbContext;
             this.mapper = mapper;
         }
 
@@ -42,7 +42,7 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExerciseRequest model)
         {
-            var exe = await applicationDbContext.Exercises.FindAsync(exerciseId);
+            var exe = await context.Exercises.FindAsync(exerciseId);
 
             if (exe == null)
             {
@@ -64,7 +64,7 @@ namespace WebApp.Controllers
                 exe.Score = model.Score;
             }
 
-            await applicationDbContext.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return Ok();
         }
 
@@ -72,49 +72,32 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            var exercise = await applicationDbContext
+            var exercise = await context
                 .Exercises
                 .SingleOrDefaultAsync(p => p.ExerciseID == exerciseId)
                 ?? throw StatusCodeException.NotFount;
             
-            var solutions = await applicationDbContext
+            var solutions = await context
                 .Solutions
                 .Where(s => s.ExerciseId == exerciseId)
                 .Where(s => s.UserId == UserId)
                 .ToListAsync();
-            exercise.Solution = solutions;
+            exercise.Solutions = solutions;
             var exView = mapper.Map<ExerciseInfo>(exercise);
             return exView;
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Json(
-                applicationDbContext
-                .Exercises
-                .Select(e => new ExerciseCompactResponse
-                {
-                    Id = e.ExerciseID,
-                    Name = e.ExerciseName,
-                    Score = e.Score,
-                    Status = (SolutionStatus)e.Solution
-                        .Where(s => s.UserId == UserId)
-                        .Select(s => (int)s.Status)
-                        .DefaultIfEmpty(-1)
-                        .Max()
-
-                }));
-        }
-
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Post([FromBody] ExerciseRequest model)
+        public async Task<ExerciseInfo> Post([FromBody] ExerciseRequest model)
         {
+            if (!await context.Challenges.AnyAsync(c => c.Id == model.ChallengeId))
+                throw StatusCodeException.BadRequest;
+
             var exeIdentity = mapper.Map<Exercise>(model);
-            applicationDbContext.Exercises.Add(exeIdentity);
-            await applicationDbContext.SaveChangesAsync();
-            return Json(mapper.Map<ExerciseInfo>(exeIdentity));
+            context.Exercises.Add(exeIdentity);
+            await context.SaveChangesAsync();
+            return mapper.Map<ExerciseInfo>(exeIdentity);
         }
 
         [HttpPost("{id}")]
@@ -122,13 +105,13 @@ namespace WebApp.Controllers
         public IActionResult Post(IFormFile markdown, Guid id) 
         {
             System.Console.WriteLine(markdown.Length);
-            var target = applicationDbContext.Exercises.FirstOrDefault(e => e.ExerciseID == id);
+            var target = context.Exercises.FirstOrDefault(e => e.ExerciseID == id);
             if (target == null) return NotFound();
             using (var reader = new StreamReader(markdown.OpenReadStream()))
             {
                 target.ExerciseTask = reader.ReadToEnd();
             }
-            applicationDbContext.SaveChanges();
+            context.SaveChanges();
             return Ok();
         }
     }
