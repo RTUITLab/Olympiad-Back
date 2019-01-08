@@ -30,8 +30,7 @@ namespace WebApp.Formatting.ResponseMappers
 
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()
-                //.ForMember(cer => cer.InvitedUsers, map => map.MapFrom(c => c.UserToChallenges.Select(utc => utc.User)))
-                ;
+                .ForMember(cer => cer.Invited, map => map.MapFrom(c => c.UsersToChallenges.Select(utc => utc.User)));
         }
     }
 }

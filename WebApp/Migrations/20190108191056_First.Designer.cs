@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190108154059_UserToChallenge")]
-    partial class UserToChallenge
+    [Migration("20190108191056_First")]
+    partial class First
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -207,19 +207,11 @@ namespace WebApp.Migrations
 
                     b.Property<Guid>("UserId");
 
-                    b.Property<Guid?>("ChallengeId1");
-
-                    b.Property<Guid?>("UserId1");
-
                     b.HasKey("ChallengeId", "UserId");
-
-                    b.HasIndex("ChallengeId1");
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId1");
-
-                    b.ToTable("UserToChallenges");
+                    b.ToTable("UserToChallenge");
                 });
 
             modelBuilder.Entity("Models.Solutions.Solution", b =>
@@ -365,23 +357,15 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("Models.Links.UserToChallenge", b =>
                 {
-                    b.HasOne("Models.Exercises.Challenge")
-                        .WithMany("UserToChallenges")
+                    b.HasOne("Models.Exercises.Challenge", "Challenge")
+                        .WithMany("UsersToChallenges")
                         .HasForeignKey("ChallengeId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Models.Exercises.Challenge", "Challenge")
-                        .WithMany()
-                        .HasForeignKey("ChallengeId1");
-
-                    b.HasOne("Models.User")
-                        .WithMany("UserToChallenges")
+                    b.HasOne("Models.User", "User")
+                        .WithMany("UsersToChallenges")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId1");
                 });
 
             modelBuilder.Entity("Models.Solutions.Solution", b =>

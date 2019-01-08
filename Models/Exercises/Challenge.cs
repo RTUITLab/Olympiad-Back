@@ -15,7 +15,7 @@ namespace Models.Exercises
         public DateTime? EndTime { get; set; }
         public ChallengeAccessType ChallengeAccessType { get; set; }
 
-        public List<UserToChallenge> UserToChallenges { get; set; }
+        public List<UserToChallenge> UsersToChallenges { get; set; }
 
         public List<Exercise> Exercises { get; set; }
     }

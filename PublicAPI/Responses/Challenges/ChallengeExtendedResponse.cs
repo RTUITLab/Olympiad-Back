@@ -6,6 +6,6 @@ namespace PublicAPI.Responses.Challenges
 {
     public class ChallengeExtendedResponse : ChallengeResponse
     {
-        public List<UserResponse> InvitedUsers { get; set; }
+        public List<UserResponse> Invited { get; set; }
     }
 }

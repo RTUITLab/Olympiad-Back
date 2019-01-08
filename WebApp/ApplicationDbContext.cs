@@ -23,17 +23,16 @@ namespace Models
             builder.Entity<UserToChallenge>()
                 .HasKey(utc => new { utc.ChallengeId, utc.UserId });
             builder.Entity<UserToChallenge>()
-                .HasOne<Challenge>()
-                .WithMany(c => c.UserToChallenges)
+                .HasOne(utc => utc.Challenge)
+                .WithMany(c => c.UsersToChallenges)
                 .HasForeignKey(utc => utc.ChallengeId);
             builder.Entity<UserToChallenge>()
-                .HasOne<User>()
-                .WithMany(u => u.UserToChallenges)
+                .HasOne(utc => utc.User)
+                .WithMany(u => u.UsersToChallenges)
                 .HasForeignKey(utc => utc.UserId);
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }
-        public DbSet<UserToChallenge> UserToChallenges { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
         public DbSet<Solution> Solutions { get; set; }
         public DbSet<ExerciseData> TestData { get; set; }
