@@ -93,7 +93,7 @@ namespace Executor.Executers.Build
             var buildLogs = await BuildImageAsync($"solution:{solutionId}", sourceDir.FullName);
 
             sourceDir.Delete(true);
-
+            Console.WriteLine(buildLogs);
             if (buildLogs.Contains(BuildFailedCondition))
                 return false;
             return true;
