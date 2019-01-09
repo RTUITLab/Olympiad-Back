@@ -95,7 +95,7 @@ namespace WebApp.Controllers
             if (request.RemovePersons != null &&
                 request.AddPersons != null &&
                 request.RemovePersons.Intersect(request.AddPersons).Any())
-                throw StatusCodeException.BadRequest;
+                throw StatusCodeException.BadRequest();
 
             var targetChallenge = await context
                 .Challenges

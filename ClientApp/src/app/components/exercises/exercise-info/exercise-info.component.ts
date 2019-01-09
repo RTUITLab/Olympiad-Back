@@ -52,25 +52,22 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
-        console.log(this.model.ExerciseId);
         this.startLoading();
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
-          exInfo => {
-            exInfo.Solutions = exInfo.Solutions.reverse();
-            this.exerciseInfo = exInfo;
-            this.exerciseInfo
-              .Solutions
-              .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-              .forEach(s => this.solutionCheckLoop(s.Id));
-            this.stopLoading();
-            this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
-
-
-          },
-          fail => {
-            console.log(fail);
-          }
+            exInfo => {
+              exInfo.Solutions = exInfo.Solutions.reverse();
+              this.exerciseInfo = exInfo;
+              this.exerciseInfo
+                .Solutions
+                .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+                .forEach(s => this.solutionCheckLoop(s));
+              this.stopLoading();
+              this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+            },
+            fail => {
+              console.log(fail);
+            }
           );
       });
   }
@@ -81,19 +78,21 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   onSubmit() {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
-      success => {
-        const f = () => this.solutionCheckLoop(success);
-        f();
-      }
+        success => {
+          if (!success) {
+            return;
+          }
+          const f = () => this.solutionCheckLoop(success);
+          f();
+        }
       );
   }
   editTask(id: string) {
     console.log(id);
     this.router.navigate(['exercises/edit/', id]);
   }
-  solutionCheckLoop(solutionId: string) {
-    // console.log(this);
-    this.exercisesService.checkSolution(solutionId).subscribe(
+  solutionCheckLoop(checkSolution: Solution) {
+    this.exercisesService.checkSolution(checkSolution.Id).subscribe(
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
         if (!target) {
@@ -103,7 +102,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
-          setTimeout(() => this.solutionCheckLoop(solutionId), 800);
+          setTimeout(() => this.solutionCheckLoop(checkSolution), 800);
         }
       });
   }
