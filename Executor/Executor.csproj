@@ -50,6 +50,9 @@
     <None Update="Executers\Build\c\DockerFile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Executers\Build\python\DockerFile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
