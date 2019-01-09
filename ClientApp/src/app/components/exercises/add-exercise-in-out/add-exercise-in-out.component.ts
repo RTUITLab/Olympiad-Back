@@ -13,7 +13,7 @@ export class AddExerciseInOutComponent implements OnInit {
   ) { }
   public NewCondition: ExerciseNewCondition[];
   ngOnInit() {
-    console.log('AddInOut'+this.task_text_edit);
+    console.log('AddInOut' + this.task_text_edit);
     this.NewCondition = [];
     if (this.task_text_edit) {
       console.log(this.NewCondition);

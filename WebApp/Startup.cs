@@ -145,7 +145,11 @@ namespace WebApp
                 .AddTransientConfigure<AutoMigrate>()
                 .AddTransientConfigure<DefaultRolesConfigure>()
                 .AddTransientConfigure<FillQueue>();
+
+            services.AddHostedService<RestartCheckingService>();
+
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

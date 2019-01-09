@@ -7,4 +7,6 @@ export class Solution {
     ExerciseId: string;
     Status: SolutionStatus;
     SendingTime: string;
+    StartCheckingTime: string;
+    CheckedTime: string;
 }

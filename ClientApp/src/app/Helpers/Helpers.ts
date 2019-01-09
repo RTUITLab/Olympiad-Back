@@ -6,6 +6,7 @@ export class Helpers {
         prettyDate += `.${Helpers.round(date.getMonth() + 1)}`;
         prettyDate += `.${date.getFullYear()} ${date.getHours()}`;
         prettyDate += `:${Helpers.round(date.getMinutes())}`;
+        prettyDate += `:${Helpers.round(date.getSeconds ())}`;
         return  prettyDate;
     }
 

@@ -1,0 +1,3 @@
+﻿FROM python:3
+COPY ./Program.py /src/Program.py
+CMD python /src/Program.py

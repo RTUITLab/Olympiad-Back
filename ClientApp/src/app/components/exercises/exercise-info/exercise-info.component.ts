@@ -56,12 +56,14 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
             exInfo => {
-              exInfo.Solutions = exInfo.Solutions.reverse();
-              this.exerciseInfo = exInfo;
-              this.exerciseInfo
+              exInfo.Solutions = exInfo
                 .Solutions
-                .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-                .forEach(s => this.solutionCheckLoop(s));
+                .reverse();
+              this.exerciseInfo = exInfo;
+              // this.exerciseInfo
+              //   .Solutions
+              //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+              //   .forEach(s => this.solutionCheckLoop(s));
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
             },
@@ -99,6 +101,8 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
           this.exerciseInfo.Solutions.unshift(solution);
         } else {
           target.Status = solution.Status;
+          target.StartCheckingTime = solution.StartCheckingTime;
+          target.CheckedTime = solution.CheckedTime;
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
@@ -112,6 +116,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
 
   prettyTime(time: string): string {
+    if (!time) {
+      return 'нет данных';
+    }
     return Helpers.prettyTime(time);
   }
 
