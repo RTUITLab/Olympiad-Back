@@ -105,7 +105,7 @@ namespace Executor.Executers.Run
             await stream.CopyFromAsync(inStream, CancellationToken.None);
             var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
 
-            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(50)), readTask) == readTask)
+            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
             {
                 var (stdout, stderr) = readTask.Result;
                 if (!string.IsNullOrEmpty(stderr))
