@@ -16,7 +16,7 @@ namespace Executor.Executers.Build.Java
     [Language("java")]
     class JavaBuilder : ProgramBuilder
     {
-        public JavaBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient)
+        public JavaBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<Solution, Task> finishBuildSolution, IDockerClient dockerClient)
             : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
@@ -24,7 +24,7 @@ namespace Executor.Executers.Build.Java
         protected override string ProgramFileName => "Main.java";
 
 
-        protected override string BuildFailedCondition => "errors";
+        protected override string BuildFailedCondition => "error";
 
         protected override string GetBinariesDirectory(DirectoryInfo startDir)
             => startDir.FullName;
