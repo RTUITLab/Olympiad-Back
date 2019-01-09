@@ -26,6 +26,8 @@ using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
 using WebApp.Middleware;
+using Swashbuckle.AspNetCore.Swagger;
+
 
 namespace WebApp
 {
@@ -126,7 +128,10 @@ namespace WebApp
                     options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 }
             );
-
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "Olympiad API", Version = "v1" });
+            });
             services.AddCors();
             if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
                 services.AddTransient<IEmailSender, DebugEmailService>();
@@ -162,6 +167,14 @@ namespace WebApp
                     .AllowAnyHeader());
 
             app.UseWebAppConfigure();
+
+            app.UseSwagger(c => { c.RouteTemplate = "api/{documentName}/swagger.json"; });
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/api/v1/swagger.json", "My API V1");
+                c.RoutePrefix = "api";
+            });
+
             app.UseAuthentication();
             app.UseExceptionHandlerMiddleware();
             app.UseMvc(routes =>
