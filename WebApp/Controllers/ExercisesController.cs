@@ -92,7 +92,7 @@ namespace WebApp.Controllers
         public async Task<ExerciseInfo> Post([FromBody] ExerciseRequest model)
         {
             if (!await context.Challenges.AnyAsync(c => c.Id == model.ChallengeId))
-                throw StatusCodeException.BadRequest;
+                throw StatusCodeException.BadRequest();
 
             var exeIdentity = mapper.Map<Exercise>(model);
             context.Exercises.Add(exeIdentity);

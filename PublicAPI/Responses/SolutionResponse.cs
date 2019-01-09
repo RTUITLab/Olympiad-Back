@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PublicAPI.Responses
 {
-    public class SolutionInfo
+    public class SolutionResponse
     {
         public Guid Id { get; set; }
         public string Language { get; set; }

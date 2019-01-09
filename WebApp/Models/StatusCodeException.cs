@@ -13,10 +13,16 @@ namespace WebApp.Models
             StatusCode = statusCode;
         }
 
+        public StatusCodeException(HttpStatusCode statusCode, string message) : base(message)
+        {
+            StatusCode = statusCode;
+        }
+
         public HttpStatusCode StatusCode { get; set; }
 
         public static StatusCodeException NotFount => new StatusCodeException(HttpStatusCode.NotFound);
 
-        public static Exception BadRequest => new StatusCodeException(HttpStatusCode.BadRequest);
+        public static StatusCodeException BadRequest() => new StatusCodeException(HttpStatusCode.BadRequest);
+        public static StatusCodeException BadRequest(string message) => new StatusCodeException(HttpStatusCode.BadRequest, message);
     }
 }
