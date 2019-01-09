@@ -118,7 +118,14 @@ namespace WebApp
 
             services.AddAutoMapper();
             services.AddMvc()
-                .AddJsonOptions(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver());
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                }
+            );
 
             services.AddCors();
             if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
