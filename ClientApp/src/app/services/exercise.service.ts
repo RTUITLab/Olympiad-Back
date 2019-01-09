@@ -33,41 +33,39 @@ export class ExerciseService extends BaseHttpService implements OnInit {
     this.http.get<Array<ExerciseListResponse>>(
       `${this.baseUrl}/api/exercises`, this.userService.authOptions)
       .subscribe(
-      success => {
-        console.log(success);
-        observer.next(success);
-      },
-      err => {
-        observer.next([]);
-        console.log(err);
-      }
+        success => {
+          console.log(success);
+          observer.next(success);
+        },
+        err => {
+          observer.next([]);
+          console.log(err);
+        }
       );
     return observable;
   }
 
 
-  sendSolution(data: SolutionViewModel): Observable<string> {
-    const observer = new BehaviorSubject<string>(undefined);
+  sendSolution(data: SolutionViewModel): Observable<Solution> {
+    const observer = new BehaviorSubject<Solution>(undefined);
     const observable = observer.asObservable();
 
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
-    this.http.post<string>(
+    this.http.post<Solution>(
       `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
       formData, this.userService.authOptions)
       .subscribe(
-      success => {
-        console.log(success);
-        observer.next(success);
-        console.log('sended');
-      },
-      fail => {
-        console.log(fail);
-        console.log('failed');
-      }
+        success => {
+          console.log(success);
+          observer.next(success);
+          console.log('sended');
+        },
+        fail => {
+          console.log(fail);
+          console.log('failed');
+        }
       );
-
-
     return observable;
   }
   getExercise(exId: string): Observable<ExerciseInfo> {
@@ -78,14 +76,14 @@ export class ExerciseService extends BaseHttpService implements OnInit {
     this.http.get<ExerciseInfo>(
       `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions)
       .subscribe(
-      success => {
-        console.log(success);
-        observer.next(success);
-      },
-      err => {
-        observer.next(undefined);
-        console.log(err);
-      });
+        success => {
+          console.log(success);
+          observer.next(success);
+        },
+        err => {
+          observer.next(undefined);
+          console.log(err);
+        });
     return observable;
   }
 
@@ -96,16 +94,16 @@ export class ExerciseService extends BaseHttpService implements OnInit {
     });
     this.http.get<Solution>(
       `${this.baseUrl}/api/check/${solutionId}`, this.userService.authOptions).subscribe(
-      success => {
-        if (success) {
-          observer.next(success);
-          this.solutionsBehavior.next(success);
+        success => {
+          if (success) {
+            observer.next(success);
+            this.solutionsBehavior.next(success);
+          }
+        },
+        failure => {
+          console.log('error');
+          console.log(failure);
         }
-      },
-      failure => {
-        console.log('error');
-        console.log(failure);
-      }
       );
     return observable;
   }
@@ -117,15 +115,15 @@ export class ExerciseService extends BaseHttpService implements OnInit {
     });
     this.http.get<ExerciseData[]>(
       `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions).subscribe(
-      success => {
-        if (success) {
-          observer.next(success);
+        success => {
+          if (success) {
+            observer.next(success);
+          }
+        },
+        failure => {
+          console.log('error');
+          console.log(failure);
         }
-      },
-      failure => {
-        console.log('error');
-        console.log(failure);
-      }
       );
     return observable;
   }

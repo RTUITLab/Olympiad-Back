@@ -56,21 +56,21 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         this.startLoading();
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
-          exInfo => {
-            exInfo.Solutions = exInfo.Solutions.reverse();
-            this.exerciseInfo = exInfo;
-            this.exerciseInfo
-              .Solutions
-              .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-              .forEach(s => this.solutionCheckLoop(s.Id));
-            this.stopLoading();
-            this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+            exInfo => {
+              exInfo.Solutions = exInfo.Solutions.reverse();
+              this.exerciseInfo = exInfo;
+              // this.exerciseInfo
+              //   .Solutions
+              //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+              //   .forEach(s => this.solutionCheckLoop(s.Id));
+              this.stopLoading();
+              this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
 
 
-          },
-          fail => {
-            console.log(fail);
-          }
+            },
+            fail => {
+              console.log(fail);
+            }
           );
       });
   }
@@ -81,21 +81,25 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   onSubmit() {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
-      success => {
-        const f = () => this.solutionCheckLoop(success);
-        f();
-      }
+        success => {
+          if (!success) {
+            return;
+          }
+          const f = () => this.solutionCheckLoop(success);
+          f();
+        }
       );
   }
   editTask(id: string) {
     console.log(id);
     this.router.navigate(['exercises/edit/', id]);
   }
-  solutionCheckLoop(solutionId: string) {
-    // console.log(this);
-    this.exercisesService.checkSolution(solutionId).subscribe(
+  solutionCheckLoop(checkSolution: Solution) {
+    this.exercisesService.checkSolution(checkSolution.Id).subscribe(
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
+        console.log(target);
+        console.log(this.exerciseInfo.Solutions);
         if (!target) {
           this.exerciseInfo.Solutions.unshift(solution);
         } else {
@@ -103,7 +107,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
-          setTimeout(() => this.solutionCheckLoop(solutionId), 800);
+          setTimeout(() => this.solutionCheckLoop(checkSolution), 800);
         }
       });
   }
@@ -113,6 +117,8 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
 
   prettyTime(time: string): string {
+    console.log('pretty time');
+    console.log(time);
     return Helpers.prettyTime(time);
   }
 
