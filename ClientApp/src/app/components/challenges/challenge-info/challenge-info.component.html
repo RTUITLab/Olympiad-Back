@@ -1,3 +1,6 @@
-<p>
-  challenge-info works!
-</p>
+<div *ngIf="challenge; else loading">
+<h1>{{challenge.Name}}</h1>
+</div>
+<ng-template #loading>
+Загрузка...
+</ng-template>
