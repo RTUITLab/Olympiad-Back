@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.Exercises;
+using PublicAPI.Requests;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers
@@ -31,7 +33,7 @@ namespace WebApp.Controllers
         [HttpPost]
         [Route("{exerciseId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Post(Guid exerciseId, [FromBody]ExerciseDataViewModel exerciseDataIn)
+        public async Task<IActionResult> Post(Guid exerciseId, [FromBody]ExerciseDataRequest exerciseDataIn)
         {
             if (exerciseDataIn == null || string.IsNullOrEmpty(exerciseDataIn.InData) || string.IsNullOrEmpty(exerciseDataIn.OutData))
             {
@@ -78,7 +80,7 @@ namespace WebApp.Controllers
         [HttpPut]
         [Route("{exerciseDataId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Put(Guid exerciseDataId, [FromBody]ExerciseDataViewModel exerciseDataIn)
+        public async Task<IActionResult> Put(Guid exerciseDataId, [FromBody]ExerciseDataRequest exerciseDataIn)
         {
             if (exerciseDataIn == null || string.IsNullOrEmpty(exerciseDataIn.InData) || string.IsNullOrEmpty(exerciseDataIn.OutData))
             {

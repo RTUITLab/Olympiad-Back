@@ -25,6 +25,7 @@ using WebApp.Configure.Models.Invokations;
 using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
+using WebApp.Middleware;
 
 namespace WebApp
 {
@@ -117,16 +118,27 @@ namespace WebApp
 
             services.AddAutoMapper();
             services.AddMvc()
-                .AddJsonOptions(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver());
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                }
+            );
 
             services.AddCors();
-            services.AddTransient<IEmailSender, EmailService>();
+            if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
+                services.AddTransient<IEmailSender, DebugEmailService>();
+            else
+                services.AddTransient<IEmailSender, EmailService>();
+
             services.AddSingleton<IQueueChecker, QueueService>();
 
 
             services.AddWebAppConfigure()
                 .AddTransientConfigure<AutoMigrate>()
-                .AddTransientConfigure<DefaultRolesConfigure>(Configuration.GetValue<bool>("INIT_ROLES"))
+                .AddTransientConfigure<DefaultRolesConfigure>()
                 .AddTransientConfigure<FillQueue>();
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
         }
@@ -134,7 +146,6 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
-            System.Console.WriteLine(JsonConvert.SerializeObject(env));
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -152,6 +163,7 @@ namespace WebApp
 
             app.UseWebAppConfigure();
             app.UseAuthentication();
+            app.UseExceptionHandlerMiddleware();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

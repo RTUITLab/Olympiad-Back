@@ -139,10 +139,32 @@ namespace WebApp.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Models.Exercise", b =>
+            modelBuilder.Entity("Models.Exercises.Challenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ChallengeAccessType");
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<DateTime?>("EndTime");
+
+                    b.Property<string>("Name");
+
+                    b.Property<DateTime?>("StartTime");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Challenges");
+                });
+
+            modelBuilder.Entity("Models.Exercises.Exercise", b =>
                 {
                     b.Property<Guid>("ExerciseID")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<Guid>("ChallengeId");
 
                     b.Property<string>("ExerciseName");
 
@@ -152,10 +174,12 @@ namespace WebApp.Migrations
 
                     b.HasKey("ExerciseID");
 
+                    b.HasIndex("ChallengeId");
+
                     b.ToTable("Exercises");
                 });
 
-            modelBuilder.Entity("Models.ExerciseData", b =>
+            modelBuilder.Entity("Models.Exercises.ExerciseData", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
@@ -175,7 +199,20 @@ namespace WebApp.Migrations
                     b.ToTable("TestData");
                 });
 
-            modelBuilder.Entity("Models.Solution", b =>
+            modelBuilder.Entity("Models.Links.UserToChallenge", b =>
+                {
+                    b.Property<Guid>("ChallengeId");
+
+                    b.Property<Guid>("UserId");
+
+                    b.HasKey("ChallengeId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserToChallenge");
+                });
+
+            modelBuilder.Entity("Models.Solutions.Solution", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
@@ -300,17 +337,38 @@ namespace WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Models.ExerciseData", b =>
+            modelBuilder.Entity("Models.Exercises.Exercise", b =>
                 {
-                    b.HasOne("Models.Exercise")
+                    b.HasOne("Models.Exercises.Challenge", "Challenge")
+                        .WithMany("Exercises")
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Models.Exercises.ExerciseData", b =>
+                {
+                    b.HasOne("Models.Exercises.Exercise")
                         .WithMany("ExerciseDatas")
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Models.Solution", b =>
+            modelBuilder.Entity("Models.Links.UserToChallenge", b =>
                 {
-                    b.HasOne("Models.Exercise")
+                    b.HasOne("Models.Exercises.Challenge", "Challenge")
+                        .WithMany("UsersToChallenges")
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Models.User", "User")
+                        .WithMany("UsersToChallenges")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Models.Solutions.Solution", b =>
+                {
+                    b.HasOne("Models.Exercises.Exercise")
                         .WithMany("Solution")
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade);

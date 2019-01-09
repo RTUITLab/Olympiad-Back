@@ -10,6 +10,7 @@ using Models;
 using WebApp.Helpers;
 using WebApp.ViewModels;
 using WebApp.Services.Interfaces;
+using PublicAPI.Requests;
 
 namespace WebApp.Controllers
 {
@@ -53,7 +54,7 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]RegistrationViewModel model)
+        public async Task<IActionResult> Post([FromBody]RegistrationRequest model)
         {
             if (!ModelState.IsValid)
             {

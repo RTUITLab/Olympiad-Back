@@ -11,10 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
+using Models.Solutions;
 using Newtonsoft.Json;
+using PublicAPI.Requests;
+using PublicAPI.Responses;
+using Shared.Models;
 using WebApp.Auth;
 using WebApp.Helpers;
-using WebApp.Models.Responses;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers
@@ -40,7 +43,7 @@ namespace WebApp.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Post([FromBody]CredentialsViewModel credentials)
+        public async Task<IActionResult> Post([FromBody]CredentialsReques credentials)
         {
             if (!ModelState.IsValid)
             {
@@ -81,7 +84,7 @@ namespace WebApp.Controllers
 
             var sum = await context
                  .Exercises
-                 .Where(e => e.Solution.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
+                 .Where(e => e.Solutions.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
                  .SumAsync(e => e.Score);
             loginInfo.TotalScore = sum;
             

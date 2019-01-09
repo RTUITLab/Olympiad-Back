@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Docker.DotNet;
+using Models.Solutions;
+using Shared.Models;
 
 namespace Executor.Executers.Build.dotnet
 {
