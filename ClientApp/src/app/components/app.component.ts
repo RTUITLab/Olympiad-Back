@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { User } from '../models/User';
 import { UserStateService } from '../services/user-state.service';
@@ -7,7 +7,7 @@ import { UserStateService } from '../services/user-state.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   user: User;
 
   constructor(private router: Router, private usersService: UserStateService) { }

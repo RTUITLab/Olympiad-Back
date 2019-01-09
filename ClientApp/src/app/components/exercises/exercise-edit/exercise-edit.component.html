@@ -1,4 +1,4 @@
-<div *ngIf="isAdmin()" class="editTaskComponent">
+<div *ngIf="isAdmin()" class="editExerciseComponent">
 
   <!-- BUTTONS -->
   <button (click)="turnOnEditing()">
@@ -7,45 +7,45 @@
   <button (click)="turnOffEditing()">
     Просмотр
   </button>
-  <button (click)="sendEditedTask()">
+  <button (click)="sendEditedExercise()">
     Сохранить
   </button>
   <!-- END -->
 
   <br>
 
-  <!-- TASK_NAME -->
-  <textarea id="task_name"  class="task_name_area" *ngIf="task_text_edit===true"  ngDefaultControl [(ngModel)]="EditedTask.Name">
-    {{EditedTask.Name}}
+  <!-- exercise_NAME -->
+  <textarea id="exercise_name"  class="exercise_name_area" *ngIf="exercise_text_edit===true"  ngDefaultControl [(ngModel)]="EditedExercise.Name">
+    {{EditedExercise.Name}}
   </textarea>
-  <h1 id="task_name" ngDefaultControl *ngIf="task_text_edit===false">
-    {{EditedTask.Name}}
+  <h1 id="exercise_name" ngDefaultControl *ngIf="exercise_text_edit===false">
+    {{EditedExercise.Name}}
   </h1>
   <!-- END -->
 
   
-  <!-- TASK_SCORE -->
-  <div *ngIf="task_text_edit===true">
+  <!-- exercise_SCORE -->
+  <div *ngIf="exercise_text_edit===true">
     <span>
       Баллы за выполнение:
     </span>
-    <textarea id="task_score" type="ngDefaultControl"class="task_score_area" [(ngModel)]="EditedTask.Score">
-      {{EditedTask.Score}}
+    <textarea id="exercise_score" type="ngDefaultControl"class="exercise_score_area" [(ngModel)]="EditedExercise.Score">
+      {{EditedExercise.Score}}
     </textarea>
   </div>
-  <h3 id="task_score" *ngIf="task_text_edit===false">
-    Баллы за выполнение:{{EditedTask.Score}}
+  <h3 id="exercise_score" *ngIf="exercise_text_edit===false">
+    Баллы за выполнение:{{EditedExercise.Score}}
   </h3>
   <!-- END -->
   
-  <!-- TASK_TEXT -->
-  <textarea id="task_text" *ngIf="task_text_edit===true" ngDefaultControl class="task_text_area" [(ngModel)]="EditedTask.TaskText">
-    {{EditedTask.TaskText}}
+  <!-- exercise_TEXT -->
+  <textarea id="exercise_text" *ngIf="exercise_text_edit===true" ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.exerciseText">
+    {{EditedExercise.exerciseText}}
   </textarea>
-    <markdown *ngIf="task_text_edit===false" [data]="EditedTask.TaskText"></markdown>
+    <markdown *ngIf="exercise_text_edit===false" [data]="EditedExercise.exerciseText"></markdown>
     <!-- END -->
-    <!-- TASK_EXAMPLE -->
-      <app-exercise-inout [task_text_edit]="task_text_edit" [exId]="EditedTask.Id"></app-exercise-inout>
+    <!-- exercise_EXAMPLE -->
+      <app-exercise-inout [exercise_text_edit]="exercise_text_edit" [exId]="EditedExercise.Id"></app-exercise-inout>
     <!-- END -->
     
     <ngx-loading [show]="loading"></ngx-loading>

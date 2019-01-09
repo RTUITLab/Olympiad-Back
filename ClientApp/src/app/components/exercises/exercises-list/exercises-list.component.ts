@@ -19,7 +19,7 @@ export class ExercisesListComponent extends LoadingComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log("Exercises"+this.exercises);
+    console.log( 'Exercises' + this.exercises);
   }
 
 }

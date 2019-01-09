@@ -30,10 +30,10 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
   model: SolutionViewModel = new SolutionViewModel();
 
   //  variable for sending data to the server
-  EditedTask: ExerciseInfo;
+  EditedExercise: ExerciseInfo;
 
-  //  variable for task_text view
-  task_text_edit: boolean;
+  //  variable for exercise_text view
+  exercise_text_edit: boolean;
 
 
   constructor(
@@ -61,8 +61,8 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
           exInfo => {
-            this.EditedTask = exInfo;
-            console.log(this.EditedTask);
+            this.EditedExercise = exInfo;
+            console.log(this.EditedExercise);
             this.stopLoading();
           },
           fail => {
@@ -70,46 +70,46 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
           }
           );
       });
-          // deny editing task data
-         this.task_text_edit = false;
+          // deny editing exercise data
+         this.exercise_text_edit = false;
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
   turnOnEditing() {
     console.log('turnOnEditing()');
-    if (this.task_text_edit === false) {
-      this.task_text_edit = true;
+    if (this.exercise_text_edit === false) {
+      this.exercise_text_edit = true;
     }
   }
   turnOffEditing() {
     console.log('turnOffEditing()');
-    if (this.task_text_edit === true) {
-      this.task_text_edit = false;
+    if (this.exercise_text_edit === true) {
+      this.exercise_text_edit = false;
     }
   }
-  sendEditedTask() {
-    console.log('sendEditedTask()');
-    console.log(this.EditedTask);
+  sendEditedExercise() {
+    console.log('sendEditedExercise()');
+    console.log(this.EditedExercise);
     this.ngAfterViewInit();
     console.log(this.EditedCondition);
-    // send EditedTask to the server
-   this.exerciseEditServise.SendEditedTask(this.EditedTask).subscribe(
+    // send EditedExercise to the server
+   this.exerciseEditServise.SendEditedExercise(this.EditedExercise).subscribe(
      _ => {
-       this.sendEditedCondition(this.EditedTask.Id);
-       console.log(`sendEditedTask_complete`);
+       this.sendEditedCondition(this.EditedExercise.Id);
+       console.log(`sendEditedExercise_complete`);
      },
      error => console.log(error),
    );
   }
-  sendEditedCondition(EditedTaskId: string){
+  sendEditedCondition(EditedExerciseId: string) {
     console.log('sendEditedCondition()');
     this.ngAfterViewInit();
     console.log(this.EditedCondition);
-    this.exerciseEditServise.SendEditedCondition(this.EditedCondition, EditedTaskId).subscribe(
+    this.exerciseEditServise.SendEditedCondition(this.EditedCondition, EditedExerciseId).subscribe(
       _ => {
         console.log(`sendEditedCondition_complete`);
-        this.router.navigate(['exercises/',this.model.ExerciseId]);
+        this.router.navigate(['exercises/', this.model.ExerciseId]);
       },
       error => console.log(error),
     );
