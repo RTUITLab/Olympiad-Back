@@ -8,6 +8,8 @@ COPY Olympiad.sln ./
 COPY WebApp/WebApp.csproj WebApp/
 COPY Models/Models.csproj Models/
 COPY Executor/Executor.csproj Executor/
+COPY PublicAPI/PublicAPI.csproj PublicAPI/
+COPY Shared/Shared.csproj Shared/
 RUN dotnet restore -nowarn:msb3202,nu1503
 COPY . .
 WORKDIR /src/WebApp
