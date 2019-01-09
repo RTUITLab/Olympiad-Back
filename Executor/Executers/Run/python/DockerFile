@@ -1,5 +1,0 @@
-﻿FROM python:3
-
-WORKDIR /src
-
-CMD cat in.txt | python ./Program.py > out.txt 2> err.txt

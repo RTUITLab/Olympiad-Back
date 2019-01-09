@@ -7,14 +7,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Docker.DotNet;
+using Models.Solutions;
+using Shared.Models;
 
 namespace Executor.Executers.Build.dotnet
 {
     [Language("csharp")]
     class JavaBuilder : ProgramBuilder
     {
-        public JavaBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution)
-            : base(processSolution, finishBuildSolution)
+        public JavaBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<Solution, Task> finishBuildSolution, IDockerClient dockerClient)
+            : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
 

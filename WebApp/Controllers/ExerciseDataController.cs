@@ -8,7 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.Exercises;
+using PublicAPI.Requests;
+using WebApp.ViewModels;
 
 namespace WebApp.Controllers
 {
@@ -18,7 +22,9 @@ namespace WebApp.Controllers
     {
         private readonly ApplicationDbContext context;
 
-        public ExerciseDataController(ApplicationDbContext context, UserManager<User> userManager) : base(userManager)
+        public ExerciseDataController(
+            ApplicationDbContext context, 
+            UserManager<User> userManager) : base(userManager)
         {
             this.context = context;
         }
@@ -27,36 +33,25 @@ namespace WebApp.Controllers
         [HttpPost]
         [Route("{exerciseId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Post(IFormFile inFile, IFormFile outFile, Guid exerciseId)
+        public async Task<IActionResult> Post(Guid exerciseId, [FromBody]ExerciseDataRequest exerciseDataIn)
         {
-            if (inFile == null || outFile == null || inFile.Length > 5120 || outFile.Length > 5120)
+            if (exerciseDataIn == null || string.IsNullOrEmpty(exerciseDataIn.InData) || string.IsNullOrEmpty(exerciseDataIn.OutData))
             {
-                return BadRequest("Отсутствует файл входных данных или исходных данных. Проверьте размер передаваемого файла. Он не должен превышать 5MB");
+                return BadRequest("No exercise data in request");
             }
-
-            var inStream = inFile.OpenReadStream();
-            var outStream = outFile.OpenReadStream();
 
             if (!context.Exercises.Any(e => e.ExerciseID == exerciseId))
             {
-                return BadRequest();
+                return BadRequest("No target exercise");
             }
 
-            ExerciseData exerciseData = new ExerciseData()
+            var exerciseData = new ExerciseData
             {
-                ExerciseId = exerciseId
+                ExerciseId = exerciseId,
+                InData = exerciseDataIn.InData,
+                OutData = exerciseDataIn.OutData,
+                IsPublic = exerciseDataIn.IsPublic
             };
-
-            using (var inStreamReader = new StreamReader(inStream, Encoding.UTF8))
-            {
-                exerciseData.InData = await inStreamReader.ReadToEndAsync();
-            }
-
-            using (var outStreamReader = new StreamReader(outStream, Encoding.UTF8))
-            {
-                exerciseData.OutData = await outStreamReader.ReadToEndAsync();
-            }
-
             await context.TestData.AddAsync(exerciseData);
             await context.SaveChangesAsync();
 
@@ -65,10 +60,46 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{exerciseId}")]
-        [Authorize(Roles = "Executor,Admin")]
-        public IActionResult Get(Guid exerciseId)
+        [Authorize]
+        public async Task<IActionResult> Get(Guid exerciseId)
         {
-            return Json(context.TestData.Where(p => p.ExerciseId == exerciseId).ToList());
+            var targetUser = await UserManager.GetUserAsync(User);
+            var dbRequest = context
+                .TestData
+                .Where(p => p.ExerciseId == exerciseId);
+
+            if (!await UserManager.IsInRoleAsync(targetUser, "Admin") &&
+                !await UserManager.IsInRoleAsync(targetUser, "Executor"))
+                dbRequest = dbRequest
+                    .Where(p => p.IsPublic);
+            return Json(
+                await dbRequest
+                .ToListAsync());
         }
+
+        [HttpPut]
+        [Route("{exerciseDataId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Put(Guid exerciseDataId, [FromBody]ExerciseDataRequest exerciseDataIn)
+        {
+            if (exerciseDataIn == null || string.IsNullOrEmpty(exerciseDataIn.InData) || string.IsNullOrEmpty(exerciseDataIn.OutData))
+            {
+                return BadRequest("No exercise data in request");
+            }
+
+            var testData = await context.TestData.SingleOrDefaultAsync(e => e.Id == exerciseDataId);
+            if (testData == null)
+            {
+                return BadRequest("No target exercise");
+            }
+            testData.InData = exerciseDataIn.InData;
+            testData.OutData = exerciseDataIn.OutData;
+            testData.IsPublic = exerciseDataIn.IsPublic;
+
+            await context.SaveChangesAsync();
+
+            return Ok();
+        }
+
     }
 }

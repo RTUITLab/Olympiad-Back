@@ -32,10 +32,6 @@ namespace Executor.Logging
         {
             Log(Loglevel.Warning, message);
             Log(Loglevel.Warning, ex?.Message);
-            Log(Loglevel.Warning, ex?.Data.Keys
-                .Cast<object>()
-                .Select(K => $"{K}: {ex.Data[K]}")
-                .Aggregate((a, b) => $"{a} {b}"));
             Log(Loglevel.Warning, ex?.StackTrace);
         }
 

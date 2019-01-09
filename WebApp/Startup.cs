@@ -25,6 +25,9 @@ using WebApp.Configure.Models.Invokations;
 using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
+using WebApp.Middleware;
+using Swashbuckle.AspNetCore.Swagger;
+
 
 namespace WebApp
 {
@@ -117,23 +120,41 @@ namespace WebApp
 
             services.AddAutoMapper();
             services.AddMvc()
-                .AddJsonOptions(opt => opt.SerializerSettings.ContractResolver = new DefaultContractResolver());
-
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                }
+            );
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "Olympiad API", Version = "v1" });
+            });
             services.AddCors();
-            services.AddTransient<IEmailSender, EmailService>();
+            if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
+                services.AddTransient<IEmailSender, DebugEmailService>();
+            else
+                services.AddTransient<IEmailSender, EmailService>();
+
             services.AddSingleton<IQueueChecker, QueueService>();
 
 
             services.AddWebAppConfigure()
-                .AddTransientConfigure<DefaultRolesConfigure>(Configuration.GetValue<bool>("INIT_ROLES"))
+                .AddTransientConfigure<AutoMigrate>()
+                .AddTransientConfigure<DefaultRolesConfigure>()
                 .AddTransientConfigure<FillQueue>();
+
+            services.AddHostedService<RestartCheckingService>();
+
+            services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
         {
-            System.Console.WriteLine(JsonConvert.SerializeObject(env));
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -149,9 +170,17 @@ namespace WebApp
                     .AllowAnyMethod()
                     .AllowAnyHeader());
 
-            app.UseStaticFiles();
             app.UseWebAppConfigure();
+
+            app.UseSwagger(c => { c.RouteTemplate = "api/{documentName}/swagger.json"; });
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/api/v1/swagger.json", "My API V1");
+                c.RoutePrefix = "api";
+            });
+
             app.UseAuthentication();
+            app.UseExceptionHandlerMiddleware();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -162,6 +191,8 @@ namespace WebApp
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
+            app.UseSpaStaticFiles();
+            app.UseSpa(spa => { });
         }
 
 

@@ -1,3 +1,4 @@
 ﻿FROM gcc:latest
-
-CMD g++ -o /src/src/app.out /src/src/Program.cpp
+COPY ./Program.cpp /src/Program.cpp
+RUN g++ /src/Program.cpp
+CMD /a.out

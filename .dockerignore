@@ -9,3 +9,5 @@ docker-compose.*.yml
 */bin
 */obj
 */node_modules
+WebApp/appsettings.Secret.json
+Executor/appsettings.Secret.json
