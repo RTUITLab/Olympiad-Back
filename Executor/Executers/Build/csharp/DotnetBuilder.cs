@@ -16,7 +16,7 @@ namespace Executor.Executers.Build.dotnet
     [Language("csharp")]
     class JavaBuilder : ProgramBuilder
     {
-        public JavaBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient)
+        public JavaBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<Solution, Task> finishBuildSolution, IDockerClient dockerClient)
             : base(processSolution, finishBuildSolution, dockerClient)
         {
         }

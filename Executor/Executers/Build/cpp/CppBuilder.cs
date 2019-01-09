@@ -15,7 +15,7 @@ namespace Executor.Executers.Build.Cpp
     [Language("cpp")]
     class CppBuilder : ProgramBuilder
     {
-        public CppBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
+        public CppBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
 

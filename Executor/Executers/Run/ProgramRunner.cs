@@ -13,100 +13,110 @@ using Executor.Logging;
 using Shared.Models;
 using Models.Solutions;
 using Models.Exercises;
+using Docker.DotNet;
+using Docker.DotNet.Models;
+using System.Text.RegularExpressions;
 
 namespace Executor.Executers.Run
 {
     abstract class ProgramRunner
     {
-        private readonly BlockingCollection<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionQueue
-            = new BlockingCollection<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)>();
-        private readonly ConcurrentQueue<(Solution solution, ExerciseData[] testData, DirectoryInfo binaries)> solutionsQueue
-            = new ConcurrentQueue<(Solution, ExerciseData[], DirectoryInfo)>();
+        private readonly BlockingCollection<(Guid solutionId, ExerciseData[] testData)> solutionQueue
+            = new BlockingCollection<(Guid solutionId, ExerciseData[] testData)>();
+
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
-
-
+        private readonly IDockerClient dockerClient;
         private Task runningTask;
         private readonly Logger<ProgramRunner> logger;
-        public ProgramRunner(Func<Guid, SolutionStatus, Task> processSolution)
+        private string lang;
+        private string Language => lang ??
+                                   (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
+
+
+        public ProgramRunner(Func<Guid, SolutionStatus, Task> processSolution, IDockerClient dockerClient)
         {
             logger = Logger<ProgramRunner>.CreateLogger(Language);
             runningTask = Task.Run(RunLoop);
             this.processSolution = processSolution;
+            this.dockerClient = dockerClient;
         }
 
-
-        public void Add(Solution solution, ExerciseData[] data, DirectoryInfo binaries)
+        public void Add(Guid solutionId, ExerciseData[] data)
         {
-            logger.LogInformation($"add solution {solution.Id}, data count: {data.Length}");
-            if (solutionQueue.Any(s => s.solution.Id == solution.Id)) return;
-            solutionQueue.Add((solution, data, binaries));
+            if (solutionQueue.Any(s => s.solutionId == solutionId)) return;
+            logger.LogInformation($"add solution {solutionId}, data count: {data.Length}");
+            solutionQueue.Add((solutionId, data));
         }
         private async Task RunLoop()
         {
             await Task.Yield();
-            foreach (var solutionPack in solutionQueue.GetConsumingEnumerable())
+            foreach (var (solutionId, testData) in solutionQueue.GetConsumingEnumerable())
             {
-                logger.LogInformation($"Check built solution {solutionPack.solution.Id}");
-                await HandleSolution(solutionPack);
+                await HandleSolution(solutionId, testData);
             }
         }
 
-        private async Task HandleSolution((Solution solution, ExerciseData[] testData, DirectoryInfo binaries) task)
+        private async Task HandleSolution(Guid solutionId, ExerciseData[] testData)
         {
             var result = SolutionStatus.Sucessful;
-            foreach (var data in task.testData)
+            var imageName = $"solution:{solutionId}";
+
+            foreach (var data in testData)
             {
-                result = Run(task.binaries, data);
-                logger.LogTrace($"check solution {task.solution.Id} in {data.InData} out {data.OutData} result: {result}");
+                result = await Run(imageName, data);
+                logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {result}");
                 if (result != SolutionStatus.Sucessful)
                 {
                     break;
                 }
             }
-            task.solution.Status = result;
-            await processSolution(task.solution.Id, result);
+            await processSolution(solutionId, result);
+            await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
         }
 
-        protected SolutionStatus Run(DirectoryInfo binaries, ExerciseData testData)
+        protected async Task<SolutionStatus> Run(string imageName, ExerciseData testData)
         {
-            File.WriteAllText(Path.Combine(binaries.FullName, "in.txt"), testData.InData);
-            var process = new Process()
+            var container = await dockerClient.Containers.CreateContainerAsync(new Docker.DotNet.Models.CreateContainerParameters
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    FileName = "docker",
-                    Arguments = $"run --rm -v {binaries.FullName}:/src runner:{Language}"
-                },
-            };
-
-            process.OutputDataReceived += (e, a) => { };
-            process.ErrorDataReceived += (e, a) => { };
-            var success = process.Start();
-            logger.LogTrace($"started process {process.Id} success: {success}");
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
-            process.WaitForExit();
-            logger.LogTrace($"process ${process.Id} finish");
-            var status = CheckSolution(binaries.FullName, testData.OutData);
-            binaries.Delete(true);
-
+                Image = imageName,
+                OpenStdin = true
+            });
+            SolutionStatus status = SolutionStatus.InProcessing;
+            try
+            {
+                status = await RunAndCheck(container.ID, testData);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning("error while checking solution", ex);
+            }
+            await dockerClient.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters { Force = true });
             return status;
         }
 
-        private static SolutionStatus CheckSolution(string filesPath, string correctOut)
+        private async Task<SolutionStatus> RunAndCheck(string containerId, ExerciseData testData)
         {
-            var errorData = File.ReadAllText(Path.Combine(filesPath, "err.txt")).TrimEnd();
-            if (errorData != string.Empty)
-                return SolutionStatus.RunTimeError;
+            var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters { });
+            if (!started)
+                throw new Exception($"Cant start container {containerId}");
+            var stream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = true, Stdout = true });
 
-            var outData = File.ReadAllText(Path.Combine(filesPath, "out.txt")).TrimEnd();
-            return outData == correctOut.TrimEnd() ? SolutionStatus.Sucessful : SolutionStatus.WrongAnswer;
+            var inStream = new MemoryStream(Encoding.UTF8.GetBytes(testData.InData + '\n'));
+            await stream.CopyFromAsync(inStream, CancellationToken.None);
+            var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
+
+            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(50)), readTask) == readTask)
+            {
+                var (stdout, stderr) = readTask.Result;
+                if (!string.IsNullOrEmpty(stderr))
+                    return SolutionStatus.RunTimeError;
+                stdout = Regex.Replace(stdout, @"[\u0000-\u001F]+", string.Empty);
+                if (string.Equals(stdout, testData.OutData.Trim()))
+                    return SolutionStatus.Sucessful;
+                return SolutionStatus.WrongAnswer;
+            }
+            return SolutionStatus.TooLongWork;
+
         }
-        private string lang;
-        private string Language => lang ??
-                                   (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
     }
 }

@@ -11,7 +11,7 @@ namespace Executor.Executers.Build.PascalABC
     [Language("pasabc")]
     class CBuilder : ProgramBuilder
     {
-        public CBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
+        public CBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
 

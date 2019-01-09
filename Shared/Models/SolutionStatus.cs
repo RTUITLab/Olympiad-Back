@@ -9,6 +9,7 @@ namespace Shared.Models
         CompileError,
         RunTimeError,
         WrongAnswer,
+        TooLongWork,
         InQueue,
         InProcessing,
         Sucessful

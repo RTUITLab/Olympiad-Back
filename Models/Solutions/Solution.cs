@@ -13,6 +13,8 @@ namespace Models.Solutions
         public Guid UserId { get; set; }
         public Guid ExerciseId { get; set; }
         public SolutionStatus Status { get; set; }
-        public DateTime Time { get; set; }
+        public DateTime SendingTime { get; set; }
+        public DateTime? StartCheckingTime { get; set; }
+        public DateTime? CheckedTime { get; set; }
     }
 }

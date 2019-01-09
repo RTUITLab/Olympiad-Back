@@ -45,7 +45,7 @@
     <markdown *ngIf="task_text_edit===false" [data]="EditedTask.TaskText"></markdown>
     <!-- END -->
     <!-- TASK_EXAMPLE -->
-      <app-exercise-inout [task_text_edit]="task_text_edit" [exId]="EditedTask.Id"></app-exercise-inout>
+      <app-exercise-inout [exId]="EditedTask.Id"></app-exercise-inout>
     <!-- END -->
     
     <ngx-loading [show]="loading"></ngx-loading>

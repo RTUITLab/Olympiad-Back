@@ -16,6 +16,10 @@ export class SolutionStatusConverter {
             pretty: 'Ошибка компиляции'
         },
         {
+            status: SolutionStatus.TooLongWork,
+            pretty: 'Программа работает слишком долго'
+        },
+        {
             status: SolutionStatus.RunTimeError,
             pretty: 'Ошибка во время исполнения'
         },

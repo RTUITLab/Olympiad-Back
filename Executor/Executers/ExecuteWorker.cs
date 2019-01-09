@@ -16,13 +16,12 @@ namespace Executor.Executers
 {
     class ExecuteWorker
     {
-        private readonly string lang;
         private readonly Func<Guid, Task<ExerciseData[]>> getTests;
         private readonly ProgramBuilder builder;
         private readonly ProgramRunner runner;
         private readonly Logger<ExecuteWorker> logger;
 
-        public string Lang => lang;
+        public string Lang { get; }
 
         public ExecuteWorker(
             string lang,
@@ -32,12 +31,12 @@ namespace Executor.Executers
             Func<Guid, Task<ExerciseData[]>> getTests,
             IDockerClient dockerClient)
         {
-            this.lang = lang;
+            Lang = lang;
             logger = Logger<ExecuteWorker>.CreateLogger(lang);
             this.getTests = getTests;
-            Func<DirectoryInfo, Solution, Task> act = BuildFinished;
+            Func<Solution, Task> act = BuildFinished;
             builder = Activator.CreateInstance(builderType, processSolution, act, dockerClient) as ProgramBuilder;
-            runner = Activator.CreateInstance(runnerType, processSolution) as ProgramRunner;
+            runner = Activator.CreateInstance(runnerType, processSolution, dockerClient) as ProgramRunner;
         }
 
         public void Handle(Solution solution)
@@ -45,10 +44,10 @@ namespace Executor.Executers
             builder.Add(solution);
         }
 
-        private async Task BuildFinished(DirectoryInfo dirInfo, Solution solution)
+        private async Task BuildFinished(Solution solution)
         {
             logger.LogInformation($"Finish build solution {solution.Id}, run it");
-            runner.Add(solution, await getTests(solution.ExerciseId), dirInfo);
+            runner.Add(solution.Id, await getTests(solution.ExerciseId));
         }
     }
 }

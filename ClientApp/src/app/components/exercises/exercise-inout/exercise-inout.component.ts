@@ -9,17 +9,14 @@ import { ExerciseData } from '../../../models/ExerciseData';
 })
 export class ExerciseInoutComponent implements OnInit {
   @Input() exId: string;
-  @Input() task_text_edit: boolean;
   constructor(
     private exerciseService: ExerciseService
   ) { }
   public exerciseDatas: ExerciseData[];
   ngOnInit() {
-    console.log(this.exId+'inOut'+this.task_text_edit);
     this.exerciseService.getExerciseInOutData(this.exId)
       .subscribe(obj => {
         this.exerciseDatas = obj;
-        console.log(obj);
       });
   }
 

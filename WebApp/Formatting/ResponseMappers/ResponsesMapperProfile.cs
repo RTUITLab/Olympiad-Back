@@ -35,8 +35,7 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<User, UserResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
 
-            CreateMap<Solution, SolutionResponse>()
-                .ForMember(si => si.SendingTime, map => map.MapFrom(s => s.Time));
+            CreateMap<Solution, SolutionResponse>();
 
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()

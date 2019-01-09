@@ -69,7 +69,7 @@ namespace WebApp.Controllers
                 ExerciseId = exerciseId,
                 UserId = UserId,
                 Status = SolutionStatus.InQueue,
-                Time = DateTime.Now
+                SendingTime = DateTime.UtcNow
             };
 
             await context.Solutions.AddAsync(solution);
