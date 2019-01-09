@@ -15,7 +15,7 @@ namespace Executor.Executers.Build.C
     [Language("c")]
     class PythonBuilder : ProgramBuilder
     {
-        public PythonBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<DirectoryInfo, Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
+        public PythonBuilder(Func<Guid, SolutionStatus, Task> processSolution, Func<Solution, Task> finishBuildSolution, IDockerClient dockerClient) : base(processSolution, finishBuildSolution, dockerClient)
         {
         }
 

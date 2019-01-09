@@ -1,4 +1,5 @@
-﻿using Models;
+﻿using Docker.DotNet;
+using Models;
 using Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace Executor.Executers.Run.PascalABC
     [Language("pasabc")]
     class PascalRunner : ProgramRunner
     {
-        public PascalRunner(Func<Guid, SolutionStatus, Task> processSolution) : base(processSolution)
+        public PascalRunner(Func<Guid, SolutionStatus, Task> processSolution, IDockerClient dockerClient) : base(processSolution, dockerClient)
         {
         }
     }
