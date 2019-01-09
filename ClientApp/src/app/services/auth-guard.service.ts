@@ -12,8 +12,6 @@ export class AuthGuardService implements CanActivate {
     if (this.userState.currentUser) {
       this.userState.GetMe(token)
         .subscribe(success => {
-          console.log('auth');
-          console.log(success);
           if (!success) {
             this.router.navigate(['login']);
           }
@@ -23,8 +21,6 @@ export class AuthGuardService implements CanActivate {
     if (token) {
       this.userState.GetMe(token)
         .subscribe(success => {
-          console.log('auth');
-          console.log(success);
           if (!success) {
             this.router.navigate(['login']);
           }

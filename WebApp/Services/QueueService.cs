@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebApp.Services.Interfaces;
 using System.Collections.Concurrent;
-using WebApp.Extencions;
+using WebApp.Extensions;
 
 namespace WebApp.Services
 {

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Executor.Executers.Run;
 using Models;
+using Shared.Models;
 
 namespace Executor.Executers.Run.C
 {
