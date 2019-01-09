@@ -23,7 +23,6 @@ export class ChallengeInfoComponent implements OnInit {
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         const id = params.get('ChallengeId');
-        
         this.currentExerciseState.currentChallenge.subscribe(c => {
           if (!c || c.Id !== id) {
             return;

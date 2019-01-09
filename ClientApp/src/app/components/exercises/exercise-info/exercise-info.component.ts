@@ -52,21 +52,18 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
-        console.log(this.model.ExerciseId);
         this.startLoading();
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
             exInfo => {
               exInfo.Solutions = exInfo.Solutions.reverse();
               this.exerciseInfo = exInfo;
-              // this.exerciseInfo
-              //   .Solutions
-              //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-              //   .forEach(s => this.solutionCheckLoop(s.Id));
+              this.exerciseInfo
+                .Solutions
+                .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+                .forEach(s => this.solutionCheckLoop(s));
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
-
-
             },
             fail => {
               console.log(fail);
@@ -98,8 +95,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     this.exercisesService.checkSolution(checkSolution.Id).subscribe(
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
-        console.log(target);
-        console.log(this.exerciseInfo.Solutions);
         if (!target) {
           this.exerciseInfo.Solutions.unshift(solution);
         } else {
@@ -117,8 +112,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
 
   prettyTime(time: string): string {
-    console.log('pretty time');
-    console.log(time);
     return Helpers.prettyTime(time);
   }
 

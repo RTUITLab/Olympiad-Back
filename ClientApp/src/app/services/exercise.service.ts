@@ -34,7 +34,6 @@ export class ExerciseService extends BaseHttpService implements OnInit {
       `${this.baseUrl}/api/exercises`, this.userService.authOptions)
       .subscribe(
         success => {
-          console.log(success);
           observer.next(success);
         },
         err => {
@@ -57,13 +56,10 @@ export class ExerciseService extends BaseHttpService implements OnInit {
       formData, this.userService.authOptions)
       .subscribe(
         success => {
-          console.log(success);
           observer.next(success);
-          console.log('sended');
         },
         fail => {
           console.log(fail);
-          console.log('failed');
         }
       );
     return observable;
@@ -77,7 +73,6 @@ export class ExerciseService extends BaseHttpService implements OnInit {
       `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions)
       .subscribe(
         success => {
-          console.log(success);
           observer.next(success);
         },
         err => {
