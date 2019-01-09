@@ -42,8 +42,4 @@ export class MenuComponent implements OnInit {
   overView() {
     this.router.navigate(['overview']);
   }
-
-  goToExercise(id: string) {
-    this.router.navigate(['exercises', id]);
-  }
 }

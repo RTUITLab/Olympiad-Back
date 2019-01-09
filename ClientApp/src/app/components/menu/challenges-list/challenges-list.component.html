@@ -3,6 +3,10 @@
     <button (click)="clearChallenge()">Показать все соревнования</button>
     <div *ngIf="currentChallenge; else loading">
       <h2>{{currentChallenge.Name}}</h2>
+      <div *ngFor="let ex of currentChallenge.Exercises">
+        <button (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+      </div>
+
     </div>
     <ng-template #loading>
       <h2>Загрузка...</h2>

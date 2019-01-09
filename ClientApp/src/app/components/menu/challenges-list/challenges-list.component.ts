@@ -8,11 +8,11 @@ import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 
 @Component({
-  selector: 'app-chalallanges-list',
-  templateUrl: './chalallanges-list.component.html',
-  styleUrls: ['./chalallanges-list.component.css']
+  selector: 'app-challenges-list',
+  templateUrl: './challenges-list.component.html',
+  styleUrls: ['./challenges-list.component.css']
 })
-export class ChalallangesListComponent implements OnInit {
+export class ChallengesListComponent implements OnInit {
 
   constructor(
     private router: Router,
@@ -31,21 +31,38 @@ export class ChalallangesListComponent implements OnInit {
       this.challenges = c;
     });
     this.currentExerciseState.currentChallengeId.subscribe(id => {
+      if (!id) {
+        return;
+      }
       this.currentChallengeId = id;
+      if (!this.currentChallenge) {
+        this.challengesService.getChallenge(id).subscribe(c => {
+          this.currentExerciseState.setChallenge(c);
+        });
+      }
     });
     this.currentExerciseState.currentChallenge.subscribe(c => {
+      if (!c) {
+        return;
+      }
       this.currentChallenge = c;
     });
   }
 
   public clearChallenge() {
     this.currentChallengeId = null;
-    this.currentChallenge = null;
   }
 
   public goToChallenge(challenge: ChallengeCompactResponse) {
     this.currentExerciseState.setChallengeId(challenge.Id);
     this.router.navigate(['challenges', challenge.Id]);
+    this.challengesService.getChallenge(challenge.Id).subscribe(c => {
+      this.currentExerciseState.setChallenge(c);
+    });
+  }
+
+  goToExercise(id: string) {
+    this.router.navigate(['exercises', id]);
   }
 
   public challengeEnd(timeStr: string): string {

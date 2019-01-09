@@ -16,6 +16,7 @@ import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 import { Helpers } from 'src/app/Helpers/Helpers';
+import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 // import { timingSafeEqual } from 'crypto';
 
 
@@ -34,7 +35,8 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     private exercisesService: ExerciseService,
     private exerciseEditServise: ExerciseEditService,
     private route: ActivatedRoute,
-    private router: Router, ) {
+    private router: Router,
+    private currentExerciseState: ExerciseStateService) {
     super();
   }
 
@@ -61,8 +63,10 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
               .Solutions
               .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
               .forEach(s => this.solutionCheckLoop(s.Id));
-            // console.log(exInfo);
             this.stopLoading();
+            this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+
+
           },
           fail => {
             console.log(fail);

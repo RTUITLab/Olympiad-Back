@@ -3,6 +3,7 @@ import { ChallengesService } from 'src/app/services/challenges.service';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
+import { Helpers } from 'src/app/Helpers/Helpers';
 
 @Component({
   selector: 'app-challenge-info',
@@ -21,11 +22,19 @@ export class ChallengeInfoComponent implements OnInit {
   ngOnInit() {
     this.route.paramMap
       .subscribe((params: ParamMap) => {
-        this.challengesService.getChallenge(params.get('ChallengeId')).subscribe(c => {
-          this.currentExerciseState.setChallenge(c);
+        const id = params.get('ChallengeId');
+        
+        this.currentExerciseState.currentChallenge.subscribe(c => {
+          if (!c || c.Id !== id) {
+            return;
+          }
           this.challenge = c;
         });
       });
+  }
+
+  public prettyTime(time: string): string {
+    return Helpers.prettyTime(time);
   }
 
 }

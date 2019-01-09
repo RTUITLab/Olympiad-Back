@@ -30,9 +30,9 @@ import { ExerciseEditComponent } from './components/exercises/exercise-edit/exer
 import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
 import { AddExerciseComponent } from './components/exercises/add-exercise/add-exercise.component';
 import { ChallengesService } from './services/challenges.service';
-import { ChalallangesListComponent } from './components/menu/chalallanges-list/chalallanges-list.component';
 import { ExerciseStateService } from './services/exercise-state.service';
 import { ChallengeInfoComponent } from './components/challenges/challenge-info/challenge-info.component';
+import { ChallengesListComponent } from './components/menu/challenges-list/challenges-list.component';
 
 
 const routes: Route[] = [
@@ -96,7 +96,7 @@ const routes: Route[] = [
     AddExerciseComponent,
     ExerciseEditComponent,
     AddExerciseInOutComponent,
-    ChalallangesListComponent,
+    ChallengesListComponent,
     ChallengeInfoComponent,
 
   ],

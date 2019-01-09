@@ -1,6 +1,7 @@
 <div *ngIf="challenge; else loading">
-<h1>{{challenge.Name}}</h1>
+    <h1>{{challenge.Name}}</h1>
+    <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p>    
 </div>
 <ng-template #loading>
-Загрузка...
+    Загрузка...
 </ng-template>
