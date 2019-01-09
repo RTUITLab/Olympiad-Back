@@ -2,16 +2,24 @@ import { Component, OnInit } from '@angular/core';
 import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs/';
 import { ParamMap } from '@angular/router/src/shared';
 import { Solution } from '../../../models/Solution';
 import { SolutionStatus } from '../../../models/SolutionStatus';
 import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusConverter';
 import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { UserStateService } from '../../../services/user-state.service';
+import { Router } from '@angular/router';
+import { Exercise } from 'src/app/models/Exercise';
+import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
+import { Helpers } from 'src/app/Helpers/Helpers';
+import { ExerciseStateService } from 'src/app/services/exercise-state.service';
+// import { timingSafeEqual } from 'crypto';
+
+
 
 @Component({
   selector: 'app-exercise-info',
@@ -23,9 +31,12 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
 
 
   constructor(
-    private userService: UserStateService,
+    private usersService: UserStateService,
     private exercisesService: ExerciseService,
-    private route: ActivatedRoute) {
+    private exerciseEditServise: ExerciseEditService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private currentExerciseState: ExerciseStateService) {
     super();
   }
 
@@ -41,51 +52,61 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
-        console.log(this.model.ExerciseId);
         this.startLoading();
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
-          exInfo => {
-            exInfo.Solutions = exInfo.Solutions.reverse();
-            this.exerciseInfo = exInfo;
-            this.exerciseInfo
-              .Solutions
-              .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-              .forEach(s => this.solutionCheckLoop(s.Id));
-            console.log(exInfo);
-            this.stopLoading();
-          },
-          fail => {
-            console.log(fail);
-          }
+            exInfo => {
+              exInfo.Solutions = exInfo
+                .Solutions
+                .reverse();
+              this.exerciseInfo = exInfo;
+              // this.exerciseInfo
+              //   .Solutions
+              //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+              //   .forEach(s => this.solutionCheckLoop(s));
+              this.stopLoading();
+              this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+            },
+            fail => {
+              console.log(fail);
+            }
           );
       });
   }
+
   setFile(event) {
     this.model.File = event.srcElement.files[0];
   }
   onSubmit() {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
-      success => {
-        const f = () => this.solutionCheckLoop(success);
-        f();
-      }
+        success => {
+          if (!success) {
+            return;
+          }
+          const f = () => this.solutionCheckLoop(success);
+          f();
+        }
       );
   }
-  solutionCheckLoop(solutionId: string) {
-    console.log(this);
-    this.exercisesService.checkSolution(solutionId).subscribe(
+  editTask(id: string) {
+    console.log(id);
+    this.router.navigate(['exercises/edit/', id]);
+  }
+  solutionCheckLoop(checkSolution: Solution) {
+    this.exercisesService.checkSolution(checkSolution.Id).subscribe(
       solution => {
         const target = this.exerciseInfo.Solutions.find(s => s.Id === solution.Id);
         if (!target) {
           this.exerciseInfo.Solutions.unshift(solution);
         } else {
           target.Status = solution.Status;
+          target.StartCheckingTime = solution.StartCheckingTime;
+          target.CheckedTime = solution.CheckedTime;
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
-          setTimeout(() => this.solutionCheckLoop(solutionId), 800);
+          setTimeout(() => this.solutionCheckLoop(checkSolution), 800);
         }
       });
   }
@@ -95,14 +116,17 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
 
   prettyTime(time: string): string {
-    return Solution.prettyTime(time);
+    if (!time) {
+      return 'нет данных';
+    }
+    return Helpers.prettyTime(time);
   }
 
   normalLang(lang: string): string {
     return LanguageConverter.normalFromWeb(lang);
   }
   isAdmin(): boolean {
-    return this.userService.currentUser.Roles.indexOf('Admin') !== -1;
+    return this.usersService.IsAdmin();
   }
 }
 

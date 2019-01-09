@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace WebApp.Controllers
@@ -14,13 +15,16 @@ namespace WebApp.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class AuthorizeController : Controller
     {
-        private readonly UserManager<User> userManager;
+        protected readonly UserManager<User> UserManager;
 
         public AuthorizeController(UserManager<User> userManager)
         {
-            this.userManager = userManager;
+            this.UserManager = userManager;
         }
 
-        protected Guid UserId => Guid.Parse(userManager.GetUserId(User));
+        protected Guid UserId => Guid.Parse(UserManager.GetUserId(User));
+        protected Task<User> CurrentUser() => UserManager.GetUserAsync(User);
+        protected bool IsInRole(string roleName) => User.HasClaim(ClaimTypes.Role, roleName);
+        protected bool IsAdmin => IsInRole("Admin");
     }
 }

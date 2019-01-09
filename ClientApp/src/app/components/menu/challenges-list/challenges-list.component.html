@@ -1,0 +1,27 @@
+<div class="container">
+  <div *ngIf="currentChallengeId; else noCurrentChallenge">
+    <button (click)="clearChallenge()">Показать все соревнования</button>
+    <div *ngIf="currentChallenge; else loading">
+      <h2>{{currentChallenge.Name}}</h2>
+      <div *ngFor="let ex of currentChallenge.Exercises">
+        <button (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+      </div>
+
+    </div>
+    <ng-template #loading>
+      <h2>Загрузка...</h2>
+    </ng-template>
+
+  </div>
+  <ng-template #noCurrentChallenge>
+    <h2>Доступные соревнования ({{challenges.length}})</h2>
+    <div class="challenge-box" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
+      <p>{{challenge.Name}}</p>
+      <p>{{challengeEnd(challenge.EndTime)}}</p>
+    </div>
+
+  </ng-template>
+  <!-- <button class="col{{ex.Status}}" (click)="goToExercise(ex.Id)">{{c.Name}}</button> -->
+  <!-- <div></div>
+      <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg" /> -->
+</div>

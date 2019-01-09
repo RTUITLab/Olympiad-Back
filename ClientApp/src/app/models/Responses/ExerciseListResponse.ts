@@ -1,10 +1,10 @@
-import {Guid} from 'guid';
 import { SolutionStatus } from '../SolutionStatus';
+
 
 export class ExerciseListResponse {
     constructor(
         public Name?: string,
-        public Id?: Guid,
+        public Id?: string,
         public Score?: number,
         public Status?: SolutionStatus
     ) {}

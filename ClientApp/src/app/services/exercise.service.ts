@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { Exercise } from '../models/Exercise';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Subscriber } from 'rxjs/Subscriber';
+import { Subscriber } from 'rxjs';
 import { error } from 'util';
-import { EndPoints } from './EndPoints';
+import { BaseHttpService } from './BaseHttpService';
 import { UserStateService } from './user-state.service';
 import { SolutionViewModel } from '../models/ViewModels/SolutionViewModel';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs';
 import { OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { LanguageConverter } from '../models/Common/LanguageConverter';
 import { ExerciseListResponse } from '../models/Responses/ExerciseListResponse';
@@ -17,7 +17,7 @@ import { Solution } from '../models/Solution';
 import { ExerciseData } from '../models/ExerciseData';
 
 @Injectable()
-export class ExerciseService extends EndPoints implements OnInit {
+export class ExerciseService extends BaseHttpService implements OnInit {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
   private solutionsBehavior = new BehaviorSubject<Solution>(undefined);
@@ -31,44 +31,37 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<Array<ExerciseListResponse>>(
-      `${this.baseUrl}/api/exercises`,
-      { headers: this.userService.authHeaders() })
+      `${this.baseUrl}/api/exercises`, this.userService.authOptions)
       .subscribe(
-      success => {
-        console.log(success);
-        observer.next(success);
-      },
-      err => {
-        observer.next([]);
-        console.log(err);
-      }
+        success => {
+          observer.next(success);
+        },
+        err => {
+          observer.next([]);
+          console.log(err);
+        }
       );
     return observable;
   }
 
 
-  sendSolution(data: SolutionViewModel): Observable<string> {
-    const observer = new BehaviorSubject<string>(undefined);
+  sendSolution(data: SolutionViewModel): Observable<Solution> {
+    const observer = new BehaviorSubject<Solution>(undefined);
     const observable = observer.asObservable();
 
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
-    this.http.post(
+    this.http.post<Solution>(
       `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
-      formData, { headers: this.userService.authHeaders(), responseType: 'text' })
+      formData, this.userService.authOptions)
       .subscribe(
-      success => {
-        console.log(success);
-        observer.next(success);
-        console.log('sended');
-      },
-      fail => {
-        console.log(fail);
-        console.log('failed');
-      }
+        success => {
+          observer.next(success);
+        },
+        fail => {
+          console.log(fail);
+        }
       );
-
-
     return observable;
   }
   getExercise(exId: string): Observable<ExerciseInfo> {
@@ -77,17 +70,15 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<ExerciseInfo>(
-      `${this.baseUrl}/api/exercises/${exId}`,
-      { headers: this.userService.authHeaders() })
+      `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions)
       .subscribe(
-      success => {
-        console.log(success);
-        observer.next(success);
-      },
-      err => {
-        observer.next(undefined);
-        console.log(err);
-      });
+        success => {
+          observer.next(success);
+        },
+        err => {
+          observer.next(undefined);
+          console.log(err);
+        });
     return observable;
   }
 
@@ -97,18 +88,17 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<Solution>(
-      `${this.baseUrl}/api/check/${solutionId}`,
-      { headers: this.userService.authHeaders() }).subscribe(
-      success => {
-        if (success) {
-          observer.next(success);
-          this.solutionsBehavior.next(success);
+      `${this.baseUrl}/api/check/${solutionId}`, this.userService.authOptions).subscribe(
+        success => {
+          if (success) {
+            observer.next(success);
+            this.solutionsBehavior.next(success);
+          }
+        },
+        failure => {
+          console.log('error');
+          console.log(failure);
         }
-      },
-      failure => {
-        console.log('error');
-        console.log(failure);
-      }
       );
     return observable;
   }
@@ -119,17 +109,16 @@ export class ExerciseService extends EndPoints implements OnInit {
       observer = obs;
     });
     this.http.get<ExerciseData[]>(
-      `${this.baseUrl}/api/ExerciseData/${exerciseId}`,
-      { headers: this.userService.authHeaders() }).subscribe(
-      success => {
-        if (success) {
-          observer.next(success);
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions).subscribe(
+        success => {
+          if (success) {
+            observer.next(success);
+          }
+        },
+        failure => {
+          console.log('error');
+          console.log(failure);
         }
-      },
-      failure => {
-        console.log('error');
-        console.log(failure);
-      }
       );
     return observable;
   }

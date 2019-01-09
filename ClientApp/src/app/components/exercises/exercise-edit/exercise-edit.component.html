@@ -1,0 +1,52 @@
+<div *ngIf="isAdmin()" class="editTaskComponent">
+
+  <!-- BUTTONS -->
+  <button (click)="turnOnEditing()">
+    Изменение
+  </button>
+  <button (click)="turnOffEditing()">
+    Просмотр
+  </button>
+  <button (click)="sendEditedTask()">
+    Сохранить
+  </button>
+  <!-- END -->
+
+  <br>
+
+  <!-- TASK_NAME -->
+  <textarea id="task_name"  class="task_name_area" *ngIf="task_text_edit===true"  ngDefaultControl [(ngModel)]="EditedTask.Name">
+    {{EditedTask.Name}}
+  </textarea>
+  <h1 id="task_name" ngDefaultControl *ngIf="task_text_edit===false">
+    {{EditedTask.Name}}
+  </h1>
+  <!-- END -->
+
+  
+  <!-- TASK_SCORE -->
+  <div *ngIf="task_text_edit===true">
+    <span>
+      Баллы за выполнение:
+    </span>
+    <textarea id="task_score" type="ngDefaultControl"class="task_score_area" [(ngModel)]="EditedTask.Score">
+      {{EditedTask.Score}}
+    </textarea>
+  </div>
+  <h3 id="task_score" *ngIf="task_text_edit===false">
+    Баллы за выполнение:{{EditedTask.Score}}
+  </h3>
+  <!-- END -->
+  
+  <!-- TASK_TEXT -->
+  <textarea id="task_text" *ngIf="task_text_edit===true" ngDefaultControl class="task_text_area" [(ngModel)]="EditedTask.TaskText">
+    {{EditedTask.TaskText}}
+  </textarea>
+    <markdown *ngIf="task_text_edit===false" [data]="EditedTask.TaskText"></markdown>
+    <!-- END -->
+    <!-- TASK_EXAMPLE -->
+      <app-exercise-inout [exId]="EditedTask.Id"></app-exercise-inout>
+    <!-- END -->
+    
+    <ngx-loading [show]="loading"></ngx-loading>
+  </div>

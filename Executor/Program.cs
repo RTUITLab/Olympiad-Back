@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Docker.DotNet;
 using Executor.Executers.Build;
 using Executor.Executers.Build.dotnet;
 using Executor.Executers.Run;
@@ -33,16 +34,28 @@ namespace Executor
 
             var servicesProvider = BuildServices();
 
-            var builder = new ImagesBuilder();
-
-            if (!builder.CheckAndBuildImages())
+            if (!await IsDockerAvailable(servicesProvider.GetRequiredService<IDockerClient>()))
             {
-                Console.WriteLine("host must have docker!");
+                Console.WriteLine("host must see docker!");
                 return;
             }
+
             var executor = servicesProvider.GetRequiredService<Executor>();
             await executor.Start(CancellationToken.None);
             Console.ReadLine();
+        }
+
+        private static async Task<bool> IsDockerAvailable(IDockerClient dockerClient)
+        {
+            try
+            {
+                await dockerClient.System.PingAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static IServiceProvider BuildServices()
@@ -57,6 +70,11 @@ namespace Executor
                     client.BaseAddress = new Uri(options.Value.Address);
                 })
                 .Services
+                .AddSingleton<IDockerClient>(sp =>
+                {
+                    var options = sp.GetRequiredService<IOptions<StartSettings>>();
+                    return new DockerClientConfiguration(new Uri(options.Value.DockerEndPoint)).CreateClient();
+                })
                 .BuildServiceProvider();
 
         private static IConfiguration SetupConfigs(string[] args)

@@ -7,5 +7,6 @@ namespace Executor.Models.Settings
     class StartSettings
     {
         public string Address { get; set; }
+        public string DockerEndPoint { get; set; }
     }
 }

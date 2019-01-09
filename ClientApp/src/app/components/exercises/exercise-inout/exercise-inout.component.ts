@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input} from '@angular/core';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ExerciseData } from '../../../models/ExerciseData';
 
@@ -12,9 +12,8 @@ export class ExerciseInoutComponent implements OnInit {
   constructor(
     private exerciseService: ExerciseService
   ) { }
-  private exerciseDatas: ExerciseData[];
+  public exerciseDatas: ExerciseData[];
   ngOnInit() {
-    console.log(this.exId);
     this.exerciseService.getExerciseInOutData(this.exId)
       .subscribe(obj => {
         this.exerciseDatas = obj;

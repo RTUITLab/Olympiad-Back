@@ -6,32 +6,37 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Docker.DotNet;
 using Executor.Logging;
+using Models.Exercises;
+using Models.Solutions;
+using Shared.Models;
+
 namespace Executor.Executers
 {
     class ExecuteWorker
     {
-        private readonly string lang;
         private readonly Func<Guid, Task<ExerciseData[]>> getTests;
         private readonly ProgramBuilder builder;
         private readonly ProgramRunner runner;
         private readonly Logger<ExecuteWorker> logger;
 
-        public string Lang => lang;
+        public string Lang { get; }
 
         public ExecuteWorker(
             string lang,
             Type builderType,
             Type runnerType,
             Func<Guid, SolutionStatus, Task> processSolution,
-            Func<Guid, Task<ExerciseData[]>> getTests)
+            Func<Guid, Task<ExerciseData[]>> getTests,
+            IDockerClient dockerClient)
         {
-            this.lang = lang;
+            Lang = lang;
             logger = Logger<ExecuteWorker>.CreateLogger(lang);
             this.getTests = getTests;
-            Func<DirectoryInfo, Solution, Task> act = BuildFinished;
-            builder = Activator.CreateInstance(builderType, processSolution, act) as ProgramBuilder;
-            runner = Activator.CreateInstance(runnerType, processSolution) as ProgramRunner;
+            Func<Solution, Task> act = BuildFinished;
+            builder = Activator.CreateInstance(builderType, processSolution, act, dockerClient) as ProgramBuilder;
+            runner = Activator.CreateInstance(runnerType, processSolution, dockerClient) as ProgramRunner;
         }
 
         public void Handle(Solution solution)
@@ -39,10 +44,10 @@ namespace Executor.Executers
             builder.Add(solution);
         }
 
-        private async Task BuildFinished(DirectoryInfo dirInfo, Solution solution)
+        private async Task BuildFinished(Solution solution)
         {
             logger.LogInformation($"Finish build solution {solution.Id}, run it");
-            runner.Add(solution, await getTests(solution.ExerciseId), dirInfo);
+            runner.Add(solution.Id, await getTests(solution.ExerciseId));
         }
     }
 }

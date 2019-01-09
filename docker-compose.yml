@@ -1,17 +1,19 @@
 version: '3.4'
 
 services:
-  clientapp:
-    image: clientapp
-    build:
-      context: .
-      dockerfile: ./ClientApp/Dockerfile
-    ports:
-      - 4200:80
+  postgres:
+    image: postgres
+    environment:
+     - POSTGRES_PASSWORD=password
   webapp:
-    image: webapp
     build:
       context: .
       dockerfile: ./Dockerfile
     ports: 
-      - 80:5000
+      - 55471:80
+    environment:
+      - INIT_ROLES=true
+    volumes:
+      - ./WebApp/appsettings.Secret.json:/app/appsettings.Secret.json
+    depends_on: 
+      - postgres

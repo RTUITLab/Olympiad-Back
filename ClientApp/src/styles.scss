@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+button {
+    border-radius: 8px;
+    padding: 5px 3px;
+    color:blue;
+    border:1px solid blue;
+    font-size: 16px;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}

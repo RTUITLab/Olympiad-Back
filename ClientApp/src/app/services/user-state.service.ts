@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs/';
 import { User } from '../models/User';
 import { LoginViewModel } from '../models/ViewModels/LoginViewModel';
 import { RegisterViewModel } from '../models/ViewModels/RegisterViewModel';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
-import { Subscriber } from 'rxjs/Subscriber';
-import { EndPoints } from './EndPoints';
+import { Observable } from 'rxjs/';
+import { Subscriber } from 'rxjs/';
+import { BaseHttpService } from './BaseHttpService';
 import { LoginResponse } from '../models/Responses/LoginResponse';
+import { environment } from '../../environments/environment';
 
 @Injectable()
-export class UserStateService extends EndPoints {
+export class UserStateService extends BaseHttpService {
 
   constructor(private http: HttpClient) { super(); }
 
@@ -26,11 +27,11 @@ export class UserStateService extends EndPoints {
     });
     this.http.post<LoginResponse>(`${this.baseUrl}/api/auth/login`, model, { responseType: 'json' })
       .subscribe(
-      event => {
-        this.InitUser(event);
-        observer.next(event);
-      },
-      error => observer.error('Неверные email/пароль')
+        event => {
+          this.InitUser(event);
+          observer.next(event);
+        },
+        error => observer.error('Неверные email/пароль')
       );
     return observable;
   }
@@ -42,8 +43,8 @@ export class UserStateService extends EndPoints {
     });
     this.http.post(`${this.baseUrl}/api/account`, model, { responseType: 'text' })
       .subscribe(
-      event => observer.next(event),
-      error => observer.error('Email занят')
+        event => observer.next(event),
+        error => observer.error('Email занят')
       );
     return observable;
   }
@@ -63,7 +64,15 @@ export class UserStateService extends EndPoints {
           observer.next(false);
         }
       );
-      return observable;
+    return observable;
+  }
+
+
+  public IsAdmin(): boolean {
+    if (!environment.production) {
+      return environment.isAdmin;
+    }
+    return this.currentUser.Roles.indexOf('Admin') !== -1;
   }
 
   private InitUser(response: LoginResponse) {
@@ -79,12 +88,14 @@ export class UserStateService extends EndPoints {
     this.usersBehavior.next(user);
     this.currentUser = user;
   }
-  public authHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-    });
+  public get authOptions(): object {
+    return {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+      })
+    };
   }
-  private parseJwt (token: string): string[] {
+  private parseJwt(token: string): string[] {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace('-', '+').replace('_', '/');
     return JSON.parse(window.atob(base64))['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];

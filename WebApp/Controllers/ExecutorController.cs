@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.Solutions;
+using Shared.Models;
 using WebApp.Services.Interfaces;
 
 namespace WebApp.Controllers
@@ -28,10 +31,14 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IEnumerable<Solution>> GetAsync()
         {
             var list = queue.GetFromQueue(10);
-            return Json(dbContext.Solutions.Where(S => list.Contains(S.Id)));
+            var targetSolutions = await dbContext
+                .Solutions
+                .Where(s => list.Contains(s.Id))
+                .ToListAsync();
+            return targetSolutions;
         }
 
         [HttpPost()]
@@ -43,6 +50,10 @@ namespace WebApp.Controllers
                 return NotFound();
 
             solution.Status = state;
+            if (state == SolutionStatus.InProcessing)
+                solution.StartCheckingTime = DateTime.UtcNow;
+            else
+                solution.CheckedTime = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
             return Ok();
         }

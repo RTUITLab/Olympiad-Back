@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using WebApp.Models.Responces;
+using PublicAPI.Responses;
 
 namespace WebApp.Controllers
 {

@@ -1,10 +1,14 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { LoadingModule, ANIMATION_TYPES } from 'ngx-loading';
-import {MatTableModule} from '@angular/material/table';
+import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material';
+import { MatInputModule } from '@angular/material/input';
+
+
 
 
 import { AppComponent } from './components/app.component';
@@ -20,6 +24,16 @@ import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
+import { UserInfoComponent } from './components/user-info/user-info.component';
+
+import { ExerciseEditComponent } from './components/exercises/exercise-edit/exercise-edit.component';
+import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
+import { AddExerciseComponent } from './components/exercises/add-exercise/add-exercise.component';
+import { ChallengesService } from './services/challenges.service';
+import { ExerciseStateService } from './services/exercise-state.service';
+import { ChallengeInfoComponent } from './components/challenges/challenge-info/challenge-info.component';
+import { ChallengesListComponent } from './components/menu/challenges-list/challenges-list.component';
+
 
 const routes: Route[] = [
   {
@@ -32,7 +46,8 @@ const routes: Route[] = [
   },
   {
     path: 'overview',
-    component: OverviewComponent
+    component: OverviewComponent,
+    canActivate: [AuthGuardService]
   },
   {
     path: 'exercises',
@@ -40,8 +55,23 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'add-exercise',
+    component: AddExerciseComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'exercises/edit/:ExerciseID',
+    component: ExerciseEditComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: 'exercises/:ExerciseID',
     component: ExerciseInfoComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'challenges/:ChallengeId',
+    component: ChallengeInfoComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -61,23 +91,41 @@ const routes: Route[] = [
     ExerciseInfoComponent,
     MenuComponent,
     OverviewComponent,
-    ExerciseInoutComponent
+    ExerciseInoutComponent,
+    UserInfoComponent,
+    AddExerciseComponent,
+    ExerciseEditComponent,
+    AddExerciseInOutComponent,
+    ChallengesListComponent,
+    ChallengeInfoComponent,
+
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(routes),
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
-    LoadingModule.forRoot({
-      animationType: ANIMATION_TYPES.cubeGrid
+    NgxLoadingModule.forRoot({
+      animationType: ngxLoadingAnimationTypes.cubeGrid
     }),
     MarkdownModule.forRoot({
-      provide: MarkedOptions,
-      useFactory: markedOptionsFactory,
+      markedOptions: {
+        provide: MarkedOptions,
+        useFactory: markedOptionsFactory,
+      },
     }),
-    MatTableModule
+    MatTableModule,
+    MatButtonModule,
+    MatInputModule
   ],
-  providers: [UserStateService, ExerciseService, AuthGuardService],
+  providers: [
+    UserStateService,
+    ExerciseStateService,
+    ExerciseService,
+    ChallengesService,
+    AuthGuardService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
