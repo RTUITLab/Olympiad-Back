@@ -23,75 +23,48 @@ import { ExerciseService } from 'src/app/services/exercise.service';
   templateUrl: './exercise-edit.component.html',
   styleUrls: ['./exercise-edit.component.scss']
 })
-export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
-
-
-  model: SolutionViewModel = new SolutionViewModel();
+export class ExerciseEditComponent extends LoadingComponent implements OnInit {
 
   //  variable for sending data to the server
   EditedExercise?: ExerciseInfo;
-public EditedCondition?: ExerciseNewCondition[];
   constructor(
     private exerciseEditServise: ExerciseEditService,
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
     private router: Router,
     private route: ActivatedRoute,
-    ) {
-      super();
-    }
+  ) {
+    super();
+  }
 
   ngOnInit() {
-         this.route.paramMap
+    this.route.paramMap
       .subscribe((params: ParamMap) => {
-        this.model.ExerciseId = params.get('ExerciseID');
-        //  console.log(this.model.ExerciseId);
         this.startLoading();
-        this.exercisesService.getExercise(this.model.ExerciseId)
+        this.exercisesService.getExercise(params.get('ExerciseID'))
           .subscribe(
-          exInfo => {
-            this.EditedExercise = exInfo;
-            console.log(this.EditedExercise);
-            this.stopLoading();
-          },
-          fail => {
-            console.log(fail);
-          }
+            exInfo => {
+              this.EditedExercise = exInfo;
+              this.stopLoading();
+            },
+            fail => {
+              console.log(fail);
+              this.stopLoading();
+            }
           );
       });
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
-  turnOnEditing() {
-    console.log('turnOnEditing()');
-  }
-  turnOffEditing() {
-    console.log('turnOffEditing()');
-  }
   sendEditedExercise() {
-    console.log('sendEditedExercise()');
-    console.log(this.EditedExercise);
-    console.log(this.EditedCondition);
     // send EditedExercise to the server
-   this.exerciseEditServise.SendEditedExercise(this.EditedExercise).subscribe(
-     _ => {
-       this.sendEditedCondition(this.EditedExercise.Id);
-       console.log(`sendEditedExercise_complete`);
-     },
-     error => console.log(error),
-   );
-  }
-  sendEditedCondition(EditedExerciseId: string) {
-    console.log('sendEditedCondition()');
-    console.log(this.EditedCondition);
-    this.exerciseEditServise.SendEditedCondition(this.EditedCondition, EditedExerciseId).subscribe(
+    this.startLoading();
+    this.exerciseEditServise.SendEditedExercise(this.EditedExercise).subscribe(
       _ => {
-        console.log(`sendEditedCondition_complete`);
-        this.router.navigate(['exercises/', this.model.ExerciseId]);
+        this.stopLoading();
       },
       error => console.log(error),
     );
-
   }
 }

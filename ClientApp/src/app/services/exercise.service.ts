@@ -122,4 +122,16 @@ export class ExerciseService extends BaseHttpService implements OnInit {
       );
     return observable;
   }
+
+  updateExerciseInOutData(inOutData: ExerciseData): Observable<any> {
+    return this.http.put(
+      `${this.baseUrl}/api/ExerciseData/${inOutData.Id}`, inOutData, this.userService.authOptions
+    );
+  }
+
+  addExerciseInOutData(exerciseId: string, inOutData: ExerciseData): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, inOutData, this.userService.authOptions
+    );
+  }
 }

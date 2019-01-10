@@ -26,13 +26,13 @@ import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
 import { UserInfoComponent } from './components/user-info/user-info.component';
 
-import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
 import { AddExerciseComponent } from './components/exercises/add-exercise/add-exercise.component';
 import { ChallengesService } from './services/challenges.service';
 import { ExerciseStateService } from './services/exercise-state.service';
 import { ChallengeInfoComponent } from './components/challenges/challenge-info/challenge-info.component';
 import { ChallengesListComponent } from './components/menu/challenges-list/challenges-list.component';
 import { ExerciseEditComponent } from './components/exercises/exercise-editing/exercise-edit/exercise-edit.component';
+import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
 
 
 const routes: Route[] = [
@@ -95,9 +95,9 @@ const routes: Route[] = [
     UserInfoComponent,
     AddExerciseComponent,
     ExerciseEditComponent,
-    AddExerciseInOutComponent,
     ChallengesListComponent,
     ChallengeInfoComponent,
+    ConditionEditComponent,
 
   ],
   imports: [

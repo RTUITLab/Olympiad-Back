@@ -31,10 +31,7 @@
     {{EditedExercise.exerciseText}}
   </textarea>
     <!-- END -->
-    <!-- exercise_EXAMPLE -->
-      <app-exercise-inout  [exId]="EditedExercise.Id"></app-exercise-inout>
-    <!-- END -->
-    
+    <app-condition-edit [exerciseId]="EditedExercise.Id" ></app-condition-edit>
   </div>
   <ng-template #loading>
       <ngx-loading [show]="loading"></ngx-loading>
