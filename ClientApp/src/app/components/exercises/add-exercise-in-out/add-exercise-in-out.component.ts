@@ -10,10 +10,10 @@ export class AddExerciseInOutComponent implements OnInit {
   constructor(
     private exerciseService: ExerciseService
   ) { }
-  public NewCondition: ExerciseNewCondition[];
+  public NewCondition?: ExerciseNewCondition;
   ngOnInit() {
     console.log('AddInOut');
-    this.NewCondition = [];
+    this.NewCondition = new ExerciseNewCondition();
   }
 
 

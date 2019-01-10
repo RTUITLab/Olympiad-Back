@@ -6,25 +6,17 @@
     <th>Стандартный ввод</th>
     <th>Стандартный вывод</th>
   </tr>
-    <tr>
-      <td valign="top" >
-        <textarea [(ngModel)]="NewCondition.InData">
-        </textarea>
-      </td>
-      <td valign="top" >
-          <div *ngFor="let inRow of NewCondition.InData.split('\n')">
-            {{inRow}}
-          </div>
-      </td>
+  <tr>
+    <td valign="top" >
+      <textarea [(ngModel)]="NewCondition.InData">
+      </textarea>
+    </td>
 
     <td valign="top" >
         <textarea [(ngModel)]="NewCondition.OutData">
-          </textarea>
+        </textarea>
     </td>
-    <td valign="top" >
-        <div *ngFor="let inRow of NewCondition.OutData.split('\n')">
-          {{inRow}}
-        </div>
-    </td>
+  </tr>
+  <tr>
   </tr>
 </table>

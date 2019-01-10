@@ -1,4 +1,4 @@
-<div class="container" *ngIf="exerciseInfo">
+<div class="container" *ngIf="exerciseInfo ; else loading">
   <div>
     <button mat-button class="editExercise_btn" *ngIf="isAdmin()" (click)="editExercise(exerciseInfo.Id)">
       Изменить данные задания
@@ -59,6 +59,7 @@
       </tr>
     </tbody>
   </table>
-  <ngx-loading [show]="loading"></ngx-loading>
-
 </div>
+<ng-template #loading>
+    <ngx-loading [show]="loading"></ngx-loading>
+</ng-template>
