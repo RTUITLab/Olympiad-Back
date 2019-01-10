@@ -8,7 +8,7 @@
   <h3>
     Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
   </h3>
-  <markdown id="Exercise_text" [data]="exerciseInfo.ExerciseText"></markdown>
+  <markdown id="Exercise_text" [data]="exerciseInfo.TaskText"></markdown>
   <app-exercise-inout *ngIf="isAdmin()" [exId]="exerciseInfo.Id"></app-exercise-inout>
   
   <h2>Отправка решения</h2>

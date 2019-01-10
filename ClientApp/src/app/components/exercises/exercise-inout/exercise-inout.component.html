@@ -4,30 +4,22 @@
     <th>Стандартный вывод</th>
   </tr>
   <tr *ngFor="let exData of exerciseDatas">
-    <td valign="top">
-      <div *ngFor="let inRow of exData.InData.split('\n')">
-        {{inRow}}
-      </div>
     <tr *ngFor="let exData of exerciseDatas">
-      <td valign="top" *ngIf="exercise_text_edit===true" >
+      <!-- <td valign="top"  >
         <textarea [(ngModel)]="exData.InData">
         </textarea>
-      </td>
-      <td valign="top" *ngIf="exercise_text_edit===false">
+      </td> -->
+      <td valign="top" >
           <div *ngFor="let inRow of exData.InData.split('\n')">
             {{inRow}}
           </div>
       </td>
 
-    <td valign="top" *ngIf="exercise_text_edit===true">
+    <!-- <td valign="top" >
         <textarea [(ngModel)]="exData.OutData">
           </textarea>
-    </td>
-    <td valign="top">
-      <div *ngFor="let inRow of exData.OutData.split('\n')">
-        {{inRow}}
-      </div>
-    <td valign="top" *ngIf="exercise_text_edit===false">
+    </td> -->
+    <td valign="top" >
         <div *ngFor="let inRow of exData.OutData.split('\n')">
           {{inRow}}
         </div>

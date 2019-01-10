@@ -15,17 +15,17 @@
   <br>
 
   <!-- exercise_NAME -->
-  <textarea id="exercise_name"  class="exercise_name_area" *ngIf="exercise_text_edit===true"  ngDefaultControl [(ngModel)]="EditedExercise.Name">
+  <textarea id="exercise_name"  class="exercise_name_area"   ngDefaultControl [(ngModel)]="EditedExercise.Name">
     {{EditedExercise.Name}}
   </textarea>
-  <h1 id="exercise_name" ngDefaultControl *ngIf="exercise_text_edit===false">
+  <h1 id="exercise_name" ngDefaultControl >
     {{EditedExercise.Name}}
   </h1>
   <!-- END -->
 
   
   <!-- exercise_SCORE -->
-  <div *ngIf="exercise_text_edit===true">
+  <div >
     <span>
       Баллы за выполнение:
     </span>
@@ -33,19 +33,19 @@
       {{EditedExercise.Score}}
     </textarea>
   </div>
-  <h3 id="exercise_score" *ngIf="exercise_text_edit===false">
+  <h3 id="exercise_score" >
     Баллы за выполнение:{{EditedExercise.Score}}
   </h3>
   <!-- END -->
   
   <!-- exercise_TEXT -->
-  <textarea id="exercise_text" *ngIf="exercise_text_edit===true" ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.exerciseText">
+  <textarea id="exercise_text"  ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.exerciseText">
     {{EditedExercise.exerciseText}}
   </textarea>
-    <markdown *ngIf="exercise_text_edit===false" [data]="EditedExercise.exerciseText"></markdown>
+    <markdown  [data]="EditedExercise.exerciseText"></markdown>
     <!-- END -->
     <!-- exercise_EXAMPLE -->
-      <app-exercise-inout [exercise_text_edit]="exercise_text_edit" [exId]="EditedExercise.Id"></app-exercise-inout>
+      <app-exercise-inout  [exId]="EditedExercise.Id"></app-exercise-inout>
     <!-- END -->
     
     <ngx-loading [show]="loading"></ngx-loading>

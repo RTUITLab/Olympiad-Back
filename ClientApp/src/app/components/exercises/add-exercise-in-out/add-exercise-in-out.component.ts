@@ -7,17 +7,13 @@ import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
   styleUrls: ['./add-exercise-in-out.component.scss']
 })
 export class AddExerciseInOutComponent implements OnInit {
-  @Input() exercise_text_edit: boolean;
   constructor(
     private exerciseService: ExerciseService
   ) { }
   public NewCondition: ExerciseNewCondition[];
   ngOnInit() {
-    console.log('AddInOut' + this.exercise_text_edit);
+    console.log('AddInOut');
     this.NewCondition = [];
-    if (this.exercise_text_edit) {
-      console.log(this.NewCondition);
-    }
   }
 
 
