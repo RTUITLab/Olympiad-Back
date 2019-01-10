@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
-import { UserStateService } from '../../../services/user-state.service';
-import { LoadingComponent } from '../../helpers/loading-component';
+
 import { ActivatedRoute } from '@angular/router';
-import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
-import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
-import { ExerciseService } from '../../../services/exercise.service';
 import { ParamMap } from '@angular/router/src/shared';
-import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.component';
-import { ExerciseData } from '../../../models/ExerciseData';
-import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
+import { UserStateService } from 'src/app/services/user-state.service';
+import { LoadingComponent } from 'src/app/components/helpers/loading-component';
+import { SolutionViewModel } from 'src/app/models/ViewModels/SolutionViewModel';
+import { ExerciseInfo } from 'src/app/models/Responses/ExerciseInfo';
+import { ExerciseNewCondition } from 'src/app/models/ExerciseNewCondition';
+import { ExerciseService } from 'src/app/services/exercise.service';
 
 
 
