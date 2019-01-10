@@ -1,12 +1,6 @@
-<div *ngIf="isAdmin()" class="editExerciseComponent">
+<div *ngIf="isAdmin() && EditedExercise; else loading" class="editExerciseComponent">
 
   <!-- BUTTONS -->
-  <button (click)="turnOnEditing()">
-    Изменение
-  </button>
-  <button (click)="turnOffEditing()">
-    Просмотр
-  </button>
   <button (click)="sendEditedExercise()">
     Сохранить
   </button>
@@ -18,9 +12,6 @@
   <textarea id="exercise_name"  class="exercise_name_area"   ngDefaultControl [(ngModel)]="EditedExercise.Name">
     {{EditedExercise.Name}}
   </textarea>
-  <h1 id="exercise_name" ngDefaultControl >
-    {{EditedExercise.Name}}
-  </h1>
   <!-- END -->
 
   
@@ -33,20 +24,18 @@
       {{EditedExercise.Score}}
     </textarea>
   </div>
-  <h3 id="exercise_score" >
-    Баллы за выполнение:{{EditedExercise.Score}}
-  </h3>
   <!-- END -->
   
   <!-- exercise_TEXT -->
-  <textarea id="exercise_text"  ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.exerciseText">
+  <textarea id="exercise_text"  ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.TaskText">
     {{EditedExercise.exerciseText}}
   </textarea>
-    <markdown  [data]="EditedExercise.exerciseText"></markdown>
     <!-- END -->
     <!-- exercise_EXAMPLE -->
       <app-exercise-inout  [exId]="EditedExercise.Id"></app-exercise-inout>
     <!-- END -->
     
-    <ngx-loading [show]="loading"></ngx-loading>
   </div>
+  <ng-template #loading>
+      <ngx-loading [show]="loading"></ngx-loading>
+  </ng-template>

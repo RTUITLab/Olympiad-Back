@@ -1,9 +1,6 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
 
   <!-- BUTTONS -->
-  <button (click)="turnOnEditing()">
-    Изменение
-  </button>
   <button (click)="AddExercise()">
     Добавить
   </button>
@@ -12,35 +9,39 @@
   <br>
 
   <!-- exercise_NAME -->
-  <div *ngIf="exercise_text_edit===true">
+  <div>
     <span>
       Название
     </span>
   <input type="text" id="exercise_name"  class="exercise_name_area" ngDefaultControl [(ngModel)]="NewExercise.ExerciseName">
   </div>
-  <h1 id="exercise_name" ngDefaultControl *ngIf="exercise_text_edit===false">
-    {{NewExercise.ExerciseName}}
-  </h1>
   <!-- END -->
+
+  <!-- exercise challenge -->
+  <div class="challenge-box" *ngFor="let challenge of challenges">
+    <select>
+      <option>
+        <p>{{challenge.Name}}</p>
+      </option>
+    </select>
+  </div>
+  <!-- end -->
 
   <!-- exercise_EXAMPLE -->
     <app-add-exercise-in-out></app-add-exercise-in-out>
   <!-- END -->
 
   <!-- exercise_SCORE -->
-  <div *ngIf="exercise_text_edit===true">
+  <div >
     <span>
       Баллы за выполнение:
     </span>
     <input id="exercise_score" type="number" class="exercise_score_area" [(ngModel)]="NewExercise.Score">
   </div>
-  <h3 id="exercise_score" *ngIf="exercise_text_edit===false">
-      Баллы за выполнение:{{NewExercise.Score}}
-  </h3>
   <!-- END -->
 
   <!-- exercise_TEXT -->
-  <div *ngIf="exercise_text_edit===true">
+  <div >
     <span>
       Содержание
     </span>
@@ -48,7 +49,6 @@
       {{NewExercise.ExerciseText}}
     </textarea>
   </div>
-    <markdown *ngIf="exercise_text_edit===false" [data]="NewExercise.ExerciseText"></markdown>
   <!-- END -->
 
   <ngx-loading [show]="loading"></ngx-loading>

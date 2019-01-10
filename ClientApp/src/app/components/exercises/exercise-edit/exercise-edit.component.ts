@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { UserStateService } from '../../../services/user-state.service';
@@ -24,18 +24,14 @@ import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
   templateUrl: './exercise-edit.component.html',
   styleUrls: ['./exercise-edit.component.scss']
 })
-export class ExerciseEditComponent extends LoadingComponent  implements OnInit, AfterViewInit {
+export class ExerciseEditComponent extends LoadingComponent  implements OnInit {
 
 
   model: SolutionViewModel = new SolutionViewModel();
 
   //  variable for sending data to the server
-  EditedExercise: ExerciseInfo;
-
-  //  variable for exercise_text view
-  exercise_text_edit: boolean;
-
-
+  EditedExercise?: ExerciseInfo;
+public EditedCondition?: ExerciseNewCondition[];
   constructor(
     private exerciseEditServise: ExerciseEditService,
     private usersService: UserStateService,
@@ -45,12 +41,6 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
     ) {
       super();
     }
-    // get InOutConditionData from conditions component
-  @ViewChild(ExerciseInoutComponent) InOutConditionData;
-  public EditedCondition: ExerciseNewCondition[];
-  ngAfterViewInit() {
-    this.EditedCondition = this.InOutConditionData.EditedCondition;
-  }
 
   ngOnInit() {
          this.route.paramMap
@@ -70,28 +60,19 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
           }
           );
       });
-          // deny editing exercise data
-         this.exercise_text_edit = false;
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
   turnOnEditing() {
     console.log('turnOnEditing()');
-    if (this.exercise_text_edit === false) {
-      this.exercise_text_edit = true;
-    }
   }
   turnOffEditing() {
     console.log('turnOffEditing()');
-    if (this.exercise_text_edit === true) {
-      this.exercise_text_edit = false;
-    }
   }
   sendEditedExercise() {
     console.log('sendEditedExercise()');
     console.log(this.EditedExercise);
-    this.ngAfterViewInit();
     console.log(this.EditedCondition);
     // send EditedExercise to the server
    this.exerciseEditServise.SendEditedExercise(this.EditedExercise).subscribe(
@@ -104,7 +85,6 @@ export class ExerciseEditComponent extends LoadingComponent  implements OnInit, 
   }
   sendEditedCondition(EditedExerciseId: string) {
     console.log('sendEditedCondition()');
-    this.ngAfterViewInit();
     console.log(this.EditedCondition);
     this.exerciseEditServise.SendEditedCondition(this.EditedCondition, EditedExerciseId).subscribe(
       _ => {

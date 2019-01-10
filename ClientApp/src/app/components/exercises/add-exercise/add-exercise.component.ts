@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { UserStateService } from '../../../services/user-state.service';
@@ -10,6 +10,8 @@ import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.compone
 import { ExerciseData } from '../../../models/ExerciseData';
 import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
+import { ChallengeCompactResponse } from 'src/app/models/Responses/Challenges/ChallengeCompactResponse';
+import { ChallengesService } from 'src/app/services/challenges.service';
 
 
 
@@ -20,7 +22,7 @@ import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
   templateUrl: './add-exercise.component.html',
   styleUrls: ['./add-exercise.component.scss']
 })
-export class AddExerciseComponent extends LoadingComponent implements OnInit, AfterViewInit {
+export class AddExerciseComponent extends LoadingComponent implements OnInit {
 
   exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
@@ -32,44 +34,36 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit, Af
     private exerciseEditServise: ExerciseEditService,
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
+    private challengesService: ChallengesService,
     private router: Router,
     private route: ActivatedRoute,
   ) {
     super();
   }
-  // get InOutConditionData from conditions component
-  @ViewChild(ExerciseNewCondition) InOutNewConditionData;
-  public NewCondition: ExerciseNewCondition[];
-  ngAfterViewInit() {
-    this.NewCondition = [];
-    console.log(`${this.InOutNewConditionData.NewCondition}`);
-    this.NewCondition = this.InOutNewConditionData.NewCondition;
-  }
+  public NewCondition?: ExerciseNewCondition[];
+  public challenges?: Array<ChallengeCompactResponse> = [];
 
   ngOnInit() {
     this.startLoading();
     this.NewExercise = {};
     this.NewCondition = [];
-    // deny editing exercise data
-    this.exercise_text_edit = true;
     this.stopLoading();
+    this.challengesService.getChallengesList().subscribe(c => {
+      if (!c) {
+        return;
+      }
+      this.challenges = c;
+    });
   }
   turnOnEditing() {
     console.log('turnOnEditing()');
-    if (this.exercise_text_edit === false) {
-      this.exercise_text_edit = true;
-    }
   }
   turnOffEditing() {
     console.log('turnOffEditing()');
-    if (this.exercise_text_edit === true) {
-      this.exercise_text_edit = false;
-    }
   }
   AddExercise() {
     console.log('Addexercise()');
     console.log(this.NewExercise);
-    this.ngAfterViewInit();
     // console.log(this.NewCondition);
     // send exercise to the server
     this.exerciseEditServise.AddExercise(this.NewExercise).subscribe(
@@ -81,7 +75,6 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit, Af
   }
   sendNewCondition(NewExerciseId: string) {
     console.log('sendEditedCondition()');
-    this.ngAfterViewInit();
     console.log(this.NewCondition);
     this.exerciseEditServise.SendNewCondition(this.NewCondition, NewExerciseId).subscribe(
       _ => {
