@@ -15,28 +15,28 @@ export class ExerciseEditService {
     private http: HttpClient,
     private userService: UserStateService
   ) { }
-  EditedTask: Exercise;
-  public SendEditedTask(Task: ExerciseInfo) {
-    console.log(`Task-EditService_SendEditedTask`);
-    this.EditedTask = {
-      ExerciseName: Task.Name,
-      ExerciseTask: Task.TaskText,
-      Score: Task.Score
+  EditedExercise: Exercise;
+  public SendEditedExercise(exercise: ExerciseInfo) {
+    console.log(`Exercise-EditService_SendEditedExercise`);
+    this.EditedExercise = {
+      ExerciseName: exercise.Name,
+      ExerciseText: exercise.ExerciseText,
+      Score: exercise.Score
     };
-    return this.http.put(`${environment.baseUrl}/api/Exercises/${Task.Id}`, this.EditedTask, this.userService.authOptions);
+    return this.http.put(`${environment.baseUrl}/api/Exercises/${exercise.Id}`, this.EditedExercise, this.userService.authOptions);
   }
-  public AddExercise(NewTask: Exercise) {
-    console.log(`Task-EditService_AddTask`);
-     return this.http.post(`${environment.baseUrl}/api/Exercises/`, NewTask, this.userService.authOptions);
+  public AddExercise(NewExercise: Exercise) {
+    console.log(`Exercise-EditService_AddExercise`);
+     return this.http.post(`${environment.baseUrl}/api/Exercises/`, NewExercise, this.userService.authOptions);
   }
-  public SendEditedCondition(EditedCondition: ExerciseNewCondition [], EditedTaskId: string) {
-    console.log(`Task-EditService_SendEditedCondition`);
+  public SendEditedCondition(EditedCondition: ExerciseNewCondition [], EditedExerciseId: string) {
+    console.log(`Exercise-EditService_SendEditedCondition`);
     console.log(EditedCondition);
-    return this.http.put(`${environment.baseUrl}/api/ExerciseData/${EditedTaskId}`, EditedCondition, this.userService.authOptions);
+    return this.http.put(`${environment.baseUrl}/api/ExerciseData/${EditedExerciseId}`, EditedCondition, this.userService.authOptions);
   }
-  public SendNewCondition(NewCondition: ExerciseNewCondition [], EditedTaskId: string) {
-    console.log(`Task-EditService_SendNewCondition`);
+  public SendNewCondition(NewCondition: ExerciseNewCondition [], EditedExerciseId: string) {
+    console.log(`Exercise-EditService_SendNewCondition`);
     console.log(NewCondition);
-    return this.http.post(`${environment.baseUrl}/api/ExerciseData/${EditedTaskId}`, NewCondition, this.userService.authOptions);
+    return this.http.post(`${environment.baseUrl}/api/ExerciseData/${EditedExerciseId}`, NewCondition, this.userService.authOptions);
   }
 }

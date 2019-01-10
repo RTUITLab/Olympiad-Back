@@ -24,9 +24,9 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit, Af
 
   exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
-  NewTask: Exercise;
-  //  variable for task_text view
-  task_text_edit: boolean;
+  NewExercise: Exercise;
+  //  variable for exercise_text view
+  exercise_text_edit: boolean;
 
   constructor(
     private exerciseEditServise: ExerciseEditService,
@@ -48,45 +48,45 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit, Af
 
   ngOnInit() {
     this.startLoading();
-    this.NewTask = {};
+    this.NewExercise = {};
     this.NewCondition = [];
-    // deny editing task data
-    this.task_text_edit = true;
+    // deny editing exercise data
+    this.exercise_text_edit = true;
     this.stopLoading();
   }
   turnOnEditing() {
     console.log('turnOnEditing()');
-    if (this.task_text_edit === false) {
-      this.task_text_edit = true;
+    if (this.exercise_text_edit === false) {
+      this.exercise_text_edit = true;
     }
   }
   turnOffEditing() {
     console.log('turnOffEditing()');
-    if (this.task_text_edit === true) {
-      this.task_text_edit = false;
+    if (this.exercise_text_edit === true) {
+      this.exercise_text_edit = false;
     }
   }
-  AddTask() {
-    console.log('AddTask()');
-    console.log(this.NewTask);
+  AddExercise() {
+    console.log('Addexercise()');
+    console.log(this.NewExercise);
     this.ngAfterViewInit();
     // console.log(this.NewCondition);
-    // send Task to the server
-    this.exerciseEditServise.AddExercise(this.NewTask).subscribe(
+    // send exercise to the server
+    this.exerciseEditServise.AddExercise(this.NewExercise).subscribe(
       _ => {
-        console.log(`sendEditedTask_complete`);
+        console.log(`sendEditedexercise_complete`);
       },
       error => console.log(error),
     );
   }
-  sendNewCondition(NewTaskId: string) {
+  sendNewCondition(NewExerciseId: string) {
     console.log('sendEditedCondition()');
     this.ngAfterViewInit();
     console.log(this.NewCondition);
-    this.exerciseEditServise.SendNewCondition(this.NewCondition, NewTaskId).subscribe(
+    this.exerciseEditServise.SendNewCondition(this.NewCondition, NewExerciseId).subscribe(
       _ => {
         console.log(`sendEditedCondition_complete`);
-        this.router.navigate(['exercises/', NewTaskId]);
+        this.router.navigate(['exercises/', NewExerciseId]);
       },
       error => console.log(error),
     );

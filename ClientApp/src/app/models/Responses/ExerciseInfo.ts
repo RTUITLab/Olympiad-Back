@@ -6,6 +6,6 @@ export class ExerciseInfo {
     ChallengeId: string;
     Name: string;
     Score: number;
-    TaskText: string;
+    ExerciseText: string;
     Solutions: Solution[];
 }
