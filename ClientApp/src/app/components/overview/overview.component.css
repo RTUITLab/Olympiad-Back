@@ -16,7 +16,7 @@ hr {
 }
 
 .indicators {
-    column-count: 2 ;
+    column-count: 2;
     column-fill: balance;
     padding: 10px;
 }
@@ -31,7 +31,7 @@ img {
     width: 70%;
     display: grid;
     grid-template-columns: 40% auto; 
-     padding: 20px;
+    padding: 20px;
 }
 
 .statusDesc p {
