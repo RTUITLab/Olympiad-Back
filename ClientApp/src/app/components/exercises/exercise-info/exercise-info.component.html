@@ -38,12 +38,14 @@
       <th>Язык программирования</th>
       <th>Скачать решение</th>
       <th>Результат</th>
-      <th></th>
+      <th> </th>
+      <th>Время начала проверки</th>
+      <th>Окончание проверки</th>
     </thead>
     <tbody>
 
       <tr *ngFor="let sol of exerciseInfo.Solutions">
-        <td>{{prettyTime(sol.Time)}}</td>
+        <td>{{prettyTime(sol.SendingTime)}}</td>
         <td>{{normalLang(sol.Language)}}</td>
         <td>
           <button>
@@ -52,6 +54,8 @@
         </td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>
         <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
+        <td>{{prettyTime(sol.StartCheckingTime)}}</td>
+        <td>{{prettyTime(sol.CheckedTime)}}</td>
       </tr>
     </tbody>
   </table>

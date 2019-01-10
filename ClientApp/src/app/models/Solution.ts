@@ -6,5 +6,7 @@ export class Solution {
     Raw: string;
     ExerciseId: string;
     Status: SolutionStatus;
-    Time: string;
+    SendingTime: string;
+    StartCheckingTime: string;
+    CheckedTime: string;
 }
