@@ -48,6 +48,17 @@
 
 1. В папке _./ClientApp_ выполнить команду ```npm instal``` Эта команда установит все зависимости в папку __node_modules__.
 
+3. В папке _./ClientApp/src/environments_ создать файл _environment.ts_ с следующим содержанием:
+
+```json
+export const environment = {
+    production: true,
+    isAdmin: false,
+    baseUrl: ''
+};
+```
+> baseUrl - url запущенного WebApp, при локальном запуске скорее всего будет ```http://localhost:64800```
+
 2. Для запуска сайта необходимо выполнить комманду ```npm start```. После выполнения команды в браузере можно открыть сайт по [адресу localhost:4200](http://localhost:4200), где будет видно сам сайт.
 
 ### Executor
@@ -63,7 +74,8 @@
 ```json
 {
     "StartSettings": {
-        "Address":"http://localhost:55471"
+        "Address":"http://localhost:55471",
+        "DockerEndPoint":"http://localhost:2375"
     },
     "UserInfo": {
         "UserName":"Имя пользователя, имеющего право Executor",
@@ -71,5 +83,6 @@
     }
 }
 ```
+> ```StartSettings:DockerEndPoint``` представляет url, указывающий на запущенный сервис **Docker**, при локальном запуске **Docker** слушает на порту *2375*
 
 3. После создания такого файла можно выполнять команту ```dotnet run``` в папке _./Executor_
