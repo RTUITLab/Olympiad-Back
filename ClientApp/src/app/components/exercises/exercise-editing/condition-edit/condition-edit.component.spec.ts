@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AddExerciseInOutComponent } from './add-exercise-in-out.component';
+import { ConditionEditComponent } from './condition-edit.component';
 
-describe('AddExerciseInOutComponent', () => {
-  let component: AddExerciseInOutComponent;
-  let fixture: ComponentFixture<AddExerciseInOutComponent>;
+describe('ConditionEditComponent', () => {
+  let component: ConditionEditComponent;
+  let fixture: ComponentFixture<ConditionEditComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AddExerciseInOutComponent ]
+      declarations: [ ConditionEditComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(AddExerciseInOutComponent);
+    fixture = TestBed.createComponent(ConditionEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,0 +1,28 @@
+<div>
+  <p>Добавить условие</p>
+  <div class="container">
+      <p>Вход</p>
+      <p>Выход</p>
+      <p>Публичность</p>
+    </div>
+  <div class="container">
+    <textarea [(ngModel)]="newCondition.InData"></textarea>
+    <textarea [(ngModel)]="newCondition.OutData"></textarea>
+    <input type="checkbox" [(ngModel)]="newCondition.IsPublic" />
+    <button (click)="addCondition()">Add</button>
+  </div>
+  <div class="container">
+    <p>Вход</p>
+    <p>Выход</p>
+    <p>Публичность</p>
+  </div>
+  <div class="container" *ngFor="let condition of conditions">
+    <textarea [(ngModel)]="condition.InData"></textarea>
+    <textarea [(ngModel)]="condition.OutData"></textarea>
+    <input type="checkbox" [(ngModel)]="condition.IsPublic" />
+    <div>
+      <button>Удалить</button>
+      <button (click)="saveCondition(condition)">Сохранить</button>
+    </div>
+  </div>
+</div>
