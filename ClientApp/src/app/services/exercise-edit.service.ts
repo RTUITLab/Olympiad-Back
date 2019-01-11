@@ -17,7 +17,6 @@ export class ExerciseEditService {
   ) { }
   EditedExercise: Exercise;
   public SendEditedExercise(exercise: ExerciseInfo) {
-    console.log(`Exercise-EditService_SendEditedExercise`);
     this.EditedExercise = {
       ExerciseName: exercise.Name,
       ExerciseText: exercise.ExerciseText,
@@ -26,17 +25,12 @@ export class ExerciseEditService {
     return this.http.put(`${environment.baseUrl}/api/Exercises/${exercise.Id}`, this.EditedExercise, this.userService.authOptions);
   }
   public AddExercise(NewExercise: Exercise) {
-    console.log(`Exercise-EditService_AddExercise`);
      return this.http.post(`${environment.baseUrl}/api/Exercises/`, NewExercise, this.userService.authOptions);
   }
   public SendEditedCondition(EditedCondition: ExerciseNewCondition [], EditedExerciseId: string) {
-    console.log(`Exercise-EditService_SendEditedCondition`);
-    console.log(EditedCondition);
     return this.http.put(`${environment.baseUrl}/api/ExerciseData/${EditedExerciseId}`, EditedCondition, this.userService.authOptions);
   }
   public SendNewCondition(NewCondition: ExerciseNewCondition [], EditedExerciseId: string) {
-    console.log(`Exercise-EditService_SendNewCondition`);
-    console.log(NewCondition);
     return this.http.post(`${environment.baseUrl}/api/ExerciseData/${EditedExerciseId}`, NewCondition, this.userService.authOptions);
   }
 }

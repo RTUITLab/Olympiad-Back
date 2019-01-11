@@ -19,7 +19,7 @@ using System.Text.RegularExpressions;
 
 namespace Executor.Executers.Run
 {
-    abstract class ProgramRunner
+    class ProgramRunner
     {
         private readonly BlockingCollection<(Guid solutionId, ExerciseData[] testData)> solutionQueue
             = new BlockingCollection<(Guid solutionId, ExerciseData[] testData)>();
@@ -28,14 +28,11 @@ namespace Executor.Executers.Run
         private readonly IDockerClient dockerClient;
         private Task runningTask;
         private readonly Logger<ProgramRunner> logger;
-        private string lang;
-        private string Language => lang ??
-                                   (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
 
 
         public ProgramRunner(Func<Guid, SolutionStatus, Task> processSolution, IDockerClient dockerClient)
         {
-            logger = Logger<ProgramRunner>.CreateLogger(Language);
+            logger = Logger<ProgramRunner>.CreateLogger();
             runningTask = Task.Run(RunLoop);
             this.processSolution = processSolution;
             this.dockerClient = dockerClient;

@@ -21,22 +21,19 @@ namespace Executor.Executers
         private readonly ProgramRunner runner;
         private readonly Logger<ExecuteWorker> logger;
 
+
         public string Lang { get; }
 
         public ExecuteWorker(
-            string lang,
-            Type builderType,
-            Type runnerType,
+            BuildProperty buildProperty,
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, Task<ExerciseData[]>> getTests,
             IDockerClient dockerClient)
         {
-            Lang = lang;
-            logger = Logger<ExecuteWorker>.CreateLogger(lang);
+            logger = Logger<ExecuteWorker>.CreateLogger();
             this.getTests = getTests;
-            Func<Solution, Task> act = BuildFinished;
-            builder = Activator.CreateInstance(builderType, processSolution, act, dockerClient) as ProgramBuilder;
-            runner = Activator.CreateInstance(runnerType, processSolution, dockerClient) as ProgramRunner;
+            builder = new ProgramBuilder(processSolution, BuildFinished, buildProperty, dockerClient);
+            runner = new ProgramRunner(processSolution, dockerClient);
         }
 
         public void Handle(Solution solution)

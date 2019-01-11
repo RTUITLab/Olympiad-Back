@@ -17,6 +17,7 @@ import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 import { Helpers } from 'src/app/Helpers/Helpers';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 
@@ -83,17 +84,24 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   onSubmit() {
     this.exercisesService.sendSolution(this.model)
       .subscribe(
-        success => {
-          if (!success) {
+        createdSolution => {
+          if (!createdSolution) {
             return;
           }
-          const f = () => this.solutionCheckLoop(success);
+          if (this.exerciseInfo.Solutions.some(s => s.Id === createdSolution.Id)) {
+            alert(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
+          }
+          const f = () => this.solutionCheckLoop(createdSolution);
           f();
+        },
+        (error: HttpErrorResponse) => {
+          if (error.status === 429) { // TooManyRequests HTTP Status
+            alert(`Отправлять решения можно только раз в минуту`);
+          }
         }
       );
   }
   editExercise(id: string) {
-    console.log(id);
     this.router.navigate(['exercises/edit/', id]);
   }
   solutionCheckLoop(checkSolution: Solution) {
