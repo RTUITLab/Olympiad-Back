@@ -37,7 +37,7 @@ namespace Executor
         }
         public Task<ExerciseData[]> GetExerciseData(Guid exId)
         {
-            return Invoke<ExerciseData[]>($"api/ExerciseData/{exId}");
+            return Invoke<ExerciseData[]>($"api/ExerciseData/all/{exId}");
         }
 
         public Task SaveChanges(Guid solutionId, SolutionStatus status)
