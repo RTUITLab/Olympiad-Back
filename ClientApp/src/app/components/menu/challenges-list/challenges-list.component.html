@@ -14,11 +14,13 @@
 
   </div>
   <ng-template #noCurrentChallenge>
-    <h2>Доступные соревнования ({{challenges.length}})</h2>
-    <div class="challenge-box" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
-      <p>{{challenge.Name}}</p>
-      <p>{{challengeEnd(challenge.EndTime)}}</p>
-    </div>
+    <h2 class="avaliable_challenges_header">Доступные соревнования ({{challenges.length}})</h2>
+    <button class="challenge-box_btn" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
+      <div class="challenge-box">
+        <div class="challenge-box_text">{{challenge.Name}}</div>
+        <div class="challenge-box_text">{{challengeEnd(challenge.EndTime)}}</div>
+      </div>
+    </button>
   </ng-template>
   <!-- <button class="col{{ex.Status}}" (click)="goToExercise(ex.Id)">{{c.Name}}</button> -->
   <!-- <div></div>

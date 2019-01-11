@@ -3,7 +3,30 @@
 }
 
 .challenge-box {
-    border-style: solid;
-    margin: 25px 0px;
+    /* margin: 25px 0px; */
+    display:grid;
+    justify-content: center;
+    width: 100%;
     text-align: center;
+    box-sizing: border-box;
+}
+.challenge-box_btn{
+    width: 100%;
+    text-decoration: none;
+    outline: none;
+    display: inline-block;
+    margin-top: 10px;
+    transition: .15s ease-in-out;
+}
+.challenge-box_btn:hover{
+        box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);
+        color: rgb(67, 55, 241);
+}
+.challenge-box_text{
+    word-wrap: break-word;
+}
+.avaliable_challenges_header{
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    color: #5c6bc0;
+
 }
