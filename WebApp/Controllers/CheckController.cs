@@ -50,16 +50,36 @@ namespace WebApp.Controllers
             {
                 throw StatusCodeException.BadRequest("Отсутствует файл или его размер превышает 5MB");
             }
-            var stream = file.OpenReadStream();
 
             if (!context.Exercises.Any(e => e.ExerciseID == exerciseId && (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)))
             {
                 throw StatusCodeException.BadRequest();
             }
 
-            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+            var lastSendingDate = await context
+                .Solutions
+                .Where(s => s.UserId == UserId)
+                .Where(s => s.ExerciseId == exerciseId)
+                .Select(s => s.SendingTime)
+                .DefaultIfEmpty(DateTime.MinValue)
+                .MaxAsync();
+            if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1)) {
+                throw StatusCodeException.TooManyRequests;
+            }
+
+            using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
             {
                 fileBody = await streamReader.ReadToEndAsync();
+            }
+
+            var oldSolution = await context
+                .Solutions
+                .Where(s => s.UserId == UserId && s.Raw == fileBody)
+                .FirstOrDefaultAsync(); // TODO change to SingleOrDefault before database drop
+
+            if (oldSolution != null)
+            {
+                return Mapper.Map<SolutionResponse>(oldSolution);
             }
 
             Solution solution = new Solution()

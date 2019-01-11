@@ -19,24 +19,27 @@ namespace Executor
         private DbManager dbManager;
         private readonly Dictionary<string, ExecuteWorker> executeWorkers;
 
+        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
+        {
+            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
+            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
+            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
+            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
+            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
+            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } }
+        };
+
+
         public Executor(DbManager dbManager, IDockerClient dockerClient)
         {
-            executeWorkers = Assembly
-                .GetExecutingAssembly()
-                .GetTypes()
-                .Where(T =>
-                    T.BaseType == typeof(ProgramBuilder) ||
-                    T.BaseType == typeof(ProgramRunner))
-                .GroupBy(T => T.GetCustomAttribute<LanguageAttribute>().Lang)
-                .Select(G => new ExecuteWorker(
-                    G.Key,
-                    G.First(T => T.BaseType == typeof(ProgramBuilder)),
-                    G.First(T => T.BaseType == typeof(ProgramRunner)),
-                    dbManager.SaveChanges,
-                    dbManager.GetExerciseData,
-                    dockerClient
-                    ))
-                .ToDictionary(E => E.Lang);
+            executeWorkers = buildProperties.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new ExecuteWorker(
+                        kvp.Value,
+                        dbManager.SaveChanges,
+                        dbManager.GetExerciseData,
+                        dockerClient)
+            );
             this.dbManager = dbManager;
         }
 

@@ -1,24 +1,11 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
-using Executor.Executers.Build;
-using Executor.Executers.Build.dotnet;
-using Executor.Executers.Run;
-using Executor.Executers.Run.dotnet;
 using Executor.Models.Settings;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Executor
 {
