@@ -26,7 +26,6 @@ namespace Executor.Executers
         public ExecuteWorker(
             string lang,
             Type builderType,
-            Type runnerType,
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, Task<ExerciseData[]>> getTests,
             IDockerClient dockerClient)
@@ -36,7 +35,7 @@ namespace Executor.Executers
             this.getTests = getTests;
             Func<Solution, Task> act = BuildFinished;
             builder = Activator.CreateInstance(builderType, processSolution, act, dockerClient) as ProgramBuilder;
-            runner = Activator.CreateInstance(runnerType, processSolution, dockerClient) as ProgramRunner;
+            runner = new ProgramRunner(processSolution, dockerClient);
         }
 
         public void Handle(Solution solution)
