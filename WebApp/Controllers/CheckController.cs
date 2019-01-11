@@ -52,7 +52,7 @@ namespace WebApp.Controllers
             }
             var stream = file.OpenReadStream();
 
-            if (!context.Exercises.Any(p => p.ExerciseID == exerciseId))
+            if (!context.Exercises.Any(e => e.ExerciseID == exerciseId && (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)))
             {
                 throw StatusCodeException.BadRequest();
             }
@@ -79,9 +79,9 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<SolutionResponse>> Get()
+        public Task<List<SolutionResponse>> Get()
         {
-            return await context
+            return context
                 .Solutions
                 .Where(s => s.UserId == UserId)
                 .ProjectTo<SolutionResponse>()
@@ -96,7 +96,8 @@ namespace WebApp.Controllers
                 .Solutions
                 .Where(p => p.Id == solutionId && p.UserId == UserId)
                 .ProjectTo<SolutionResponse>()
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
         }
 
         [HttpGet("download/{solutionId}")]
@@ -105,7 +106,8 @@ namespace WebApp.Controllers
             var solution = await context
                 .Solutions
                 .Where(s => s.Id == solutionId && s.UserId == UserId)
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
             return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
         }
