@@ -24,18 +24,16 @@ namespace Executor
             executeWorkers = Assembly
                 .GetExecutingAssembly()
                 .GetTypes()
-                .Where(T =>
-                    T.BaseType == typeof(ProgramBuilder) ||
-                    T.BaseType == typeof(ProgramRunner))
-                .GroupBy(T => T.GetCustomAttribute<LanguageAttribute>().Lang)
-                .Select(G => new ExecuteWorker(
-                    G.Key,
-                    G.First(T => T.BaseType == typeof(ProgramBuilder)),
-                    G.First(T => T.BaseType == typeof(ProgramRunner)),
+                .Where(t => t.BaseType == typeof(ProgramBuilder))
+                .Select(t => new { builderType = t, lang = t.GetCustomAttribute<LanguageAttribute>().Lang })
+                .Select(p => new ExecuteWorker(
+                    p.lang,
+                    p.builderType,
                     dbManager.SaveChanges,
                     dbManager.GetExerciseData,
                     dockerClient
-                    ))
+                    )
+                )
                 .ToDictionary(E => E.Lang);
             this.dbManager = dbManager;
         }
