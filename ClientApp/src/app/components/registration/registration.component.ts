@@ -17,7 +17,6 @@ export class RegistrationComponent implements OnInit {
   ngOnInit() {
   }
   onSubmit() {
-    console.log('Registration with model ' + JSON.stringify(this.model));
     this.loading = true;
     this.errorMessage = undefined;
     this.userService.Register(this.model)

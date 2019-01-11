@@ -46,23 +46,12 @@ export class ExerciseService extends BaseHttpService implements OnInit {
 
 
   sendSolution(data: SolutionViewModel): Observable<Solution> {
-    const observer = new BehaviorSubject<Solution>(undefined);
-    const observable = observer.asObservable();
 
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
-    this.http.post<Solution>(
+    return this.http.post<Solution>(
       `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
-      formData, this.userService.authOptions)
-      .subscribe(
-        success => {
-          observer.next(success);
-        },
-        fail => {
-          console.log(fail);
-        }
-      );
-    return observable;
+      formData, this.userService.authOptions);
   }
   getExercise(exId: string): Observable<ExerciseInfo> {
     let observer: Subscriber<ExerciseInfo>;
