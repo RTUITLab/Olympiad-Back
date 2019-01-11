@@ -58,22 +58,17 @@ namespace WebApp.Controllers
             var query = context
                 .Challenges
                 .Where(c => c.Id == id);
-
-            IQueryable<ChallengeResponse> resultQuery;
             var mappingParameter = new { userId = UserId };
-            if (IsAdmin)
+            if (!IsAdmin)
             {
-                resultQuery = query.ProjectTo<ChallengeExtendedResponse>(mappingParameter);
-            }
-            else
-            {
-                resultQuery = query
+                query = query
                     .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
                            c.UsersToChallenges.Any(utc => utc.UserId == UserId))
-                    .ProjectTo<ChallengeResponse>(mappingParameter);
+                    .Where(c => c.StartTime == null || c.StartTime <= Now);
             }
-            return await resultQuery.SingleOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
+            return await query
+                    .ProjectTo<ChallengeResponse>(mappingParameter)
+                    .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
         }
 
         [HttpPost]
