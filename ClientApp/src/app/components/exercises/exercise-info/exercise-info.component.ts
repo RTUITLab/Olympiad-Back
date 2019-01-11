@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ActivatedRoute } from '@angular/router';
@@ -17,7 +17,6 @@ import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 import { Helpers } from 'src/app/Helpers/Helpers';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
-// import { timingSafeEqual } from 'crypto';
 
 
 
@@ -26,9 +25,9 @@ import { ExerciseStateService } from 'src/app/services/exercise-state.service';
   templateUrl: './exercise-info.component.html',
   styleUrls: ['./exercise-info.component.css']
 })
-export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
+export class ExerciseInfoComponent extends LoadingComponent implements OnInit, OnDestroy {
 
-
+  private solutionCheckTimers: Array<any> = [];
 
   constructor(
     private usersService: UserStateService,
@@ -60,10 +59,10 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
                 .Solutions
                 .reverse();
               this.exerciseInfo = exInfo;
-              // this.exerciseInfo
-              //   .Solutions
-              //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-              //   .forEach(s => this.solutionCheckLoop(s));
+              this.exerciseInfo
+                .Solutions
+                .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+                .forEach(s => this.solutionCheckLoop(s));
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
             },
@@ -72,6 +71,10 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
             }
           );
       });
+  }
+
+  ngOnDestroy(): void {
+    this.solutionCheckTimers.forEach(t => clearTimeout(t));
   }
 
   setFile(event) {
@@ -106,7 +109,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
-          setTimeout(() => this.solutionCheckLoop(checkSolution), 800);
+          this.solutionCheckTimers.push(
+            setTimeout(() => this.solutionCheckLoop(checkSolution), 800)
+          );
         }
       });
   }

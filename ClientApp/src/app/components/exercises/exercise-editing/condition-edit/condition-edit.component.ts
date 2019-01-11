@@ -18,7 +18,7 @@ export class ConditionEditComponent implements OnInit {
   constructor(private exerciseService: ExerciseService) { }
 
   ngOnInit() {
-    this.exerciseService.getExerciseInOutData(this.exerciseId).subscribe(
+    this.exerciseService.getAllExerciseInOutData(this.exerciseId).subscribe(
       (conditions) => {
         if (!conditions) {
           return;

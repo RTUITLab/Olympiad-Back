@@ -104,23 +104,13 @@ export class ExerciseService extends BaseHttpService implements OnInit {
   }
 
   getExerciseInOutData(exerciseId: string): Observable<ExerciseData[]> {
-    let observer: Subscriber<ExerciseData[]>;
-    const observable = new Observable<ExerciseData[]>(obs => {
-      observer = obs;
-    });
-    this.http.get<ExerciseData[]>(
-      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions).subscribe(
-        success => {
-          if (success) {
-            observer.next(success);
-          }
-        },
-        failure => {
-          console.log('error');
-          console.log(failure);
-        }
-      );
-    return observable;
+    return this.http.get<ExerciseData[]>(
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions);
+  }
+
+  getAllExerciseInOutData(exerciseId: string): Observable<ExerciseData[]> {
+    return this.http.get<ExerciseData[]>(
+      `${this.baseUrl}/api/ExerciseData/all/${exerciseId}`, this.userService.authOptions);
   }
 
   updateExerciseInOutData(inOutData: ExerciseData): Observable<any> {

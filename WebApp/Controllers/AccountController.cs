@@ -21,19 +21,16 @@ namespace WebApp.Controllers
 
         private readonly IMapper mapper;
         private readonly UserManager<User> userManager;
-        private readonly ApplicationDbContext dbContext;
         private readonly IEmailSender emailSender;
 
         public AccountController(
             IMapper mapper,
             UserManager<User> userManager,
-            ApplicationDbContext dbContext,
             IEmailSender emailSender
             )
         {
             this.mapper = mapper;
             this.userManager = userManager;
-            this.dbContext = dbContext;
             this.emailSender = emailSender;
         }
 
