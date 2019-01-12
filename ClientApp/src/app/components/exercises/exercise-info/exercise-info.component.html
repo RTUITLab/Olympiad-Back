@@ -10,26 +10,27 @@
   </h3>
   <markdown id="Exercise_text" [data]="exerciseInfo.TaskText"></markdown>
   <app-exercise-inout [exId]="exerciseInfo.Id"></app-exercise-inout>
-  
-  <h2>Отправка решения</h2>
-  <form (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="Language">Язык программирования</label>
-      <select id="Language" class="form-control" [(ngModel)]="model.Language" name="Language">
-        <option *ngFor="let lang of availableLanguages">{{lang}}</option>
-      </select>
-    </div>
+  <div *ngIf="needSendForm()">
+    <h2>Отправка решения</h2>
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="Language">Язык программирования</label>
+        <select id="Language" class="form-control" [(ngModel)]="model.Language" name="Language">
+          <option *ngFor="let lang of availableLanguages">{{lang}}</option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label for="Source">Код программы</label>
-      <input type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas" />
+      <div class="form-group">
+        <label for="Source">Код программы</label>
+        <input type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas" />
 
-    </div>
+      </div>
 
-    <div class="form-group">
-      <button [disabled]="submitDisabled">Отправить решение</button>
-    </div>
-  </form>
+      <div class="form-group">
+        <button [disabled]="submitDisabled">Отправить решение</button>
+      </div>
+    </form>
+  </div>
 
   <h2>Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
   <table>
@@ -39,8 +40,6 @@
       <th>Скачать решение</th>
       <th>Результат</th>
       <th> </th>
-      <th>Время начала проверки</th>
-      <th>Окончание проверки</th>
     </thead>
     <tbody>
 
@@ -54,12 +53,10 @@
         </td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>
         <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
-        <td>{{prettyTime(sol.StartCheckingTime)}}</td>
-        <td>{{prettyTime(sol.CheckedTime)}}</td>
       </tr>
     </tbody>
   </table>
 </div>
 <ng-template #loading>
-    <ngx-loading [show]="loading"></ngx-loading>
+  <ngx-loading [show]="loading"></ngx-loading>
 </ng-template>

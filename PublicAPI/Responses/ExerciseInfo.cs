@@ -12,7 +12,7 @@ namespace PublicAPI.Responses
         public string TaskText { get; set; }
 
         public Guid ChallengeId { get; set; }
-        public ChallengeCompactResponse Challenge { get; set; }
+        public ChallengeResponse Challenge { get; set; }
 
         public IEnumerable<SolutionResponse> Solutions { get; set; }
     }

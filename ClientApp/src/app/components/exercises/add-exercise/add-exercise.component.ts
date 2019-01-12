@@ -10,8 +10,8 @@ import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.compone
 import { ExerciseData } from '../../../models/ExerciseData';
 import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
-import { ChallengeCompactResponse } from 'src/app/models/Responses/Challenges/ChallengeCompactResponse';
 import { ChallengesService } from 'src/app/services/challenges.service';
+import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 
 
 
@@ -41,7 +41,7 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
     super();
   }
   public NewCondition?: ExerciseNewCondition[];
-  public challenges?: Array<ChallengeCompactResponse> = [];
+  public challenges?: Array<Challenge> = [];
 
   ngOnInit() {
     this.startLoading();

@@ -2,7 +2,6 @@ import { Injectable, OnInit } from '@angular/core';
 import { BaseHttpService } from './BaseHttpService';
 import { UserStateService } from './user-state.service';
 import { HttpClient } from '@angular/common/http';
-import { ChallengeCompactResponse } from '../models/Responses/Challenges/ChallengeCompactResponse';
 import { Observable } from 'rxjs';
 import { Challenge } from '../models/Responses/Challenges/Challenge';
 
@@ -15,8 +14,8 @@ export class ChallengesService  extends BaseHttpService implements OnInit  {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
 
-  public getChallengesList(): Observable<Array<ChallengeCompactResponse>> {
-    return this.http.get<Array<ChallengeCompactResponse>>(
+  public getChallengesList(): Observable<Array<Challenge>> {
+    return this.http.get<Array<Challenge>>(
       `${this.baseUrl}/api/challenges`, this.userService.authOptions);
   }
   public getChallenge(id: string): Observable<Challenge> {
