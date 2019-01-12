@@ -51,7 +51,10 @@ namespace WebApp.Controllers
                 throw StatusCodeException.BadRequest("Отсутствует файл или его размер превышает 5MB");
             }
 
-            if (!context.Exercises.Any(e => e.ExerciseID == exerciseId && (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)))
+            if (!await context.Exercises.AnyAsync(
+                e => e.ExerciseID == exerciseId &&
+                (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now) &&
+                (e.Challenge.EndTime == null || e.Challenge.EndTime >= Now)))
             {
                 throw StatusCodeException.BadRequest();
             }
@@ -63,7 +66,9 @@ namespace WebApp.Controllers
                 .Select(s => s.SendingTime)
                 .DefaultIfEmpty(DateTime.MinValue)
                 .MaxAsync();
-            if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1)) {
+
+            if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
+            {
                 throw StatusCodeException.TooManyRequests;
             }
 
@@ -74,7 +79,9 @@ namespace WebApp.Controllers
 
             var oldSolution = await context
                 .Solutions
-                .Where(s => s.UserId == UserId && s.Raw == fileBody)
+                .Where(s => s.UserId == UserId)
+                .Where(s => s.Raw == fileBody)
+                .Where(s => s.ExerciseId == exerciseId)
                 .FirstOrDefaultAsync(); // TODO change to SingleOrDefault before database drop
 
             if (oldSolution != null)
