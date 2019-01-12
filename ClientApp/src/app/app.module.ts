@@ -18,7 +18,7 @@ import { LoginComponent } from './components/login/login.component';
 import { UserStateService } from './services/user-state.service';
 import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
 import { ExerciseService } from './services/exercise.service';
-import { AuthGuardService } from './services/auth-guard.service';
+import { AuthGuardService } from './services/ComponentActivators/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
 import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
@@ -34,16 +34,19 @@ import { ChallengesListComponent } from './components/menu/challenges-list/chall
 import { ExerciseEditComponent } from './components/exercises/exercise-editing/exercise-edit/exercise-edit.component';
 import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
+import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard'
 
 
 const routes: Route[] = [
   {
     path: 'register',
-    component: RegistrationComponent
+    component: RegistrationComponent,
+    canActivate: [NotAuthGuard]
   },
   {
     path: 'login',
-    component: LoginComponent
+    component: LoginComponent,
+    canActivate: [NotAuthGuard]
   },
   {
     path: 'overview',
@@ -77,9 +80,13 @@ const routes: Route[] = [
   },
   {
     path: '',
-    pathMatch: 'prefix',
+    pathMatch: 'full',
     redirectTo: '/overview'
   },
+  {
+    path: '**',
+    redirectTo: '/overview'
+  }
 ];
 
 @NgModule({

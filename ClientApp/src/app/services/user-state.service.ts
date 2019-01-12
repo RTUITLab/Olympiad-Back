@@ -95,6 +95,13 @@ export class UserStateService extends BaseHttpService {
       })
     };
   }
+
+  public logOut(): void {
+    localStorage.removeItem('userToken');
+    this.usersBehavior.next(null);
+    this.currentUser = null;
+  }
+
   private parseJwt(token: string): string[] {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace('-', '+').replace('_', '/');

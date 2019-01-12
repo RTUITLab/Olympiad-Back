@@ -1,7 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ChallengesService } from 'src/app/services/challenges.service';
-import { Solution } from 'src/app/models/Solution';
-import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { Router } from '@angular/router';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
@@ -53,6 +51,9 @@ export class ChallengesListComponent implements OnInit {
         return;
       }
       this.currentChallenge = c;
+      this.currentExercises = null;
+      console.log('changed');
+      
     });
     this.currentExerciseState.currentChallengeState.subscribe(s => this.updateState(s));
     const timer = setInterval(() =>
