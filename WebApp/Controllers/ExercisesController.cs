@@ -17,6 +17,7 @@ using Shared.Models;
 using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
+using AutoMapper.QueryableExtensions;
 
 namespace WebApp.Controllers
 {
@@ -37,8 +38,22 @@ namespace WebApp.Controllers
             this.mapper = mapper;
         }
 
+
+        [HttpGet]
+        public Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
+        {
+            return context
+                .Exercises
+                .Where(e => e.ChallengeId == challengeId)
+                .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
+                           e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
+                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .ProjectTo<ExerciseCompactResponse>()
+                .ToListAsync();
+        }
+
         [HttpPut]
-        [Route("{exerciseId}")]
+        [Route("{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExerciseRequest model)
         {
@@ -74,6 +89,7 @@ namespace WebApp.Controllers
         {
             var exercise = await context
                 .Exercises
+                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
                 .SingleOrDefaultAsync(p => p.ExerciseID == exerciseId)
                 ?? throw StatusCodeException.NotFount;
             
