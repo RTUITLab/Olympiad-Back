@@ -11,6 +11,9 @@ using WebApp.Helpers;
 using WebApp.ViewModels;
 using WebApp.Services.Interfaces;
 using PublicAPI.Requests;
+using WebApp.Services.ReCaptcha;
+using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace WebApp.Controllers
 {
@@ -22,16 +25,21 @@ namespace WebApp.Controllers
         private readonly IMapper mapper;
         private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
+        private readonly IRecaptchaVerifier recaptchaVerifier;
+        private readonly ILogger<AccountController> logger;
 
         public AccountController(
             IMapper mapper,
             UserManager<User> userManager,
-            IEmailSender emailSender
-            )
+            IEmailSender emailSender,
+            IRecaptchaVerifier recaptchaVerifier,
+            ILogger<AccountController> logger)
         {
             this.mapper = mapper;
             this.userManager = userManager;
             this.emailSender = emailSender;
+            this.recaptchaVerifier = recaptchaVerifier;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -58,11 +66,21 @@ namespace WebApp.Controllers
                 return BadRequest(ModelState);
             }
 
+            var recaptchaResult = await recaptchaVerifier.Check(model.RecaptchaToken, HttpContext.Connection.RemoteIpAddress.ToString());
+
+            if (!recaptchaResult.Success)
+            {
+                logger.LogWarning($"Not acceppted user.");
+                return BadRequest();
+            }
+
             User userIdentity = mapper.Map<User>(model);
 
             var result = await userManager.CreateAsync(userIdentity, model.Password);
 
-            if (!result.Succeeded) return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
+            if (!result.Succeeded)
+                return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
+
             result = await userManager.AddToRoleAsync(userIdentity, "User");
             var token = await userManager.GenerateEmailConfirmationTokenAsync(userIdentity);
             var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";

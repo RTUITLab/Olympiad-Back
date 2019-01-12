@@ -11,5 +11,6 @@ namespace PublicAPI.Requests
         public string Password { get; set; }
         public string FirstName { get; set; }
         public string StudentID { get; set; }
+        public string RecaptchaToken { get; set; }
     }
 }
