@@ -33,6 +33,7 @@ import { ChallengeInfoComponent } from './components/challenges/challenge-info/c
 import { ChallengesListComponent } from './components/menu/challenges-list/challenges-list.component';
 import { ExerciseEditComponent } from './components/exercises/exercise-editing/exercise-edit/exercise-edit.component';
 import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
+import { ReCaptchaModule } from 'angular2-recaptcha';
 
 
 const routes: Route[] = [
@@ -117,7 +118,8 @@ const routes: Route[] = [
     }),
     MatTableModule,
     MatButtonModule,
-    MatInputModule
+    MatInputModule,
+    ReCaptchaModule
   ],
   providers: [
     UserStateService,

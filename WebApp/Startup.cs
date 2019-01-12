@@ -27,7 +27,7 @@ using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
 using WebApp.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
-
+using WebApp.Services.ReCaptcha;
 
 namespace WebApp
 {
@@ -45,6 +45,8 @@ namespace WebApp
         {
 
             services.Configure<DefaultUserSettings>(Configuration.GetSection(nameof(DefaultUserSettings)));
+            services.Configure<RecaptchaSettings>(Configuration.GetSection(nameof(RecaptchaSettings)));
+
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services
@@ -133,10 +135,21 @@ namespace WebApp
                 c.SwaggerDoc("v1", new Info { Title = "Olympiad API", Version = "v1" });
             });
             services.AddCors();
+
+
             if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
                 services.AddTransient<IEmailSender, DebugEmailService>();
             else
                 services.AddTransient<IEmailSender, EmailService>();
+
+            if (Configuration.GetValue<bool>("USE_DEBUG_RECAPTCHA_VERIFIER"))
+                services.AddTransient<IRecaptchaVerifier, DebugRecaptchaVerifier>();
+            else
+            {
+                services.AddHttpClient(HttpRecaptchaVerifier.HttpClientName, client => client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/siteverify"));
+                services.AddTransient<IRecaptchaVerifier, HttpRecaptchaVerifier>();
+            }
+
 
             services.AddSingleton<IQueueChecker, QueueService>();
 
