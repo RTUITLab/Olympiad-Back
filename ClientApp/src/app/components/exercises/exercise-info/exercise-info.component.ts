@@ -2,18 +2,15 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs/';
 import { ParamMap } from '@angular/router/src/shared';
 import { Solution } from '../../../models/Solution';
 import { SolutionStatus } from '../../../models/SolutionStatus';
 import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusConverter';
 import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
-import { Subject } from 'rxjs';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
-import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
@@ -34,7 +31,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   constructor(
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
-    private exerciseEditServise: ExerciseEditService,
     private route: ActivatedRoute,
     private router: Router,
     private currentExerciseState: ExerciseStateService) {
@@ -68,7 +64,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
             },
-            fail => {
+            () => {
               this.router.navigate(['overview']);
             }
           );
