@@ -1,3 +1,0 @@
-﻿FROM microsoft/dotnet:runtime
-
-CMD cat /home/in.txt | dotnet /home/home.dll > /home/out.txt
