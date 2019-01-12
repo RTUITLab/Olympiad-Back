@@ -76,7 +76,8 @@ namespace Executor.Executers.Run
             var container = await dockerClient.Containers.CreateContainerAsync(new Docker.DotNet.Models.CreateContainerParameters
             {
                 Image = imageName,
-                OpenStdin = true
+                OpenStdin = true,
+                NetworkDisabled = true
             });
             SolutionStatus status = SolutionStatus.InProcessing;
             try
