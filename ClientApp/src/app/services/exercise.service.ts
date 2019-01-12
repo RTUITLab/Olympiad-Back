@@ -31,14 +31,20 @@ export class ExerciseService extends BaseHttpService implements OnInit {
   }
 
 
-  sendSolution(data: SolutionViewModel): Observable<Solution> {
-
+  sendSolution(data: SolutionViewModel): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
     return this.http.post<Solution>(
       `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
       formData, this.userService.authOptions);
   }
+
+  downloadSolution(solutionId: string): Observable<any> {
+    return this.http.get(
+      `${this.baseUrl}/api/Check/download/${solutionId}`,
+      { headers: this.userService.headers, responseType: 'text'});
+  }
+
   getExercise(exId: string): Observable<ExerciseInfo> {
     return this.http.get<ExerciseInfo>(
       `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions);

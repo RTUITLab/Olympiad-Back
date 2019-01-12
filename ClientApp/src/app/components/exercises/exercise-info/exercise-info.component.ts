@@ -16,6 +16,7 @@ import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChallengeState } from 'src/app/models/General/ChallengeState';
+import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
 
 
 
@@ -106,7 +107,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
 
   needSendForm(): boolean {
     return this.challengeState === ChallengeState.InProgress ||
-           this.challengeState === ChallengeState.NoLimits;
+      this.challengeState === ChallengeState.NoLimits;
   }
 
 
@@ -149,6 +150,13 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
+  }
+
+  downloadSolution(solution: Solution): void {
+    this.exercisesService.downloadSolution(solution.Id).subscribe(s => {
+      SolutionHelpers.downloadSolution(solution, s); 
+    }, fail => console.log(fail)
+    );
   }
 }
 
