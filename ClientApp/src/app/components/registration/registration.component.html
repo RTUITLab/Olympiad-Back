@@ -13,8 +13,8 @@
     </div>
     <div class="form-group">
       <label for="Password">Пароль</label>
-      <input type="password" class="form-control" id="Password" required minlength="6" [(ngModel)]="model.Password" name="Password"
-        #pass="ngModel">
+      <input type="password" class="form-control" id="Password" required minlength="6" [(ngModel)]="model.Password"
+        name="Password" #pass="ngModel">
       <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="alert alert-danger">
         <div *ngIf="pass.errors.minlength">
           Пароль не может быть короче 6-и символов
@@ -23,7 +23,8 @@
     </div>
     <div class="form-group">
       <label for="FirstName">Имя</label>
-      <input type="text" class="form-control" id="FirstName" required [(ngModel)]="model.FirstName" name="FirstName" #fName="ngModel">
+      <input type="text" class="form-control" id="FirstName" required [(ngModel)]="model.FirstName" name="FirstName"
+        #fName="ngModel">
       <div *ngIf="fName.invalid && (fName.dirty || fName.touched)" class="alert alert-danger">
         <div>
           Имя обязательно
@@ -32,13 +33,15 @@
     </div>
     <div class="form-group">
       <label for="StudentId">Номер студенческого билета</label>
-      <input type="text" class="form-control" id="StudentId" required [(ngModel)]="model.StudentId" name="StudentId" #sId="ngModel">
+      <input type="text" class="form-control" id="StudentId" required [(ngModel)]="model.StudentId" name="StudentId"
+        #sId="ngModel">
       <div *ngIf="sId.invalid && (sId.dirty || sId.touched)" class="alert alert-danger">
         <div>
           Номер студенческого билета обязателен
         </div>
       </div>
     </div>
+    <re-captcha (captchaResponse)="handleCorrectCaptcha($event)" site_key="{{captchaKey}}"></re-captcha>
     <div class="form-group">
       <button type="submit" class="btn btn-success" [disabled]="!registerForm.form.valid">Зарегистрироваться</button>
     </div>
