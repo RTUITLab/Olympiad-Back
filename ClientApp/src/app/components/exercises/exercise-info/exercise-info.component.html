@@ -47,8 +47,8 @@
         <td>{{prettyTime(sol.SendingTime)}}</td>
         <td>{{normalLang(sol.Language)}}</td>
         <td>
-          <button>
-            <a download="">Скачать</a>
+          <button (click)="downloadSolution(sol)">
+            Скачать
           </button>
         </td>
         <td>{{solutionStatusPresent(sol.Status)}}</td>

@@ -88,11 +88,16 @@ export class UserStateService extends BaseHttpService {
     this.usersBehavior.next(user);
     this.currentUser = user;
   }
+
+  public get headers(): HttpHeaders {
+    return new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+    });
+  }
+
   public get authOptions(): object {
     return {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-      })
+      headers: this.headers
     };
   }
 
