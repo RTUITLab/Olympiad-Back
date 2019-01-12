@@ -9,5 +9,4 @@ export class Challenge {
     public StartTime?: string;
     public EndTime?: string;
     public ChallengeAccessType: ChallengeAccessType;
-    public Exercises: Array<ExerciseListResponse>;
 }

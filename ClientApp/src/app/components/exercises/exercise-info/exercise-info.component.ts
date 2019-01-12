@@ -15,9 +15,10 @@ import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
-import { Helpers } from 'src/app/Helpers/Helpers';
+import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ChallengeState } from 'src/app/models/General/ChallengeState';
 
 
 
@@ -29,7 +30,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class ExerciseInfoComponent extends LoadingComponent implements OnInit, OnDestroy {
 
   private solutionCheckTimers: Array<any> = [];
-
+  private challengeState: ChallengeState;
   constructor(
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
@@ -68,9 +69,12 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
             },
             fail => {
-              console.log(fail);
+              this.router.navigate(['overview']);
             }
           );
+        this.currentExerciseState.currentChallengeState.subscribe(s => {
+          this.challengeState = s;
+        });
       });
   }
 
@@ -98,9 +102,18 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           if (error.status === 429) { // TooManyRequests HTTP Status
             alert(`Отправлять решения можно только раз в минуту`);
           }
+          alert('Не удалось отправить решение');
         }
       );
   }
+
+
+  needSendForm(): boolean {
+    return this.challengeState === ChallengeState.InProgress ||
+           this.challengeState === ChallengeState.NoLimits;
+  }
+
+
   editExercise(id: string) {
     this.router.navigate(['exercises/edit/', id]);
   }
@@ -132,7 +145,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     if (!time) {
       return 'нет данных';
     }
-    return Helpers.prettyTime(time);
+    return DateHelpers.prettyTime(time);
   }
 
   normalLang(lang: string): string {

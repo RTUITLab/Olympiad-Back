@@ -3,7 +3,7 @@ import { ChallengesService } from 'src/app/services/challenges.service';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
-import { Helpers } from 'src/app/Helpers/Helpers';
+import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 
 @Component({
   selector: 'app-challenge-info',
@@ -34,7 +34,7 @@ export class ChallengeInfoComponent implements OnInit {
   }
 
   public prettyTime(time: string): string {
-    return Helpers.prettyTime(time);
+    return DateHelpers.prettyTime(time);
   }
 
 }

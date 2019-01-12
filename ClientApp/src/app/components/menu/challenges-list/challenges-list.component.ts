@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ChallengesService } from 'src/app/services/challenges.service';
-import { ChallengeCompactResponse } from 'src/app/models/Responses/Challenges/ChallengeCompactResponse';
 import { Solution } from 'src/app/models/Solution';
-import { Helpers } from 'src/app/Helpers/Helpers';
+import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { Router } from '@angular/router';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
+import { ChallengeState } from 'src/app/models/General/ChallengeState';
+import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
+import { Exercise } from 'src/app/models/Exercise';
+import { ExerciseService } from 'src/app/services/exercise.service';
 
 @Component({
   selector: 'app-challenges-list',
@@ -17,12 +20,15 @@ export class ChallengesListComponent implements OnInit {
   constructor(
     private router: Router,
     private challengesService: ChallengesService,
+    private exerciseService: ExerciseService,
     private currentExerciseState: ExerciseStateService) { }
 
-  public challenges: Array<ChallengeCompactResponse> = [];
+  public challenges: Array<Challenge> = [];
   public currentChallengeId?: string;
   public currentChallenge?: Challenge;
+  public currentChallengeState?: ChallengeState;
   public currentChallengeTimeLeft: string;
+  public currentExercises: Array<Exercise>;
 
   ngOnInit() {
     this.challengesService.getChallengesList().subscribe(c => {
@@ -48,6 +54,7 @@ export class ChallengesListComponent implements OnInit {
       }
       this.currentChallenge = c;
     });
+    this.currentExerciseState.currentChallengeState.subscribe(s => this.updateState(s));
     const timer = setInterval(() =>
       this.timeToEnd(), 1000);
   }
@@ -56,7 +63,7 @@ export class ChallengesListComponent implements OnInit {
     this.currentChallengeId = null;
   }
 
-  public goToChallenge(challenge: ChallengeCompactResponse) {
+  public goToChallenge(challenge: Challenge) {
     this.currentExerciseState.setChallengeId(challenge.Id);
     this.router.navigate(['challenges', challenge.Id]);
     this.challengesService.getChallenge(challenge.Id).subscribe(c => {
@@ -68,54 +75,29 @@ export class ChallengesListComponent implements OnInit {
     this.router.navigate(['exercises', id]);
   }
 
-  public challengeEnd(timeStr: string): string {
-    if (!timeStr) {
-      return 'Бессрочное соревнованиие';
+  public challengeTime(challenge: Challenge): string {
+    return ChallengeHelpers.ChallengeTime(challenge);
+  }
+
+  private updateState(state: ChallengeState): void {
+    if (state === null) {
+      return;
     }
-    return `Окончание: ${Helpers.prettyTime(timeStr)}`;
+    this.currentChallengeState = state;
+    this.currentChallengeTimeLeft = this.challengeTime(this.currentChallenge);
+    if ((state === ChallengeState.InProgress ||
+      state === ChallengeState.Ended) &&
+      !this.currentExercises && this.currentChallengeId) {
+      this.exerciseService.getExercises(this.currentChallengeId)
+        .subscribe(ex => this.currentExercises = ex);
+    }
   }
 
   private timeToEnd(): void {
-
     if (!this.currentChallenge) {
       return;
     }
-    if (!this.currentChallenge.EndTime) {
-      this.currentChallengeTimeLeft = null;
-    }
-
-    const oneSecond = 1000;
-    const oneMinute = oneSecond * 60;
-    const oneHour = oneMinute * 60;
-    const oneDay = oneHour * 24;
-    const now = new Date();
-    const endTime = new Date(this.currentChallenge.EndTime);
-    let difference = endTime.getTime() - now.getTime();
-
-    let result = '';
-    const days = Math.floor((difference / oneDay));
-    if (days > 0) {
-      result += `Дней: ${days}`;
-      difference -= days * oneDay;
-    }
-    const hours = Math.floor((difference / oneHour));
-    if (hours > 0) {
-      result += ` Часов: ${hours}`;
-      difference -= hours * oneHour;
-    }
-    const minutes = Math.floor((difference / oneMinute));
-    if (minutes > 0) {
-      result += ` Минут: ${minutes}`;
-      difference -= minutes * oneMinute;
-    }
-    const seconds = Math.floor((difference / oneSecond));
-    if (seconds >= 0) {
-      result += ` Секунд: ${seconds}`;
-    }
-    if (difference < 0) {
-      result += ` Секунд: 0`;
-    }
-
-    this.currentChallengeTimeLeft = result;
+    const state = ChallengeHelpers.CalcChallengeState(this.currentChallenge);
+    this.currentExerciseState.setChallengeState(state);
   }
 }

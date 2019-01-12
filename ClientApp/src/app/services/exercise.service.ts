@@ -25,23 +25,9 @@ export class ExerciseService extends BaseHttpService implements OnInit {
 
   ngOnInit(): void {
   }
-  getExercises(): Observable<Array<ExerciseListResponse>> {
-    let observer = new Subscriber<Array<ExerciseListResponse>>(undefined);
-    const observable = new Observable<Array<ExerciseListResponse>>(obs => {
-      observer = obs;
-    });
-    this.http.get<Array<ExerciseListResponse>>(
-      `${this.baseUrl}/api/exercises`, this.userService.authOptions)
-      .subscribe(
-        success => {
-          observer.next(success);
-        },
-        err => {
-          observer.next([]);
-          console.log(err);
-        }
-      );
-    return observable;
+  getExercises(challengeId: string): Observable<Array<ExerciseListResponse>> {
+    return this.http.get<Array<ExerciseListResponse>>(
+      `${this.baseUrl}/api/Exercises?challengeId=${challengeId}`, this.userService.authOptions);
   }
 
 
@@ -54,21 +40,8 @@ export class ExerciseService extends BaseHttpService implements OnInit {
       formData, this.userService.authOptions);
   }
   getExercise(exId: string): Observable<ExerciseInfo> {
-    let observer: Subscriber<ExerciseInfo>;
-    const observable = new Observable<ExerciseInfo>(obs => {
-      observer = obs;
-    });
-    this.http.get<ExerciseInfo>(
-      `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions)
-      .subscribe(
-        success => {
-          observer.next(success);
-        },
-        err => {
-          observer.next(undefined);
-          console.log(err);
-        });
-    return observable;
+    return this.http.get<ExerciseInfo>(
+      `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions);
   }
 
   checkSolution(solutionId: string): Observable<Solution> {
