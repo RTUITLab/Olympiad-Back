@@ -1,9 +1,9 @@
 <div class="container" *ngIf="exerciseInfo ; else loading">
   <div>
-    <button mat-button class="editExercise_btn" *ngIf="isAdmin()" (click)="editExercise(exerciseInfo.Id)">
+    <button class="editExercise_btn text" *ngIf="isAdmin()" (click)="editExercise(exerciseInfo.Id)">
       Изменить данные задания
     </button>
-    <h1>{{exerciseInfo.Name}}</h1>
+    <h1 class="text">{{exerciseInfo.Name}}</h1>
   </div>
   <h3>
     Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
@@ -22,12 +22,12 @@
 
       <div class="form-group">
         <label for="Source">Код программы</label>
-        <input type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas" />
+        <input  type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas" />
 
       </div>
 
       <div class="form-group">
-        <button [disabled]="submitDisabled">Отправить решение</button>
+        <button class="btn text" [disabled]="submitDisabled">Отправить решение</button>
       </div>
     </form>
   </div>
@@ -47,7 +47,7 @@
         <td>{{prettyTime(sol.SendingTime)}}</td>
         <td>{{normalLang(sol.Language)}}</td>
         <td>
-          <button (click)="downloadSolution(sol)">
+          <button class="btn text" (click)="downloadSolution(sol)">
             Скачать
           </button>
         </td>

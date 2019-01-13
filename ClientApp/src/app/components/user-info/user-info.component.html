@@ -1,5 +1,5 @@
 <div class="UserInfo" *ngIf="user">
-  <div class="UserData">
+  <div class="UserData text">
       <div>
         Имя: {{user.FirstName}}
       </div>
@@ -8,7 +8,7 @@
       </div>
   </div>
   <div class="logout">
-    <button mat-button class="logout_btn" (click)="logout()">
+    <button mat-button class="logout_btn text" (click)="logout()">
       Выйти
     </button>
   </div>

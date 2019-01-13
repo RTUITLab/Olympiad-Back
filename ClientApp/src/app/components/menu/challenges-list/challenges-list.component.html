@@ -1,12 +1,12 @@
 <div class="container">
   <div *ngIf="currentChallengeId; else noCurrentChallenge">
-    <button (click)="clearChallenge()">Показать все соревнования</button>
-    <div *ngIf="currentChallenge; else loading">
+    <button class="btn text" (click)="clearChallenge()">Показать все соревнования</button>
+    <div class="text" *ngIf="currentChallenge; else loading">
       <h2>{{currentChallenge.Name}}</h2>
       <p>{{currentChallengeTimeLeft}}</p>
       <div *ngIf="currentExercises">
         <div *ngFor="let ex of currentExercises">
-          <button (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+          <button class="btn text" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
         </div>
       </div>
     </div>
@@ -16,11 +16,11 @@
 
   </div>
   <ng-template #noCurrentChallenge>
-    <h2 class="avaliable_challenges_header">Доступные соревнования ({{challenges.length}})</h2>
-    <button class="challenge-box_btn" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
+    <h2 class="avaliable_challenges_header text">Доступные соревнования ({{challenges.length}})</h2>
+    <button class="btn text" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
       <div class="challenge-box">
-        <div class="challenge-box_text">{{challenge.Name}}</div>
-        <div class="challenge-box_text">{{challengeTime(challenge)}}</div>
+        <div class="text">{{challenge.Name}}</div>
+        <div class="text">{{challengeTime(challenge)}}</div>
       </div>
     </button>
   </ng-template>

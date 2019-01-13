@@ -1,0 +1,7 @@
+.text{
+    word-wrap: break-word;
+    max-width: 100%;
+    text-align: center;
+    display: inline-block;
+    overflow: hidden;
+}

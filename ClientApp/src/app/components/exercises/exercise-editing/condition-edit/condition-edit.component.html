@@ -9,7 +9,7 @@
     <textarea [(ngModel)]="newCondition.InData"></textarea>
     <textarea [(ngModel)]="newCondition.OutData"></textarea>
     <input type="checkbox" [(ngModel)]="newCondition.IsPublic" />
-    <button (click)="addCondition()">Add</button>
+    <button class="btn text" (click)="addCondition()">Add</button>
   </div>
   <div class="container">
     <p>Вход</p>
@@ -21,8 +21,8 @@
     <textarea [(ngModel)]="condition.OutData"></textarea>
     <input type="checkbox" [(ngModel)]="condition.IsPublic" />
     <div>
-      <button>Удалить</button>
-      <button (click)="saveCondition(condition)">Сохранить</button>
+      <button class="btn text color-red">Удалить</button>
+      <button class="btn text color-green" (click)="saveCondition(condition)">Сохранить</button>
     </div>
   </div>
 </div>

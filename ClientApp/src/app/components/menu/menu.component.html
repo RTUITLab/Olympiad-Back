@@ -1,15 +1,15 @@
 <ul>
   <li>
     <div *ngIf="user; else buttonsBlock">
-      <button mat-button class="menu_btn">Текущий прогресс</button>
-      <button mat-button class="menu_btn" (click)="overView()">Общие положения</button>
-      <button mat-button *ngIf="isAdmin()" class="menu_btn" (click)="addExercise()">
+      <button class="btn text">Текущий прогресс</button>
+      <button class="btn text" (click)="overView()">Общие положения</button>
+      <button *ngIf="isAdmin()" class="btn  text" (click)="addExercise()">
         Добавить задание
       </button>
     </div>
     <ng-template #buttonsBlock>
-      <button mat-button class="menu_btn" (click)="login()">Войти в систему</button>
-      <button mat-button class="menu_btn" (click)="register()">Зарегистрироваться</button>
+      <button class="btn text" (click)="login()">Войти в систему</button>
+      <button class="btn text" (click)="register()">Зарегистрироваться</button>
     </ng-template>
   </li>
 </ul>

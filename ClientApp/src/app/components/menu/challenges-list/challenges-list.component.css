@@ -10,20 +10,25 @@
     text-align: center;
     box-sizing: border-box;
 }
-.challenge-box_btn{
+.btn{
     width: 100%;
     text-decoration: none;
     outline: none;
     display: inline-block;
+    background: white;
     margin-top: 10px;
     transition: .15s ease-in-out;
 }
-.challenge-box_btn:hover{
+.btn:hover{
         box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);
         color: rgb(67, 55, 241);
 }
-.challenge-box_text{
+.text{
     word-wrap: break-word;
+    max-width: 100%;
+    text-align: center;
+    display: inline-block;
+    overflow: hidden;
 }
 .avaliable_challenges_header{
     font-family: "Trebuchet MS", Helvetica, sans-serif;
