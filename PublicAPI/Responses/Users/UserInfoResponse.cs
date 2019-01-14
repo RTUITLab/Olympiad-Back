@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PublicAPI.Responses
+namespace PublicAPI.Responses.Users
 {
-    public class UserResponse
+    public class UserInfoResponse
     {
         public Guid Id { get; set; }
 
@@ -13,6 +13,5 @@ namespace PublicAPI.Responses
         public string Email { get; set; }
 
         public string StudentId { get; set; }
-
     }
 }
