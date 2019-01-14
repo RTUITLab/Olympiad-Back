@@ -9,30 +9,30 @@
   <br>
 
   <!-- exercise_NAME -->
-  <textarea id="exercise_name"  class="exercise_name_area"   ngDefaultControl [(ngModel)]="EditedExercise.Name">
+  <textarea id="exercise_name" class="exercise_name_area" ngDefaultControl [(ngModel)]="EditedExercise.Name">
     {{EditedExercise.Name}}
   </textarea>
   <!-- END -->
 
-  
+
   <!-- exercise_SCORE -->
-  <div >
+  <div>
     <span>
       Баллы за выполнение:
     </span>
-    <textarea id="exercise_score" type="ngDefaultControl"class="exercise_score_area" [(ngModel)]="EditedExercise.Score">
+    <textarea id="exercise_score" type="ngDefaultControl" class="exercise_score_area" [(ngModel)]="EditedExercise.Score">
       {{EditedExercise.Score}}
     </textarea>
   </div>
   <!-- END -->
-  
+
   <!-- exercise_TEXT -->
-  <textarea id="exercise_text"  ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.TaskText">
-    {{EditedExercise.exerciseText}}
+  <textarea id="exercise_text" ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.ExerciseTask">
+    {{EditedExercise.ExerciseTask}}
   </textarea>
-    <!-- END -->
-    <app-condition-edit [exerciseId]="EditedExercise.Id" ></app-condition-edit>
-  </div>
-  <ng-template #loading>
-      <ngx-loading [show]="loading"></ngx-loading>
-  </ng-template>
+  <!-- END -->
+  <app-condition-edit [exerciseId]="EditedExercise.Id"></app-condition-edit>
+</div>
+<ng-template #loading>
+  <ngx-loading [show]="loading"></ngx-loading>
+</ng-template>

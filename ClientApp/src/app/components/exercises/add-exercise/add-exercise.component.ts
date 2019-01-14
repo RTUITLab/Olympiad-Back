@@ -12,6 +12,7 @@ import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 import { ChallengesService } from 'src/app/services/challenges.service';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
+import { ToastrService } from 'ngx-toastr';
 
 
 
@@ -30,10 +31,9 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   constructor(
     private exerciseEditServise: ExerciseEditService,
     private usersService: UserStateService,
-    private exercisesService: ExerciseService,
     private challengesService: ChallengesService,
     private router: Router,
-    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) {
     super();
   }
@@ -51,10 +51,13 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   }
   addExercise() {
     this.exerciseEditServise.AddExercise(this.newExercise).subscribe(
-      _ => {
-        console.log(`sendEditedexercise_complete`);
+      ex => {
+        this.toastr.success(`Задание добавлено успешно`);
+        this.router.navigate(['exercises/edit', ex.Id]);
       },
-      error => console.log(error),
+      error => {
+        this.toastr.error(error, `Ошибка добавления задания`);
+      }
     );
   }
 

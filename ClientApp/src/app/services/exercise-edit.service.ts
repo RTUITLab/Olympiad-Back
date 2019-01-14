@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
 import { ExerciseNewCondition } from '../models/ExerciseNewCondition';
 import { UserStateService } from './user-state.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -19,13 +20,13 @@ export class ExerciseEditService {
   public SendEditedExercise(exercise: ExerciseInfo) {
     this.EditedExercise = {
       ExerciseName: exercise.Name,
-      ExerciseText: exercise.ExerciseText,
+      ExerciseTask: exercise.ExerciseTask,
       Score: exercise.Score
     };
     return this.http.put(`${environment.baseUrl}/api/Exercises/${exercise.Id}`, this.EditedExercise, this.userService.authOptions);
   }
-  public AddExercise(NewExercise: Exercise) {
-     return this.http.post(`${environment.baseUrl}/api/Exercises/`, NewExercise, this.userService.authOptions);
+  public AddExercise(NewExercise: Exercise): Observable<ExerciseInfo> {
+     return this.http.post<ExerciseInfo>(`${environment.baseUrl}/api/Exercises/`, NewExercise, this.userService.authOptions);
   }
   public SendEditedCondition(EditedCondition: ExerciseNewCondition [], EditedExerciseId: string) {
     return this.http.put(`${environment.baseUrl}/api/ExerciseData/${EditedExerciseId}`, EditedCondition, this.userService.authOptions);

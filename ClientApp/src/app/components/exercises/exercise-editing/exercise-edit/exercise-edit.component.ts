@@ -11,12 +11,8 @@ import { SolutionViewModel } from 'src/app/models/ViewModels/SolutionViewModel';
 import { ExerciseInfo } from 'src/app/models/Responses/ExerciseInfo';
 import { ExerciseNewCondition } from 'src/app/models/ExerciseNewCondition';
 import { ExerciseService } from 'src/app/services/exercise.service';
-
-
-
-
-
-
+import { ToastrService } from 'ngx-toastr';
+import { routerNgProbeToken } from '@angular/router/src/router_module';
 
 @Component({
   selector: 'app-exercise-edit',
@@ -32,6 +28,7 @@ export class ExerciseEditComponent extends LoadingComponent implements OnInit {
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
     private router: Router,
+    private toastr: ToastrService,
     private route: ActivatedRoute,
   ) {
     super();
@@ -58,13 +55,18 @@ export class ExerciseEditComponent extends LoadingComponent implements OnInit {
     return this.usersService.IsAdmin();
   }
   sendEditedExercise() {
-    // send EditedExercise to the server
     this.startLoading();
+    console.log(this.loading);
     this.exerciseEditServise.SendEditedExercise(this.EditedExercise).subscribe(
       _ => {
+        this.toastr.success(`Задание изменено успешно`);
+        this.stopLoading();
+        this.router.navigate(['exercises', this.EditedExercise.Id]);
+      },
+      error => {
+        this.toastr.error(error, `Ошибка добавления задания`);
         this.stopLoading();
       },
-      error => console.log(error),
     );
   }
 }

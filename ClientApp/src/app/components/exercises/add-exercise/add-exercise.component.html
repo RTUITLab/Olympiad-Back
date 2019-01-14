@@ -1,7 +1,4 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
-
-
-  <br>
   <form #loginForm="ngForm" (ngSubmit)="addExercise()">
     <div class="form-group">
       <button type="submit" class="text btn" [disabled]="!loginForm.form.valid">
@@ -40,36 +37,5 @@
     </textarea>
     </div>
   </form>
-
-  <!-- <form #exerciseForm="ngForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="exercise_name">Название</label>
-      <input type="text" id="exercise_name" class="exercise_name_area" required [(ngModel)]="newExercise.ExerciseName"
-        name="exercise_name" #exerciseName="ngModel">
-    </div>
-    <div class="challenge-box">
-      <label for="challengeId">Соревнование</label>
-      <select id="challengeId" [(ngModel)]="newExercise.ChallengeId">
-        <option *ngFor="let challenge of challenges" value="{{challenge.Id}}">
-          <p>{{challenge.Name}}</p>
-        </option>
-      </select>
-    </div>
-    <div>
-      <span>
-        Баллы за выполнение:
-      </span>
-      <input id="exercise_score" type="number" class="exercise_score_area" [(ngModel)]="newExercise.Score">
-    </div>
-    <div>
-      <span>
-        Содержание
-      </span>
-      <textarea id="exercise_text" ngDefaultControl class="exercise_text_area" [(ngModel)]="newExercise.ExerciseText">
-      {{newExercise.ExerciseText}}
-    </textarea>
-    </div>
-  </form> -->
-
 </div>
 <ngx-loading [show]="loading"></ngx-loading>

@@ -7,6 +7,7 @@
       <div *ngIf="currentExercises">
         <div *ngFor="let ex of currentExercises">
           <button class="btn text" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+          <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg" />
         </div>
       </div>
     </div>

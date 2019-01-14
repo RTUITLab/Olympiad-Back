@@ -8,7 +8,7 @@
   <h3>
     Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
   </h3>
-  <markdown id="Exercise_text" [data]="exerciseInfo.TaskText"></markdown>
+  <markdown id="Exercise_text" [data]="exerciseInfo.ExerciseTask"></markdown>
   <app-exercise-inout [exId]="exerciseInfo.Id"></app-exercise-inout>
   <div *ngIf="needSendForm()">
     <h2>Отправка решения</h2>

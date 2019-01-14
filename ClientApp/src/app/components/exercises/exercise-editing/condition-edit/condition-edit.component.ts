@@ -1,6 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ExerciseService } from 'src/app/services/exercise.service';
 import { ExerciseData } from 'src/app/models/ExerciseData';
+import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   selector: 'app-condition-edit',
@@ -15,7 +17,10 @@ export class ConditionEditComponent implements OnInit {
   public conditions: Array<ExerciseData>;
   public newCondition: ExerciseData = {};
 
-  constructor(private exerciseService: ExerciseService) { }
+  constructor(
+    private exerciseService: ExerciseService,
+    private toastr: ToastrService,
+    ) { }
 
   ngOnInit() {
     this.exerciseService.getAllExerciseInOutData(this.exerciseId).subscribe(
@@ -32,8 +37,8 @@ export class ConditionEditComponent implements OnInit {
     this.exerciseService.updateExerciseInOutData(data)
       .subscribe(
         n => console.log(n),
-        err => console.log(err),
-        () => console.log('complete')
+        err => this.toastr.error(`Ошибка добавления`, err),
+        () => this.toastr.success(`Условие успешно сохранено`)
       );
   }
 
@@ -42,6 +47,10 @@ export class ConditionEditComponent implements OnInit {
       .subscribe(o => {
         this.conditions.push(this.newCondition);
         this.newCondition = {};
+        this.toastr.success(`Условие успешно добавлено`);
+      },
+      err => {
+        this.toastr.error(`Ошибка добавления`);
       });
   }
 

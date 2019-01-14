@@ -11,13 +11,16 @@
     box-sizing: border-box;
 }
 .btn{
-    width: 100%;
+    width: 80%;
     text-decoration: none;
     outline: none;
     display: inline-block;
     background: white;
     margin-top: 10px;
     transition: .15s ease-in-out;
+}
+img{
+    width: 20%;
 }
 .btn:hover{
         box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);

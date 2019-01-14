@@ -7,6 +7,9 @@ import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material';
 import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
+
 
 
 
@@ -126,6 +129,9 @@ const routes: Route[] = [
     RouterModule.forRoot(routes),
     FormsModule,
     ReactiveFormsModule,
+    BrowserAnimationsModule, // required animations module
+    ToastrModule.forRoot({
+    }), // ToastrModule added
     HttpClientModule,
     NgxLoadingModule.forRoot({
       animationType: ngxLoadingAnimationTypes.cubeGrid

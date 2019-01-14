@@ -3,6 +3,7 @@ import { RegisterViewModel } from '../../models/ViewModels/RegisterViewModel';
 import { UserStateService } from '../../services/user-state.service';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-registration',
@@ -13,7 +14,12 @@ export class RegistrationComponent {
   loading = false;
   errorMessage: string;
   model: RegisterViewModel = RegisterViewModel.Default;
-  constructor(private userService: UserStateService, private router: Router) { }
+  constructor(
+    private userService: UserStateService,
+    private router: Router,
+    private toastr: ToastrService,
+
+    ) { }
 
   onSubmit() {
 
@@ -28,10 +34,14 @@ export class RegistrationComponent {
         success => {
           this.router.navigate(['exercises']);
           this.loading = false;
+          this.toastr.success(`Регистрация прошла успешно`);
+
         },
         error => {
           this.errorMessage = error;
           this.loading = false;
+          this.toastr.error(error, `Ошибка`);
+
         });
   }
 
