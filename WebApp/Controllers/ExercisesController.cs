@@ -48,7 +48,7 @@ namespace WebApp.Controllers
                 .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
                            e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
                 .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
-                .ProjectTo<ExerciseCompactResponse>()
+                .ProjectTo<ExerciseCompactResponse>(new { userId = UserId })
                 .ToListAsync();
         }
 
