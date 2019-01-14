@@ -9,7 +9,7 @@ namespace PublicAPI.Responses
         public Guid Id { get; set; }
         public string Name { get; set; }
         public int Score { get; set; }
-        public string TaskText { get; set; }
+        public string ExerciseTask { get; set; }
 
         public Guid ChallengeId { get; set; }
         public ChallengeResponse Challenge { get; set; }
