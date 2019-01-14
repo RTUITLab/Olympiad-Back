@@ -29,8 +29,7 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                .ForMember(r => r.Solutions, map => map.MapFrom(e => e.Solutions))
-                .ForMember(r => r.TaskText, map => map.MapFrom(e => e.ExerciseTask));
+                .ForMember(r => r.Solutions, map => map.MapFrom(e => e.Solutions));
             CreateMap<User, LoginResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
             CreateMap<User, UserInfoResponse>()
