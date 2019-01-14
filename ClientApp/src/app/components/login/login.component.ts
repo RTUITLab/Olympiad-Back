@@ -3,6 +3,8 @@ import { LoginViewModel } from '../../models/ViewModels/LoginViewModel';
 import { UserStateService } from '../../services/user-state.service';
 import { Router } from '@angular/router';
 import { LoadingComponent } from '../helpers/loading-component';
+import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   selector: 'app-login',
@@ -11,7 +13,11 @@ import { LoadingComponent } from '../helpers/loading-component';
 })
 export class LoginComponent extends LoadingComponent implements OnInit {
   errorMessage: string;
-  constructor(private userState: UserStateService, private router: Router) {
+  constructor(
+    private userState: UserStateService,
+     private router: Router,
+     private toastr: ToastrService,
+     ) {
     super();
   }
   model = new LoginViewModel('', '');
@@ -22,10 +28,13 @@ export class LoginComponent extends LoadingComponent implements OnInit {
       success => {
         this.router.navigate(['exercises']);
         this.stopLoading();
+
       },
       error => {
         this.errorMessage = error;
         this.stopLoading();
+        this.toastr.error(error, `Ошибка`);
+
       }
     );
   }

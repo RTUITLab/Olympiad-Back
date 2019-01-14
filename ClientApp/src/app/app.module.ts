@@ -7,6 +7,9 @@ import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material';
 import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
+
 
 
 
@@ -34,7 +37,7 @@ import { ChallengesListComponent } from './components/menu/challenges-list/chall
 import { ExerciseEditComponent } from './components/exercises/exercise-editing/exercise-edit/exercise-edit.component';
 import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
-import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard'
+import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
 
 
 const routes: Route[] = [
@@ -113,6 +116,9 @@ const routes: Route[] = [
     RouterModule.forRoot(routes),
     FormsModule,
     ReactiveFormsModule,
+    BrowserAnimationsModule, // required animations module
+    ToastrModule.forRoot({
+    }), // ToastrModule added
     HttpClientModule,
     NgxLoadingModule.forRoot({
       animationType: ngxLoadingAnimationTypes.cubeGrid

@@ -27,8 +27,8 @@
   <!-- END -->
   
   <!-- exercise_TEXT -->
-  <textarea id="exercise_text"  ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.TaskText">
-    {{EditedExercise.exerciseText}}
+  <textarea id="exercise_text"  ngDefaultControl class="exercise_text_area" [(ngModel)]="EditedExercise.ExerciseTask">
+    {{EditedExercise.ExerciseTask}}
   </textarea>
     <!-- END -->
     <app-condition-edit [exerciseId]="EditedExercise.Id" ></app-condition-edit>

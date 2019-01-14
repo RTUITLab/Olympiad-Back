@@ -19,7 +19,7 @@ export class ExerciseEditService {
   public SendEditedExercise(exercise: ExerciseInfo) {
     this.EditedExercise = {
       ExerciseName: exercise.Name,
-      ExerciseText: exercise.ExerciseText,
+      ExerciseTask: exercise.ExerciseTask,
       Score: exercise.Score
     };
     return this.http.put(`${environment.baseUrl}/api/Exercises/${exercise.Id}`, this.EditedExercise, this.userService.authOptions);
