@@ -1,7 +1,7 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
 
   <!-- BUTTONS -->
-  <button class="text btn" (click)="AddExercise()">
+  <button class="text btn" (click)="addExercise()">
     Добавить
   </button>
   <!-- END -->
@@ -13,14 +13,14 @@
     <span>
       Название
     </span>
-  <input type="text" id="exercise_name"  class="exercise_name_area" ngDefaultControl [(ngModel)]="NewExercise.ExerciseName">
+  <input type="text" id="exercise_name"  class="exercise_name_area" ngDefaultControl [(ngModel)]="newExercise.ExerciseName">
   </div>
   <!-- END -->
 
   <!-- exercise challenge -->
-  <div class="challenge-box" *ngFor="let challenge of challenges">
-    <select>
-      <option>
+  <div class="challenge-box">
+    <select [(ngModel)]="newExercise.ChallengeId">
+      <option *ngFor="let challenge of challenges" value="{{challenge.Id}}">
         <p>{{challenge.Name}}</p>
       </option>
     </select>
@@ -32,7 +32,7 @@
     <span>
       Баллы за выполнение:
     </span>
-    <input id="exercise_score" type="number" class="exercise_score_area" [(ngModel)]="NewExercise.Score">
+    <input id="exercise_score" type="number" class="exercise_score_area" [(ngModel)]="newExercise.Score">
   </div>
   <!-- END -->
 
@@ -41,8 +41,8 @@
     <span>
       Содержание
     </span>
-    <textarea id="exercise_text" ngDefaultControl class="exercise_text_area" [(ngModel)]="NewExercise.ExerciseText">
-      {{NewExercise.ExerciseText}}
+    <textarea id="exercise_text" ngDefaultControl class="exercise_text_area" [(ngModel)]="newExercise.ExerciseText">
+      {{newExercise.ExerciseText}}
     </textarea>
   </div>
   <!-- END -->

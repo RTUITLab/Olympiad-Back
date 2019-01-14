@@ -24,11 +24,8 @@ import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 })
 export class AddExerciseComponent extends LoadingComponent implements OnInit {
 
-  exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
-  NewExercise: Exercise;
-  //  variable for exercise_text view
-  exercise_text_edit: boolean;
+  newExercise: Exercise = new Exercise();
 
   constructor(
     private exerciseEditServise: ExerciseEditService,
@@ -40,13 +37,10 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   ) {
     super();
   }
-  public NewCondition?: ExerciseNewCondition[];
   public challenges?: Array<Challenge> = [];
 
   ngOnInit() {
     this.startLoading();
-    this.NewExercise = {};
-    this.NewCondition = [];
     this.stopLoading();
     this.challengesService.getChallengesList().subscribe(c => {
       if (!c) {
@@ -55,36 +49,15 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
       this.challenges = c;
     });
   }
-  turnOnEditing() {
-    console.log('turnOnEditing()');
-  }
-  turnOffEditing() {
-    console.log('turnOffEditing()');
-  }
-  AddExercise() {
-    console.log('Addexercise()');
-    console.log(this.NewExercise);
-    // console.log(this.NewCondition);
-    // send exercise to the server
-    this.exerciseEditServise.AddExercise(this.NewExercise).subscribe(
+  addExercise() {
+    this.exerciseEditServise.AddExercise(this.newExercise).subscribe(
       _ => {
         console.log(`sendEditedexercise_complete`);
       },
       error => console.log(error),
     );
   }
-  sendNewCondition(NewExerciseId: string) {
-    console.log('sendEditedCondition()');
-    console.log(this.NewCondition);
-    this.exerciseEditServise.SendNewCondition(this.NewCondition, NewExerciseId).subscribe(
-      _ => {
-        console.log(`sendEditedCondition_complete`);
-        this.router.navigate(['exercises/', NewExerciseId]);
-      },
-      error => console.log(error),
-    );
 
-  }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
