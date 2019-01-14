@@ -31,11 +31,9 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   constructor(
     private exerciseEditServise: ExerciseEditService,
     private usersService: UserStateService,
-    private exercisesService: ExerciseService,
     private challengesService: ChallengesService,
     private router: Router,
-    private toastr: ToastrService,
-    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) {
     super();
   }
@@ -53,14 +51,12 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   }
   addExercise() {
     this.exerciseEditServise.AddExercise(this.newExercise).subscribe(
-      _ => {
-        // console.log(`sendEditedexercise_complete`);
+      ex => {
         this.toastr.success(`Задание добавлено успешно`);
+        this.router.navigate(['exercises/edit', ex.Id]);
       },
       error => {
-        // console.log(error),
         this.toastr.error(error, `Ошибка добавления задания`);
-
       }
     );
   }
