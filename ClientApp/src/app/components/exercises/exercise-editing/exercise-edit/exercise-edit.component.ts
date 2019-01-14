@@ -11,6 +11,7 @@ import { SolutionViewModel } from 'src/app/models/ViewModels/SolutionViewModel';
 import { ExerciseInfo } from 'src/app/models/Responses/ExerciseInfo';
 import { ExerciseNewCondition } from 'src/app/models/ExerciseNewCondition';
 import { ExerciseService } from 'src/app/services/exercise.service';
+import { ToastrService } from 'ngx-toastr';
 
 
 
@@ -32,6 +33,7 @@ export class ExerciseEditComponent extends LoadingComponent implements OnInit {
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
     private router: Router,
+    private toastr: ToastrService,
     private route: ActivatedRoute,
   ) {
     super();
@@ -59,12 +61,16 @@ export class ExerciseEditComponent extends LoadingComponent implements OnInit {
   }
   sendEditedExercise() {
     // send EditedExercise to the server
-    this.startLoading();
+    console.log(this.EditedExercise);
     this.exerciseEditServise.SendEditedExercise(this.EditedExercise).subscribe(
       _ => {
-        this.stopLoading();
+        this.toastr.success(`Задание изменено успешно`);
+
       },
-      error => console.log(error),
+      error => {
+        // console.log(error)
+        this.toastr.error(error, `Ошибка добавления задания`);
+      },
     );
   }
 }

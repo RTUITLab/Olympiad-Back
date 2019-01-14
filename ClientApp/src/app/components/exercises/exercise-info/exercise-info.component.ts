@@ -17,6 +17,7 @@ import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChallengeState } from 'src/app/models/General/ChallengeState';
 import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
+import { ToastrService } from 'ngx-toastr';
 
 
 
@@ -34,6 +35,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     private exercisesService: ExerciseService,
     private route: ActivatedRoute,
     private router: Router,
+    private toastr: ToastrService,
     private currentExerciseState: ExerciseStateService) {
     super();
   }
@@ -87,19 +89,21 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
       .subscribe(
         createdSolution => {
           if (!createdSolution) {
+            this.toastr.warning(`Решение не загружено`);
             return;
           }
           if (this.exerciseInfo.Solutions.some(s => s.Id === createdSolution.Id)) {
-            alert(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
+            this.toastr.warning(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
           }
           const f = () => this.solutionCheckLoop(createdSolution);
+          this.toastr.success(`Решение успешно загружено`);
           f();
         },
         (error: HttpErrorResponse) => {
           if (error.status === 429) { // TooManyRequests HTTP Status
-            alert(`Отправлять решения можно только раз в минуту`);
+            this.toastr.warning(`Отправлять решения можно только раз в минуту`);
           }
-          alert('Не удалось отправить решение');
+          this.toastr.error('Не удалось отправить решение');
         }
       );
   }
@@ -154,8 +158,13 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
 
   downloadSolution(solution: Solution): void {
     this.exercisesService.downloadSolution(solution.Id).subscribe(s => {
-      SolutionHelpers.downloadSolution(solution, s); 
-    }, fail => console.log(fail)
+      SolutionHelpers.downloadSolution(solution, s);
+      this.toastr.success(`Загрузка начата`);
+
+    }, fail => {
+      // console.log(fail)
+      this.toastr.error(`Невозможно скачать решение`);
+    }
     );
   }
 }

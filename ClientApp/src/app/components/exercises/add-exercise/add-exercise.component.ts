@@ -12,6 +12,7 @@ import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
 import { ChallengesService } from 'src/app/services/challenges.service';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
+import { ToastrService } from 'ngx-toastr';
 
 
 
@@ -27,8 +28,6 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
   NewExercise: Exercise;
-  //  variable for exercise_text view
-  exercise_text_edit: boolean;
 
   constructor(
     private exerciseEditServise: ExerciseEditService,
@@ -36,6 +35,7 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
     private exercisesService: ExerciseService,
     private challengesService: ChallengesService,
     private router: Router,
+    private toastr: ToastrService,
     private route: ActivatedRoute,
   ) {
     super();
@@ -46,7 +46,6 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   ngOnInit() {
     this.startLoading();
     this.NewExercise = {};
-    this.NewCondition = [];
     this.stopLoading();
     this.challengesService.getChallengesList().subscribe(c => {
       if (!c) {
@@ -68,22 +67,15 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
     // send exercise to the server
     this.exerciseEditServise.AddExercise(this.NewExercise).subscribe(
       _ => {
-        console.log(`sendEditedexercise_complete`);
+        // console.log(`sendEditedexercise_complete`);
+        this.toastr.success(`Задание добавлено успешно`);
       },
-      error => console.log(error),
-    );
-  }
-  sendNewCondition(NewExerciseId: string) {
-    console.log('sendEditedCondition()');
-    console.log(this.NewCondition);
-    this.exerciseEditServise.SendNewCondition(this.NewCondition, NewExerciseId).subscribe(
-      _ => {
-        console.log(`sendEditedCondition_complete`);
-        this.router.navigate(['exercises/', NewExerciseId]);
-      },
-      error => console.log(error),
-    );
+      error => {
+        // console.log(error),
+        this.toastr.error(error, `Ошибка добавления задания`);
 
+      }
+    );
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();

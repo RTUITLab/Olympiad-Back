@@ -34,7 +34,7 @@ export class RegistrationComponent {
         success => {
           this.router.navigate(['exercises']);
           this.loading = false;
-          this.toastr.error(`Регистрация прошла успешно`);
+          this.toastr.success(`Регистрация прошла успешно`);
 
         },
         error => {
