@@ -1,11 +1,10 @@
-﻿using System;
+﻿using PublicAPI.Responses.Users;
 using System.Collections.Generic;
-using System.Text;
 
 namespace PublicAPI.Responses.Challenges
 {
     public class ChallengeExtendedResponse : ChallengeResponse
     {
-        public List<UserResponse> Invited { get; set; }
+        public List<UserInfoResponse> Invited { get; set; }
     }
 }

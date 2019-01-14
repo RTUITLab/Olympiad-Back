@@ -4,6 +4,7 @@ using Models.Exercises;
 using Models.Solutions;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
+using PublicAPI.Responses.Users;
 using Shared.Models;
 using System;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.TaskText, map => map.MapFrom(e => e.ExerciseTask));
             CreateMap<User, LoginResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
-            CreateMap<User, UserResponse>()
+            CreateMap<User, UserInfoResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
 
             CreateMap<Solution, SolutionResponse>();
