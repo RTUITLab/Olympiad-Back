@@ -14,8 +14,12 @@ using PublicAPI.Requests;
 using WebApp.Services.ReCaptcha;
 using System.Net;
 using Microsoft.Extensions.Logging;
+using PublicAPI.Responses.Users;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
-namespace WebApp.Controllers
+namespace WebApp.Controllers.Users
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
@@ -43,8 +47,14 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        [Route("{id}/{*token}")]
-        public async Task<IActionResult> Get(string id, string token)
+        public Task<List<UserInfoResponse>> Get()
+            => userManager
+            .Users
+            .ProjectTo<UserInfoResponse>()
+            .ToListAsync();
+
+        [HttpGet("{id}/{*token}")]
+        public async Task<IActionResult> ConfirmEmail(string id, string token)
         {
             var user = await userManager.FindByIdAsync(id);
             var result = await userManager.ConfirmEmailAsync(user, token);
