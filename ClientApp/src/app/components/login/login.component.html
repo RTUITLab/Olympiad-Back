@@ -1,6 +1,6 @@
 <div class="container">
   <h3 class="form-header">Вход в систему</h3>
-  <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div>
+  <!-- <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div> -->
   <form #loginForm="ngForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
       <label for="UserName">Электронная почта</label>
