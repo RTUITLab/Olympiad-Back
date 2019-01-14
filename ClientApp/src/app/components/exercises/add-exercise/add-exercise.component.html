@@ -1,51 +1,75 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
 
-  <!-- BUTTONS -->
-  <button class="text btn" (click)="addExercise()">
-    Добавить
-  </button>
-  <!-- END -->
 
   <br>
+  <form #loginForm="ngForm" (ngSubmit)="addExercise()">
+    <div class="form-group">
+      <button type="submit" class="text btn" [disabled]="!loginForm.form.valid">
+        Добавить
+      </button>
+    </div>
+    <div class="form-group">
+      <label for="ExerciseName">Название задания</label>
+      <input type="text" class="form-control" id="ExerciseName" required [(ngModel)]="newExercise.ExerciseName" name="ExerciseName"
+        #exerciseName="ngModel">
+      <div [hidden]="exerciseName.valid || exerciseName.pristine" class="alert alert-danger">Необходимо название
+        задания</div>
+    </div>
 
-  <!-- exercise_NAME -->
-  <div>
-    <span>
-      Название
-    </span>
-  <input type="text" id="exercise_name"  class="exercise_name_area" ngDefaultControl [(ngModel)]="newExercise.ExerciseName">
-  </div>
-  <!-- END -->
+    <div class="form-group">
+      <label for="ChallengePick">Соревнование</label>
+      <select type="text" class="form-control" id="ChallengePick" required [(ngModel)]="newExercise.ChallengeId" name="ChallengePick"
+        #challengePick="ngModel">
+        <option *ngFor="let challenge of challenges" value="{{challenge.Id}}">
+          <p>{{challenge.Name}}</p>
+        </option>
+      </select>
+    </div>
 
-  <!-- exercise challenge -->
-  <div class="challenge-box">
-    <select [(ngModel)]="newExercise.ChallengeId">
-      <option *ngFor="let challenge of challenges" value="{{challenge.Id}}">
-        <p>{{challenge.Name}}</p>
-      </option>
-    </select>
-  </div>
-  <!-- end -->
+    <div class="form-group">
+      <label for="Score">Баллы за успешное выполнение</label>
+      <input type="number" class="form-control" id="Score" required [(ngModel)]="newExercise.Score" name="Score" #score="ngModel">
+      <div [hidden]="score.valid || score.pristine" class="alert alert-danger">Необходимо указать количество баллов</div>
+    </div>
 
-  <!-- exercise_SCORE -->
-  <div >
-    <span>
-      Баллы за выполнение:
-    </span>
-    <input id="exercise_score" type="number" class="exercise_score_area" [(ngModel)]="newExercise.Score">
-  </div>
-  <!-- END -->
+    <div class="form-group">
+      <label for="ExerciseTask">Баллы за успешное выполнение</label>
+      <div [hidden]="exerciseTask.valid || exerciseTask.pristine" class="alert alert-danger">Необходимо условие задачи</div>
+      <textarea type="number" class="form-control" id="ExerciseTask" required [(ngModel)]="newExercise.ExerciseTask"
+        name="ExerciseTask" #exerciseTask="ngModel">
+    </textarea>
+    </div>
+  </form>
 
-  <!-- exercise_TEXT -->
-  <div >
-    <span>
-      Содержание
-    </span>
-    <textarea id="exercise_text" ngDefaultControl class="exercise_text_area" [(ngModel)]="newExercise.ExerciseText">
+  <!-- <form #exerciseForm="ngForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="exercise_name">Название</label>
+      <input type="text" id="exercise_name" class="exercise_name_area" required [(ngModel)]="newExercise.ExerciseName"
+        name="exercise_name" #exerciseName="ngModel">
+    </div>
+    <div class="challenge-box">
+      <label for="challengeId">Соревнование</label>
+      <select id="challengeId" [(ngModel)]="newExercise.ChallengeId">
+        <option *ngFor="let challenge of challenges" value="{{challenge.Id}}">
+          <p>{{challenge.Name}}</p>
+        </option>
+      </select>
+    </div>
+    <div>
+      <span>
+        Баллы за выполнение:
+      </span>
+      <input id="exercise_score" type="number" class="exercise_score_area" [(ngModel)]="newExercise.Score">
+    </div>
+    <div>
+      <span>
+        Содержание
+      </span>
+      <textarea id="exercise_text" ngDefaultControl class="exercise_text_area" [(ngModel)]="newExercise.ExerciseText">
       {{newExercise.ExerciseText}}
     </textarea>
-  </div>
-  <!-- END -->
+    </div>
+  </form> -->
 
-  <ngx-loading [show]="loading"></ngx-loading>
 </div>
+<ngx-loading [show]="loading"></ngx-loading>
