@@ -38,6 +38,8 @@ import { ExerciseEditComponent } from './components/exercises/exercise-editing/e
 import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
 import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
+import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
+import { UsersComponent } from './components/users/users.component';
 
 
 const routes: Route[] = [
@@ -82,6 +84,16 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'add-challenge',
+    component: ChallengeAddComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'users-list',
+    component: UsersComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: '/overview'
@@ -109,7 +121,8 @@ const routes: Route[] = [
     ChallengesListComponent,
     ChallengeInfoComponent,
     ConditionEditComponent,
-
+    ChallengeAddComponent,
+    UsersComponent
   ],
   imports: [
     BrowserModule,

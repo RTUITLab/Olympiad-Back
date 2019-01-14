@@ -17,7 +17,7 @@ export class UserInfoComponent implements OnInit {
   ngOnInit() {
     this.usersService.currentUserStream.subscribe(U => this.user = U);
   }
-  logout(){ 
+  logout() {
     this.usersService.logOut();
     this.router.navigate(['/login']);
   }

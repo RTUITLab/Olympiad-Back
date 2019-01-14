@@ -81,16 +81,10 @@ namespace WebApp.Controllers
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
             loginInfo.Token = token;
-
-            var sum = await context
-                 .Exercises
-                 .Where(e => e.Solutions.Any(S => S.Status == SolutionStatus.Sucessful && S.UserId == user.Id))
-                 .SumAsync(e => e.Score);
-            loginInfo.TotalScore = sum;
             
             var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), _userManager.GetRolesAsync(user).Result.ToArray());
 
-            loginInfo.Token = Tokens.GenerateJwt(identity, _jwtFactory, user.UserName).Result;
+            loginInfo.Token = await Tokens.GenerateJwt(identity, _jwtFactory, user.UserName);
             return loginInfo;
         }
     }

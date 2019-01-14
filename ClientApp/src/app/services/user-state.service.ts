@@ -61,6 +61,7 @@ export class UserStateService extends BaseHttpService {
           observer.next(true);
         },
         failure => {
+          this.logOut();
           observer.next(false);
         }
       );

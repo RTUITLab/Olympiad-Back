@@ -31,6 +31,10 @@ export class MenuComponent implements OnInit {
     this.router.navigate(['add-exercise']);
   }
 
+  addChallenge() {
+    this.router.navigate(['add-challenge']);
+  }
+
   login() {
     this.router.navigate(['login']);
   }
@@ -41,5 +45,8 @@ export class MenuComponent implements OnInit {
 
   overView() {
     this.router.navigate(['overview']);
+  }
+  usersList() {
+    this.router.navigate(['users-list']);
   }
 }

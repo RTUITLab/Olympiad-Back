@@ -25,9 +25,8 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class AddExerciseComponent extends LoadingComponent implements OnInit {
 
-  exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
-  NewExercise: Exercise;
+  newExercise: Exercise = new Exercise();
 
   constructor(
     private exerciseEditServise: ExerciseEditService,
@@ -40,12 +39,10 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   ) {
     super();
   }
-  public NewCondition?: ExerciseNewCondition[];
   public challenges?: Array<Challenge> = [];
 
   ngOnInit() {
     this.startLoading();
-    this.NewExercise = {};
     this.stopLoading();
     this.challengesService.getChallengesList().subscribe(c => {
       if (!c) {
@@ -54,18 +51,8 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
       this.challenges = c;
     });
   }
-  turnOnEditing() {
-    console.log('turnOnEditing()');
-  }
-  turnOffEditing() {
-    console.log('turnOffEditing()');
-  }
-  AddExercise() {
-    console.log('Addexercise()');
-    console.log(this.NewExercise);
-    // console.log(this.NewCondition);
-    // send exercise to the server
-    this.exerciseEditServise.AddExercise(this.NewExercise).subscribe(
+  addExercise() {
+    this.exerciseEditServise.AddExercise(this.newExercise).subscribe(
       _ => {
         // console.log(`sendEditedexercise_complete`);
         this.toastr.success(`Задание добавлено успешно`);
@@ -77,6 +64,7 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
       }
     );
   }
+
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }
