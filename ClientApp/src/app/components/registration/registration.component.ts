@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { ToastrService } from 'ngx-toastr';
 import { LoadingComponent } from '../helpers/loading-component';
-import { AvailableRegistrationCheckService as AvailableReg }  from '../../services/ComponentActivators/available-registration-check.service';
+import { AvailableRegistrationCheckService as AvailableReg } from '../../services/available-registration-check.service';
 
 @Component({
   selector: 'app-registration',
@@ -26,9 +26,9 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
     ) {
       super();
      }
-  ngOnInit(){
+  ngOnInit() {
     this.startLoading();
-    this.regIsAvaliable=this.regCheck.check();
+    this.regIsAvaliable = this.regCheck.checkAvailableRegistration();
     this.stopLoading();
   }
 

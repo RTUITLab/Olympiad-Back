@@ -8,10 +8,10 @@ export class AvailableRegistrationCheckService  {
 
   constructor(
     private http: HttpClient,
-  ) { 
+  ) {
   }
-  check(): boolean{
-    // return this.http.get();
-    return true;
+  checkAvailableRegistration(): boolean {
+    console.warn(`Using not implement service`);
+    return true; // TODO invoke get request to server
   }
 }
