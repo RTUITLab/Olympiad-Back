@@ -41,12 +41,12 @@ import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivator
 import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
 import { UsersComponent } from './components/users/users.component';
 
-
 const routes: Route[] = [
   {
     path: 'register',
     component: RegistrationComponent,
     canActivate: [NotAuthGuard]
+    
   },
   {
     path: 'login',
@@ -122,7 +122,7 @@ const routes: Route[] = [
     ChallengeInfoComponent,
     ConditionEditComponent,
     ChallengeAddComponent,
-    UsersComponent
+    UsersComponent,
   ],
   imports: [
     BrowserModule,
