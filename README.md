@@ -54,12 +54,15 @@
 export const environment = {
     production: true,
     isAdmin: false,
-    baseUrl: ''
+    baseUrl: '',
+    recaptchaClientToken: 'Токен сервиса reCAPCHA'
 };
 ```
 > baseUrl - url запущенного WebApp, при локальном запуске скорее всего будет ```http://localhost:64800```
+ 
+> recaptchaClientToken - **ПУБЛИЧНЫЙ** токен, получаемый при создании reCAPCTCHA v2
 
-2. Для запуска сайта необходимо выполнить комманду ```npm start```. После выполнения команды в браузере можно открыть сайт по [адресу localhost:4200](http://localhost:4200), где будет видно сам сайт.
+2. Для запуска сайта необходимо выполнить комманду ```npm start```. После выполнения команды в браузере можно открыть сайт по адресу [localhost:4200](http://localhost:4200), где будет видно сам сайт.
 
 ### Executor
 
