@@ -15,7 +15,7 @@ import { AvailableRegistrationCheckService as AvailableReg } from '../../service
 export class RegistrationComponent extends LoadingComponent implements OnInit {
   loading = false;
   errorMessage: string;
-  regIsAvaliable?: boolean;
+  regIsAvaliable = false;
   model: RegisterViewModel = RegisterViewModel.Default;
   constructor(
     private userService: UserStateService,
@@ -28,8 +28,11 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
      }
   ngOnInit() {
     this.startLoading();
-    this.regIsAvaliable = this.regCheck.checkAvailableRegistration();
-    this.stopLoading();
+    this.regCheck.checkAvailableRegistration()
+      .subscribe(s => {
+        this.regIsAvaliable = s;
+        this.stopLoading();
+      });
   }
 
   onSubmit() {
@@ -46,13 +49,11 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
           this.router.navigate(['exercises']);
           this.loading = false;
           this.toastr.success(`Регистрация прошла успешно`);
-
         },
         error => {
           this.errorMessage = error;
           this.loading = false;
           this.toastr.error(error, `Ошибка`);
-
         });
   }
 
