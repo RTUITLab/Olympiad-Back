@@ -4,22 +4,36 @@ import { UserStateService } from '../../services/user-state.service';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { ToastrService } from 'ngx-toastr';
+import { LoadingComponent } from '../helpers/loading-component';
+import { AvailableRegistrationCheckService as AvailableReg } from '../../services/available-registration-check.service';
 
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.css']
 })
-export class RegistrationComponent {
+export class RegistrationComponent extends LoadingComponent implements OnInit {
   loading = false;
   errorMessage: string;
+  regIsAvaliable = false;
   model: RegisterViewModel = RegisterViewModel.Default;
   constructor(
     private userService: UserStateService,
     private router: Router,
     private toastr: ToastrService,
+    private regCheck: AvailableReg,
 
-    ) { }
+    ) {
+      super();
+     }
+  ngOnInit() {
+    this.startLoading();
+    this.regCheck.checkAvailableRegistration()
+      .subscribe(s => {
+        this.regIsAvaliable = s;
+        this.stopLoading();
+      });
+  }
 
   onSubmit() {
 
@@ -35,13 +49,11 @@ export class RegistrationComponent {
           this.router.navigate(['exercises']);
           this.loading = false;
           this.toastr.success(`Регистрация прошла успешно`);
-
         },
         error => {
           this.errorMessage = error;
           this.loading = false;
           this.toastr.error(error, `Ошибка`);
-
         });
   }
 

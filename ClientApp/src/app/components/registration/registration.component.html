@@ -1,4 +1,4 @@
-<div class="container">
+<div id="reg_available" *ngIf="regIsAvaliable" class="container">
   <h3 class="form-header">Регистрация</h3>
   <!-- <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div> -->
   <form #registerForm="ngForm" (ngSubmit)="onSubmit()">
@@ -46,5 +46,8 @@
       <button type="submit" class="btn text btn-success" [disabled]="!registerForm.form.valid">Зарегистрироваться</button>
     </div>
   </form>
-  <ngx-loading [show]="loading"></ngx-loading>
 </div>
+<div id='reg_unavailable' *ngIf="!regIsAvaliable">
+  Регистрация не доступна
+</div>
+<ngx-loading  [show]="loading"></ngx-loading>
