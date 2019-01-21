@@ -46,7 +46,7 @@ namespace WebApp
 
             services.Configure<DefaultUserSettings>(Configuration.GetSection(nameof(DefaultUserSettings)));
             services.Configure<RecaptchaSettings>(Configuration.GetSection(nameof(RecaptchaSettings)));
-
+            services.Configure<AccountSettings>(Configuration.GetSection(nameof(AccountSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services
