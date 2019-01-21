@@ -18,11 +18,14 @@ using PublicAPI.Responses.Users;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using WebApp.Models.Settings;
 
 namespace WebApp.Controllers.Users
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
+    [Authorize]
     public class AccountController : Controller
     {
 
@@ -31,19 +34,22 @@ namespace WebApp.Controllers.Users
         private readonly IEmailSender emailSender;
         private readonly IRecaptchaVerifier recaptchaVerifier;
         private readonly ILogger<AccountController> logger;
+        private readonly IOptions<AccountSettings> options;
 
         public AccountController(
             IMapper mapper,
             UserManager<User> userManager,
             IEmailSender emailSender,
             IRecaptchaVerifier recaptchaVerifier,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger,
+            IOptions<AccountSettings> options)
         {
             this.mapper = mapper;
             this.userManager = userManager;
             this.emailSender = emailSender;
             this.recaptchaVerifier = recaptchaVerifier;
             this.logger = logger;
+            this.options = options;
         }
 
         [HttpGet]
@@ -54,6 +60,7 @@ namespace WebApp.Controllers.Users
             .ToListAsync();
 
         [HttpGet("{id}/{*token}")]
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string id, string token)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -68,10 +75,18 @@ namespace WebApp.Controllers.Users
             }
         }
 
+        [HttpGet("isRegisterAvailable")]
+        [AllowAnonymous]
+        public bool IsRegisterAvailable()
+        {
+            return options.Value.IsRegisterAvailable;
+        }
+
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Post([FromBody]RegistrationRequest model)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || !options.Value.IsRegisterAvailable)
             {
                 return BadRequest(ModelState);
             }
