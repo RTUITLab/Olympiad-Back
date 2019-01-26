@@ -53,6 +53,7 @@ namespace WebApp.Controllers.Users
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public Task<List<UserInfoResponse>> Get()
             => userManager
             .Users
