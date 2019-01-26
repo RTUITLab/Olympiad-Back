@@ -40,13 +40,13 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
 import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
 import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
 import { UsersComponent } from './components/users/users.component';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
 const routes: Route[] = [
   {
     path: 'register',
     component: RegistrationComponent,
     canActivate: [NotAuthGuard]
-    
   },
   {
     path: 'login',
@@ -145,7 +145,9 @@ const routes: Route[] = [
     MatTableModule,
     MatButtonModule,
     MatInputModule,
-    ReCaptchaModule
+    ReCaptchaModule,
+    OwlDateTimeModule, 
+    OwlNativeDateTimeModule,
   ],
   providers: [
     UserStateService,

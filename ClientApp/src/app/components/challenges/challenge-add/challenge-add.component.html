@@ -1,3 +1,48 @@
-<p>
-  challenge-add works!
-</p>
+<div *ngIf="isAdmin()" class="addExerciseComponent">
+  <form #loginForm="ngForm" (ngSubmit)="addExercise()">
+    <div class="form-group">
+
+    </div>
+    <div class="form-group">
+      <label for="ChallengeName">Название соревнования</label>
+      <input type="text" class="form-control" id="ChallengeName" required [(ngModel)]="newChallenge.Name" name="ChallengeName"
+        #challengeName="ngModel">
+      <div [hidden]="challengeName.valid || challengeName.pristine" class="alert alert-danger">Необходимо название
+        соревнования</div>
+    </div>
+    <hr>
+    <div class="form-group">
+      <span>
+        <label for="noTimeTrue">Бессрочное</label>
+        <input name="timePick" ng-control="options" type="radio" [value]=true [(ngModel)]="noTime" id="noTimeTrue"><br />
+      </span>
+      <span>
+        <label for="noTimeFalse">Ограниченное</label>
+        <input name="timePick" ng-control="options" type="radio" [value]=false [(ngModel)]="noTime" id="noTimeFalse"><br />
+      </span>
+    </div>
+    <div class="form-group" *ngIf="!noTime">
+      <label class="example-input-wrapper">
+        Date Time:
+        <input placeholder="Date Time Range:" [selectMode]="'range'" [min]="minTime" [(ngModel)]="challengeTime"
+          [owlDateTimeTrigger]="dtRange1" [owlDateTime]="dtRange1" name="challengeTimePicker">
+        <owl-date-time #dtRange1></owl-date-time>
+      </label>
+    </div>
+    <hr>
+    <div class="form-group">
+      <span>
+        <label for="noTimeTrue">Публичное</label>
+    <input name="ChallengeAccessType" ng-control="options" type="radio" [value]=0 [(ngModel)]="newChallenge.ChallengeAccessType" id="noTimeTrue"><br />
+      </span>
+      <span>
+        <label for="noTimeFalse">Приватное</label>
+        <input name="ChallengeAccessType" ng-control="options" type="radio" [value]=1 [(ngModel)]="newChallenge.ChallengeAccessType"><br />
+      </span>
+    </div>
+    <button type="submit" class="text btn" [disabled]="!loginForm.form.valid">
+      Создать
+    </button>
+  </form>
+</div>
+<ngx-loading [show]="loading"></ngx-loading>
