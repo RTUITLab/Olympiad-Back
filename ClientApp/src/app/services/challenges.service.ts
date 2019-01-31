@@ -22,4 +22,9 @@ export class ChallengesService  extends BaseHttpService implements OnInit  {
     return this.http.get<Challenge>(
       `${this.baseUrl}/api/challenges/${id}`, this.userService.authOptions);
   }
+
+  public createChallenge(challenge: Challenge): Observable<Challenge> {
+    return this.http.post<Challenge>(
+      `${this.baseUrl}/api/challenges/`, challenge, this.userService.authOptions);
+  }
 }

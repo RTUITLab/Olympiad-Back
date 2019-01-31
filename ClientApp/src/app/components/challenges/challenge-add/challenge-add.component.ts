@@ -1,13 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { UserStateService } from 'src/app/services/user-state.service';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
+import { ToastrService } from 'ngx-toastr';
+import { ChallengeAccessType } from 'src/app/models/General/ChallengeAccessType';
+import { LoadingComponent } from '../../helpers/loading-component';
+import { ChallengesService } from 'src/app/services/challenges.service';
 
 @Component({
   selector: 'app-challenge-add',
   templateUrl: './challenge-add.component.html',
   styleUrls: ['./challenge-add.component.scss']
 })
-export class ChallengeAddComponent implements OnInit {
+export class ChallengeAddComponent extends LoadingComponent implements OnInit {
 
   public newChallenge: Challenge = new Challenge();
   public noTime = true;
@@ -15,11 +19,30 @@ export class ChallengeAddComponent implements OnInit {
   public minTime = new Date();
 
   constructor(
-    private usersService: UserStateService
-  ) { }
+    private usersService: UserStateService,
+    private challengesService: ChallengesService,
+    private toastr: ToastrService,
+  ) { super(); }
 
   ngOnInit() {
-    setInterval(() => console.log(this.challengeTime), 2000);
+    this.newChallenge.ChallengeAccessType = ChallengeAccessType.Public;
+  }
+
+  addChallenge(): void {
+    if (!this.noTime && (!this.challengeTime || this.challengeTime.length !== 2)) {
+      this.toastr.error('Введите время');
+    }
+    this.startLoading();
+    if (!this.noTime) {
+      this.newChallenge.StartTime = this.challengeTime[0].toISOString();
+      this.newChallenge.EndTime = this.challengeTime[1].toISOString();
+    }
+    this.challengesService.createChallenge(this.newChallenge).subscribe(
+      c => {
+        this.toastr.success(`Событие ${this.newChallenge.Name} создано`);
+        this.stopLoading();
+      }
+    );
   }
 
   isAdmin(): boolean {

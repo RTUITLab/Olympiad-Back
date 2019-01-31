@@ -1,5 +1,5 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
-  <form #loginForm="ngForm" (ngSubmit)="addExercise()">
+  <form #loginForm="ngForm" (ngSubmit)="addChallenge()">
     <div class="form-group">
 
     </div>
@@ -23,8 +23,8 @@
     </div>
     <div class="form-group" *ngIf="!noTime">
       <label class="example-input-wrapper">
-        Date Time:
-        <input placeholder="Date Time Range:" [selectMode]="'range'" [min]="minTime" [(ngModel)]="challengeTime"
+        Время проведения соревнования:
+        <input [selectMode]="'range'" [min]="minTime" [(ngModel)]="challengeTime"
           [owlDateTimeTrigger]="dtRange1" [owlDateTime]="dtRange1" name="challengeTimePicker">
         <owl-date-time #dtRange1></owl-date-time>
       </label>
