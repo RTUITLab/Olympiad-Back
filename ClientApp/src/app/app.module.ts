@@ -41,6 +41,7 @@ import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivator
 import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
 import { UsersComponent } from './components/users/users.component';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
 
 const routes: Route[] = [
   {
@@ -89,6 +90,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'edit-challenge/:ChallengeId',
+    component: ChallengeEditComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: 'users-list',
     component: UsersComponent,
     canActivate: [AuthGuardService]
@@ -123,6 +129,7 @@ const routes: Route[] = [
     ConditionEditComponent,
     ChallengeAddComponent,
     UsersComponent,
+    ChallengeEditComponent,
   ],
   imports: [
     BrowserModule,

@@ -52,7 +52,6 @@ export class ChallengesListComponent implements OnInit {
       }
       this.currentChallenge = c;
       this.currentExercises = null;
-      console.log('changed');
     });
     this.currentExerciseState.currentChallengeState.subscribe(s => this.updateState(s));
     const timer = setInterval(() =>

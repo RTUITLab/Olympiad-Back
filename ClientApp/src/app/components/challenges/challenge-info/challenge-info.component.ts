@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ChallengesService } from 'src/app/services/challenges.service';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { DateHelpers } from 'src/app/Helpers/DateHelpers';
+import { UserStateService } from 'src/app/services/user-state.service';
 
 @Component({
   selector: 'app-challenge-info',
@@ -14,7 +15,8 @@ export class ChallengeInfoComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private challengesService: ChallengesService,
+    private router: Router,
+    private usersService: UserStateService,
     private currentExerciseState: ExerciseStateService) { }
 
   public challenge?: Challenge;
@@ -37,4 +39,12 @@ export class ChallengeInfoComponent implements OnInit {
     return DateHelpers.prettyTime(time);
   }
 
+  editChallenge() {
+    this.router.navigate(['edit-challenge', this.challenge.Id]);
+  }
+
+
+  isAdmin(): boolean {
+    return this.usersService.IsAdmin();
+  }
 }

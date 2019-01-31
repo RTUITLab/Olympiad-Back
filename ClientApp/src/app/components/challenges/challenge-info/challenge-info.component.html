@@ -1,4 +1,9 @@
 <div class="text" *ngIf="challenge; else loading">
+    <div *ngIf="isAdmin()">
+        <button (click)="editChallenge()">Изменить</button>
+    </div>
+
+
     <h1>{{challenge.Name}}</h1>
     <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p>    
 </div>
