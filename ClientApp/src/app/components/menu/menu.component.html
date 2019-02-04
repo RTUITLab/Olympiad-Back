@@ -2,6 +2,7 @@
   <li>
     <div *ngIf="user; else buttonsBlock">
       <button class="btn text">Текущий прогресс</button>
+      <button class="btn text" (click)="myPage()">Моя страница</button>
       <button class="btn text" (click)="overView()">Общие положения</button>
       <hr />
       <div *ngIf="isAdmin()">

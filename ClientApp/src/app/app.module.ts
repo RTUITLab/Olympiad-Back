@@ -40,6 +40,7 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
 import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
 import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
 import { UsersComponent } from './components/users/users.component';
+import { PersonalPageComponent } from './components/personal-page/personal-page.component';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
 
@@ -95,6 +96,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'personal-page',
+    component: PersonalPageComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: 'users-list',
     component: UsersComponent,
     canActivate: [AuthGuardService]
@@ -130,6 +136,7 @@ const routes: Route[] = [
     ChallengeAddComponent,
     UsersComponent,
     ChallengeEditComponent,
+    PersonalPageComponent,
   ],
   imports: [
     BrowserModule,
