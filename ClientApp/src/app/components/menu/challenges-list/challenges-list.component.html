@@ -6,9 +6,14 @@
       <p>{{currentChallengeTimeLeft}}</p>
       <div *ngIf="currentExercises">
         <div *ngFor="let ex of currentExercises">
-          <button class="btn text exercises_list" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
-          <div class="exercise_status_img">
-            <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg" />
+          <div *ngIf="ex.Status!==-1" class="exercises">
+            <button class="btn text exercises_list" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+            <div class="exercise_status_img">
+              <img src="assets/StatusCode/{{ex.Status}}.svg" />
+            </div>
+          </div>
+          <div *ngIf="ex.Status==-1">
+              <button class="btn text" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
           </div>
         </div>
       </div>
@@ -27,7 +32,4 @@
       </div>
     </button>
   </ng-template>
-  <!-- <button class="col{{ex.Status}}" (click)="goToExercise(ex.Id)">{{c.Name}}</button> -->
-  <!-- <div></div>
-      <img *ngIf="ex.Status!==-1" src="assets/StatusCode/{{ex.Status}}.svg" /> -->
 </div>

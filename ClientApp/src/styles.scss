@@ -13,7 +13,9 @@ button {
 ::-webkit-scrollbar {
     display: none;
 }
-
+*{
+    box-sizing: border-box;
+}
 html {
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }

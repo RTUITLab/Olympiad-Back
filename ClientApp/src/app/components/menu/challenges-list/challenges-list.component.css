@@ -11,7 +11,7 @@
     box-sizing: border-box;
 }
 .btn{
-    width: 80%;
+    width: 99%;
     text-decoration: none;
     outline: none;
     display: inline-block;
@@ -19,16 +19,25 @@
     margin-top: 10px;
     transition: .15s ease-in-out;
 }
+.exercises {
+    display: grid;
+    width: 80% auto;
+    height: 100%;
+}
 .exercises_list {
-    width: 70%;
-    float: left;
+    width: 100%;
+    grid-column: 1;
 }
 .exercise_status_img{
-    width: 30%;
-    float: right;
+    grid-column: 2;
+    width: 100%;
+    display: grid;
+    align-items: center;
+    justify-items: center;
 }
+
 img{
-    height: 40px;
+    max-width: 40px;
 }
 .btn:hover{
         box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);
