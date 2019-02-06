@@ -20,17 +20,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using WebApp.Models.Settings;
+using WebApp.Extensions;
 
 namespace WebApp.Controllers.Users
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    [Authorize]
-    public class AccountController : Controller
+    public class AccountController : AuthorizeController
     {
 
         private readonly IMapper mapper;
-        private readonly UserManager<User> userManager;
         private readonly IEmailSender emailSender;
         private readonly IRecaptchaVerifier recaptchaVerifier;
         private readonly ILogger<AccountController> logger;
@@ -42,10 +41,9 @@ namespace WebApp.Controllers.Users
             IEmailSender emailSender,
             IRecaptchaVerifier recaptchaVerifier,
             ILogger<AccountController> logger,
-            IOptions<AccountSettings> options)
+            IOptions<AccountSettings> options) : base(userManager)
         {
             this.mapper = mapper;
-            this.userManager = userManager;
             this.emailSender = emailSender;
             this.recaptchaVerifier = recaptchaVerifier;
             this.logger = logger;
@@ -53,18 +51,27 @@ namespace WebApp.Controllers.Users
         }
 
         [HttpGet]
-        public Task<List<UserInfoResponse>> Get()
-            => userManager
-            .Users
-            .ProjectTo<UserInfoResponse>()
-            .ToListAsync();
+        [Authorize(Roles = "Admin")]
+        public Task<List<UserInfoResponse>> Get(string match)
+        {
+            var words = (match ?? "").ToUpper().Split(' ');
+            var users = UserManager.Users;
+            users = words.Aggregate(users, (usersCollection, matcher) => usersCollection.Where(
+                u => 
+                    u.FirstName.ToUpper().Contains(matcher) ||
+                    u.Email.ToUpper().Contains(matcher) ||
+                    u.StudentID.ToUpper().Contains(matcher)));
+            return users
+                .ProjectTo<UserInfoResponse>()
+                .ToListAsync();
+        }
 
         [HttpGet("{id}/{*token}")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string id, string token)
         {
-            var user = await userManager.FindByIdAsync(id);
-            var result = await userManager.ConfirmEmailAsync(user, token);
+            var user = await UserManager.FindByIdAsync(id);
+            var result = await UserManager.ConfirmEmailAsync(user, token);
             if (result.Succeeded)
             {
                 return Content("Ваш email подтвержден");
@@ -101,13 +108,13 @@ namespace WebApp.Controllers.Users
 
             User userIdentity = mapper.Map<User>(model);
 
-            var result = await userManager.CreateAsync(userIdentity, model.Password);
+            var result = await UserManager.CreateAsync(userIdentity, model.Password);
 
             if (!result.Succeeded)
                 return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
 
-            result = await userManager.AddToRoleAsync(userIdentity, "User");
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(userIdentity);
+            result = await UserManager.AddToRoleAsync(userIdentity, "User");
+            var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
             var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
             await emailSender.SendEmailConfirm(model.Email, url);
 
