@@ -25,6 +25,7 @@
     "angular2-recaptcha": "^1.1.0",
     "core-js": "^2.5.4",
     "guid": "0.0.12",
+    "ng-pick-datetime": "^7.0.0",
     "ngx-loading": "^3.0.1",
     "ngx-markdown": "^7.0.2",
     "ngx-toastr": "^9.1.1",

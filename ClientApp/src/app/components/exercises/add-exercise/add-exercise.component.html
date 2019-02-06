@@ -30,7 +30,7 @@
     </div>
 
     <div class="form-group">
-      <label for="ExerciseTask">Баллы за успешное выполнение</label>
+      <label for="ExerciseTask">Текст задания и граничные условия</label>
       <div [hidden]="exerciseTask.valid || exerciseTask.pristine" class="alert alert-danger">Необходимо условие задачи</div>
       <textarea type="number" class="form-control" id="ExerciseTask" required [(ngModel)]="newExercise.ExerciseTask"
         name="ExerciseTask" #exerciseTask="ngModel">

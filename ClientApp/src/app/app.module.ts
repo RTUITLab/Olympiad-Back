@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material';
+import { MatButtonModule, MatAutocompleteModule } from '@angular/material';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
@@ -40,13 +40,14 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
 import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
 import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
 import { UsersComponent } from './components/users/users.component';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
 
 const routes: Route[] = [
   {
     path: 'register',
     component: RegistrationComponent,
     canActivate: [NotAuthGuard]
-    
   },
   {
     path: 'login',
@@ -89,6 +90,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'edit-challenge/:ChallengeId',
+    component: ChallengeEditComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: 'users-list',
     component: UsersComponent,
     canActivate: [AuthGuardService]
@@ -123,6 +129,7 @@ const routes: Route[] = [
     ConditionEditComponent,
     ChallengeAddComponent,
     UsersComponent,
+    ChallengeEditComponent,
   ],
   imports: [
     BrowserModule,
@@ -145,7 +152,10 @@ const routes: Route[] = [
     MatTableModule,
     MatButtonModule,
     MatInputModule,
-    ReCaptchaModule
+    MatAutocompleteModule,
+    ReCaptchaModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule,
   ],
   providers: [
     UserStateService,

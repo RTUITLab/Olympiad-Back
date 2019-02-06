@@ -14,9 +14,9 @@ export class UsersService extends BaseHttpService {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
 
-  getUsers(): Observable<Array<UserInfo>> {
+  getUsers(match: string = ''): Observable<Array<UserInfo>> {
     return this.http.get<Array<UserInfo>>(
-      `${this.baseUrl}/api/account`,
+      `${this.baseUrl}/api/account?match=${match}`,
       this.userService.authOptions
     );
   }
