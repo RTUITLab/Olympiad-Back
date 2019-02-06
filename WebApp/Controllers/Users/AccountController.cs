@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using WebApp.Models.Settings;
+using WebApp.Extensions;
 
 namespace WebApp.Controllers.Users
 {
@@ -51,11 +52,19 @@ namespace WebApp.Controllers.Users
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public Task<List<UserInfoResponse>> Get()
-            => UserManager
-            .Users
-            .ProjectTo<UserInfoResponse>()
-            .ToListAsync();
+        public Task<List<UserInfoResponse>> Get(string match)
+        {
+            var words = (match ?? "").ToUpper().Split(' ');
+            var users = UserManager.Users;
+            users = words.Aggregate(users, (usersCollection, matcher) => usersCollection.Where(
+                u => 
+                    u.FirstName.ToUpper().Contains(matcher) ||
+                    u.Email.ToUpper().Contains(matcher) ||
+                    u.StudentID.ToUpper().Contains(matcher)));
+            return users
+                .ProjectTo<UserInfoResponse>()
+                .ToListAsync();
+        }
 
         [HttpGet("{id}/{*token}")]
         [AllowAnonymous]

@@ -8,6 +8,11 @@ import { ChallengesService } from 'src/app/services/challenges.service';
 import { ParamMap, ActivatedRoute } from '@angular/router';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { ChallengeEditViewModel } from 'src/app/models/ViewModels/ChallengeEditViewModel';
+import { FormControl } from '@angular/forms';
+import { Observable } from 'rxjs';
+import {map, switchMap, filter, debounceTime} from 'rxjs/operators';
+import { UsersService } from 'src/app/services/users.service';
+import { UserInfo } from 'src/app/models/Responses/UserInfo';
 
 @Component({
   selector: 'app-challenge-edit',
@@ -23,15 +28,28 @@ export class ChallengeEditComponent extends LoadingComponent implements OnInit {
   public challengeTime: Date[];
   public minTime = new Date();
 
+  myControl = new FormControl();
+  users: Observable<UserInfo[]>;
+  lols: string[] = ['lpol1', 'adwd2', '132f'];
+
   constructor(
-    private usersService: UserStateService,
+    private userStateService: UserStateService,
     private challengesService: ChallengesService,
     private toastr: ToastrService,
     private route: ActivatedRoute,
-    private currentExerciseState: ExerciseStateService
+    private currentExerciseState: ExerciseStateService,
+    private usersService: UsersService
   ) { super(); }
 
   ngOnInit() {
+
+    this.users = this.myControl.valueChanges
+    .pipe(
+      debounceTime(300),
+      switchMap(v => this.usersService.getUsers(v))
+    );
+
+
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         const id = params.get('ChallengeId');
@@ -72,6 +90,6 @@ export class ChallengeEditComponent extends LoadingComponent implements OnInit {
   }
 
   isAdmin(): boolean {
-    return this.usersService.IsAdmin();
+    return this.userStateService.IsAdmin();
   }
 }

@@ -21,11 +21,11 @@
         <input name="timePick" ng-control="options" type="radio" [value]=true [(ngModel)]="bounded" id="noTimeFalse"><br />
       </span>
     </div>
-    <div class="form-group" *ngIf="!noTime">
+    <div class="form-group" *ngIf="bounded">
       <label class="example-input-wrapper">
         Время проведения соревнования:
-        <input [selectMode]="'range'" [min]="minTime" [(ngModel)]="challengeTime"
-          [owlDateTimeTrigger]="dtRange1" [owlDateTime]="dtRange1" name="challengeTimePicker">
+        <input [selectMode]="'range'" [min]="minTime" [(ngModel)]="challengeTime" [owlDateTimeTrigger]="dtRange1"
+          [owlDateTime]="dtRange1" name="challengeTimePicker">
         <owl-date-time #dtRange1></owl-date-time>
       </label>
     </div>
@@ -33,12 +33,25 @@
     <div class="form-group">
       <span>
         <label for="noTimeTrue">Публичное</label>
-    <input name="ChallengeAccessType" ng-control="options" type="radio" [value]=0 [(ngModel)]="challenge.ChallengeAccessType" id="noTimeTrue"><br />
+        <input name="ChallengeAccessType" ng-control="options" type="radio" [value]=0 [(ngModel)]="challenge.ChallengeAccessType"
+          id="noTimeTrue"><br />
       </span>
       <span>
         <label for="noTimeFalse">Приватное</label>
         <input name="ChallengeAccessType" ng-control="options" type="radio" [value]=1 [(ngModel)]="challenge.ChallengeAccessType"><br />
       </span>
+    </div>
+
+    <div>
+        <mat-form-field class="example-full-width">
+          <input type="text" placeholder="Pick one" aria-label="Number" matInput [formControl]="myControl"
+          [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let user of users | async" [value]="user.StudentId">
+              {{user.FirstName}} {{user.Email}} {{user.StudentId}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
     </div>
     <button type="submit" class="text btn" [disabled]="!loginForm.form.valid">
       Подтвердить
