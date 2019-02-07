@@ -16,9 +16,12 @@
       <input type="password" class="form-control" id="Password" required minlength="6" [(ngModel)]="model.Password"
         name="Password" #pass="ngModel">
       <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="alert alert-danger">
-        <div *ngIf="pass.errors.minlength">
+        <div *ngIf="pass.errors.minlength; else passIsRequired">
           Пароль не может быть короче 6-и символов
         </div>
+        <ng-template #passIsRequired>
+          Пароль обязателен
+        </ng-template>
       </div>
     </div>
     <div class="form-group">
