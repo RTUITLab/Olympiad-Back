@@ -7,19 +7,23 @@ import { ChallengeState } from 'src/app/models/General/ChallengeState';
 import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
 import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseService } from 'src/app/services/exercise.service';
+import { LoadingComponent } from '../../helpers/loading-component';
 
 @Component({
   selector: 'app-challenges-list',
   templateUrl: './challenges-list.component.html',
   styleUrls: ['./challenges-list.component.css']
 })
-export class ChallengesListComponent implements OnInit {
+export class ChallengesListComponent extends LoadingComponent implements OnInit {
 
   constructor(
     private router: Router,
     private challengesService: ChallengesService,
     private exerciseService: ExerciseService,
-    private currentExerciseState: ExerciseStateService) { }
+    private currentExerciseState: ExerciseStateService,
+    ) {
+      super ();
+    }
 
   public challenges: Array<Challenge> = [];
   public currentChallengeId?: string;

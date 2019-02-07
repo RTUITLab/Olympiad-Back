@@ -4,19 +4,6 @@ ul {
     padding: 10px;
     /* border-bottom: 2px solid gray; */
 }
-.btn{
-    width: 100%;
-    text-decoration: none;
-    outline: none;
-    display: inline-block;
-    margin-top: 10px;
-    background: white;
-    transition: .15s ease-in-out;
-}
-.btn:hover{
-        box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);
-        color: rgb(67, 55, 241);
-}
 button {
     margin: 3px;
     width: 100%;

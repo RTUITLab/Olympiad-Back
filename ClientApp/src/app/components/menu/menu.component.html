@@ -1,24 +1,24 @@
 <ul>
   <li>
     <div *ngIf="user; else buttonsBlock">
-      <button class="btn text">Текущий прогресс</button>
-      <button class="btn text" (click)="myPage()">Моя страница</button>
-      <button class="btn text" (click)="overView()">Общие положения</button>
+      <button class="btn btn-primary text">Текущий прогресс</button>
+      <button class="btn btn-primary text" (click)="myPage()">Моя страница</button>
+      <button class="btn btn-primary text" (click)="overView()">Общие положения</button>
       <hr />
       <div *ngIf="isAdmin()">
-        <button class="btn text" (click)="addExercise()">
+        <button class="btn btn-primary text" (click)="addExercise()">
           Добавить задание
         </button>
-        <button class="btn text" (click)="addChallenge()">
+        <button class="btn btn-primary text" (click)="addChallenge()">
           Добавить соревнование
-        </button><button class="btn text" (click)="usersList()">
+        </button><button class="btn btn-primary text" (click)="usersList()">
           Список пользователей
         </button>
       </div>
     </div>
     <ng-template #buttonsBlock>
-      <button class="btn text" (click)="login()">Войти в систему</button>
-      <button class="btn text" (click)="register()">Зарегистрироваться</button>
+      <button class="btn btn-primary text" (click)="login()">Войти в систему</button>
+      <button class="btn btn-primary text" (click)="register()">Зарегистрироваться</button>
     </ng-template>
   </li>
 </ul>
