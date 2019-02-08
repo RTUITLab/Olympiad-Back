@@ -14,13 +14,15 @@
     </div>
 
     <div class="form-group">
-      <label for="ChallengePick">Соревнование</label>
-      <select type="text" class="form-control" id="ChallengePick" required [(ngModel)]="newExercise.ChallengeId" name="ChallengePick"
-        #challengePick="ngModel">
-        <option *ngFor="let challenge of challenges" value="{{challenge.Id}}">
-          <p>{{challenge.Name}}</p>
-        </option>
-      </select>
+      <mat-form-field>
+        <label for="ChallengePick">Соревнование</label>
+        <input name="ChallengePick" type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
+        <mat-autocomplete (optionSelected)="lolkek($event)" #auto="matAutocomplete" autoActiveFirstOption [displayWith]="displayFn">
+          <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+            {{option.Name}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
     </div>
 
     <div class="form-group">

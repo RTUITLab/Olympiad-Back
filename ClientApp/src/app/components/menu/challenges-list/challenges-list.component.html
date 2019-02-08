@@ -4,35 +4,32 @@
     <div class="text" *ngIf="currentChallenge; else loading">
       <h2>{{currentChallenge.Name}}</h2>
       <p>{{currentChallengeTimeLeft}}</p>
-      <div *ngIf="currentExercises; else loading">
+      <div *ngIf="currentExercises">
         <div *ngFor="let ex of currentExercises">
           <div *ngIf="ex.Status!==-1" class="exercises">
-            <button class="btn text exercises_list" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+            <button class="btn btn-light text exercises_list" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
             <div class="exercise_status_img">
               <img src="assets/StatusCode/{{ex.Status}}.svg" />
             </div>
           </div>
           <div *ngIf="ex.Status==-1">
-              <button class="btn text" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+              <button class="btn exercises_list btn-light text" (click)="goToExercise(ex.Id)">{{ex.Name}}</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <ng-template #loading>
-      <div style="background: rgb(241, 0, 0); height: 200px">
-          my block
-        </div>
-        <ngx-loading [show]="loading" [template]='loading'></ngx-loading> 
+      <ng-template #loading>
+          <ngx-loading [show]="loading"></ngx-loading> 
       </ng-template>
-
-  </div>
-  <ng-template #noCurrentChallenge>
-    <h2 class="avaliable_challenges_header text">Доступные соревнования ({{challenges.length}})</h2>
-    <button class="list_of_challenges btn btn-info text" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
-      <div class="challenge-box">
-        <div class="text">{{challenge.Name}}</div>
-        <div class="text">{{challengeTime(challenge)}}</div>
+        
       </div>
-    </button>
-  </ng-template>
-</div>
+      <ng-template #noCurrentChallenge>
+        <h2 class="avaliable_challenges_header text">Доступные соревнования ({{challenges.length}})</h2>
+        <button class="list_of_challenges btn btn-info text" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
+          <div class="challenge-box">
+            <div class="text">{{challenge.Name}}</div>
+            <div class="text">{{challengeTime(challenge)}}</div>
+          </div>
+        </button>
+      </ng-template>
+    </div>
