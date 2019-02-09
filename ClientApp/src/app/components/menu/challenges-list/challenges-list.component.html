@@ -24,7 +24,7 @@
         
       </div>
       <ng-template #noCurrentChallenge>
-        <h2 class="avaliable_challenges_header text">Доступные соревнования ({{challenges.length}})</h2>
+        <h2 class="avaliable_challenges_header text">Cоревнования ({{challenges.length}})</h2>
         <button class="list_of_challenges btn btn-info text" *ngFor="let challenge of challenges" (click)="goToChallenge(challenge)">
           <div class="challenge-box">
             <div class="text">{{challenge.Name}}</div>

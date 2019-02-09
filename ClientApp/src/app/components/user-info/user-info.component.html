@@ -1,5 +1,5 @@
 <div class="UserInfo" *ngIf="user">
-  <div class="UserData text">
+  <!-- <div class="UserData text">
       <div>
         Имя: {{user.FirstName}}
       </div>
@@ -11,5 +11,17 @@
     <button mat-button class="logout_btn text" (click)="logout()">
       Выйти
     </button>
-  </div>
+  </div> -->
+  <button class="btn" mat-button [matMenuTriggerFor]="menu">
+      <img src="../../../assets/icons/user_icon.png">
+      <span>{{user.FirstName}}</span>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button class="btn" mat-menu-item>
+        <span>Моя страница</span>
+      </button>
+      <button class="btn" (click)="logout()" mat-menu-item>
+        <span>Выйти</span>
+      </button>
+    </mat-menu>
 </div>

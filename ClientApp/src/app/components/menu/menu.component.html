@@ -1,7 +1,6 @@
 <ul>
   <li>
     <div *ngIf="user; else buttonsBlock">
-      <button class="btn btn-primary text">Текущий прогресс</button>
       <button class="btn btn-primary text" (click)="myPage()">Моя страница</button>
       <button class="btn btn-primary text" (click)="overView()">Общие положения</button>
       <hr />
@@ -14,14 +13,15 @@
         </button><button class="btn btn-primary text" (click)="usersList()">
           Список пользователей
         </button>
+        <hr>
       </div>
     </div>
     <ng-template #buttonsBlock>
       <button class="btn btn-primary text" (click)="login()">Войти в систему</button>
       <button class="btn btn-primary text" (click)="register()">Зарегистрироваться</button>
+      <hr>
     </ng-template>
   </li>
 </ul>
-<hr>
 
 <app-challenges-list *ngIf="user"></app-challenges-list>

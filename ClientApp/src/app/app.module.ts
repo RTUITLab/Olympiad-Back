@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule, MatAutocompleteModule } from '@angular/material';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
@@ -157,6 +158,7 @@ const routes: Route[] = [
       },
     }),
     MatTableModule,
+    MatMenuModule,
     MatButtonModule,
     MatInputModule,
     MatAutocompleteModule,

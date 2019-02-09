@@ -1,34 +1,34 @@
 .UserInfo{
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-    border:1px solid blue;
-    border-radius: 8px;
-    background-color: rgba(225, 225, 247, 0.185);
+    justify-self: center;
+    width: max-content;
 }
-.UserData{
-    grid-row:1;
-    grid-column:1;
-    text-align: center;
-    margin-left: 5px;
-    color:black;
+img{
+    height: 40px;
 }
-.text{
-    word-wrap: break-word;
-    max-width: 100%;
-    text-align: center;
-    display: inline-block;
-    overflow: hidden;
-}
-.logout{
-    grid-column:1;
-    grid-row:2;
-}
-.logout_btn{
-    color:blue;
-    border-radius: unset;
-    border-top:1px solid blue;
-    width: 100%;
-    height: 100%;
+// .UserData{
+//     grid-row:1;
+//     grid-column:1;
+//     text-align: center;
+//     margin-left: 5px;
+//     color:black;
+// }
+// .text{
+//     word-wrap: break-word;
+//     max-width: 100%;
+//     text-align: center;
+//     display: inline-block;
+//     overflow: hidden;
+// }
+// .logout{
+//     grid-column:1;
+//     grid-row:2;
+// }
+// .logout_btn{
+//     color:blue;
+//     border-radius: unset;
+//     border-top:1px solid blue;
+//     width: 100%;
+//     height: 100%;
     
-}
+// }
