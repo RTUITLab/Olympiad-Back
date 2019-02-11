@@ -1,7 +1,6 @@
 <ul>
   <li>
     <div *ngIf="user; else buttonsBlock">
-      <button class="btn btn-primary text" (click)="myPage()">Моя страница</button>
       <button class="btn btn-primary text" (click)="overView()">Общие положения</button>
       <hr />
       <div *ngIf="isAdmin()">

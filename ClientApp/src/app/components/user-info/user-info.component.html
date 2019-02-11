@@ -1,27 +1,14 @@
 <div class="UserInfo" *ngIf="user">
-  <!-- <div class="UserData text">
-      <div>
-        Имя: {{user.FirstName}}
-      </div>
-      <div>
-        Email: {{user.Email}}
-      </div>
-  </div>
-  <div class="logout">
-    <button mat-button class="logout_btn text" (click)="logout()">
-      Выйти
-    </button>
-  </div> -->
   <button class="btn" mat-button [matMenuTriggerFor]="menu">
       <img src="../../../assets/icons/user_icon.png">
       <span>{{user.FirstName}}</span>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button class="btn" (click)="myPage()" mat-menu-item>
+      Моя страница
     </button>
-    <mat-menu #menu="matMenu">
-      <button class="btn" mat-menu-item>
-        <span>Моя страница</span>
-      </button>
-      <button class="btn" (click)="logout()" mat-menu-item>
-        <span>Выйти</span>
-      </button>
-    </mat-menu>
+    <button class="btn logout_btn" (click)="logout()" mat-menu-item>
+      Выйти
+    </button>
+  </mat-menu>
 </div>

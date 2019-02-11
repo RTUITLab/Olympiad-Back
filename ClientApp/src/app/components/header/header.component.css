@@ -11,8 +11,10 @@
 }
 .header_userInfo {
     grid-column: 3;
+    justify-self: center;
 }
 .header_text{ 
+    white-space: nowrap;
     grid-column: 2;
     justify-self: center;
     font-family: "Trebuchet MS", Helvetica, sans-serif;

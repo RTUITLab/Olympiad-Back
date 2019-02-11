@@ -46,9 +46,6 @@ export class MenuComponent implements OnInit {
   overView() {
     this.router.navigate(['overview']);
   }
-  myPage() {
-    this.router.navigate(['personal-page']);
-  }
   usersList() {
     this.router.navigate(['users-list']);
   }
