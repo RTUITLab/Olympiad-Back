@@ -23,6 +23,7 @@
     "@angular/platform-browser-dynamic": "~7.0.0",
     "@angular/router": "~7.0.0",
     "angular2-recaptcha": "^1.1.0",
+    "bootstrap": "^4.3.0",
     "core-js": "^2.5.4",
     "guid": "0.0.12",
     "ng-pick-datetime": "^7.0.0",
