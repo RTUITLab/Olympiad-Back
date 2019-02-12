@@ -31,8 +31,8 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
     this.regCheck.checkAvailableRegistration()
       .subscribe(s => {
         this.regIsAvaliable = s;
-        this.stopLoading();
       });
+      this.stopLoading();
   }
 
   onSubmit() {

@@ -50,7 +50,7 @@
     </div>
   </form>
 </div>
-<div id='reg_unavailable' *ngIf="!regIsAvaliable">
-  Регистрация не доступна
+<div id='reg_unavailable' class="reg_unavailable" *ngIf="!regIsAvaliable">
+  Извините, регистрация на данный момент не доступна.
 </div>
 <ngx-loading  [show]="loading"></ngx-loading>

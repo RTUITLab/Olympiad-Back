@@ -4,6 +4,12 @@
 .btn_reg {
     width: 100%;
 }
+.reg_unavailable {
+    display: grid;
+    justify-content: center;
+    margin-top: 5%;
+    font-size: 20px;
+}
 .text{
     word-wrap: break-word;
     max-width: 100%;
