@@ -1,17 +1,31 @@
-
-
-/* 'Open Sans' font from Google Fonts */
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,700);
-
-body {
-
-  font-family: 'Open Sans', sans-serif;
+.login-page {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 50% 50%;
 }
+.mirea-logo {
+  display: grid;
+  grid-column: 1;
+  justify-content: center;
+  align-content: center;
 
+}
+img {
+  height: 400px;
+}
 .login {
-  width: 400px;
+  grid-column: 2;
+  width: 60%;
   margin: 12px auto;
   font-size: 16px;
+  -webkit-box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
+  -moz-box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
+  box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
+}
+.login-area{
+  height: 100%;
+  width: 100%;
 }
 
 
@@ -21,17 +35,8 @@ body {
 .login a{
   margin-top: 0;
   margin-bottom: 0;
+  
 }
-
-/* The triangle form is achieved by a CSS hack */
-.login-triangle {
-  width: 0;
-  margin-right: auto;
-  margin-left: auto;
-  border: 12px solid transparent;
-  border-bottom-color: #28d;
-}
-
 .login-header {
   background: #28d;
   padding: 20px;
@@ -39,17 +44,22 @@ body {
   font-weight: normal;
   text-align: center;
   text-transform: uppercase;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   color: #fff;
 }
 
 .login-container {
   background: #ebebeb;
   padding: 12px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 /* Every row inside .login-container is defined with p tags */
 .login p {
-  padding: 12px;
+  padding: 6px 0 6px 0;
+  text-align: center;
 }
 
 .login input {
@@ -69,6 +79,7 @@ body {
   background: #fff;
   border-color: #bbb;
   color: #555;
+  border-radius: 40px;
 }
 
 /* Text fields' focus effect */
@@ -80,6 +91,7 @@ body {
 .login input[type="submit"] {
   background: #28d;
   border-color: transparent;
+  border-radius: 40px;
   color: #fff;
   cursor: pointer;
 }

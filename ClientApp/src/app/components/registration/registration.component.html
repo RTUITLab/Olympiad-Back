@@ -1,16 +1,42 @@
-<div class="login">
+<div class="login-page">
+  <div class="mirea-logo">
+    <img alt='mirea-logo' src="../../../assets/icons/MIREA_Logo.svg">
+  </div>
+  <div class="login">
     <div class="login-triangle"></div>
-    
-    <h2 class="login-header">Регистрация в системе</h2>
-  
+    <h2 class="login-header">
+      Регистрация в системе
+    </h2>
     <form class="login-container">
-      <p><input type="lastname" placeholder="Фамилия"></p>
-      <p><input type="firstname" placeholder="Имя"></p>
-      <p><input type="surname" placeholder="Отчество"></p>
-      <p><input type="email" placeholder="Электронная почта"></p>
-      <p><input type="id" placeholder="ID"></p>
-      <p><input type="password" placeholder="Придумайте пароль"></p>
-      <p><input type="repeatpassword" placeholder="Повторите пароль"></p>
-      <p><input type="submit" value="Зарегистрироваться"></p>
+      <p>
+        <input type="firstname" placeholder="Имя">
+      </p>
+      <p>
+        <input type="lastname" placeholder="Фамилия">
+      </p>
+      <p>
+        <input type="surname" placeholder="Отчество">
+      </p>
+      <p>
+        <input type="email" placeholder="Электронная почта">
+      </p>
+      <p>
+        <input type="id" placeholder="ID">
+      </p>
+      <p>
+        <input type="password" placeholder="Придумайте пароль">
+      </p>
+      <p>
+        <input type="repeatpassword" placeholder="Повторите пароль">
+      </p>
+      <p>
+        <input type="submit" value="Зарегистрироваться">
+      </p>
+      <p>
+          <a routerLink="/login">
+            У вас уже есть аккаунт? Войти.
+          </a>
+      </p>
     </form>
   </div>
+</div>

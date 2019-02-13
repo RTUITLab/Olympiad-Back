@@ -26,7 +26,7 @@ export class LoginComponent extends LoadingComponent implements OnInit {
     this.startLoading();
     this.userState.Login(this.model).subscribe(
       success => {
-        this.router.navigate(['exercises']);
+        this.router.navigate(['overview']);
         this.stopLoading();
 
       },

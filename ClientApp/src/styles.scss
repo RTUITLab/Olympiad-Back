@@ -16,3 +16,11 @@ html {
 * {
     box-sizing: border-box;
 }
+a {
+    color:rgb(0, 133, 207);
+    text-decoration: unset;
+}
+a:hover {
+    text-decoration: underline;
+    text-decoration-color: rgb(0, 133, 207);
+}

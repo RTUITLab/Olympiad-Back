@@ -1,13 +1,13 @@
 <div class="UserInfo" *ngIf="user">
-  <button class="btn" mat-button [matMenuTriggerFor]="menu">
+  <button class="btn" disableRipple="true" [matMenuTriggerFor]="menu">
       <img src="../../../assets/icons/user_icon.png">
       <span>{{user.FirstName}}</span>
   </button>
   <mat-menu #menu="matMenu">
-    <button class="btn" (click)="myPage()" mat-menu-item>
+    <button class="btn" (click)="myPage()" disableRipple="true" mat-menu-item>
       Моя страница
     </button>
-    <button class="btn logout_btn" (click)="logout()" mat-menu-item>
+    <button class="btn logout_btn" (click)="logout()" disableRipple="true" mat-menu-item>
       Выйти
     </button>
   </mat-menu>

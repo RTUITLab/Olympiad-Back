@@ -1,25 +1,18 @@
-.gContainer {
+.page {
     display: grid;
     width: 100%;
     margin: 0 auto;
     grid-template-columns: auto;
-    grid-template-rows: 60px auto;
+    grid-template-rows: auto;
 }
 .header {
     grid-row:1;
-    word-break: normal;
 }
-.allContent {
+.content {
+    grid-row: 2 / auto;
     display: grid;
-    width: 960px;
+    width: 100%;
     margin: 0 auto;
     grid-template-columns: auto;
     grid-template-rows: auto;
-}
-.main_content {
-    grid-area: content;
-    margin-left: 15px;
-    margin-right: 15px;
-    grid-column: 2;
-    width: 400px;
 }
