@@ -11,3 +11,11 @@
 .form-header {
     text-align: center;
 }
+.route_to_reg {
+    margin-top: 14px;
+    text-align: center;
+}
+.form-control :focus {
+    outline: 0;
+    border: 20px solid red;
+}

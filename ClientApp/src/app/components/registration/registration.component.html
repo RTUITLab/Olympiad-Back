@@ -45,8 +45,16 @@
       </div>
     </div>
     <re-captcha (captchaResponse)="handleCorrectCaptcha($event)" site_key="{{captchaKey}}"></re-captcha>
-    <div class="form-group">
+    <div class="reg_btn">
       <button type="submit" class="btn_reg btn text btn-success" [disabled]="!registerForm.form.valid">Зарегистрироваться</button>
+    </div>
+    <div class="route_to_login">
+      <p>
+        У вас уже есть аккаунт ? 
+        <a routerLink="/login">
+          Войти
+        </a> 
+      </p>
     </div>
   </form>
 </div>

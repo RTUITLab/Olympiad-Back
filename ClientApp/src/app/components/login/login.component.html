@@ -24,6 +24,14 @@
     <div class="form-group">
       <button type="submit" class="btn_login btn text btn-success" [disabled]="!loginForm.form.valid">Войти</button>
     </div>
+    <div class="route_to_reg">
+        <label>
+          Еще не зарегистрировались ? 
+          <a routerLink="register">
+            Зарегистрироваться
+          </a> 
+        </label>
+      </div>
   </form>
   <ngx-loading [show]="loading"></ngx-loading>
 </div>
