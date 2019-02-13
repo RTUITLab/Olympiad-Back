@@ -1,64 +1,16 @@
-<div id="reg_available" *ngIf="regIsAvaliable" class="container">
-  <h3 class="form-header">Регистрация</h3>
-  <!-- <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div> -->
-  <form #registerForm="ngForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for=" Email">Электронная почта</label>
-      <input type="email" class="form-control" id="email" required [(ngModel)]="model.Email" name="Email" #email="ngModel">
-      <div *ngIf="email.invalid && (email.dirty || email.touched)" class="alert alert-danger">
-        <div>
-          Необходима почта
-        </div>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="Password">Пароль</label>
-      <input type="password" class="form-control" id="Password" required minlength="6" [(ngModel)]="model.Password"
-        name="Password" #pass="ngModel">
-      <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="alert alert-danger">
-        <div *ngIf="pass.errors.minlength; else passIsRequired">
-          Пароль не может быть короче 6-и символов
-        </div>
-        <ng-template #passIsRequired>
-          Пароль обязателен
-        </ng-template>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="FirstName">Имя</label>
-      <input type="text" class="form-control" id="FirstName" required [(ngModel)]="model.FirstName" name="FirstName"
-        #fName="ngModel">
-      <div *ngIf="fName.invalid && (fName.dirty || fName.touched)" class="alert alert-danger">
-        <div>
-          Имя обязательно
-        </div>
-      </div>
-    </div>
-    <div class="form-group">
-      <label for="StudentId">Номер студенческого билета</label>
-      <input type="text" class="form-control" id="StudentId" required [(ngModel)]="model.StudentId" name="StudentId"
-        #sId="ngModel">
-      <div *ngIf="sId.invalid && (sId.dirty || sId.touched)" class="alert alert-danger">
-        <div>
-          Номер студенческого билета обязателен
-        </div>
-      </div>
-    </div>
-    <re-captcha (captchaResponse)="handleCorrectCaptcha($event)" site_key="{{captchaKey}}"></re-captcha>
-    <div class="reg_btn">
-      <button type="submit" class="btn_reg btn text btn-success" [disabled]="!registerForm.form.valid">Зарегистрироваться</button>
-    </div>
-    <div class="route_to_login">
-      <p>
-        У вас уже есть аккаунт ? 
-        <a routerLink="/login">
-          Войти
-        </a> 
-      </p>
-    </div>
-  </form>
-</div>
-<div id='reg_unavailable' class="reg_unavailable" *ngIf="!regIsAvaliable">
-  Извините, регистрация на данный момент не доступна.
-</div>
-<ngx-loading  [show]="loading"></ngx-loading>
+<div class="login">
+    <div class="login-triangle"></div>
+    
+    <h2 class="login-header">Регистрация в системе</h2>
+  
+    <form class="login-container">
+      <p><input type="lastname" placeholder="Фамилия"></p>
+      <p><input type="firstname" placeholder="Имя"></p>
+      <p><input type="surname" placeholder="Отчество"></p>
+      <p><input type="email" placeholder="Электронная почта"></p>
+      <p><input type="id" placeholder="ID"></p>
+      <p><input type="password" placeholder="Придумайте пароль"></p>
+      <p><input type="repeatpassword" placeholder="Повторите пароль"></p>
+      <p><input type="submit" value="Зарегистрироваться"></p>
+    </form>
+  </div>
