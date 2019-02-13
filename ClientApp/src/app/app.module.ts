@@ -44,6 +44,7 @@ import { UsersComponent } from './components/users/users.component';
 import { PersonalPageComponent } from './components/personal-page/personal-page.component';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
+import { SelectChallengeComponent } from './components/select-challenge/select-challenge.component';
 
 const routes: Route[] = [
   {
@@ -138,6 +139,7 @@ const routes: Route[] = [
     UsersComponent,
     ChallengeEditComponent,
     PersonalPageComponent,
+    SelectChallengeComponent,
   ],
   imports: [
     BrowserModule,
