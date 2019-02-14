@@ -23,7 +23,9 @@ img {
   -moz-box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
   box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
 }
-
+input:disabled {
+  background: rgb(160, 160, 160) !important;
+}
 /* Reset top and bottom margins from certain elements */
 .registration-header,
 .registration p 
@@ -69,13 +71,8 @@ img {
   font-size: 0.95em;
 }
 
-.registration input[type="email"],
-.registration input[type="password"],
-.registration input[type="lastname"],
-.registration input[type="firstname"],
-.registration input[type="surname"],
-.registration input[type="id"],
-.registration input[type="repeatpassword"] {
+.registration input[type="text"],
+.registration input[type="password"] {
   background: #fff;
   border-color: #bbb;
   border-radius: 40px;
@@ -83,11 +80,7 @@ img {
 }
 
 /* Text fields' focus effect */
-.registration input[type="lastname"]:focus,
-.registration input[type="firstname"]:focus,
-.registration input[type="surname"]:focus,
-.registration input[type="id"]:focus,
-.registration input[type="repeatpassword"]:focus,
+.registration input[type="text"]:focus,
 .registration input[type="password"]:focus {
   border-color: #888;
 }

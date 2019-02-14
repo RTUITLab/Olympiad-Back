@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { ToastrService } from 'ngx-toastr';
 import { LoadingComponent } from '../helpers/loading-component';
 import { AvailableRegistrationCheckService as AvailableReg } from '../../services/available-registration-check.service';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-registration',
@@ -17,6 +18,33 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
   errorMessage: string;
   regIsAvaliable = false;
   model: RegisterViewModel = RegisterViewModel.Default;
+  registrationForm = new FormGroup({
+    FirstName: new FormControl('',[
+      Validators.required
+    ]),
+    LastName: new FormControl('',[
+      Validators.required
+    ]),
+    SurName: new FormControl(''),
+    Email: new FormControl('',[
+      Validators.required,
+      Validators.email
+    ]),
+    StudentId: new FormControl('',[
+      Validators.required
+    ]),
+    Password: new FormControl('',[
+      Validators.required,
+      Validators.minLength(6)
+    ]),
+    RepeatPassword: new FormControl('',[
+      Validators.required,
+      Validators.minLength(6)
+    ]),
+    RecaptchaToken: new FormControl('',[
+      Validators.required
+    ])
+  });
   constructor(
     private userService: UserStateService,
     private router: Router,

@@ -7,30 +7,33 @@
     <h2 class="registration-header">
       Регистрация в системе
     </h2>
-    <form class="registration-container">
+    <form novalidate [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-container">
       <p>
-        <input type="firstname" placeholder="Имя">
+        <input type="text" autocomplete="firstname"  name="firstname" formControlName="FirstName"  placeholder="Имя">
       </p>
       <p>
-        <input type="lastname" placeholder="Фамилия">
+        <input type="text" autocomplete="lastname" name="lastname" formControlName="LastName" placeholder="Фамилия">
       </p>
       <p>
-        <input type="surname" placeholder="Отчество">
+        <input type="text" autocomplete="surname" name="surname" formControlName="SurName" placeholder="Отчество">
       </p>
       <p>
-        <input type="email" placeholder="Электронная почта">
+        <input type="text" autocomplete="email" name="email" formControlName="Email" placeholder="Электронная почта">
       </p>
       <p>
-        <input type="id" placeholder="ID">
+        <input type="text" autocomplete="id" name="id" formControlName="StudentId" placeholder="ID">
       </p>
       <p>
-        <input type="password" placeholder="Придумайте пароль">
+        <input type="password" autocomplete="new-password" name="password" formControlName="Password" placeholder="Придумайте пароль">
       </p>
       <p>
-        <input type="repeatpassword" placeholder="Повторите пароль">
+        <input type="password" autocomplete="new-password" name="repeat-password" formControlName="RepeatPassword" placeholder="Повторите пароль">
       </p>
       <p>
-        <input type="submit" value="Зарегистрироваться">
+        <re-captcha (captchaResponse)="handleCorrectCaptcha($event)" formControlName="RecaptchaToken" site_key="{{captchaKey}}"></re-captcha>
+      </p>
+      <p>
+        <input [disabled]="registrationForm.invalid" type="submit" value="Зарегистрироваться">
       </p>
       <p>
           <a routerLink="/registration">

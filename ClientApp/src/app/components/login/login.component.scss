@@ -4,7 +4,7 @@
   height: 100%;
   grid-template-columns: 50% 50%;
 }
-.mirea-logo {
+.logo {
   display: grid;
   grid-column: 1;
   justify-content: center;
@@ -27,8 +27,9 @@ img {
   height: 100%;
   width: 100%;
 }
-
-
+input:disabled {
+  background: rgb(160, 160, 160) !important;
+}
 /* Reset top and bottom margins from certain elements */
 .login-header,
 .login p 
