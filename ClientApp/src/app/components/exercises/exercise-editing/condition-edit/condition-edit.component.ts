@@ -7,7 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-condition-edit',
   templateUrl: './condition-edit.component.html',
-  styleUrls: ['./condition-edit.component.css']
+  styleUrls: ['./condition-edit.component.scss']
 })
 export class ConditionEditComponent implements OnInit {
 

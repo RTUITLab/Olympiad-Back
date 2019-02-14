@@ -12,7 +12,7 @@ import { LoadingComponent } from '../../helpers/loading-component';
 @Component({
   selector: 'app-challenges-list',
   templateUrl: './challenges-list.component.html',
-  styleUrls: ['./challenges-list.component.css']
+  styleUrls: ['./challenges-list.component.scss']
 })
 export class ChallengesListComponent extends LoadingComponent implements OnInit {
 

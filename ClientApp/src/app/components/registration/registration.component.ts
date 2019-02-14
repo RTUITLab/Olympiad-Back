@@ -10,7 +10,7 @@ import { AvailableRegistrationCheckService as AvailableReg } from '../../service
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
-  styleUrls: ['./registration.component.css']
+  styleUrls: ['./registration.component.scss']
 })
 export class RegistrationComponent extends LoadingComponent implements OnInit {
   loading = false;

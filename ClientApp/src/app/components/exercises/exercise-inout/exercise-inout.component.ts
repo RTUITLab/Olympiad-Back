@@ -5,7 +5,7 @@ import { ExerciseData } from '../../../models/ExerciseData';
 @Component({
   selector: 'app-exercise-inout',
   templateUrl: './exercise-inout.component.html',
-  styleUrls: ['./exercise-inout.component.css']
+  styleUrls: ['./exercise-inout.component.scss']
 })
 export class ExerciseInoutComponent implements OnInit {
   @Input() exId: string;
