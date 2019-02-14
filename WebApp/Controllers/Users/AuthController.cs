@@ -43,17 +43,17 @@ namespace WebApp.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Post([FromBody]CredentialsReques credentials)
+        public async Task<IActionResult> Post([FromBody]CredentialsRequest credentials)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (string.IsNullOrEmpty(credentials.UserName) || string.IsNullOrEmpty(credentials.Password))
+            if (string.IsNullOrEmpty(credentials.Email) || string.IsNullOrEmpty(credentials.Password))
             {
                 return BadRequest();
             }
-            var user = await _userManager.FindByNameAsync(credentials.UserName);
+            var user = await _userManager.FindByNameAsync(credentials.Email);
             if (user == null) return BadRequest();
             if (!await _userManager.CheckPasswordAsync(user, credentials.Password)
                 //|| await _userManager.IsEmailConfirmedAsync(userToVerify)
