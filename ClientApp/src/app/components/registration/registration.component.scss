@@ -5,17 +5,31 @@
   justify-content: center;
 }
 .registration {
-  margin: 12px auto;
   font-size: 16px;
 }
-input:disabled {
-  background: rgb(160, 160, 160) !important;
+.input-error {
+  border:  1px solid red;
+  border-radius: 40px;
+}
+.recaptcha-error {
+  border-bottom:  2px solid red;
+
+}
+.recaptcha {
+  margin-top: 12px;
+  display: grid;
+  justify-content: center;
+}
+.submit-unvaliable {
+  background: rgb(133, 132, 132);
+}
+.error {
+  color: red;
 }
 /* Reset top and bottom margins from certain elements */
 .registration-header,
 .registration p 
 {
-  margin-top: 0;
   margin-bottom: 0;
   text-align: center;
 }
@@ -37,11 +51,6 @@ input:disabled {
   padding: 12px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-}
-
-/* Every row inside .registration-container is defined with p tags */
-.registration p {
-  padding: 12px;
 }
 
 .registration input {

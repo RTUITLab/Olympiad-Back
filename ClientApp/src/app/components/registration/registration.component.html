@@ -5,32 +5,57 @@
       Регистрация в системе
     </h2>
     <form novalidate [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-container">
-      <p>
+      <p [ngClass]="{
+        'input-error': registrationForm.controls.FirstName.errors && (registrationForm.controls.FirstName.dirty || registrationForm.controls.FirstName.touched)}">
         <input type="text" autocomplete="firstname"  name="firstname" formControlName="FirstName"  placeholder="Имя">
       </p>
-      <p>
+      <p class="error" *ngIf="registrationForm.controls.FirstName.errors && (registrationForm.controls.FirstName.dirty || registrationForm.controls.FirstName.touched)">
+        Введите имя
+      </p>
+      <p [ngClass]="{
+        'input-error': registrationForm.controls.LastName.errors && (registrationForm.controls.LastName.dirty || registrationForm.controls.LastName.touched)}">
         <input type="text" autocomplete="lastname" name="lastname" formControlName="LastName" placeholder="Фамилия">
       </p>
-      <p>
-        <input type="text" autocomplete="surname" name="surname" formControlName="SurName" placeholder="Отчество">
+      <p class="error" *ngIf="registrationForm.controls.LastName.errors && (registrationForm.controls.LastName.dirty || registrationForm.controls.LastName.touched)">
+        Введите фамилию
       </p>
-      <p>
+      <p [ngClass]="{
+        'input-error': registrationForm.controls.Email.errors && (registrationForm.controls.Email.dirty || registrationForm.controls.Email.touched)}">
         <input type="text" autocomplete="email" name="email" formControlName="Email" placeholder="Электронная почта">
       </p>
-      <p>
+      <p class="error" *ngIf="registrationForm.controls.Email.errors && (registrationForm.controls.Email.dirty || registrationForm.controls.Email.touched)">
+        Введите корректный Email
+      </p>
+      <p [ngClass]="{
+        'input-error': registrationForm.controls.StudentId.errors && (registrationForm.controls.StudentId.dirty || registrationForm.controls.StudentId.touched)}">
         <input type="text" autocomplete="id" name="id" formControlName="StudentId" placeholder="ID">
       </p>
-      <p>
+      <p class="error" *ngIf="registrationForm.controls.StudentId.errors && (registrationForm.controls.StudentId.dirty || registrationForm.controls.StudentId.touched)">
+        Введите ID
+      </p>
+      <p [ngClass]="{
+        'input-error': registrationForm.controls.Password.errors && (registrationForm.controls.Password.dirty || registrationForm.controls.Password.touched)}">
         <input type="password" autocomplete="new-password" name="password" formControlName="Password" placeholder="Придумайте пароль">
       </p>
-      <p>
+      <p class="error" *ngIf="registrationForm.controls.Password.errors && (registrationForm.controls.Password.dirty || registrationForm.controls.Password.touched)">
+        Введите пароль из не менее 6 символов
+      </p>
+      <p [ngClass]="{
+        'input-error': registrationForm.controls.RepeatPassword.errors && (registrationForm.controls.RepeatPassword.dirty || registrationForm.controls.RepeatPassword.touched)}">
         <input type="password" autocomplete="new-password" name="repeat-password" formControlName="RepeatPassword" placeholder="Повторите пароль">
       </p>
-      <p>
+      <p class="error" *ngIf="registrationForm.controls.RepeatPassword.errors && (registrationForm.controls.RepeatPassword.dirty || registrationForm.controls.RepeatPassword.touched)">
+        Пароли не совпадают
+      </p>
+      <div class="recaptcha" [ngClass]="{
+        'recaptcha-error': registrationForm.controls.RecaptchaToken.errors && (registrationForm.controls.RecaptchaToken.dirty || registrationForm.controls.RecaptchaToken.touched)}">
         <re-captcha (captchaResponse)="handleCorrectCaptcha($event)" formControlName="RecaptchaToken" site_key="{{captchaKey}}"></re-captcha>
+      </div>
+      <p class="error" *ngIf="registrationForm.controls.RecaptchaToken.errors && (registrationForm.controls.RecaptchaToken.dirty || registrationForm.controls.RecaptchaToken.touched)">
+        Пройдите проверку
       </p>
       <p>
-        <input [disabled]="registrationForm.invalid" type="submit" value="Зарегистрироваться">
+        <input type="submit" value="Зарегистрироваться">
       </p>
       <p>
           <a routerLink="/registration">

@@ -3,14 +3,22 @@
     <h2 class="login-header">Войти в систему</h2>
     
     <form class="login-container" novalidate [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <p>
-        <input type="email" autocomplete="email" placeholder="Email" formControlName="Email">
+      <p [ngClass]="{
+        'input-error': loginForm.controls.Email.errors && (loginForm.controls.Email.dirty || loginForm.controls.Email.touched)}">
+        <input type="email" required autocomplete="email" placeholder="Email" formControlName="Email">
+      </p>
+      <p class="error" *ngIf="loginForm.controls.Email.errors && (loginForm.controls.Email.dirty || loginForm.controls.Email.touched)">
+        Введите корректный Email
+      </p>
+      <p [ngClass]="{
+        'input-error': loginForm.controls.Password.errors && (loginForm.controls.Password.dirty || loginForm.controls.Password.touched)}">
+        <input type="password" required autocomplete="current-password" placeholder="Password" formControlName="Password">
+      </p>
+      <p class="error" *ngIf="loginForm.controls.Password.errors && (loginForm.controls.Password.dirty || loginForm.controls.Password.touched)">
+        Пвроль должен содержать минимум 6 символов
       </p>
       <p>
-        <input type="password" autocomplete="current-password" placeholder="Password" formControlName="Password">
-      </p>
-      <p>
-        <input [disabled]="loginForm.invalid" type="submit" value="Войти">
+        <input [ngClass]="{'submit-unvaliable': loginForm.invalid}" type="submit" value="Войти">
       </p> 
       <p>
         <a routerLink="/register">
