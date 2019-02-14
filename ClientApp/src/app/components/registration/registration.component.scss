@@ -2,26 +2,11 @@
   display: grid;
   width: 100%;
   height: 100%;
-  grid-template-columns: 50% 50%;
-}
-.logo {
-  display: grid;
-  grid-column: 1;
   justify-content: center;
-  align-content: center;
-
-}
-img {
-  height: 400px;
 }
 .registration {
-  grid-column: 2;
-  width: 60%;
   margin: 12px auto;
   font-size: 16px;
-  -webkit-box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
-  -moz-box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
-  box-shadow: -27px 0px 59px -21px rgba(184,178,184,1);
 }
 input:disabled {
   background: rgb(160, 160, 160) !important;

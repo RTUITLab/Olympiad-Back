@@ -19,29 +19,29 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
   regIsAvaliable = false;
   model: RegisterViewModel = RegisterViewModel.Default;
   registrationForm = new FormGroup({
-    FirstName: new FormControl('',[
+    FirstName: new FormControl('', [
       Validators.required
     ]),
-    LastName: new FormControl('',[
+    LastName: new FormControl('', [
       Validators.required
     ]),
     SurName: new FormControl(''),
-    Email: new FormControl('',[
+    Email: new FormControl('', [
       Validators.required,
       Validators.email
     ]),
-    StudentId: new FormControl('',[
+    StudentId: new FormControl('', [
       Validators.required
     ]),
-    Password: new FormControl('',[
+    Password: new FormControl('', [
       Validators.required,
       Validators.minLength(6)
     ]),
-    RepeatPassword: new FormControl('',[
+    RepeatPassword: new FormControl('', [
       Validators.required,
       Validators.minLength(6)
     ]),
-    RecaptchaToken: new FormControl('',[
+    RecaptchaToken: new FormControl('', [
       Validators.required
     ])
   });
@@ -64,7 +64,7 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
   }
 
   onSubmit() {
-
+    console.log(this.registrationForm);
     if (!this.model.RecaptchaToken) {
       alert('Выполните проверку!');
       return;
