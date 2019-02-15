@@ -7,10 +7,13 @@ import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule, MatAutocompleteModule } from '@angular/material';
 import { MatMenuModule } from '@angular/material/menu';
+import {MatSelectModule} from '@angular/material/select';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+
 
 
 
@@ -147,6 +150,8 @@ const routes: Route[] = [
     RouterModule.forRoot(routes),
     FormsModule,
     MatTooltipModule,
+    MatSelectModule,
+    MatFormFieldModule,
     ReactiveFormsModule,
     BrowserAnimationsModule, // required animations module
     ToastrModule.forRoot({

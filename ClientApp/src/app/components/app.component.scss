@@ -8,8 +8,11 @@
 .header {
     grid-row:1;
 }
+.challenge-bar {
+    grid-row:2;
+}
 .content {
-    grid-row: 2 / auto;
+    grid-row: 3 / auto;
     display: grid;
     width: 100%;
     margin: 0 auto;

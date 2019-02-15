@@ -2,6 +2,9 @@
   <div class="header">
     <app-header></app-header>
   </div>
+  <div class="challenge-bar" *ngIf="user">
+    <app-select-challenge></app-select-challenge>
+  </div>
   <div class="content">
     <router-outlet></router-outlet>
   </div>
