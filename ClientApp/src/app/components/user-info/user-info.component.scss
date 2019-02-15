@@ -5,7 +5,13 @@
 }
 img{
     height: 40px;
+    filter: invert(100%);
 }
 .logout_btn {
     color: red;
+}
+.menu-btn {
+    border-radius: 40px;
+    color:white;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
