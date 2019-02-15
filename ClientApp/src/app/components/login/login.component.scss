@@ -4,6 +4,20 @@
   height: 100%;
   justify-content: center;
 }
+.input-error {
+  border:  1px solid red;
+  border-radius: 40px;
+}
+.submit-unvaliable {
+  background: rgb(133, 132, 132);
+}
+.error {
+  color: red;
+}
+.input-success{
+  border:  1px solid #04f504;
+  border-radius: 40px;
+}
 .login {
   margin: 12px auto;
   font-size: 16px;
@@ -11,9 +25,6 @@
 .login-area{
   height: 100%;
   width: 100%;
-}
-input:disabled {
-  background: rgb(160, 160, 160) !important;
 }
 /* Reset top and bottom margins from certain elements */
 .login-header,
@@ -44,7 +55,6 @@ input:disabled {
 
 /* Every row inside .login-container is defined with p tags */
 .login p {
-  padding: 6px 0 6px 0;
   text-align: center;
 }
 

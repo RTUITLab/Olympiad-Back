@@ -5,32 +5,70 @@
       Регистрация в системе
     </h2>
     <form novalidate [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-container">
-      <p>
-        <input type="text" autocomplete="firstname"  name="firstname" formControlName="FirstName"  placeholder="Имя">
+      <p [ngClass]="{
+        'input-error': firstName.errors && (firstName.dirty || firstName.touched),
+        'input-success': !firstName.errors && (firstName.dirty || firstName.touched)
+      }">
+        <input required type="text" autocomplete="name"  name="firstname" formControlName="FirstName"  placeholder="Имя">
       </p>
-      <p>
-        <input type="text" autocomplete="lastname" name="lastname" formControlName="LastName" placeholder="Фамилия">
+      <p class="error" *ngIf='firstName.errors && (firstName.dirty || firstName.touched)'>
+        Введите имя
       </p>
-      <p>
-        <input type="text" autocomplete="surname" name="surname" formControlName="SurName" placeholder="Отчество">
+      <p [ngClass]="{
+        'input-error': lastName.errors && (lastName.dirty || lastName.touched),
+        'input-success': !lastName.errors && (lastName.dirty || lastName.touched)
+      }">
+        <input type="text" autocomplete="additional-name" name="lastname" formControlName="LastName" placeholder="Фамилия">
       </p>
-      <p>
+      <p class="error" *ngIf='lastName.errors && (lastName.dirty || lastName.touched)'>
+        Введите фамилию
+      </p>
+      <p [ngClass]="{
+        'input-error': email.errors && (email.dirty || email.touched),
+        'input-success': !email.errors && (email.dirty || email.touched)
+      }">
         <input type="text" autocomplete="email" name="email" formControlName="Email" placeholder="Электронная почта">
       </p>
-      <p>
+      <p class="error" *ngIf='email.errors && (email.dirty || email.touched)'>
+        Введите корректный Email
+      </p>
+      <p [ngClass]="{
+        'input-error': id.errors && (id.dirty || id.touched),
+        'input-success': !id.errors && (id.dirty || id.touched)
+      }">
         <input type="text" autocomplete="id" name="id" formControlName="StudentId" placeholder="ID">
       </p>
-      <p>
+      <p class="error" *ngIf='id.errors && (id.dirty || id.touched)'>
+        Введите ID
+      </p>
+      <p [ngClass]="{
+        'input-error': password.errors && (password.dirty || password.touched),
+        'input-success': !password.errors && (password.dirty || password.touched)
+      }">
         <input type="password" autocomplete="new-password" name="password" formControlName="Password" placeholder="Придумайте пароль">
       </p>
-      <p>
+      <p class="error" *ngIf='password.errors && (password.dirty || password.touched)'>
+        Введите пароль из не менее 6 символов
+      </p>
+      <p [ngClass]="{
+        'input-error': repeatPassword.errors && (repeatPassword.dirty || repeatPassword.touched),
+        'input-success': !repeatPassword.errors && (repeatPassword.dirty || repeatPassword.touched)
+      }">
         <input type="password" autocomplete="new-password" name="repeat-password" formControlName="RepeatPassword" placeholder="Повторите пароль">
       </p>
-      <p>
+      <p class="error" *ngIf='repeatPassword.errors && (repeatPassword.dirty || repeatPassword.touched)'>
+        Пароли не совпадают
+      </p>
+      <div class="recaptcha" [ngClass]="{
+        'recaptcha-error': recaptchaToken.errors && (recaptchaToken.dirty || recaptchaToken.touched)
+      }">
         <re-captcha (captchaResponse)="handleCorrectCaptcha($event)" formControlName="RecaptchaToken" site_key="{{captchaKey}}"></re-captcha>
+      </div>
+      <p class="error" *ngIf='recaptchaToken.errors && (recaptchaToken.dirty || recaptchaToken.touched)'>
+        Пройдите проверку
       </p>
       <p>
-        <input [disabled]="registrationForm.invalid" type="submit" value="Зарегистрироваться">
+        <input type="submit" value="Зарегистрироваться">
       </p>
       <p>
           <a routerLink="/registration">
