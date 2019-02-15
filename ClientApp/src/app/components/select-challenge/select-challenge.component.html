@@ -1,0 +1,12 @@
+<div>
+    <p class="select-challenge">
+        <select (change)="selectChallenge($event)">
+            <option disabled>Выберите соревнование</option>
+            <option *ngFor="let challenge of challenges" [value]="challenge.Id">{{challenge.Name}}</option>
+        </select>
+        <select (change)="selectExercise($event)">
+                <option disabled>Выберите задание</option>
+                <option *ngFor="let ex of currentExercises" [value]="ex.Id">{{ex.Name}}</option>
+        </select>
+    </p>
+</div>
