@@ -39,7 +39,6 @@ export class LoginComponent extends LoadingComponent implements OnInit {
   onSubmit() {
     if (this.loginForm.valid) {
       this.model = this.loginForm.value;
-      console.log(this.loginForm);
       this.startLoading();
       this.userState.Login(this.model).subscribe(
         success => {
