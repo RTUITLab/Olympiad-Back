@@ -66,7 +66,7 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
     return challenge ? challenge.Name : undefined;
   }
 
-  lolkek(event: MatAutocompleteSelectedEvent) {
+  getSelectedOption(event: MatAutocompleteSelectedEvent) {
     const selectedChallenge = event.option.value as Challenge;
     console.log(selectedChallenge.Id);
   }

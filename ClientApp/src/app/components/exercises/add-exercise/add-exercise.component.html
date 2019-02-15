@@ -17,7 +17,7 @@
       <mat-form-field>
         <label for="ChallengePick">Соревнование</label>
         <input name="ChallengePick" type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
-        <mat-autocomplete (optionSelected)="lolkek($event)" #auto="matAutocomplete" autoActiveFirstOption [displayWith]="displayFn">
+        <mat-autocomplete (optionSelected)="getSelectedOption($event)" #auto="matAutocomplete" autoActiveFirstOption [displayWith]="displayFn">
           <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
             {{option.Name}}
           </mat-option>
