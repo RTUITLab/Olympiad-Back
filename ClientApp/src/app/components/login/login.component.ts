@@ -14,6 +14,14 @@ import { FormValidateService } from 'src/app/services/FormHelpers/form-validate.
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent extends LoadingComponent implements OnInit {
+  constructor(
+    private userState: UserStateService,
+     private router: Router,
+     private toastr: ToastrService,
+     private formValid: FormValidateService
+     ) {
+    super();
+  }
   errorMessage: string;
   model: LoginViewModel;
   loginForm = new FormGroup({
@@ -26,15 +34,8 @@ export class LoginComponent extends LoadingComponent implements OnInit {
       Validators.minLength(6)
     ])
   });
-  constructor(
-    private userState: UserStateService,
-     private router: Router,
-     private toastr: ToastrService,
-     private formValid: FormValidateService
-     ) {
-    super();
-  }
-
+  get email() { return this.loginForm.controls['Email']; }
+  get password() { return this.loginForm.controls['Password']; }
   onSubmit() {
     if (this.loginForm.valid) {
       this.model = this.loginForm.value;

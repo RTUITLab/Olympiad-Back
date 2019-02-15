@@ -4,17 +4,21 @@
     
     <form class="login-container" novalidate [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <p [ngClass]="{
-        'input-error': loginForm.controls.Email.errors && (loginForm.controls.Email.dirty || loginForm.controls.Email.touched)}">
+          'input-error': email.errors && (email.dirty || email.touched),
+          'input-success': !email.errors && (email.dirty || email.touched)
+        }">
         <input type="email" required autocomplete="email" placeholder="Email" formControlName="Email">
       </p>
-      <p class="error" *ngIf="loginForm.controls.Email.errors && (loginForm.controls.Email.dirty || loginForm.controls.Email.touched)">
+      <p class="error" *ngIf='email.errors && (email.dirty || email.touched)'>
         Введите корректный Email
       </p>
       <p [ngClass]="{
-        'input-error': loginForm.controls.Password.errors && (loginForm.controls.Password.dirty || loginForm.controls.Password.touched)}">
+        'input-error': password.errors && (password.dirty || password.touched),
+        'input-success': !password.errors && (password.dirty || password.touched)
+      }">
         <input type="password" required autocomplete="current-password" placeholder="Password" formControlName="Password">
       </p>
-      <p class="error" *ngIf="loginForm.controls.Password.errors && (loginForm.controls.Password.dirty || loginForm.controls.Password.touched)">
+      <p class="error" *ngIf='password.errors && (password.dirty || password.touched)'>
         Пвроль должен содержать минимум 6 символов
       </p>
       <p>

@@ -28,8 +28,6 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
     ) {
       super();
      }
-  loading = false;
-  errorMessage: string;
   regIsAvaliable = false;
   model: RegisterViewModel = RegisterViewModel.Default;
   registrationForm = new FormGroup({
@@ -53,13 +51,19 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
     RepeatPassword: new FormControl('', [
       Validators.required,
       Validators.minLength(6),
-      // this.repeatPassValid.RepeatPasswordValidator()
     ]),
     RecaptchaToken: new FormControl('', [
       Validators.required
     ])
   }, {validators: this.repeatPassValid.RepeatPasswordValidator}
   );
+  get firstName() { return this.registrationForm.controls['FirstName']; }
+  get lastName() { return this.registrationForm.controls['LastName']; }
+  get email() { return this.registrationForm.controls['Email']; }
+  get id() { return this.registrationForm.controls['StudentId']; }
+  get password() { return this.registrationForm.controls['Password']; }
+  get repeatPassword() { return this.registrationForm.controls['RepeatPassword']; }
+  get recaptchaToken() { return this.registrationForm.controls['RecaptchaToken']; }
   ngOnInit() {
     this.startLoading();
     this.regCheck.checkAvailableRegistration()
@@ -68,7 +72,6 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
       });
       this.stopLoading();
   }
-
   onSubmit() {
     if (this.registrationForm.valid) {
       console.log(this.registrationForm);
@@ -84,7 +87,6 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
           this.toastr.success(`Регистрация прошла успешно`);
         },
         error => {
-          this.errorMessage = error;
           this.toastr.error(error, `Ошибка`);
         });
       } else {
