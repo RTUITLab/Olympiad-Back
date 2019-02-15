@@ -53,12 +53,13 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
     RepeatPassword: new FormControl('', [
       Validators.required,
       Validators.minLength(6),
-      this.repeatPassValid.RepeatPasswordValidator()
+      // this.repeatPassValid.RepeatPasswordValidator()
     ]),
     RecaptchaToken: new FormControl('', [
       Validators.required
     ])
-  });
+  }, {validators: this.repeatPassValid.RepeatPasswordValidator}
+  );
   ngOnInit() {
     this.startLoading();
     this.regCheck.checkAvailableRegistration()

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ValidatorFn, AbstractControl } from '@angular/forms';
+import { ValidatorFn, AbstractControl, FormGroup } from '@angular/forms';
 
 @Injectable({
   providedIn: 'root'
@@ -7,12 +7,10 @@ import { ValidatorFn, AbstractControl } from '@angular/forms';
 export class RepeatPasswordValidService {
 
   constructor() { }
-  RepeatPasswordValidator(): ValidatorFn {
-    return (control: AbstractControl): {[key: string]: any} | null => {
-      // const forbidden = nameRe.test(control.value);
-      // return forbidden ? {'forbiddenName': {value: control.value}} : null;
-      console.warn('TODO do RepeatPasswordValid');
-      return null;
-    };
-  }
+  RepeatPasswordValidator(control: AbstractControl): { invalid: boolean } {
+    if (control.get('Password').value !== control.get('RepeatPassword').value) {
+      control.get('RepeatPassword').setErrors({notUnique: true});
+      return {invalid: true};
+    }
+}
 }
