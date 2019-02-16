@@ -68,14 +68,6 @@ public clearChallenge() {
   this.currentChallengeId = null;
 }
 
-public goToChallenge(challenge: Challenge) {
-  this.currentExerciseState.setChallengeId(challenge.Id);
-  this.router.navigate(['challenges', challenge.Id]);
-  this.challengesService.getChallenge(challenge.Id).subscribe(c => {
-    this.currentExerciseState.setChallenge(c);
-  });
-}
-
 public challengeTime(challenge: Challenge): string {
   return ChallengeHelpers.ChallengeTime(challenge);
 }

@@ -10,7 +10,6 @@ import { ChallengeEditViewModel } from '../models/ViewModels/ChallengeEditViewMo
   providedIn: 'root'
 })
 export class ChallengesService  extends BaseHttpService implements OnInit  {
-  
   ngOnInit(): void {
   }
 
