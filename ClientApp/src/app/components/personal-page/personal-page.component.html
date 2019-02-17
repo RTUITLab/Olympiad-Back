@@ -1,22 +1,25 @@
 <div class="personal_page">
-    <form class="UserInfo" *ngIf="user">
-        <div class="form-group row">
-            <label for="outputFirstName" class="col-sm-2 col-form-label">Ваше имя:</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="outputFirstName" readonly value="{{user.FirstName}}">
+  <div class="UserInfo" *ngIf="user">
+    <h2>Данные пользователя</h2>
+    <form>
+        <div class="userData" >
+            <label class="userDataLabel" for="outputFirstName">Имя:</label>
+            <div class="userDataInput" >
+              <input type="text"  id="outputFirstName" readonly value="{{user.FirstName}}">
             </div>
         </div>
-        <div class="form-group row">
-            <label for="outputFirstName" class="col-sm-2 col-form-label">Ваш Email:</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="outputFirstName" readonly value="{{user.Email}}">
+        <div class="userData">
+            <label class="userDataLabel" for="outputFirstName">Email:</label>
+            <div class="userDataInput">
+              <input type="text" id="outputFirstName" readonly value="{{user.Email}}">
             </div>
         </div>
-        <div class="form-group row">
-            <label for="outputFirstName" class="col-sm-2 col-form-label">Ваш ID:</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="outputFirstName" readonly value="{{user.StudentID}}">
+        <div  class="userData" >
+            <label class="userDataLabel" for="outputFirstName">ID:</label>
+            <div class="userDataInput">
+              <input type="text"  id="outputFirstName" readonly value="{{user.StudentID}}">
             </div>
         </div>
     </form>
+  </div>
 </div>
