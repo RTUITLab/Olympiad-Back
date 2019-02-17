@@ -1,26 +1,34 @@
-<div class="container">
-  <h3 class="form-header">Вход в систему</h3>
-  <!-- <div *ngIf="errorMessage" class="alert alert-danger">{{errorMessage}}</div> -->
-  <form #loginForm="ngForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="UserName">Электронная почта</label>
-      <input type="text" class="form-control" id="UserName" required [(ngModel)]="model.UserName" name="UserName" #userName="ngModel">
-      <div [hidden]="userName.valid || userName.pristine" class="alert alert-danger">Необходима почта</div>
-    </div>
-
-    <div class="form-group">
-      <label for="Password">Пароль</label>
-      <input type="password" class="form-control" id="Password" required minlength="6" [(ngModel)]="model.Password" name="Password"
-        #pass="ngModel">
-      <div *ngIf="pass.invalid && (pass.dirty || pass.touched)" class="alert alert-danger">
-        <div *ngIf="pass.errors.minlength">
-          Пароль не может быть короче 6-и символов
-        </div>
-      </div>
-    </div>
-    <div class="form-group">
-      <button type="submit" class="btn text btn-success" [disabled]="!loginForm.form.valid">Войти</button>
-    </div>
-  </form>
-  <ngx-loading [show]="loading"></ngx-loading>
+<div class="login-page">
+  <div class="login">
+    <h2 class="login-header">Войти в систему</h2>
+    
+    <form class="login-container" novalidate [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <p [ngClass]="{
+          'input-error': email.errors && (email.dirty || email.touched),
+          'input-success': !email.errors && (email.dirty || email.touched)
+        }">
+        <input type="email" required autocomplete="email" placeholder="Email" formControlName="Email">
+      </p>
+      <p class="error" *ngIf='email.errors && (email.dirty || email.touched)'>
+        Введите корректный Email
+      </p>
+      <p [ngClass]="{
+        'input-error': password.errors && (password.dirty || password.touched),
+        'input-success': !password.errors && (password.dirty || password.touched)
+      }">
+        <input type="password" required autocomplete="current-password" placeholder="Password" formControlName="Password">
+      </p>
+      <p class="error" *ngIf='password.errors && (password.dirty || password.touched)'>
+        Пвроль должен содержать минимум 6 символов
+      </p>
+      <p>
+        <input [ngClass]="{'submit-unvaliable': loginForm.invalid}" type="submit" value="Войти">
+      </p> 
+      <p>
+        <a routerLink="/register">
+          Еще не зарегистрированы? Зарегистрироваться.
+        </a>
+      </p>
+    </form>
+  </div>
 </div>

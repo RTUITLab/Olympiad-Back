@@ -7,7 +7,7 @@ import { error } from 'util';
 @Component({
   selector: 'app-exercises-list',
   templateUrl: './exercises-list.component.html',
-  styleUrls: ['./exercises-list.component.css']
+  styleUrls: ['./exercises-list.component.scss']
 })
 export class ExercisesListComponent extends LoadingComponent implements OnInit {
 

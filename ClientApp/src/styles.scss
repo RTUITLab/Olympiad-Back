@@ -1,14 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 @import "~ng-pick-datetime/assets/style/picker.min.css";
-
-button {
-    border-radius: 8px;
-    padding: 5px 3px;
-    color:blue;
-    border:1px solid blue;
-    font-size: 16px;
-}
+// @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
 ::-webkit-scrollbar {
     display: none;
@@ -18,4 +11,59 @@ button {
 }
 html {
     -ms-overflow-style: -ms-autohiding-scrollbar;
+    height: 100%;
 }
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    padding: 0;
+}
+a {
+    color:rgb(0, 133, 207);
+    text-decoration: unset;
+}
+a:hover {
+    text-decoration: underline;
+    text-decoration-color: rgb(0, 133, 207);
+}
+button {
+    background: #28d;
+    border-color: transparent;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 40px;
+  }
+  
+  button:hover {
+    background: #17c;
+  }
+  
+  /* Buttons' focus effect */
+  button:focus {
+    border-color: #05a;
+  }
+    input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    border-width: 1px;
+    border-style: solid;
+    padding: 16px;
+    outline: 0;
+    font-family: inherit;
+    font-size: 0.95em;
+  }
+  
+    input[type="text"] {
+    background: #fff;
+    border-color: #bbb;
+    border-radius: 40px;
+    color: #555;
+  }
+  
+  /* Text fields' focus effect */
+    input[type="text"]:focus {
+    border-color: #888;
+  }

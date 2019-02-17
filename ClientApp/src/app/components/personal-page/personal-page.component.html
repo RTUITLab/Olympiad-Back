@@ -1,0 +1,25 @@
+<div class="personal_page">
+  <div class="UserInfo" *ngIf="user">
+    <h2>Данные пользователя</h2>
+    <form>
+        <div class="userData" >
+            <label class="userDataLabel" for="outputFirstName">Имя:</label>
+            <div class="userDataInput" >
+              <input type="text"  id="outputFirstName" readonly value="{{user.FirstName}}">
+            </div>
+        </div>
+        <div class="userData">
+            <label class="userDataLabel" for="outputFirstName">Email:</label>
+            <div class="userDataInput">
+              <input type="text" id="outputFirstName" readonly value="{{user.Email}}">
+            </div>
+        </div>
+        <div  class="userData" >
+            <label class="userDataLabel" for="outputFirstName">ID:</label>
+            <div class="userDataInput">
+              <input type="text"  id="outputFirstName" readonly value="{{user.StudentID}}">
+            </div>
+        </div>
+    </form>
+  </div>
+</div>

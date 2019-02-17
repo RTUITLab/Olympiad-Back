@@ -1,6 +1,20 @@
 <div class="header">
-  <div class="header_text">
-    <h2 style="color:#002984">Тестирование по программированию</h2>
-  </div>
+    <link href="https://fonts.googleapis.com/css?family=Lobster|Philosopher" rel="stylesheet">
+  <div class="header_content">
+    <!-- <div class="header_select_challenge">
+      <app-select-challenge></app-select-challenge>
+      </div> -->
+      <div class="image"><img src="assets/img/coding2.svg" class="imgprop"></div>
+        <div class="logo">
+          <a routerLink="/overview"> <p class="header_text"> Тестирование по программированию</p>
+          </a>
+        </div>
+       
+        <div *ngIf="user" class="header_userInfo">
+        <app-user-info></app-user-info>
+      </div>
 </div>
+</div>
+
+
 

@@ -6,9 +6,16 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule, MatAutocompleteModule } from '@angular/material';
+import { MatMenuModule } from '@angular/material/menu';
+import {MatSelectModule} from '@angular/material/select';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import {MatDividerModule} from '@angular/material/divider';
+
+
 
 
 
@@ -40,8 +47,12 @@ import { ReCaptchaModule } from 'angular2-recaptcha';
 import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
 import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
 import { UsersComponent } from './components/users/users.component';
+import { PersonalPageComponent } from './components/personal-page/personal-page.component';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
+import { SelectChallengeComponent } from './components/select-challenge/select-challenge.component';
+import { AdminFunctionsComponent } from './components/admin-functions/admin-functions.component';
+import { AboutComponent } from './components/about/about.component';
 
 const routes: Route[] = [
   {
@@ -55,8 +66,17 @@ const routes: Route[] = [
     canActivate: [NotAuthGuard]
   },
   {
+    path: 'about',
+    component: AboutComponent
+  },
+  {
     path: 'overview',
     component: OverviewComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'admin-functions',
+    component: AdminFunctionsComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -95,6 +115,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'user/:userId',
+    component: PersonalPageComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: 'users-list',
     component: UsersComponent,
     canActivate: [AuthGuardService]
@@ -130,11 +155,19 @@ const routes: Route[] = [
     ChallengeAddComponent,
     UsersComponent,
     ChallengeEditComponent,
+    PersonalPageComponent,
+    SelectChallengeComponent,
+    AdminFunctionsComponent,
+    AboutComponent,
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(routes),
     FormsModule,
+    MatTooltipModule,
+    MatDividerModule,
+    MatSelectModule,
+    MatFormFieldModule,
     ReactiveFormsModule,
     BrowserAnimationsModule, // required animations module
     ToastrModule.forRoot({
@@ -150,6 +183,7 @@ const routes: Route[] = [
       },
     }),
     MatTableModule,
+    MatMenuModule,
     MatButtonModule,
     MatInputModule,
     MatAutocompleteModule,

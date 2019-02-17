@@ -24,7 +24,7 @@ import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-exercise-info',
   templateUrl: './exercise-info.component.html',
-  styleUrls: ['./exercise-info.component.css']
+  styleUrls: ['./exercise-info.component.scss']
 })
 export class ExerciseInfoComponent extends LoadingComponent implements OnInit, OnDestroy {
 

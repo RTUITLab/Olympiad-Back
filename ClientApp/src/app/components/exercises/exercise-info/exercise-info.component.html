@@ -3,7 +3,7 @@
     <button class="editExercise_btn text" *ngIf="isAdmin()" (click)="editExercise(exerciseInfo.Id)">
       Изменить данные задания
     </button>
-    <h1 class="text">{{exerciseInfo.Name}}</h1>
+    <h1 class="text text-center">{{exerciseInfo.Name}}</h1>
   </div>
   <h3>
     Баллы за выполнение: <span>{{exerciseInfo.Score}}</span>
@@ -32,7 +32,7 @@
     </form>
   </div>
 
-  <h2>Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
+  <h2 class="text-center">Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
   <table>
     <thead>
       <th>Время отправки</th>
