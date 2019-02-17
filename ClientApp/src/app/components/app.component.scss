@@ -13,10 +13,11 @@
     border-bottom: 1px solid #ebebebb4;
 }
 .content {
-    grid-row: 3 / auto;
+    grid-row: 3 / auto ;
     display: grid;
-    width: 100%;
+    width: 1000px;
     margin: 0 auto;
     grid-template-columns: auto;
     grid-template-rows: auto;
 }
+
