@@ -3,6 +3,9 @@ th, td {
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
+.text-center {
+    text-align: center;
+}
 .editExercise_btn{
     color:#c300ff;
     border:1px solid rgb(195, 0, 255);
@@ -21,23 +24,9 @@ th, td {
 .statusIcon {
     width: 70px;
 }
-.btn{
-    width: 100%;
-    text-decoration: none;
-    outline: none;
-    display: inline-block;
-    background: white;
-    margin-top: 10px;
-    transition: .15s ease-in-out;
-}
-.btn:hover{
-        box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);
-        color: rgb(67, 55, 241);
-}
 .text{
     word-wrap: break-word;
     max-width: 100%;
     text-align: center;
-    display: inline-block;
     overflow: hidden;
 }
