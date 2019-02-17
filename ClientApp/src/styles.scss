@@ -18,6 +18,7 @@ html {
 }
 body {
     margin: 0;
+    padding: 0;
 }
 a {
     color:rgb(0, 133, 207);
@@ -27,3 +28,42 @@ a:hover {
     text-decoration: underline;
     text-decoration-color: rgb(0, 133, 207);
 }
+button {
+    background: #28d;
+    border-color: transparent;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 40px;
+  }
+  
+  button:hover {
+    background: #17c;
+  }
+  
+  /* Buttons' focus effect */
+  button:focus {
+    border-color: #05a;
+  }
+    input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    border-width: 1px;
+    border-style: solid;
+    padding: 16px;
+    outline: 0;
+    font-family: inherit;
+    font-size: 0.95em;
+  }
+  
+    input[type="text"] {
+    background: #fff;
+    border-color: #bbb;
+    border-radius: 40px;
+    color: #555;
+  }
+  
+  /* Text fields' focus effect */
+    input[type="text"]:focus {
+    border-color: #888;
+  }
