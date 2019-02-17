@@ -13,6 +13,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import {MatDividerModule} from '@angular/material/divider';
+
 
 
 
@@ -49,6 +51,8 @@ import { PersonalPageComponent } from './components/personal-page/personal-page.
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
 import { SelectChallengeComponent } from './components/select-challenge/select-challenge.component';
+import { AdminFunctionsComponent } from './components/admin-functions/admin-functions.component';
+import { AboutComponent } from './components/about/about.component';
 
 const routes: Route[] = [
   {
@@ -62,8 +66,17 @@ const routes: Route[] = [
     canActivate: [NotAuthGuard]
   },
   {
+    path: 'about',
+    component: AboutComponent
+  },
+  {
     path: 'overview',
     component: OverviewComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'admin-functions',
+    component: AdminFunctionsComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -102,7 +115,7 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
-    path: 'personal-page',
+    path: 'user/:userId',
     component: PersonalPageComponent,
     canActivate: [AuthGuardService]
   },
@@ -144,12 +157,15 @@ const routes: Route[] = [
     ChallengeEditComponent,
     PersonalPageComponent,
     SelectChallengeComponent,
+    AdminFunctionsComponent,
+    AboutComponent,
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(routes),
     FormsModule,
     MatTooltipModule,
+    MatDividerModule,
     MatSelectModule,
     MatFormFieldModule,
     ReactiveFormsModule,
