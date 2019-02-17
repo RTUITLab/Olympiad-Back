@@ -5,6 +5,7 @@ import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { UserStateService } from 'src/app/services/user-state.service';
+import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
 
 @Component({
   selector: 'app-challenge-info',
@@ -34,7 +35,9 @@ export class ChallengeInfoComponent implements OnInit {
         });
       });
   }
-
+  public challengeTime(challenge: Challenge): string {
+    return ChallengeHelpers.ChallengeTime(challenge);
+  }
   public prettyTime(time: string): string {
     return DateHelpers.prettyTime(time);
   }

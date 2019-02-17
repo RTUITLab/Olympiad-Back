@@ -1,7 +1,12 @@
 .text{
+    display: grid;
     word-wrap: break-word;
     max-width: 100%;
     text-align: center;
-    display: inline-block;
+    justify-content: center;
     overflow: hidden;
+    grid-template-columns: auto;
+}
+.challenge-info {
+    justify-self: center;
 }

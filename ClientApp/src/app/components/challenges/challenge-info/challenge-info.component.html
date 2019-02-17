@@ -2,10 +2,11 @@
     <div *ngIf="isAdmin()">
         <button (click)="editChallenge()">Изменить</button>
     </div>
-
-
+<div class="challenge-info">
     <h1>{{challenge.Name}}</h1>
-    <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p>    
+    <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p> 
+    <p>До окончания соревнования: {{challengeTime(challenge)}}</p>   
+</div>
 </div>
 <ng-template #loading>
     Загрузка...
