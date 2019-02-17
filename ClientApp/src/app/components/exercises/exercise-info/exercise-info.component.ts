@@ -94,6 +94,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           }
           if (this.exerciseInfo.Solutions.some(s => s.Id === createdSolution.Id)) {
             this.toastr.warning(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
+            return;
           }
           const f = () => this.solutionCheckLoop(createdSolution);
           this.toastr.success(`Решение успешно загружено`);
