@@ -7,6 +7,14 @@
     <button class="btn" (click)="myPage()" disableRipple="true" mat-menu-item>
       Моя страница
     </button>
+    <mat-divider></mat-divider>
+    <button class="btn" *ngIf="isAdmin()" (click)="adminFunctions()" disableRipple="true" mat-menu-item>
+      Функции администратора
+    </button>
+    <button class="btn" (click)="about()" disableRipple="true" mat-menu-item>
+      О сайте
+    </button>
+    <mat-divider></mat-divider>
     <button class="btn logout_btn" (click)="logout()" disableRipple="true" mat-menu-item>
       Выйти
     </button>
