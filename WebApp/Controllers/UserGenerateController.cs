@@ -21,14 +21,14 @@ namespace WebApp.Controllers
             this.dbContext = dbContext;
             this.userManager = userManager;
         }
-        [HttpPost("{challengeId:guid}")]
-        public async Task<IActionResult> GenerateUsers(Guid challengeId, List<string> studentIds)
+        [HttpPost("generate")]
+        public async Task<IActionResult> GenerateUsers(Guid challengeId, [FromBody]List<string> studentIds)
         {
             const int MIN = 11111111;
             const int MAX = 99999999;
-            List<User> generateUsers = new List<User>();
+        
             List<GenerateUsersRespponce> generates = new List<GenerateUsersRespponce>();
-            var challenge = dbContext.Challenges.Find(challengeId);
+           
 
             foreach (var studentId in studentIds)
             {
@@ -43,8 +43,6 @@ namespace WebApp.Controllers
                 var result = await userManager.CreateAsync(user, password);
 
             }
-
-
             return Json(generates);
         }
     }
