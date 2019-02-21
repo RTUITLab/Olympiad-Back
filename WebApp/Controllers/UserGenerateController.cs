@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
+using PublicAPI.Responses;
 
 namespace WebApp.Controllers
 {
@@ -12,28 +14,38 @@ namespace WebApp.Controllers
     public class UserGenerateController : Controller
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly UserManager<User> userManager;
 
-        public UserGenerateController(ApplicationDbContext dbContext)
+        public UserGenerateController(ApplicationDbContext dbContext, UserManager<User> userManager)
         {
             this.dbContext = dbContext;
+            this.userManager = userManager;
         }
         [HttpPost("{challengeId:guid}")]
         public async Task<IActionResult> GenerateUsers(Guid challengeId, List<string> studentIds)
         {
+            const int MIN = 11111111;
+            const int MAX = 99999999;
             List<User> generateUsers = new List<User>();
-
+            List<GenerateUsersRespponce> generates = new List<GenerateUsersRespponce>();
             var challenge = dbContext.Challenges.Find(challengeId);
 
             foreach (var studentId in studentIds)
             {
+                User user = new User()
+                {
+                    UserName = $"{studentId}@rtuitlab.ru",
+                    StudentID = studentId
+                };
+                var password = new Random().Next(MIN, MAX).ToString();
 
+                generates.Add(new GenerateUsersRespponce { Email = user.UserName, Password = password });
+                var result = await userManager.CreateAsync(user, password);
 
             }
 
 
-
+            return Json(generates);
         }
-
-
     }
 }
