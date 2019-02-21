@@ -30,7 +30,6 @@ import { ExercisesListComponent } from './components/exercises/exercises-list/ex
 import { ExerciseService } from './services/exercise.service';
 import { AuthGuardService } from './services/ComponentActivators/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
-import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
@@ -40,7 +39,6 @@ import { AddExerciseComponent } from './components/exercises/add-exercise/add-ex
 import { ChallengesService } from './services/challenges.service';
 import { ExerciseStateService } from './services/exercise-state.service';
 import { ChallengeInfoComponent } from './components/challenges/challenge-info/challenge-info.component';
-import { ChallengesListComponent } from './components/menu/challenges-list/challenges-list.component';
 import { ExerciseEditComponent } from './components/exercises/exercise-editing/exercise-edit/exercise-edit.component';
 import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
 import { ReCaptchaModule } from 'angular2-recaptcha';
@@ -143,13 +141,11 @@ const routes: Route[] = [
     LoginComponent,
     ExercisesListComponent,
     ExerciseInfoComponent,
-    MenuComponent,
     OverviewComponent,
     ExerciseInoutComponent,
     UserInfoComponent,
     AddExerciseComponent,
     ExerciseEditComponent,
-    ChallengesListComponent,
     ChallengeInfoComponent,
     ConditionEditComponent,
     ChallengeAddComponent,

@@ -66,6 +66,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
                 .forEach(s => this.solutionCheckLoop(s));
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+              this.currentExerciseState.setExerciseId(exInfo.Id);
             },
             () => {
               this.router.navigate(['overview']);

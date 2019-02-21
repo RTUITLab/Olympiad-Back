@@ -1,15 +1,13 @@
 <div>
     <div class="select-bar">
         <div class="select-challenge">
-            <select (change)="selectChallenge($event)">
-                <option disabled selected>Выберите соревнование</option>
-                <option *ngFor="let challenge of challenges" [value]="challenge.Id">{{challenge.Name}}</option>
+            <select (change)="goToChallenge()" [(ngModel)]="currentChallenge">
+                <option *ngFor="let challenge of challenges" [disabled]="isDefault(challenge)" [ngValue]="challenge">{{challenge.Name}}</option>
             </select>
         </div>
         <div class="select-exercise">
-            <select (change)="selectExercise($event)">
-                <option disabled selected>Выберите задание</option>
-                <option *ngFor="let ex of currentExercises" [value]="ex.Id">{{ex.Name}}</option>
+            <select (change)="goToExercise()" [(ngModel)]="currentExercise">
+                <option *ngFor="let ex of currentExercises" [disabled]="isDefault(ex)" [ngValue]="ex">{{ex.Name}}</option>
             </select>
         </div>
     </div>

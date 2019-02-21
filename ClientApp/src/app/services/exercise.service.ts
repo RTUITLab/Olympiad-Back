@@ -25,9 +25,9 @@ export class ExerciseService extends BaseHttpService implements OnInit {
 
   ngOnInit(): void {
   }
-  getExercises(challengeId: string): Observable<Array<ExerciseListResponse>> {
+  getExercises(challengeId: string): Promise<Array<ExerciseListResponse>> {
     return this.http.get<Array<ExerciseListResponse>>(
-      `${this.baseUrl}/api/Exercises?challengeId=${challengeId}`, this.userService.authOptions);
+      `${this.baseUrl}/api/Exercises?challengeId=${challengeId}`, this.userService.authOptions).toPromise();
   }
 
 

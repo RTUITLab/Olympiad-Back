@@ -18,22 +18,20 @@ export class ChallengeInfoComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private usersService: UserStateService,
-    private currentExerciseState: ExerciseStateService) { }
+    private currentExerciseState: ExerciseStateService,
+    private challangesService: ChallengesService) { }
 
   public challenge?: Challenge;
 
   ngOnInit() {
-    this.route.paramMap
-      .subscribe((params: ParamMap) => {
+    this.route.paramMap.subscribe(
+      async params => {
         const id = params.get('ChallengeId');
         this.currentExerciseState.setChallengeId(id);
-        this.currentExerciseState.currentChallenge.subscribe(c => {
-          if (!c || c.Id !== id) {
-            return;
-          }
-          this.challenge = c;
-        });
-      });
+        this.challenge = await this.challangesService.getChallenge(id);
+        this.currentExerciseState.setChallenge(this.challenge);
+      }
+    );
   }
   public challengeTime(challenge: Challenge): string {
     return ChallengeHelpers.ChallengeTime(challenge);
