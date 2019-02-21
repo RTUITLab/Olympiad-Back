@@ -21,7 +21,7 @@ namespace WebApp.Controllers
             this.dbContext = dbContext;
             this.userManager = userManager;
         }
-        [HttpPost("generate")]
+        [HttpPost]
         public async Task<IActionResult> GenerateUsers([FromBody]List<string> studentIds)
         {
             const int MIN = 11111111;
