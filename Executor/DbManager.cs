@@ -84,9 +84,9 @@ namespace Executor
 
         private void Authorize()
         {
-            var pack = new
+            var pack = new // TODO use CredentialsRequest
             {
-                options.Value.UserName,
+                Email = options.Value.UserName,
                 options.Value.Password
             };
             var content = JsonConvert.SerializeObject(pack);
