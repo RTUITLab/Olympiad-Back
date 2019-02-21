@@ -32,6 +32,7 @@
     "ngx-toastr": "^9.1.1",
     "rxjs": "^6.3.3",
     "uuid": "^3.3.2",
+    "xlsx": "^0.14.1",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {

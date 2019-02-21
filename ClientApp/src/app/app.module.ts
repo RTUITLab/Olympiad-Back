@@ -51,6 +51,7 @@ import { ChallengeEditComponent } from './components/challenges/challenge-edit/c
 import { SelectChallengeComponent } from './components/select-challenge/select-challenge.component';
 import { AdminFunctionsComponent } from './components/admin-functions/admin-functions.component';
 import { AboutComponent } from './components/about/about.component';
+import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
 
 const routes: Route[] = [
   {
@@ -123,6 +124,11 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'users-generation',
+    component: UsersGenerationComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: '/overview'
@@ -155,6 +161,7 @@ const routes: Route[] = [
     SelectChallengeComponent,
     AdminFunctionsComponent,
     AboutComponent,
+    UsersGenerationComponent
   ],
   imports: [
     BrowserModule,
