@@ -15,13 +15,13 @@ export class ChallengesService  extends BaseHttpService implements OnInit  {
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
 
-  public getChallengesList(): Observable<Array<Challenge>> {
+  public getChallengesList(): Promise<Array<Challenge>> {
     return this.http.get<Array<Challenge>>(
-      `${this.baseUrl}/api/challenges`, this.userService.authOptions);
+      `${this.baseUrl}/api/challenges`, this.userService.authOptions).toPromise();
   }
-  public getChallenge(id: string): Observable<Challenge> {
+  public getChallenge(id: string): Promise<Challenge> {
     return this.http.get<Challenge>(
-      `${this.baseUrl}/api/challenges/${id}`, this.userService.authOptions);
+      `${this.baseUrl}/api/challenges/${id}`, this.userService.authOptions).toPromise();
   }
 
   public createChallenge(challenge: Challenge): Observable<Challenge> {
