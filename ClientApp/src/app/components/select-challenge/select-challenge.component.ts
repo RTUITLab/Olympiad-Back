@@ -88,7 +88,8 @@ export class SelectChallengeComponent implements OnInit {
   async goToChallenge() {
     this.currentExerciseState.setChallengeId(this.currentChallenge.Id);
     this.router.navigate(['challenges', this.currentChallenge.Id]);
-    this.loadExercises();
+    this.initExerciseId = null;
+    await this.loadExercises();
   }
 
   goToExercise() {
@@ -99,6 +100,7 @@ export class SelectChallengeComponent implements OnInit {
     const exercises = await this.exerciseService.getExercises(this.currentChallenge.Id);
     exercises.unshift(this.defaultExercise);
     this.currentExercises = exercises;
+    this.currentExercise = this.defaultExercise;
     if (this.initExerciseId) {
       this.currentExercise = this.currentExercises.find(ex => ex.Id === this.initExerciseId);
     }
