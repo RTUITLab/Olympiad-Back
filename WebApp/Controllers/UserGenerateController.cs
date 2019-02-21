@@ -22,13 +22,13 @@ namespace WebApp.Controllers
             this.userManager = userManager;
         }
         [HttpPost("generate")]
-        public async Task<IActionResult> GenerateUsers(Guid challengeId, [FromBody]List<string> studentIds)
+        public async Task<IActionResult> GenerateUsers([FromBody]List<string> studentIds)
         {
             const int MIN = 11111111;
             const int MAX = 99999999;
-        
+
             List<GenerateUsersRespponce> generates = new List<GenerateUsersRespponce>();
-           
+
 
             foreach (var studentId in studentIds)
             {
