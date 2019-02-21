@@ -28,4 +28,8 @@
     <ProjectReference Include="..\Models\Models.csproj" />
     <ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Scripts\" />
+  </ItemGroup>
 </Project>
