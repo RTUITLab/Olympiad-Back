@@ -1,4 +1,4 @@
-import { Component, OnInit, Input} from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ExerciseData } from '../../../models/ExerciseData';
 
@@ -7,17 +7,19 @@ import { ExerciseData } from '../../../models/ExerciseData';
   templateUrl: './exercise-inout.component.html',
   styleUrls: ['./exercise-inout.component.scss']
 })
-export class ExerciseInoutComponent implements OnInit {
+export class ExerciseInoutComponent implements OnInit, OnChanges {
   @Input() exId: string;
   constructor(
     private exerciseService: ExerciseService
-  ) { }
-  public exerciseDatas: ExerciseData[];
+    ) { }
+    public exerciseDatas: ExerciseData[];
+  ngOnChanges(changes: SimpleChanges): void {
+    this.exerciseService.getExerciseInOutData(changes['exId'].currentValue)
+    .subscribe(obj => {
+      this.exerciseDatas = obj;
+    });
+  }
   ngOnInit() {
-    this.exerciseService.getExerciseInOutData(this.exId)
-      .subscribe(obj => {
-        this.exerciseDatas = obj;
-      });
   }
 
 }
