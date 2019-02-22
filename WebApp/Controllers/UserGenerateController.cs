@@ -41,7 +41,7 @@ namespace WebApp.Controllers
 
                 generates.Add(new GenerateUsersRespponce { Email = user.UserName, Password = password });
                 var result = await userManager.CreateAsync(user, password);
-
+                result = await userManager.AddToRoleAsync(user, "User");
             }
             return Json(generates);
         }
