@@ -1,14 +1,18 @@
 <div>
     <div class="select-bar">
-        <div class="select-challenge">
-            <select (change)="goToChallenge()" [(ngModel)]="currentChallenge">
-                <option *ngFor="let challenge of challenges" [disabled]="isDefault(challenge)" [ngValue]="challenge">{{challenge.Name}}</option>
-            </select>
-        </div>
-        <div class="select-exercise">
-            <select (change)="goToExercise()" [(ngModel)]="currentExercise">
-                <option *ngFor="let ex of currentExercises" [disabled]="isDefault(ex)" [ngValue]="ex">{{ex.Name}}</option>
-            </select>
-        </div>
+            <ul class="challenge">
+                    <li><a href=#>Выберите соревнование</a>
+                        <ul class="submenu">
+                            <li><a href=#>Соревнование по заглушкам</a></li>
+                        </ul>
+                    </li>
+                    <li><a href=#>Выберите задание</a>
+                        <ul class="submenu">
+                            <li><a href=#> Задание "Заглушка 1"</a></li>
+                            <li><a href=#> Задание "Заглушка 2"</a></li>
+                        </ul>
+                    </li>
+                  
+                </ul>
     </div>
 </div>
