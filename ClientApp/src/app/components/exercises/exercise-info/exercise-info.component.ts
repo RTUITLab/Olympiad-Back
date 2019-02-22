@@ -56,9 +56,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
             exInfo => {
-              exInfo.Solutions = exInfo
-                .Solutions
-                .reverse();
               this.exerciseInfo = exInfo;
               this.exerciseInfo
                 .Solutions
