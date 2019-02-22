@@ -56,9 +56,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
             exInfo => {
-              exInfo.Solutions = exInfo
-                .Solutions
-                .reverse();
               this.exerciseInfo = exInfo;
               this.exerciseInfo
                 .Solutions
@@ -66,6 +63,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
                 .forEach(s => this.solutionCheckLoop(s));
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+              this.currentExerciseState.setExerciseId(exInfo.Id);
             },
             () => {
               this.router.navigate(['overview']);

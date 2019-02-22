@@ -28,4 +28,7 @@ export class AdminFunctionsComponent implements OnInit {
   usersList() {
     this.router.navigate(['users-list']);
   }
+  usersGeneration() {
+    this.router.navigate(['users-generation']);
+  }
 }

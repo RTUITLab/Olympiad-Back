@@ -17,6 +17,7 @@ import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { startWith, map } from 'rxjs/operators';
 import { MatAutocompleteSelectedEvent } from '@angular/material';
+import { CreateExerciseModel } from 'src/app/models/ViewModels/CreateExerciseModel';
 
 
 
@@ -30,7 +31,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material';
 export class AddExerciseComponent extends LoadingComponent implements OnInit {
 
   //  variable for sending data to the server
-  newExercise: Exercise = new Exercise();
+  newExercise: CreateExerciseModel = new CreateExerciseModel();
   public challenges?: Array<Challenge> = [];
   public challengesNames?: Array<String> = [];
   filteredOptions: Observable<Challenge[]>;
@@ -45,21 +46,16 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
   ) {
     super();
   }
-  ngOnInit() {
+  async ngOnInit() {
     this.startLoading();
     this.stopLoading();
-    this.challengesService.getChallengesList().subscribe(c => {
-      if (!c) {
-        return;
-      }
-      this.challenges = c;
-      this.filteredOptions = this.myControl.valueChanges
-      .pipe(
-        startWith<string | Challenge>(''),
-        map(value => typeof value === 'string' ? value : value.Name),
-        map(name => name ? this._filter(name) : this.challenges.slice())
-      );
-    });
+    this.challenges = await this.challengesService.getChallengesList();
+    this.filteredOptions = this.myControl.valueChanges
+    .pipe(
+      startWith<string | Challenge>(''),
+      map(value => typeof value === 'string' ? value : value.Name),
+      map(name => name ? this._filter(name) : this.challenges.slice())
+    );
   }
 
   displayFn(challenge?: Challenge): string | undefined {
@@ -68,7 +64,7 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
 
   getSelectedOption(event: MatAutocompleteSelectedEvent) {
     const selectedChallenge = event.option.value as Challenge;
-    console.log(selectedChallenge.Id);
+    this.newExercise.ChallengeId = selectedChallenge.Id;
   }
 
   private _filter(challenge: string): Challenge[] {

@@ -7,6 +7,8 @@ import { Exercise } from 'src/app/models/Exercise';
 import { ChallengeState } from 'src/app/models/General/ChallengeState';
 import { ExerciseService } from 'src/app/services/exercise.service';
 import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
+import { ChallengeAccessType } from 'src/app/models/General/ChallengeAccessType';
+import { ExerciseCompact } from 'src/app/models/Responses/ExerciseCompact';
 
 @Component({
   selector: 'app-select-challenge',
@@ -21,65 +23,101 @@ export class SelectChallengeComponent implements OnInit {
     private currentExerciseState: ExerciseStateService,
 
   ) { }
-  public challenges?: Array<Challenge> = [];
-  public currentExercises: Array<Exercise>;
-  public currentChallengeId?: string;
-  public currentChallenge?: Challenge;
+  public challenges: Array<Challenge> = [];
+  public currentChallenge: Challenge;
+
+  public currentExercises: Array<ExerciseCompact> = [];
+  public currentExercise: ExerciseCompact;
+
   public currentChallengeState?: ChallengeState;
   public currentChallengeTimeLeft: string;
-  ngOnInit() {
-    this.challengesService.getChallengesList().subscribe(c => {
-      if (!c) {
+
+  private initChallengeId: string;
+  private initExerciseId: string;
+  private defaultChallenge: Challenge = {
+    ChallengeAccessType: ChallengeAccessType.Public,
+    CreationTime: '',
+    Id: '',
+    Name: 'Выберите соревнование',
+  };
+  private defaultExercise: ExerciseCompact = {
+    Name: 'Выберите задание',
+  };
+
+  isDefault(item: Challenge) {
+    return item === this.defaultChallenge
+    || item === this.defaultExercise;
+  }
+
+  async ngOnInit() {
+    const allchallenges = await this.challengesService.getChallengesList();
+    allchallenges.unshift(this.defaultChallenge);
+    this.challenges = allchallenges;
+
+    this.currentChallenge = this.defaultChallenge;
+    this.currentExercises.push(this.defaultExercise);
+    this.currentExercise = this.defaultExercise;
+
+    if (this.initChallengeId) {
+      this.currentChallenge = this.challenges.find(c => c.Id === this.initChallengeId);
+      this.loadExercises();
+    }
+    this.currentExerciseState.currentChallengeId.subscribe(challengeId => {
+      if (!challengeId) {
         return;
       }
-      this.challenges = c;
+      this.initChallengeId = challengeId;
+      if (this.challenges) {
+        this.currentChallenge = this.challenges.find(c => c.Id === this.initChallengeId);
+        this.loadExercises();
+      }
     });
-    this.currentExerciseState.currentChallengeId.subscribe(id => {
-      if (!id) {
+    this.currentExerciseState.currentExerciseId.subscribe(exerciseId => {
+      if (!exerciseId) {
         return;
       }
-      this.currentChallengeId = id;
-      if (!this.currentChallenge) {
-        this.challengesService.getChallenge(id).subscribe(c => {
-          this.currentExerciseState.setChallenge(c);
-        });
+      this.initExerciseId = exerciseId;
+      if (this.currentExercises) {
+        this.currentExercise = this.currentExercises.find(ex => ex.Id === exerciseId);
       }
-    });
-    this.currentExerciseState.currentChallenge.subscribe(c => {
-      if (!c) {
-        return;
-      }
-      this.currentChallenge = c;
-      this.currentExercises = null;
     });
     this.currentExerciseState.currentChallengeState.subscribe(s => this.updateState(s));
-    const timer = setInterval(() =>
-      this.timeToEnd(), 1000);
+    const timer = setInterval(() => this.timeToEnd(), 1000);
   }
-  selectChallenge(event: any) {
-    console.log(event.target.value);
-    this.currentExerciseState.setChallengeId(event.target.value);
-    this.router.navigate(['challenges', event.target.value]);
-    this.challengesService.getChallenge(event.target.value).subscribe(c => {
-      this.currentExerciseState.setChallenge(c);
-    });
-  }
-public clearChallenge() {
-  this.currentChallengeId = null;
-}
 
-public challengeTime(challenge: Challenge): string {
-  return ChallengeHelpers.ChallengeTime(challenge);
-}
-
-private timeToEnd(): void {
-  if (!this.currentChallenge) {
-    return;
+  async goToChallenge() {
+    this.currentExerciseState.setChallengeId(this.currentChallenge.Id);
+    this.router.navigate(['challenges', this.currentChallenge.Id]);
+    this.initExerciseId = null;
+    await this.loadExercises();
   }
-  const state = ChallengeHelpers.CalcChallengeState(this.currentChallenge);
-  this.currentExerciseState.setChallengeState(state);
-}
-  private updateState(state: ChallengeState): void {
+
+  goToExercise() {
+    this.router.navigate(['exercises', this.currentExercise.Id]);
+  }
+
+  private async loadExercises() {
+    const exercises = await this.exerciseService.getExercises(this.currentChallenge.Id);
+    exercises.unshift(this.defaultExercise);
+    this.currentExercises = exercises;
+    this.currentExercise = this.defaultExercise;
+    if (this.initExerciseId) {
+      this.currentExercise = this.currentExercises.find(ex => ex.Id === this.initExerciseId);
+    }
+  }
+
+  public challengeTime(challenge: Challenge): string {
+    return ChallengeHelpers.ChallengeTime(challenge);
+  }
+
+  private timeToEnd(): void {
+    if (!this.currentChallenge) {
+      return;
+    }
+    const state = ChallengeHelpers.CalcChallengeState(this.currentChallenge);
+    this.currentExerciseState.setChallengeState(state);
+  }
+  private async updateState(state: ChallengeState) {
     if (state === null) {
       return;
     }
@@ -87,14 +125,8 @@ private timeToEnd(): void {
     this.currentChallengeTimeLeft = this.challengeTime(this.currentChallenge);
     if ((state === ChallengeState.InProgress ||
       state === ChallengeState.Ended) &&
-      !this.currentExercises && this.currentChallengeId) {
-      this.exerciseService.getExercises(this.currentChallengeId)
-        .subscribe(ex => this.currentExercises = ex);
+      !this.currentExercises && this.initChallengeId) {
+        this.loadExercises();
     }
   }
-  selectExercise(event: any) {
-    console.log(event.target.value);
-    this.router.navigate(['exercises', event.target.value]);
-  }
-
 }

@@ -44,7 +44,7 @@ export class UserStateService extends BaseHttpService {
     this.http.post(`${this.baseUrl}/api/account`, model, { responseType: 'text' })
       .subscribe(
         event => observer.next(event),
-        error => observer.error('Email занят')
+        error => observer.error('Email или ID занят')
       );
     return observable;
   }

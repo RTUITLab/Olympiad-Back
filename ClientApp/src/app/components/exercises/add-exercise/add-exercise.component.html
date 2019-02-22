@@ -1,7 +1,7 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
-  <form #loginForm="ngForm" (ngSubmit)="addExercise()">
+  <form #addExerciseForm="ngForm" (ngSubmit)="addExercise()">
     <div class="form-group">
-      <button type="submit" class="text btn" [disabled]="!loginForm.form.valid">
+      <button type="submit" class="text btn" [disabled]="!addExerciseForm.form.valid">
         Добавить
       </button>
     </div>

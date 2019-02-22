@@ -6,6 +6,7 @@ import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
 import { ExerciseNewCondition } from '../models/ExerciseNewCondition';
 import { UserStateService } from './user-state.service';
 import { Observable } from 'rxjs';
+import { CreateExerciseModel } from '../models/ViewModels/CreateExerciseModel';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,7 @@ export class ExerciseEditService {
     };
     return this.http.put(`${environment.baseUrl}/api/Exercises/${exercise.Id}`, this.EditedExercise, this.userService.authOptions);
   }
-  public AddExercise(NewExercise: Exercise): Observable<ExerciseInfo> {
+  public AddExercise(NewExercise: CreateExerciseModel): Observable<ExerciseInfo> {
      return this.http.post<ExerciseInfo>(`${environment.baseUrl}/api/Exercises/`, NewExercise, this.userService.authOptions);
   }
   public SendEditedCondition(EditedCondition: ExerciseNewCondition [], EditedExerciseId: string) {

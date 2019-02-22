@@ -1,0 +1,9 @@
+<div *ngIf="isAdmin()">
+    <div>
+      <form [formGroup]="usersGenForm">
+        <textarea formControlName="usersIdFormContol">
+        </textarea>
+      </form>
+      <button (click)="genUsers()">Сгенерировать пользователей</button>
+    </div>
+</div>
