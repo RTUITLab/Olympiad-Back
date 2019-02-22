@@ -5,8 +5,7 @@
   justify-content: center;
 }
 .input-error {
-  border:  1px solid red;
-  border-radius: 40px;
+  border-color: red !important;
 }
 .submit-unvaliable {
   background: rgb(133, 132, 132);
@@ -15,8 +14,7 @@
   color: red;
 }
 .input-success{
-  border:  1px solid #04f504;
-  border-radius: 40px;
+  border-color: #04f504 !important;
 }
 .login {
   margin: 12px auto;
