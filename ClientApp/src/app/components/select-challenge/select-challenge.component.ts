@@ -50,6 +50,7 @@ export class SelectChallengeComponent implements OnInit {
   }
 
   async ngOnInit() {
+    console.error('TODO Fix incorrect select of challenge,exercise');
     const allchallenges = await this.challengesService.getChallengesList();
     allchallenges.unshift(this.defaultChallenge);
     this.challenges = allchallenges;
@@ -85,9 +86,11 @@ export class SelectChallengeComponent implements OnInit {
     const timer = setInterval(() => this.timeToEnd(), 1000);
   }
 
-  async goToChallenge() {
+  async goToChallenge(challenge_id: string) {
+    this.currentChallenge.Id = challenge_id;
     this.currentExerciseState.setChallengeId(this.currentChallenge.Id);
-    this.router.navigate(['challenges', this.currentChallenge.Id]);
+    // this.currentChallenge = this.challenges.find(c => c.Id === challenge_id);
+    // this.router.navigate(['challenges', this.currentChallenge.Id]);
     this.initExerciseId = null;
     await this.loadExercises();
   }

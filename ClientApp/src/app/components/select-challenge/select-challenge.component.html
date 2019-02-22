@@ -1,18 +1,21 @@
 <div>
     <div class="select-bar">
-            <ul class="challenge">
-                    <li><a href=#>Выберите соревнование</a>
+            <ul class="challenge" *ngIf='currentChallenge'>
+                    <li><a href=#>{{currentChallenge.Name}}</a>
                         <ul class="submenu">
-                            <li><a href=#>Соревнование по заглушкам</a></li>
+                            <li *ngFor="let challenge of challenges">
+                                <a routerLink='/challenges/{{challenge.Id}}' (click)='goToChallenge(challenge.Id)'>{{challenge.Name}}</a>
+                            </li>
                         </ul>
                     </li>
                     <li><a href=#>Выберите задание</a>
                         <ul class="submenu">
-                            <li><a href=#> Задание "Заглушка 1"</a></li>
-                            <li><a href=#> Задание "Заглушка 2"</a></li>
+                            <li *ngFor="let ex of currentExercises">
+                                <a routerLink="/exercises/{{ex.Id}}">{{ex.Name}}</a>
+                            </li>
                         </ul>
                     </li>
                   
-                </ul>
+            </ul>
     </div>
 </div>
