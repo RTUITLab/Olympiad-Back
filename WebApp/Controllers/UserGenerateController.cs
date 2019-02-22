@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Models;
 using PublicAPI.Responses;
+using WebApp.Models.Settings;
 
 namespace WebApp.Controllers
 {
@@ -15,11 +18,15 @@ namespace WebApp.Controllers
     {
         private readonly ApplicationDbContext dbContext;
         private readonly UserManager<User> userManager;
+        private readonly IOptions<GenerateSettings> options;
 
-        public UserGenerateController(ApplicationDbContext dbContext, UserManager<User> userManager)
+        public UserGenerateController(ApplicationDbContext dbContext,
+            UserManager<User> userManager,
+            IOptions<GenerateSettings> options)
         {
             this.dbContext = dbContext;
             this.userManager = userManager;
+            this.options = options;
         }
         [HttpPost]
         public async Task<IActionResult> GenerateUsers([FromBody]List<string> studentIds)
@@ -34,7 +41,7 @@ namespace WebApp.Controllers
             {
                 User user = new User()
                 {
-                    UserName = $"{studentId}@rtuitlab.ru",
+                    UserName = $"{studentId}{options.Value.Domain}",
                     StudentID = studentId
                 };
                 var password = new Random().Next(MIN, MAX).ToString();
