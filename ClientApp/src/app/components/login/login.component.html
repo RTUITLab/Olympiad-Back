@@ -5,12 +5,12 @@
     <form class="login-container" novalidate [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <p>
         <input [ngClass]="{
-          'input-error': email.errors && (email.dirty || email.touched),
-          'input-success': !email.errors && (email.dirty || email.touched)
-        }" type="email" required autocomplete="email" placeholder="Email" formControlName="Email">
+          'input-error': login.errors && (login.dirty || login.touched),
+          'input-success': !login.errors && (login.dirty || login.touched)
+        }" type="text" required placeholder="Email или ID" formControlName="Login">
       </p>
-      <p class="error" *ngIf='email.errors && (email.dirty || email.touched)'>
-        Введите корректный Email
+      <p class="error" *ngIf='login.errors && (login.dirty || login.touched)'>
+        Введите корректный Email или ID
       </p>
       <p>
         <input [ngClass]="{
