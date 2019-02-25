@@ -1,21 +1,25 @@
 <div>
     <div class="select-bar">
-            <ul class="challenge" *ngIf='currentChallenge'>
-                    <li><a href=#>{{currentChallenge.Name}}</a>
-                        <ul class="submenu">
-                            <li *ngFor="let challenge of challenges">
-                                <a routerLink='/challenges/{{challenge.Id}}' (click)='goToChallenge(challenge.Id)'>{{challenge.Name}}</a>
-                            </li>
-                        </ul>
+        <ul class="challenge">
+            <li>
+                <a *ngIf="!currentChallenge">Выберете соревнование</a>
+                <a *ngIf="currentChallenge">{{currentChallenge.Name}}</a>
+                <ul class="submenu">
+                    <li *ngFor="let challenge of challenges">
+                        <a routerLink='/challenges/{{challenge.Id}}'>{{challenge.Name}}</a>
                     </li>
-                    <li><a href=#>Выберите задание</a>
-                        <ul class="submenu">
-                            <li *ngFor="let ex of currentExercises">
-                                <a routerLink="/exercises/{{ex.Id}}">{{ex.Name}}</a>
-                            </li>
-                        </ul>
+                </ul>
+            </li>
+            <li>
+                <a *ngIf="currentExercise; else noExercise">{{currentExercise.Name}}</a>
+                <ng-template #noExercise><a>Выберете задание</a></ng-template>
+                <ul class="submenu">
+                    <li *ngFor="let ex of currentExercises">
+                        <a routerLink="/exercises/{{ex.Id}}">{{ex.Name}}</a>
                     </li>
-                  
-            </ul>
+                </ul>
+            </li>
+
+        </ul>
     </div>
 </div>
