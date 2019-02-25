@@ -2,8 +2,8 @@
     <div class="select-bar">
         <ul class="challenge">
             <li>
-                <a *ngIf="!currentChallenge">Выберете соревнование</a>
-                <a *ngIf="currentChallenge">{{currentChallenge.Name}}</a>
+                <a *ngIf="currentChallenge; else noChallenge">{{currentChallenge.Name}}</a>
+                <ng-template #noChallenge><a>Выберете соревнование</a></ng-template>
                 <ul class="submenu">
                     <li *ngFor="let challenge of challenges">
                         <a routerLink='/challenges/{{challenge.Id}}'>{{challenge.Name}}</a>

@@ -18,7 +18,6 @@ import { ExerciseCompact } from 'src/app/models/Responses/ExerciseCompact';
 export class SelectChallengeComponent implements OnInit {
   constructor(
     private challengesService: ChallengesService,
-    private router: Router,
     private exerciseService: ExerciseService,
     private currentExerciseState: ExerciseStateService,
     private cdRef: ChangeDetectorRef
@@ -34,11 +33,6 @@ export class SelectChallengeComponent implements OnInit {
 
   private initChallengeId: string;
   private initExerciseId: string;
-
-
-  public currentChallengeName(): string {
-    return this.currentChallenge.Name;
-  }
 
   async ngOnInit() {
     const allchallenges = await this.challengesService.getChallengesList();
