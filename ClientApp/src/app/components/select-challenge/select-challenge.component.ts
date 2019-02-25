@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ChallengesService } from 'src/app/services/challenges.service';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { Router } from '@angular/router';
@@ -18,10 +18,9 @@ import { ExerciseCompact } from 'src/app/models/Responses/ExerciseCompact';
 export class SelectChallengeComponent implements OnInit {
   constructor(
     private challengesService: ChallengesService,
-    private router: Router,
     private exerciseService: ExerciseService,
     private currentExerciseState: ExerciseStateService,
-
+    private cdRef: ChangeDetectorRef
   ) { }
   public challenges: Array<Challenge> = [];
   public currentChallenge: Challenge;
@@ -34,29 +33,10 @@ export class SelectChallengeComponent implements OnInit {
 
   private initChallengeId: string;
   private initExerciseId: string;
-  private defaultChallenge: Challenge = {
-    ChallengeAccessType: ChallengeAccessType.Public,
-    CreationTime: '',
-    Id: '',
-    Name: 'Выберите соревнование',
-  };
-  private defaultExercise: ExerciseCompact = {
-    Name: 'Выберите задание',
-  };
-
-  isDefault(item: Challenge) {
-    return item === this.defaultChallenge
-    || item === this.defaultExercise;
-  }
 
   async ngOnInit() {
     const allchallenges = await this.challengesService.getChallengesList();
-    allchallenges.unshift(this.defaultChallenge);
     this.challenges = allchallenges;
-
-    this.currentChallenge = this.defaultChallenge;
-    this.currentExercises.push(this.defaultExercise);
-    this.currentExercise = this.defaultExercise;
 
     if (this.initChallengeId) {
       this.currentChallenge = this.challenges.find(c => c.Id === this.initChallengeId);
@@ -69,6 +49,7 @@ export class SelectChallengeComponent implements OnInit {
       this.initChallengeId = challengeId;
       if (this.challenges) {
         this.currentChallenge = this.challenges.find(c => c.Id === this.initChallengeId);
+        this.cdRef.detectChanges();
         this.loadExercises();
       }
     });
@@ -85,22 +66,9 @@ export class SelectChallengeComponent implements OnInit {
     const timer = setInterval(() => this.timeToEnd(), 1000);
   }
 
-  async goToChallenge() {
-    this.currentExerciseState.setChallengeId(this.currentChallenge.Id);
-    this.router.navigate(['challenges', this.currentChallenge.Id]);
-    this.initExerciseId = null;
-    await this.loadExercises();
-  }
-
-  goToExercise() {
-    this.router.navigate(['exercises', this.currentExercise.Id]);
-  }
-
   private async loadExercises() {
     const exercises = await this.exerciseService.getExercises(this.currentChallenge.Id);
-    exercises.unshift(this.defaultExercise);
     this.currentExercises = exercises;
-    this.currentExercise = this.defaultExercise;
     if (this.initExerciseId) {
       this.currentExercise = this.currentExercises.find(ex => ex.Id === this.initExerciseId);
     }
@@ -126,7 +94,7 @@ export class SelectChallengeComponent implements OnInit {
     if ((state === ChallengeState.InProgress ||
       state === ChallengeState.Ended) &&
       !this.currentExercises && this.initChallengeId) {
-        this.loadExercises();
+      this.loadExercises();
     }
   }
 }

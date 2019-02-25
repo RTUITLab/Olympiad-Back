@@ -8,16 +8,13 @@
   font-size: 16px;
 }
 .input-success{
-  border:  1px solid #04f504;
-  border-radius: 40px;
+  border-color:  #04f504 !important;
 }
 .input-error {
-  border:  1px solid red;
-  border-radius: 40px;
+  border-color:  red !important;
 }
 .recaptcha-error {
-  border-bottom:  2px solid red;
-
+  border-bottom:  2px solid red !important;
 }
 .recaptcha {
   margin-top: 12px;
