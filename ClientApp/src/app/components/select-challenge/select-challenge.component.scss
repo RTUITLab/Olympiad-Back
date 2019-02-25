@@ -1,9 +1,61 @@
-.select-bar{
-    background: #ebebeb;
+.select-bar {
+    margin:0px;
+    padding:0px;
+    font: 14px 'Verdana';
+    background: #9e9e9e;
 }
-.select-challenge {
-    display: inline-block;
+
+ul {
+    list-style: none;
+    display: block;
+    margin:0px;
+    padding:0px;
 }
-.select-exercise {
-    display: inline-block;
+ul:after {
+    display: block;
+    float: none;
+    content: ' ';
+    clear: both;
+}
+
+ul.challenge > li {
+    float: left;
+    position: relative;
+}
+ul.challenge> li > a {
+    display: block;
+    color: #fff;
+    padding: 10px;
+    text-decoration: none;
+    background-color: #777777;
+}
+ul.challenge > li > a:hover {
+    background-color: #4e4e4e;
+    color: rgb(255, 255, 255);
+}
+
+ul.submenu {
+    position: absolute;
+    width: 240px;
+    top: 37px;
+    left:0px;
+    display: none;
+    background-color: white;
+    border-radius: 10%;
+}
+ul.submenu > li {
+    display: block;
+}
+ul.submenu > li > a {
+    display: block;
+    text-decoration: none;
+    padding: 10px;
+    color: #ffffff;
+    background-color: #777777;
+}
+ul.submenu > li > a:hover {
+    background-color: #1684eb;
+}
+ul.challenge > li:hover > ul.submenu {
+    display: block;
 }
