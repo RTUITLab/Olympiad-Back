@@ -49,11 +49,11 @@ namespace WebApp.Controllers
             {
                 return BadRequest(ModelState);
             }
-            if (string.IsNullOrEmpty(credentials.Email) || string.IsNullOrEmpty(credentials.Password))
+            if (string.IsNullOrEmpty(credentials.Login) || string.IsNullOrEmpty(credentials.Password))
             {
                 return BadRequest();
             }
-            var user = await _userManager.FindByNameAsync(credentials.Email);
+            var user = await context.Students.SingleOrDefaultAsync(c => c.StudentID == credentials.Login || c.UserName == credentials.Login);
             if (user == null) return BadRequest();
             if (!await _userManager.CheckPasswordAsync(user, credentials.Password)
                 //|| await _userManager.IsEmailConfirmedAsync(userToVerify)
@@ -81,7 +81,7 @@ namespace WebApp.Controllers
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
             loginInfo.Token = token;
-            
+
             var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), _userManager.GetRolesAsync(user).Result.ToArray());
 
             loginInfo.Token = await Tokens.GenerateJwt(identity, _jwtFactory, user.UserName);
