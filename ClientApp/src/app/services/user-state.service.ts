@@ -31,7 +31,7 @@ export class UserStateService extends BaseHttpService {
           this.InitUser(event);
           observer.next(event);
         },
-        error => observer.error('Неверные email/пароль')
+        error => observer.error('Неверные email (ID) или пароль')
       );
     return observable;
   }

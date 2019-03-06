@@ -25,8 +25,7 @@ export class LoginComponent extends LoadingComponent implements OnInit {
   errorMessage: string;
   model: LoginViewModel;
   loginForm = new FormGroup({
-    Email: new FormControl('', [
-      Validators.email,
+    Login: new FormControl('', [
       Validators.required
     ]),
     Password: new FormControl('', [
@@ -34,7 +33,7 @@ export class LoginComponent extends LoadingComponent implements OnInit {
       Validators.minLength(6)
     ])
   });
-  get email() { return this.loginForm.controls['Email']; }
+  get login() { return this.loginForm.controls['Login']; }
   get password() { return this.loginForm.controls['Password']; }
   onSubmit() {
     if (this.loginForm.valid) {
