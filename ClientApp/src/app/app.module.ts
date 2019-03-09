@@ -26,7 +26,6 @@ import { RegistrationComponent } from './components/registration/registration.co
 import { HeaderComponent } from './components/header/header.component';
 import { LoginComponent } from './components/login/login.component';
 import { UserStateService } from './services/user-state.service';
-import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
 import { ExerciseService } from './services/exercise.service';
 import { AuthGuardService } from './services/ComponentActivators/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
@@ -77,11 +76,6 @@ const routes: Route[] = [
   {
     path: 'admin-functions',
     component: AdminFunctionsComponent,
-    canActivate: [AuthGuardService]
-  },
-  {
-    path: 'exercises',
-    component: ExercisesListComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -146,7 +140,6 @@ const routes: Route[] = [
     RegistrationComponent,
     HeaderComponent,
     LoginComponent,
-    ExercisesListComponent,
     ExerciseInfoComponent,
     OverviewComponent,
     ExerciseInoutComponent,
