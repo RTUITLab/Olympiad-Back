@@ -1,42 +1,43 @@
 <div *ngIf="isAdmin()" class="addExerciseComponent">
   <form #addExerciseForm="ngForm" (ngSubmit)="addExercise()">
     <div class="form-group">
-      <button type="submit" class="text btn" [disabled]="!addExerciseForm.form.valid">
-        Добавить
-      </button>
-    </div>
-    <div class="form-group">
       <label for="ExerciseName">Название задания</label>
       <input type="text" class="form-control" id="ExerciseName" required [(ngModel)]="newExercise.ExerciseName" name="ExerciseName"
-        #exerciseName="ngModel">
+      #exerciseName="ngModel">
       <div [hidden]="exerciseName.valid || exerciseName.pristine" class="alert alert-danger">Необходимо название
         задания</div>
-    </div>
-
-    <div class="form-group">
-      <mat-form-field>
-        <label for="ChallengePick">Соревнование</label>
-        <input name="ChallengePick" type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
-        <mat-autocomplete (optionSelected)="getSelectedOption($event)" #auto="matAutocomplete" autoActiveFirstOption [displayWith]="displayFn">
-          <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-            {{option.Name}}
-          </mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
-    </div>
-
-    <div class="form-group">
-      <label for="Score">Баллы за успешное выполнение</label>
-      <input type="number" class="form-control" id="Score" required [(ngModel)]="newExercise.Score" name="Score" #score="ngModel">
-      <div [hidden]="score.valid || score.pristine" class="alert alert-danger">Необходимо указать количество баллов</div>
-    </div>
-
-    <div class="form-group">
-      <label for="ExerciseTask">Текст задания и граничные условия</label>
-      <div [hidden]="exerciseTask.valid || exerciseTask.pristine" class="alert alert-danger">Необходимо условие задачи</div>
-      <textarea type="number" class="form-control" id="ExerciseTask" required [(ngModel)]="newExercise.ExerciseTask"
+      </div>
+      
+      <div class="form-group">
+        <mat-form-field>
+          <label for="ChallengePick">Соревнование</label>
+          <input name="ChallengePick" type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
+          <mat-autocomplete (optionSelected)="getSelectedOption($event)" #auto="matAutocomplete" autoActiveFirstOption [displayWith]="displayFn">
+            <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+              {{option.Name}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      
+      <div class="form-group">
+        <label for="Score">Баллы за успешное выполнение</label>
+        <input type="number" placeholder="0" class="form-control" id="Score" required [(ngModel)]="newExercise.Score" name="Score" #score="ngModel">
+        <div [hidden]="score.valid || score.pristine" class="alert alert-danger">Необходимо указать количество баллов</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="ExerciseTask">Текст задания и граничные условия</label>
+        <br>
+        <textarea class="form-control" id="ExerciseTask" required [(ngModel)]="newExercise.ExerciseTask"
         name="ExerciseTask" #exerciseTask="ngModel">
-    </textarea>
+      </textarea>
+      <div [hidden]="exerciseTask.valid || exerciseTask.pristine" class="alert alert-danger">Необходимо условие задачи</div>
+    </div>
+    <div class="form-group">
+      <button type="submit" class="text" [disabled]="!addExerciseForm.form.valid">
+        Добавить
+      </button>
     </div>
   </form>
 </div>

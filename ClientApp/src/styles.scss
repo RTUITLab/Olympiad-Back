@@ -44,7 +44,7 @@ button {
   button:focus {
     border-color: #05a;
   }
-    input {
+  input {
     box-sizing: border-box;
     display: block;
     width: 100%;
@@ -54,6 +54,27 @@ button {
     outline: 0;
     font-family: inherit;
     font-size: 0.95em;
+  }
+  textarea {
+    width: 100%;
+    height: 300px;
+    border-style: ridge;
+    background: transparent;
+    resize: none;
+    overflow: auto;
+}
+ 
+textarea:focus {
+    outline: none;
+}
+  input[type="number"] {
+    width: 100px;
+    border-style:ridge;
+  }
+  input[type="file"] {
+    cursor: pointer;
+    width: 100px;
+    border-style:ridge;
   }
   
     input[type="text"] {

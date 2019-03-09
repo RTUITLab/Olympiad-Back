@@ -42,11 +42,16 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
 
   exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
+  model: SolutionViewModel = new SolutionViewModel();
 
   get submitDisabled() {
     return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
   }
-  model: SolutionViewModel = new SolutionViewModel();
+  get selectedLanguage() {
+    if (this.model.Language) {
+      return LanguageConverter.fileExtension(this.model.Language);
+    }
+  }
   ngOnInit() {
     this.model.Language = 'Java';
     this.route.paramMap
@@ -78,33 +83,42 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   ngOnDestroy(): void {
     this.solutionCheckTimers.forEach(t => clearTimeout(t));
   }
-
+  selectLanguage(event) {
+    this.model.Language = event.target.value;
+    this.model.File = null;
+  }
   setFile(event) {
     this.model.File = event.srcElement.files[0];
   }
   onSubmit() {
-    this.exercisesService.sendSolution(this.model)
-      .subscribe(
-        createdSolution => {
-          if (!createdSolution) {
-            this.toastr.warning(`Решение не загружено`);
-            return;
+    if (!this.submitDisabled) {
+      this.exercisesService.sendSolution(this.model)
+        .subscribe(
+          createdSolution => {
+            if (!createdSolution) {
+              this.toastr.warning(`Решение не загружено`);
+              return;
+            }
+            if (this.exerciseInfo.Solutions.some(s => s.Id === createdSolution.Id)) {
+              this.toastr.warning(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
+              return;
+            }
+            const f = () => this.solutionCheckLoop(createdSolution);
+            this.toastr.success(`Решение успешно загружено`);
+            f();
+          },
+          (error: HttpErrorResponse) => {
+            if (error.status === 429) { // TooManyRequests HTTP Status
+              this.toastr.warning(`Отправлять решения можно только раз в минуту`);
+            }
+            this.toastr.error('Не удалось отправить решение');
           }
-          if (this.exerciseInfo.Solutions.some(s => s.Id === createdSolution.Id)) {
-            this.toastr.warning(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
-            return;
-          }
-          const f = () => this.solutionCheckLoop(createdSolution);
-          this.toastr.success(`Решение успешно загружено`);
-          f();
-        },
-        (error: HttpErrorResponse) => {
-          if (error.status === 429) { // TooManyRequests HTTP Status
-            this.toastr.warning(`Отправлять решения можно только раз в минуту`);
-          }
-          this.toastr.error('Не удалось отправить решение');
-        }
-      );
+        );
+    } else if (!this.model.File) {
+      this.toastr.warning('Загрузите файл');
+    } else if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
+      this.toastr.warning(`Расширение загружаемого вами файла не соответсвует выбранному языку программирования`);
+    }
   }
 
 
