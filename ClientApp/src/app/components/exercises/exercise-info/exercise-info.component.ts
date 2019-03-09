@@ -110,8 +110,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           (error: HttpErrorResponse) => {
             if (error.status === 429) { // TooManyRequests HTTP Status
               this.toastr.warning(`Отправлять решения можно только раз в минуту`);
+            } else {
+              this.toastr.error('Не удалось отправить решение');
             }
-            this.toastr.error('Не удалось отправить решение');
           }
         );
     } else if (!this.model.File) {
