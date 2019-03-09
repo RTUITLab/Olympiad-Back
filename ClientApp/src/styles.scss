@@ -44,7 +44,7 @@ button {
   button:focus {
     border-color: #05a;
   }
-    input {
+  input {
     box-sizing: border-box;
     display: block;
     width: 100%;
@@ -68,6 +68,11 @@ textarea:focus {
     outline: none;
 }
   input[type="number"] {
+    width: 100px;
+    border-style:ridge;
+  }
+  input[type="file"] {
+    cursor: pointer;
     width: 100px;
     border-style:ridge;
   }

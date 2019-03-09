@@ -11,24 +11,28 @@
   <markdown id="Exercise_text" [data]="exerciseInfo.ExerciseTask"></markdown>
   <app-exercise-inout [exId]="exerciseInfo.Id"></app-exercise-inout>
   <div *ngIf="needSendForm()">
-    <h2>Отправка решения</h2>
-    <form (ngSubmit)="onSubmit()">
+    <h2 class="text-center">Отправка решения</h2>
+    <form (ngSubmit)="onSubmit()" class="send-solution">
       <div class="form-group">
         <label for="Language">Язык программирования</label>
-        <select id="Language" class="form-control" [(ngModel)]="model.Language" name="Language">
-          <option *ngFor="let lang of availableLanguages">{{lang}}</option>
+        <select id="Language" class="form-control" (change)="selectLanguage($event)" name="Language">
+          <option *ngFor="let lang of availableLanguages" [value]="lang">{{lang}}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="Source">Код программы</label>
-        <input  type="file" id="Source" (change)="setFile($event)" accept=".cpp,.java,.cs,.py,.pas" />
-
+        <label for="Source" class="label-for-input-btn background-green">Загрузить решение</label>
+        <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" /> 
+        <p *ngIf="submitDisabled; else downloadedSolution">Решение не загружено</p>
+        <ng-template #downloadedSolution>
+            <p>Загруженное решение: {{model.File.name}}</p>
+          </ng-template>
       </div>
 
       <div class="form-group">
-        <button class="btn text" [disabled]="submitDisabled">Отправить решение</button>
-      </div>
+          <label for="send-sol" class="label-for-input-btn">Отправить решение</label>
+          <input type="submit" class="input-btn" id="send-sol"/> 
+        </div>
     </form>
   </div>
 

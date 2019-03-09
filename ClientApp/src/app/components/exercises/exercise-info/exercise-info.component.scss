@@ -6,20 +6,49 @@ th, td {
 .text-center {
     text-align: center;
 }
+.send-solution {
+    display: grid;
+    justify-content: center;
+}
 .editExercise_btn{
-    color:#c300ff;
-    border:1px solid rgb(195, 0, 255);
+    font-size:13px;
     width: 100%;
     text-decoration: none;
     outline: none;
     display: inline-block;
-    background: white;
     margin-top: 10px;
     transition: .15s ease-in-out;
 }
-.editExercise_btn:hover{
-    box-shadow: 0 0 3px 0 rgb(195, 0, 255) inset, 0 0 3px 1px rgb(195, 0, 255);
-    color: rgb(195, 0, 255);
+.label-for-input-btn {
+    width: 180px;
+    height: 50px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 25px;
+    display: block;
+    font: 14px/50px Tahoma;
+    background: #28d;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 40px;
+}
+.label-for-input-btn:hover {
+    background: #17c;
+
+}
+.background-green {
+    background: #15bd24;
+}
+.background-green:hover {
+    background: #14a921;
+}
+.input-btn {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
 }
 .statusIcon {
     width: 70px;
