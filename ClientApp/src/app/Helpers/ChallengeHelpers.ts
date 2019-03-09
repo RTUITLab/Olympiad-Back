@@ -14,7 +14,7 @@ export class ChallengeHelpers {
             case ChallengeState.NotStarted:
                 return `До начала: ${DateHelpers.difference(new Date(), new Date(challenge.StartTime))}`;
             case ChallengeState.InProgress:
-                return `Осталось: ${DateHelpers.difference(new Date(), new Date(challenge.EndTime))}`;
+                return `До конца соревнования: ${DateHelpers.difference(new Date(), new Date(challenge.EndTime))}`;
             case ChallengeState.IncorrectLimits:
             default:
                 return 'Неверные данные о соревновании, обратитесь к администратору';

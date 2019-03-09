@@ -52,6 +52,7 @@ import { SelectChallengeComponent } from './components/select-challenge/select-c
 import { AdminFunctionsComponent } from './components/admin-functions/admin-functions.component';
 import { AboutComponent } from './components/about/about.component';
 import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
+import { ChallengeDeadlineComponent } from './components/select-challenge/challenge-deadline/challenge-deadline.component';
 
 const routes: Route[] = [
   {
@@ -161,7 +162,8 @@ const routes: Route[] = [
     SelectChallengeComponent,
     AdminFunctionsComponent,
     AboutComponent,
-    UsersGenerationComponent
+    UsersGenerationComponent,
+    ChallengeDeadlineComponent
   ],
   imports: [
     BrowserModule,
