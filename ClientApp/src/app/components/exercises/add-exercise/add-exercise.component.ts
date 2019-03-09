@@ -18,6 +18,7 @@ import { Observable } from 'rxjs';
 import { startWith, map } from 'rxjs/operators';
 import { MatAutocompleteSelectedEvent } from '@angular/material';
 import { CreateExerciseModel } from 'src/app/models/ViewModels/CreateExerciseModel';
+import { Title } from '@angular/platform-browser';
 
 
 
@@ -42,11 +43,13 @@ export class AddExerciseComponent extends LoadingComponent implements OnInit {
     private usersService: UserStateService,
     private challengesService: ChallengesService,
     private router: Router,
+    private titleService: Title,
     private toastr: ToastrService
   ) {
     super();
   }
   async ngOnInit() {
+    this.titleService.setTitle('Добавление задания');
     this.startLoading();
     this.stopLoading();
     this.challenges = await this.challengesService.getChallengesList();

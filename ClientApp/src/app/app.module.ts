@@ -1,4 +1,4 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -194,7 +194,8 @@ const routes: Route[] = [
     ExerciseStateService,
     ExerciseService,
     ChallengesService,
-    AuthGuardService
+    AuthGuardService,
+    Title,
   ],
   bootstrap: [AppComponent]
 })

@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import {map, switchMap, filter, debounceTime} from 'rxjs/operators';
 import { UsersService } from 'src/app/services/users.service';
 import { UserInfo } from 'src/app/models/Responses/UserInfo';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-challenge-edit',
@@ -37,6 +38,7 @@ export class ChallengeEditComponent extends LoadingComponent implements OnInit {
     private challengesService: ChallengesService,
     private toastr: ToastrService,
     private route: ActivatedRoute,
+    private titleService: Title,
     private currentExerciseState: ExerciseStateService,
     private usersService: UsersService
   ) { super(); }
@@ -60,6 +62,7 @@ export class ChallengeEditComponent extends LoadingComponent implements OnInit {
             return;
           }
           this.challenge.Name = c.Name;
+          this.titleService.setTitle(`Редактирование - ${this.challenge.Name}`);
           this.challenge.ChallengeAccessType = c.ChallengeAccessType;
           if (c.StartTime && c.EndTime) {
             this.bounded = true;

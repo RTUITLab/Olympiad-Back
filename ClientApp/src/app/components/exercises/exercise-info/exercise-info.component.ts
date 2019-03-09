@@ -18,6 +18,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChallengeState } from 'src/app/models/General/ChallengeState';
 import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
 import { ToastrService } from 'ngx-toastr';
+import { Title } from '@angular/platform-browser';
 
 
 
@@ -36,6 +37,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     private route: ActivatedRoute,
     private router: Router,
     private toastr: ToastrService,
+    private titleService: Title,
     private currentExerciseState: ExerciseStateService) {
     super();
   }
@@ -62,6 +64,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           .subscribe(
             exInfo => {
               this.exerciseInfo = exInfo;
+              this.titleService.setTitle(`${this.exerciseInfo.Name}`);
               this.exerciseInfo
                 .Solutions
                 .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)

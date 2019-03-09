@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { Title } from '@angular/platform-browser';
+
 
 
 @Component({
@@ -10,9 +12,11 @@ import { environment } from '../../../environments/environment';
 export class AboutComponent implements OnInit {
 
   constructor(
+    private titleService: Title,
   ) { }
   public get buildNumber(): string { return environment.buildNumber; }
   ngOnInit() {
+    this.titleService.setTitle('О сайте');
   }
 
 }

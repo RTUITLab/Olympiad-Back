@@ -6,6 +6,7 @@ import { UsersGenerateService } from '../../services/users-generate.service';
 import * as XLSX from 'xlsx';
 import { LoadingComponent } from '../helpers/loading-component';
 import { FormControl, FormGroup } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 
 
 
@@ -20,6 +21,8 @@ export class UsersGenerationComponent extends LoadingComponent implements OnInit
     private usersService: UserStateService,
     private toastr: ToastrService,
     private userGenService: UsersGenerateService,
+    private titleService: Title,
+
 
   ) {
     super();
@@ -30,6 +33,8 @@ export class UsersGenerationComponent extends LoadingComponent implements OnInit
   allNewUsers?: Array<User> = [];
   usersId?: Array<string> = [];
   ngOnInit() {
+    this.titleService.setTitle('Генерация пользователей');
+
   }
   genUsers() {
     this.usersId = this.usersGenForm.value['usersIdFormContol'].split('\n');

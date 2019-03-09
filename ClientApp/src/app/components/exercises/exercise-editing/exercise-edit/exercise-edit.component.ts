@@ -13,6 +13,7 @@ import { ExerciseNewCondition } from 'src/app/models/ExerciseNewCondition';
 import { ExerciseService } from 'src/app/services/exercise.service';
 import { ToastrService } from 'ngx-toastr';
 import { routerNgProbeToken } from '@angular/router/src/router_module';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-exercise-edit',
@@ -29,6 +30,7 @@ export class ExerciseEditComponent extends LoadingComponent implements OnInit {
     private exercisesService: ExerciseService,
     private router: Router,
     private toastr: ToastrService,
+    private titleService: Title,
     private route: ActivatedRoute,
   ) {
     super();
@@ -42,6 +44,7 @@ export class ExerciseEditComponent extends LoadingComponent implements OnInit {
           .subscribe(
             exInfo => {
               this.EditedExercise = exInfo;
+              this.titleService.setTitle(`Редактирование - ${this.EditedExercise.Name}`);
               this.stopLoading();
             },
             fail => {
