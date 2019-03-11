@@ -48,7 +48,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
   model: SolutionViewModel = new SolutionViewModel();
-  private get shownResults() { return this.shownResultsService.ShownResults; }
+  get shownResults() { return this.shownResultsService.ShownResults; }
   get submitDisabled() {
     return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
   }

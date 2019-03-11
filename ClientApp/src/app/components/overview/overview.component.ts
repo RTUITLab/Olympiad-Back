@@ -21,7 +21,7 @@ export class OverviewComponent implements OnInit {
     private usersService: UserStateService,
     private shownResultsService: ShownResults
   ) { }
-  private get shownResults() { return this.shownResultsService.ShownResults; }
+  get shownResults() { return this.shownResultsService.ShownResults; }
   ngOnInit() {
     this.titleService.setTitle('Общие положения');
     this.usersService.currentUserStream.subscribe(U => this.user = U);
