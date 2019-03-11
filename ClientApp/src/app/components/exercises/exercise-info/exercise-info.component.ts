@@ -19,6 +19,7 @@ import { ChallengeState } from 'src/app/models/General/ChallengeState';
 import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
 import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
+import { ShownResults } from '../../helpers/ShownResults';
 
 
 
@@ -38,14 +39,16 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     private router: Router,
     private toastr: ToastrService,
     private titleService: Title,
-    private currentExerciseState: ExerciseStateService) {
+    private currentExerciseState: ExerciseStateService,
+    private shownResultsService: ShownResults
+    ) {
     super();
   }
 
   exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
   model: SolutionViewModel = new SolutionViewModel();
-
+  private get shownResults() { return this.shownResultsService.ShownResults; }
   get submitDisabled() {
     return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
   }

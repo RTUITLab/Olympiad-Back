@@ -55,8 +55,20 @@
             Скачать
           </button>
         </td>
-        <td>{{solutionStatusPresent(sol.Status)}}</td>
-        <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
+        <ng-container *ngIf="shownResults; else ResultsLocked">
+          <td>{{solutionStatusPresent(sol.Status)}}</td>
+          <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
+        </ng-container>
+        <ng-template #ResultsLocked>
+          <ng-container *ngIf="sol.Status === 2 || sol.Status === 6 ;else OtherResults">
+              <td>Решение проверено</td>
+              <td><img class="statusIcon" src="assets/StatusCode/Checked.svg" /></td>
+          </ng-container>
+          <ng-template #OtherResults>
+            <td>{{solutionStatusPresent(sol.Status)}}</td>
+            <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
+          </ng-template>
+        </ng-template>
       </tr>
     </tbody>
   </table>

@@ -17,7 +17,7 @@
       <img src="assets/StatusCode/1.svg" />
       <p>Ошибка во время выполнения</p>
     </div>
-    <div class="statusDesc red">
+    <div class="statusDesc red" *ngIf="shownResults">
       <img src="assets/StatusCode/2.svg" />
       <p>Неверный результат работы</p>
     </div>
@@ -33,9 +33,9 @@
       <img src="assets/StatusCode/5.svg" />
       <p>Решение проверяется</p>
     </div>
-    <div class="statusDesc green">
-      <img src="assets/StatusCode/6.svg" />
-      <p>Решение верно</p>
+    <div class="statusDesc green" *ngIf="shownResults; else ResultsLocked">
+        <img src="assets/StatusCode/6.svg" />
+        <p>Решение верно</p>
     </div>
   </div>
 
@@ -79,8 +79,14 @@
     <img src="assets/StatusCode/5.svg" />
     <p>Решение проверяется</p>
   </div>
-  <div class="statusDesc green">
+  <div class="statusDesc green" *ngIf="shownResults; else ResultsLocked">
     <img src="assets/StatusCode/6.svg" />
     <p>Решение верно</p>
   </div>
+  <ng-template #ResultsLocked>
+    <div class="statusDesc blue">
+      <img src="assets/StatusCode/Checked.svg" />
+      <p>Решение проверено</p>
+    </div>
+  </ng-template>
 </div>

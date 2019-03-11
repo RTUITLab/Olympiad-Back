@@ -21,6 +21,7 @@ import {MatDividerModule} from '@angular/material/divider';
 
 
 
+
 import { AppComponent } from './components/app.component';
 import { RegistrationComponent } from './components/registration/registration.component';
 import { HeaderComponent } from './components/header/header.component';
@@ -52,6 +53,7 @@ import { AdminFunctionsComponent } from './components/admin-functions/admin-func
 import { AboutComponent } from './components/about/about.component';
 import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
 import { ChallengeDeadlineComponent } from './components/select-challenge/challenge-deadline/challenge-deadline.component';
+import { ShownResults } from './components/helpers/ShownResults';
 
 const routes: Route[] = [
   {
@@ -196,6 +198,7 @@ const routes: Route[] = [
     ChallengesService,
     AuthGuardService,
     Title,
+    ShownResults,
   ],
   bootstrap: [AppComponent]
 })
