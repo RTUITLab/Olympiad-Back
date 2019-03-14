@@ -87,10 +87,14 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            var exercise = await context
+            var exerciseQuery = context
                 .Exercises
-                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
-                .SingleOrDefaultAsync(p => p.ExerciseID == exerciseId)
+                .Where(ex => ex.ExerciseID == exerciseId);
+
+            if (!IsInRole("Admin"))
+                exerciseQuery = exerciseQuery.Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now);
+
+            var exercise = await exerciseQuery.SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             
             var solutions = await context
