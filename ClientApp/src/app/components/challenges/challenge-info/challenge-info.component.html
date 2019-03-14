@@ -1,10 +1,10 @@
 <div class="text" *ngIf="challenge; else loading">
-    <div *ngIf="isAdmin()">
+    <div *ngIf="isAdmin()" style="border:1px solid grey;">
         <button (click)="editChallenge()">Изменить</button>
+        <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p> 
     </div>
 <div class="challenge-info">
     <h1>{{challenge.Name}}</h1>
-    <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p> 
     <p>До окончания соревнования: {{challengeTime(challenge)}}</p>   
 </div>
 </div>

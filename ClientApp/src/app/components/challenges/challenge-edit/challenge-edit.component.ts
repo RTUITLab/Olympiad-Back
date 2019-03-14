@@ -27,8 +27,6 @@ export class ChallengeEditComponent extends LoadingComponent implements OnInit {
   public challenge: ChallengeEditViewModel = new ChallengeEditViewModel();
   public bounded = false;
   public challengeTime: Date[];
-  public minTime = new Date();
-
   myControl = new FormControl();
   users: Observable<UserInfo[]>;
   lols: string[] = ['lpol1', 'adwd2', '132f'];
@@ -66,8 +64,7 @@ export class ChallengeEditComponent extends LoadingComponent implements OnInit {
           this.challenge.ChallengeAccessType = c.ChallengeAccessType;
           if (c.StartTime && c.EndTime) {
             this.bounded = true;
-            this.minTime = new Date(c.StartTime);
-            this.challengeTime = [this.minTime, new Date(c.EndTime)];
+            this.challengeTime = [new Date(c.StartTime), new Date(c.EndTime)];
           }
           this.challenge.StartTime = c.StartTime;
           this.challenge.EndTime = c.EndTime;

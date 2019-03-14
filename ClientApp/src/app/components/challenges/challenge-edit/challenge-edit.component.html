@@ -24,7 +24,7 @@
     <div class="form-group" *ngIf="bounded">
       <label class="example-input-wrapper">
         Время проведения соревнования:
-        <input [selectMode]="'range'" [min]="minTime" [(ngModel)]="challengeTime" [owlDateTimeTrigger]="dtRange1"
+        <input [selectMode]="'range'" [(ngModel)]="challengeTime" [owlDateTimeTrigger]="dtRange1"
           [owlDateTime]="dtRange1" name="challengeTimePicker">
         <owl-date-time #dtRange1></owl-date-time>
       </label>
