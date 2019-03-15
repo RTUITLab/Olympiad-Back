@@ -22,56 +22,58 @@
 
       <div class="form-group">
         <label for="Source" class="label-for-input-btn background-green">Загрузить решение</label>
-        <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" /> 
+        <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" />
         <p *ngIf="submitDisabled; else downloadedSolution">Решение не загружено</p>
         <ng-template #downloadedSolution>
-            <p>Загруженное решение: {{model.File.name}}</p>
-          </ng-template>
+          <p>Загруженное решение: {{model.File.name}}</p>
+        </ng-template>
       </div>
 
       <div class="form-group">
-          <label for="send-sol" class="label-for-input-btn">Отправить решение</label>
-          <input type="submit" class="input-btn" id="send-sol"/> 
-        </div>
+        <label for="send-sol" class="label-for-input-btn">Отправить решение</label>
+        <input type="submit" class="input-btn" id="send-sol" />
+      </div>
     </form>
   </div>
 
-  <h2 class="text-center">Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
-  <table>
-    <thead>
-      <th>Время отправки</th>
-      <th>Язык программирования</th>
-      <th>Скачать решение</th>
-      <th>Результат</th>
-      <th> </th>
-    </thead>
-    <tbody>
+  <div *ngIf="exerciseInfo.Solutions.length > 02">
+    <h2 class="text-center">Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
+    <table>
+      <thead>
+        <th>Время отправки</th>
+        <th>Язык программирования</th>
+        <th>Скачать решение</th>
+        <th>Результат</th>
+        <th> </th>
+      </thead>
+      <tbody>
 
-      <tr *ngFor="let sol of exerciseInfo.Solutions">
-        <td>{{prettyTime(sol.SendingTime)}}</td>
-        <td>{{normalLang(sol.Language)}}</td>
-        <td>
-          <button class="btn text" (click)="downloadSolution(sol)">
-            Скачать
-          </button>
-        </td>
-        <ng-container *ngIf="shownResults; else ResultsLocked">
-          <td>{{solutionStatusPresent(sol.Status)}}</td>
-          <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
-        </ng-container>
-        <ng-template #ResultsLocked>
-          <ng-container *ngIf="sol.Status === 2 || sol.Status === 6 ;else OtherResults">
-              <td>Решение проверено</td>
-              <td><img class="statusIcon" src="assets/StatusCode/Checked.svg" /></td>
-          </ng-container>
-          <ng-template #OtherResults>
+        <tr *ngFor="let sol of exerciseInfo.Solutions">
+          <td>{{prettyTime(sol.SendingTime)}}</td>
+          <td>{{normalLang(sol.Language)}}</td>
+          <td>
+            <button class="btn text" (click)="downloadSolution(sol)">
+              Скачать
+            </button>
+          </td>
+          <ng-container *ngIf="shownResults; else ResultsLocked">
             <td>{{solutionStatusPresent(sol.Status)}}</td>
             <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
+          </ng-container>
+          <ng-template #ResultsLocked>
+            <ng-container *ngIf="sol.Status === 2 || sol.Status === 6 ;else OtherResults">
+              <td>Решение проверено</td>
+              <td><img class="statusIcon" src="assets/StatusCode/Checked.svg" /></td>
+            </ng-container>
+            <ng-template #OtherResults>
+              <td>{{solutionStatusPresent(sol.Status)}}</td>
+              <td><img class="statusIcon" src="assets/StatusCode/{{sol.Status}}.svg" /></td>
+            </ng-template>
           </ng-template>
-        </ng-template>
-      </tr>
-    </tbody>
-  </table>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 <ng-template #loading>
   <ngx-loading [show]="loading"></ngx-loading>
