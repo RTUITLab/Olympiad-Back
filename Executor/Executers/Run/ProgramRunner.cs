@@ -1,21 +1,16 @@
-﻿using Models;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Executor.Logging;
 using Shared.Models;
-using Models.Solutions;
 using Models.Exercises;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace Executor.Executers.Run
 {
@@ -26,16 +21,20 @@ namespace Executor.Executers.Run
 
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
         private readonly IDockerClient dockerClient;
+        private readonly ILogger<ProgramRunner> logger;
         private Task runningTask;
-        private readonly Logger<ProgramRunner> logger;
+        
 
 
-        public ProgramRunner(Func<Guid, SolutionStatus, Task> processSolution, IDockerClient dockerClient)
+        public ProgramRunner(
+            Func<Guid, SolutionStatus, Task> processSolution, 
+            IDockerClient dockerClient,
+            ILogger<ProgramRunner> logger)
         {
-            logger = Logger<ProgramRunner>.CreateLogger();
             runningTask = Task.Run(RunLoop);
             this.processSolution = processSolution;
             this.dockerClient = dockerClient;
+            this.logger = logger;
         }
 
         public void Add(Guid solutionId, ExerciseData[] data)
@@ -71,15 +70,15 @@ namespace Executor.Executers.Run
             await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
         }
 
-        protected async Task<SolutionStatus> Run(string imageName, ExerciseData testData)
+        private async Task<SolutionStatus> Run(string imageName, ExerciseData testData)
         {
-            var container = await dockerClient.Containers.CreateContainerAsync(new Docker.DotNet.Models.CreateContainerParameters
+            var container = await dockerClient.Containers.CreateContainerAsync(new CreateContainerParameters
             {
                 Image = imageName,
                 OpenStdin = true,
                 NetworkDisabled = true
             });
-            SolutionStatus status = SolutionStatus.InProcessing;
+            var status = SolutionStatus.InProcessing;
             try
             {
                 status = await RunAndCheck(container.ID, testData);
@@ -94,7 +93,7 @@ namespace Executor.Executers.Run
 
         private async Task<SolutionStatus> RunAndCheck(string containerId, ExerciseData testData)
         {
-            var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters { });
+            var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
             if (!started)
                 throw new Exception($"Cant start container {containerId}");
             var stream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = true, Stdout = true });
