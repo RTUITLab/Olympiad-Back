@@ -107,8 +107,9 @@ namespace Executor.Executers.Run
                 var (stdout, stderr) = readTask.Result;
                 if (!string.IsNullOrEmpty(stderr))
                     return SolutionStatus.RunTimeError;
-                stdout = Regex.Replace(stdout, @"[\u0000-\u001F]+", string.Empty);
-                if (string.Equals(stdout, testData.OutData.Trim()))
+                stdout = Regex.Replace(stdout, @"[\u0000-\u0009]+", string.Empty);
+                stdout = Regex.Replace(stdout, @"[\u000B-\u001F]+", string.Empty);
+                if (string.Equals(stdout.Trim(), testData.OutData.Trim()))
                     return SolutionStatus.Sucessful;
                 return SolutionStatus.WrongAnswer;
             }
