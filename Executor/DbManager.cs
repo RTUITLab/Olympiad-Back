@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Models.Exercises;
 using Shared.Models;
 using Models.Solutions;
+using PublicAPI.Requests;
 
 namespace Executor
 {
@@ -84,10 +85,10 @@ namespace Executor
 
         private void Authorize()
         {
-            var pack = new // TODO use CredentialsRequest
+            var pack = new CredentialsRequest
             {
-                Email = options.Value.UserName,
-                options.Value.Password
+                Login = options.Value.UserName,
+                Password = options.Value.Password
             };
             var content = JsonConvert.SerializeObject(pack);
             var body = new StringContent(content, Encoding.UTF8, "application/json");
