@@ -114,11 +114,11 @@ namespace WebApp.Controllers.Users
                 return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
 
             result = await UserManager.AddToRoleAsync(userIdentity, "User");
-            var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
-            var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
-            await emailSender.SendEmailConfirm(model.Email, url);
+            //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
+            //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
+            //await emailSender.SendEmailConfirm(model.Email, url);
 
-            return new OkObjectResult("Account created");
+            return Ok();
         }
     }
 }

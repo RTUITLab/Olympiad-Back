@@ -5,6 +5,7 @@ using Docker.DotNet;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Executor
@@ -47,6 +48,11 @@ namespace Executor
 
         private static IServiceProvider BuildServices()
             => new ServiceCollection()
+                .AddLogging(configure =>
+                {
+                    configure.AddConsole();
+                    configure.AddConfiguration(configuration.GetSection("Logging"));
+                })
                 .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
                 .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
                 .AddTransient<DbManager>()
