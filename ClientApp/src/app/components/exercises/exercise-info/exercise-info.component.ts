@@ -67,6 +67,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           .subscribe(
             exInfo => {
               this.exerciseInfo = exInfo;
+              this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
               this.titleService.setTitle(`${this.exerciseInfo.Name}`);
               this.exerciseInfo
                 .Solutions
