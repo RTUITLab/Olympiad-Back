@@ -1,21 +1,15 @@
-﻿using Models;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using Executor.Logging;
 using Models.Solutions;
 using Shared.Models;
-using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
+using Microsoft.Extensions.Logging;
 
 namespace Executor.Executers.Build
 {
@@ -26,21 +20,22 @@ namespace Executor.Executers.Build
         private readonly Func<Solution, Task> finishBuildSolution;
         private readonly BuildProperty buildProperty;
         private readonly IDockerClient dockerClient;
+        private readonly ILogger<ProgramBuilder> logger;
 
         private Task buildingTask;
-        private readonly Logger<ProgramBuilder> logger;
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Solution, Task> finishBuildSolution,
             BuildProperty buildProperty,
-            IDockerClient dockerClient)
+            IDockerClient dockerClient,
+            ILogger<ProgramBuilder> logger)
         {
-            logger = Logger<ProgramBuilder>.CreateLogger();
             buildingTask = Task.Run(BuildLoop);
             this.processSolution = processSolution;
             this.finishBuildSolution = finishBuildSolution;
             this.buildProperty = buildProperty;
             this.dockerClient = dockerClient;
+            this.logger = logger;
         }
         public void Add(Solution solution)
         {
@@ -94,7 +89,7 @@ namespace Executor.Executers.Build
         private async Task<string> BuildImageAsync(string imageName, string buildContext)
         {
             var archivePath = Path.Combine(buildContext, "context.tar.gz");
-            await CreateTarGZ(archivePath, buildContext);
+            await CreateTarGz(archivePath, buildContext);
             using (var archStream = File.OpenRead(archivePath))
             {
                 var outStream = await dockerClient.Images.BuildImageFromDockerfileAsync(archStream, new ImageBuildParameters
@@ -108,14 +103,13 @@ namespace Executor.Executers.Build
                 }
             }
         }
-        private static async Task CreateTarGZ(string tgzFilename, string sourceDirectory)
+        private static async Task CreateTarGz(string tgzFilename, string sourceDirectory)
         {
             var outStream = File.Create(tgzFilename);
-            var gzoStream = new GZipOutputStream(outStream);
             var tarOutputStream = new TarOutputStream(outStream);
 
-            var filenames = Directory.GetFiles(sourceDirectory).Where(f => !f.EndsWith(".tar.gz"));
-            foreach (var filename in filenames)
+            var fileNames = Directory.GetFiles(sourceDirectory).Where(f => !f.EndsWith(".tar.gz"));
+            foreach (var filename in fileNames)
             {
                 using (var fileStream = File.OpenRead(filename))
                 {
