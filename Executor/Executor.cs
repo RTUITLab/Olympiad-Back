@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
+using Microsoft.Extensions.Logging;
 
 namespace Executor
 {
@@ -30,7 +31,7 @@ namespace Executor
         };
 
 
-        public Executor(DbManager dbManager, IDockerClient dockerClient)
+        public Executor(DbManager dbManager, IDockerClient dockerClient, ILoggerFactory logger)
         {
             executeWorkers = buildProperties.ToDictionary(
                 kvp => kvp.Key,
@@ -38,7 +39,8 @@ namespace Executor
                         kvp.Value,
                         dbManager.SaveChanges,
                         dbManager.GetExerciseData,
-                        dockerClient)
+                        dockerClient,
+                        logger)
             );
             this.dbManager = dbManager;
         }
