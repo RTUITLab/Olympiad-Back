@@ -1,12 +1,15 @@
 .container {
     // font-family: "Trebuchet MS", Helvetica, sans-serif;
-    font-family: 'Philosopher', sans-serif;
+    font-family: 'PT Sans',Helvetica,Arial,sans-serif;
     height: 100%;
     overflow: scroll;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
-.h {
-    font-variant: small-caps;
+.h2 {
+     font-variant: normal;
 }
 
 hr {
@@ -19,7 +22,7 @@ hr {
 .indicators {
     /* column-count: 2;
     column-fill: balance; */
-    display: grid;
+    display: grid; 
     grid-template-columns:repeat(auto-fill, 50%);
     padding: 10px;
 }
@@ -43,18 +46,18 @@ img {
 }
 
 .red {
-    font-variant: small-caps;
+    font-variant: normal;
     color:#ff5f50
 
 }
 
 .blue {
-    font-variant: small-caps;
+    font-variant: normal;
     color:#1565c0;
 }
 
 .green {
-    font-variant: small-caps;
+    font-variant: normal;
     color: #66bb6a;
 }
 

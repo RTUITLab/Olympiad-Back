@@ -21,16 +21,23 @@
     grid-column: 3;
     align-self: center;
     justify-self: center;
+    font-family: 'PT Sans',Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 .header_text{
     text-decoration:none;
     color:white;
     grid-column: 2;
     justify-self: center;
-    font-family: 'Philosopher', sans-serif;
+    font-family: 'PT Sans',Helvetica,Arial,sans-serif;
     font-size: 2.5em;
     text-align: center;
-    font-variant: small-caps;
+    font-variant-caps: titling-caps;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 .imgprop{
     max-width: 80px;
