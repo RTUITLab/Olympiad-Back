@@ -3,6 +3,13 @@
 @import "~ng-pick-datetime/assets/style/picker.min.css";
 // @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
+* {
+  font-family: 'PT Sans',Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 ::-webkit-scrollbar {
     display: none;
 }
