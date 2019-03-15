@@ -73,7 +73,10 @@ export class SelectChallengeComponent implements OnInit {
       this.currentExercise = this.currentExercises.find(ex => ex.Id === this.initExerciseId);
     }
   }
-
+  setDefaultExercise () {
+    this.currentExercise = null;
+    this.initExerciseId = null;
+  }
   public challengeTime(challenge: Challenge): string {
     return ChallengeHelpers.ChallengeTime(challenge);
   }
