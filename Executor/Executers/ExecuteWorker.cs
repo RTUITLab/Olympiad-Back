@@ -1,13 +1,9 @@
 ﻿using Executor.Executers.Build;
 using Executor.Executers.Run;
-using Models;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Docker.DotNet;
-using Executor.Logging;
+using Microsoft.Extensions.Logging;
 using Models.Exercises;
 using Models.Solutions;
 using Shared.Models;
@@ -19,7 +15,7 @@ namespace Executor.Executers
         private readonly Func<Guid, Task<ExerciseData[]>> getTests;
         private readonly ProgramBuilder builder;
         private readonly ProgramRunner runner;
-        private readonly Logger<ExecuteWorker> logger;
+        private readonly ILogger<ExecuteWorker> logger;
 
 
         public string Lang { get; }
@@ -28,12 +24,13 @@ namespace Executor.Executers
             BuildProperty buildProperty,
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, Task<ExerciseData[]>> getTests,
-            IDockerClient dockerClient)
+            IDockerClient dockerClient,
+            ILoggerFactory logger)
         {
-            logger = Logger<ExecuteWorker>.CreateLogger();
             this.getTests = getTests;
-            builder = new ProgramBuilder(processSolution, BuildFinished, buildProperty, dockerClient);
-            runner = new ProgramRunner(processSolution, dockerClient);
+            builder = new ProgramBuilder(processSolution, BuildFinished, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
+            runner = new ProgramRunner(processSolution, dockerClient, logger.CreateLogger<ProgramRunner>());
+            this.logger = logger.CreateLogger<ExecuteWorker>();
         }
 
         public void Handle(Solution solution)

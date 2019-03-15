@@ -1,19 +1,18 @@
-﻿using Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Executor.Logging;
 using Executor.Models.Settings;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models.Exercises;
 using Shared.Models;
 using Models.Solutions;
+using PublicAPI.Requests;
 
 namespace Executor
 {
@@ -22,15 +21,18 @@ namespace Executor
         public const string DbManagerHttpClientName = nameof(DbManagerHttpClientName);
 
         private readonly IOptions<UserInfo> options;
+        private readonly ILogger<DbManager> logger;
         private readonly HttpClient client;
-        private readonly Logger<DbManager> logger;
+        
 
         public DbManager(
             IOptions<UserInfo> options,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ILogger<DbManager> logger)
         {
             this.options = options;
-            logger = Logger<DbManager>.CreateLogger();
+            this.logger = logger;
+
             logger.LogInformation($"user name : {options.Value.UserName}");
             client = httpClientFactory.CreateClient(DbManagerHttpClientName);
             Authorize();
@@ -60,7 +62,7 @@ namespace Executor
             catch (Exception ex)
             {
                 logger.LogWarning($"cant invoke GET action with path >{path}<, try auth", ex);
-                Authorize();
+                await Authorize();
                 return await Invoke<T>(path);
             }
         }
@@ -75,34 +77,41 @@ namespace Executor
             catch (Exception ex)
             {
                 logger.LogWarning($"cant invoke POST action with path >{path}<, try auth", ex);
-                Authorize();
+                await Authorize();
                 return await InvokePost<T>(path);
             }
 
         }
 
 
-        private void Authorize()
+        private async Task Authorize(int deep = 0)
         {
-            var pack = new // TODO use CredentialsRequest
+            var pack = new CredentialsRequest
             {
-                Email = options.Value.UserName,
-                options.Value.Password
+                Login = options.Value.UserName,
+                Password = options.Value.Password
             };
             var content = JsonConvert.SerializeObject(pack);
             var body = new StringContent(content, Encoding.UTF8, "application/json");
-            string strResponse;
             try
             {
-                strResponse = client.PostAsync("api/auth/login", body).Result.Content.ReadAsStringAsync().Result;
+                var response = await client.PostAsync("api/auth/login", body);
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception("Can't connect to server, check credentials");
+                }
+                var strResponse = await response.Content.ReadAsStringAsync();
+                logger.LogDebug($"server return {strResponse}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JsonConvert.DeserializeObject<JObject>(strResponse)["Token"].ToString());
             }
             catch (Exception ex)
             {
-                logger.LogWarning($"exception when auth", ex);
-                throw;
+                if (deep > 10)
+                    throw;
+                logger.LogWarning($"exception when auth #{deep}, wait for retry...", ex);
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                await Authorize(deep + 1);
             }
-            logger.LogDebug($"server return {strResponse}");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JsonConvert.DeserializeObject<JObject>(strResponse)["Token"].ToString());
         }
     }
 }
