@@ -19,6 +19,8 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
     <PackageReference Include="SharpZipLib" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -26,14 +28,6 @@
     <ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Logging.Configuration">
-      <HintPath>..\..\..\.nuget\packages\microsoft.extensions.logging.configuration\2.1.1\lib\netstandard2.0\Microsoft.Extensions.Logging.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Console">
-      <HintPath>..\..\..\.nuget\packages\microsoft.extensions.logging.console\2.1.1\lib\netstandard2.0\Microsoft.Extensions.Logging.Console.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.Secret.json">
