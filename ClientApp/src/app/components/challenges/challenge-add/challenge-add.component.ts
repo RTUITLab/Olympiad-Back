@@ -5,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ChallengeAccessType } from 'src/app/models/General/ChallengeAccessType';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { ChallengesService } from 'src/app/services/challenges.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-challenge-add',
@@ -21,10 +22,12 @@ export class ChallengeAddComponent extends LoadingComponent implements OnInit {
   constructor(
     private usersService: UserStateService,
     private challengesService: ChallengesService,
+    private titleService: Title,
     private toastr: ToastrService,
   ) { super(); }
 
   ngOnInit() {
+    this.titleService.setTitle('Добавление соревнования');
     this.newChallenge.ChallengeAccessType = ChallengeAccessType.Public;
   }
 

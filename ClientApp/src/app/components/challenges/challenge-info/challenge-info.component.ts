@@ -6,6 +6,7 @@ import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { UserStateService } from 'src/app/services/user-state.service';
 import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-challenge-info',
@@ -18,6 +19,7 @@ export class ChallengeInfoComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private usersService: UserStateService,
+    private titleService: Title,
     private currentExerciseState: ExerciseStateService,
     private challangesService: ChallengesService) { }
 
@@ -30,6 +32,7 @@ export class ChallengeInfoComponent implements OnInit {
         this.currentExerciseState.setChallengeId(id);
         this.challenge = await this.challangesService.getChallenge(id);
         this.currentExerciseState.setChallenge(this.challenge);
+        this.titleService.setTitle(`${this.challenge.Name}`);
       }
     );
   }

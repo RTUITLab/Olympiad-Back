@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserStateService } from 'src/app/services/user-state.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-admin-functions',
@@ -10,10 +11,12 @@ import { UserStateService } from 'src/app/services/user-state.service';
 export class AdminFunctionsComponent implements OnInit {
 
   constructor(private router: Router,
+    private titleService: Title,
     private usersService: UserStateService
     ) { }
 
   ngOnInit() {
+    this.titleService.setTitle('Функции администратора');
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();

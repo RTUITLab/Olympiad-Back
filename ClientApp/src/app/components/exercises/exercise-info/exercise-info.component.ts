@@ -18,6 +18,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChallengeState } from 'src/app/models/General/ChallengeState';
 import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
 import { ToastrService } from 'ngx-toastr';
+import { Title } from '@angular/platform-browser';
+import { ShownResults } from '../../helpers/ShownResults';
 
 
 
@@ -36,14 +38,17 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     private route: ActivatedRoute,
     private router: Router,
     private toastr: ToastrService,
-    private currentExerciseState: ExerciseStateService) {
+    private titleService: Title,
+    private currentExerciseState: ExerciseStateService,
+    private shownResultsService: ShownResults
+    ) {
     super();
   }
 
   exerciseInfo: ExerciseInfo;
   availableLanguages = LanguageConverter.languages();
   model: SolutionViewModel = new SolutionViewModel();
-
+  get shownResults() { return this.shownResultsService.ShownResults; }
   get submitDisabled() {
     return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
   }
@@ -62,6 +67,8 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           .subscribe(
             exInfo => {
               this.exerciseInfo = exInfo;
+              this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
+              this.titleService.setTitle(`${this.exerciseInfo.Name}`);
               this.exerciseInfo
                 .Solutions
                 .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
@@ -110,8 +117,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           (error: HttpErrorResponse) => {
             if (error.status === 429) { // TooManyRequests HTTP Status
               this.toastr.warning(`Отправлять решения можно только раз в минуту`);
+            } else {
+              this.toastr.error('Не удалось отправить решение');
             }
-            this.toastr.error('Не удалось отправить решение');
           }
         );
     } else if (!this.model.File) {

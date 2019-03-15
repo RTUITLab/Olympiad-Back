@@ -10,6 +10,7 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { repeat } from 'rxjs/operators';
 import { FormValidateService } from 'src/app/services/FormHelpers/form-validate.service';
 import { RepeatPasswordValidService } from 'src/app/services/FormHelpers/repeat-password-valid.service';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -24,6 +25,7 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
     private toastr: ToastrService,
     private regCheck: AvailableReg,
     private formValid: FormValidateService,
+    private titleService: Title,
     private repeatPassValid: RepeatPasswordValidService
     ) {
       super();
@@ -65,6 +67,7 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
   get repeatPassword() { return this.registrationForm.controls['RepeatPassword']; }
   get recaptchaToken() { return this.registrationForm.controls['RecaptchaToken']; }
   ngOnInit() {
+    this.titleService.setTitle('Регистрация');
     this.startLoading();
     this.regCheck.checkAvailableRegistration()
       .subscribe(s => {

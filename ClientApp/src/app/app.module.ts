@@ -1,4 +1,4 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -21,12 +21,12 @@ import {MatDividerModule} from '@angular/material/divider';
 
 
 
+
 import { AppComponent } from './components/app.component';
 import { RegistrationComponent } from './components/registration/registration.component';
 import { HeaderComponent } from './components/header/header.component';
 import { LoginComponent } from './components/login/login.component';
 import { UserStateService } from './services/user-state.service';
-import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
 import { ExerciseService } from './services/exercise.service';
 import { AuthGuardService } from './services/ComponentActivators/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
@@ -52,6 +52,8 @@ import { SelectChallengeComponent } from './components/select-challenge/select-c
 import { AdminFunctionsComponent } from './components/admin-functions/admin-functions.component';
 import { AboutComponent } from './components/about/about.component';
 import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
+import { ChallengeDeadlineComponent } from './components/select-challenge/challenge-deadline/challenge-deadline.component';
+import { ShownResults } from './components/helpers/ShownResults';
 
 const routes: Route[] = [
   {
@@ -76,11 +78,6 @@ const routes: Route[] = [
   {
     path: 'admin-functions',
     component: AdminFunctionsComponent,
-    canActivate: [AuthGuardService]
-  },
-  {
-    path: 'exercises',
-    component: ExercisesListComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -145,7 +142,6 @@ const routes: Route[] = [
     RegistrationComponent,
     HeaderComponent,
     LoginComponent,
-    ExercisesListComponent,
     ExerciseInfoComponent,
     OverviewComponent,
     ExerciseInoutComponent,
@@ -161,7 +157,8 @@ const routes: Route[] = [
     SelectChallengeComponent,
     AdminFunctionsComponent,
     AboutComponent,
-    UsersGenerationComponent
+    UsersGenerationComponent,
+    ChallengeDeadlineComponent
   ],
   imports: [
     BrowserModule,
@@ -199,7 +196,9 @@ const routes: Route[] = [
     ExerciseStateService,
     ExerciseService,
     ChallengesService,
-    AuthGuardService
+    AuthGuardService,
+    Title,
+    ShownResults,
   ],
   bootstrap: [AppComponent]
 })

@@ -6,6 +6,7 @@ import { LoadingComponent } from '../helpers/loading-component';
 import { ToastrService } from 'ngx-toastr';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { FormValidateService } from 'src/app/services/FormHelpers/form-validate.service';
+import { Title } from '@angular/platform-browser';
 
 
 @Component({
@@ -18,6 +19,7 @@ export class LoginComponent extends LoadingComponent implements OnInit {
     private userState: UserStateService,
      private router: Router,
      private toastr: ToastrService,
+     private titleService: Title,
      private formValid: FormValidateService
      ) {
     super();
@@ -57,5 +59,6 @@ export class LoginComponent extends LoadingComponent implements OnInit {
     }
   }
   ngOnInit() {
+    this.titleService.setTitle('Вход');
   }
 }

@@ -68,12 +68,15 @@ export class SelectChallengeComponent implements OnInit {
 
   private async loadExercises() {
     const exercises = await this.exerciseService.getExercises(this.currentChallenge.Id);
-    this.currentExercises = exercises;
+    this.currentExercises = exercises.sort((a, b) => a.Name < b.Name ? -1 : 1);
     if (this.initExerciseId) {
       this.currentExercise = this.currentExercises.find(ex => ex.Id === this.initExerciseId);
     }
   }
-
+  setDefaultExercise () {
+    this.currentExercise = null;
+    this.initExerciseId = null;
+  }
   public challengeTime(challenge: Challenge): string {
     return ChallengeHelpers.ChallengeTime(challenge);
   }
