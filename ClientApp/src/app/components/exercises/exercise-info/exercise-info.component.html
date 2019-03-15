@@ -1,4 +1,4 @@
-<div class="container" *ngIf="exerciseInfo ; else loading">
+<div class="exerciseInfo" *ngIf="exerciseInfo ; else loading">
   <div>
     <button class="editExercise_btn text" *ngIf="isAdmin()" (click)="editExercise(exerciseInfo.Id)">
       Изменить данные задания
@@ -13,26 +13,49 @@
   <div *ngIf="needSendForm()">
     <h2 class="text-center">Отправка решения</h2>
     <form (ngSubmit)="onSubmit()" class="send-solution">
-      <div class="form-group">
-        <label for="Language">Язык программирования</label>
-        <select id="Language" class="form-control" (change)="selectLanguage($event)" name="Language">
-          <option *ngFor="let lang of availableLanguages" [value]="lang">{{lang}}</option>
-        </select>
-      </div>
+      <div class="solution-actions">
+        <div class="selectLanguageGroup">
+          <label for="Language">Язык программирования: </label>
+          <ul class="selectLanguage">
+            <li>
+                <span name="Language" *ngIf="model.Language; else noLanguage">{{model.Language}}</span>
+                <ng-template #noLanguage><span>Выберите язык программирования</span></ng-template>
+                <ul class="submenu">
+                    <li *ngFor="let lang of availableLanguages">
+                        <span (click)="selectLanguage(lang)">{{lang}}</span>
+                    </li>
+                </ul>
+            </li>
+          </ul>
+        </div>
 
-      <div class="form-group">
-        <label for="Source" class="label-for-input-btn background-green">Загрузить решение</label>
-        <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" />
-        <p *ngIf="submitDisabled; else downloadedSolution">Решение не загружено</p>
-        <ng-template #downloadedSolution>
-          <p>Загруженное решение: {{model.File.name}}</p>
-        </ng-template>
-      </div>
+        <div class="upload-group">
+          <div class="upload-FileName">
+            <span *ngIf="submitDisabled; else downloadedSolution">Решение не загружено</span>
+              <ng-template #downloadedSolution>
+                <p>{{model.File.name}}</p>
+              </ng-template>
+          </div>
+          <label for="Source" class="upload-file">
+            <img src="../../../../assets/icons/upload.svg">
+          </label>
+          <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" />
+        </div>
 
-      <div class="form-group">
-        <label for="send-sol" class="label-for-input-btn">Отправить решение</label>
-        <input type="submit" class="input-btn" id="send-sol" />
+        <div class="send-sol-group">
+          <label for="send-sol" class="label-for-input-btn">Отправить решение</label>
+          <input type="submit" class="input-btn" id="send-sol" />
+        </div>
       </div>
+      <div class="solution-preview" *ngIf="solutionPreview; else solutionPreviewMock">
+        <textarea readonly>{{solutionPreview}}</textarea>
+      </div>
+      <ng-template #solutionPreviewMock>
+        <div class="solution-preview-mock">
+          <img src="../../../../assets/icons/source-code.svg">
+        </div>
+      </ng-template>
+      
     </form>
   </div>
 

@@ -46,6 +46,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   }
 
   exerciseInfo: ExerciseInfo;
+  solutionPreview?: string | ArrayBuffer;
   availableLanguages = LanguageConverter.languages();
   model: SolutionViewModel = new SolutionViewModel();
   get shownResults() { return this.shownResultsService.ShownResults; }
@@ -90,12 +91,23 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   ngOnDestroy(): void {
     this.solutionCheckTimers.forEach(t => clearTimeout(t));
   }
-  selectLanguage(event) {
-    this.model.Language = event.target.value;
+  selectLanguage(Language: string) {
+    this.model.Language = Language;
     this.model.File = null;
+    this.solutionPreview = null;
   }
   setFile(event) {
-    this.model.File = event.srcElement.files[0];
+    if (event.srcElement.files[0]) {
+      this.model.File = event.srcElement.files[0];
+      const fileReader = new FileReader();
+      fileReader.onload = _ => {
+        this.solutionPreview = fileReader.result;
+      };
+      fileReader.readAsText(this.model.File);
+    } else {
+      this.model.File = null;
+      this.solutionPreview = null;
+    }
   }
   onSubmit() {
     if (!this.submitDisabled) {
