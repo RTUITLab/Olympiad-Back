@@ -3,12 +3,38 @@ th, td {
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
+.exerciseInfo {
+    margin-bottom: 12%;
+}
 .text-center {
     text-align: center;
 }
 .send-solution {
     display: grid;
-    justify-content: center;
+    grid-template-columns: 50% 50%;
+}
+.solution-actions {
+    grid-column: 1;
+    padding: 10px;
+    display: grid;
+    height: 300px;
+}
+.solution-preview {
+    grid-column: 2;
+    border: 1px solid #28d;
+    padding: 10px;
+    border-radius: 4px;
+    display: grid;
+}
+.solution-preview-mock {
+    img {
+        height: 300px;
+    }
+    grid-column: 2;
+    border: 1px solid #28d;
+    padding: 10px;
+    border-radius: 4px;
+    display: grid;
 }
 .editExercise_btn{
     font-size:13px;
@@ -19,12 +45,39 @@ th, td {
     margin-top: 10px;
     transition: .15s ease-in-out;
 }
+.upload-group {
+    display: grid;
+    grid-template-columns: auto 50px;
+}
+.upload-FileName {
+    grid-column: 1;
+    align-self: center;
+    border: 1px solid #28d;
+    border-radius: 4px;
+    height: 45px;
+    text-align: center;
+    display: grid;
+    align-content: center;
+}
+.upload-file {
+    grid-column: 2;
+    padding: 5px;
+    cursor: pointer;
+    align-self: center;
+
+}
+.upload-file img {
+    width: 45px;
+}
+.send-sol-group {
+    display: grid;
+    align-self: center;
+}
 .label-for-input-btn {
-    width: 180px;
+    width: 100%;
     height: 50px;
     border-radius: 4px;
     text-align: center;
-    margin: 25px;
     display: block;
     font: 14px/50px Tahoma;
     background: #28d;
@@ -58,4 +111,60 @@ th, td {
     max-width: 100%;
     text-align: center;
     overflow: hidden;
+}
+ul {
+    list-style: none;
+    display: grid;
+    margin:0px;
+    text-align: center;
+    padding:0px;
+}
+ul:after {
+    display: block;
+    float: none;
+    content: ' ';
+    clear: both;
+}
+
+ul.selectLanguage > li {
+    float: left;
+    position: relative;
+}
+ul.selectLanguage> li > span {
+    display: block;
+    color: #fff;
+    padding: 10px;
+    text-decoration: none;
+    background-color: #777777;
+}
+ul.selectLanguage > li > span:hover {
+    background-color: #4e4e4e;
+    color: rgb(255, 255, 255);
+}
+
+ul.submenu {
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    top: 37px;
+    left:0px;
+    display: none;
+    background-color: white;
+    border-radius: 10%;
+}
+ul.submenu > li {
+    display: block;
+}
+ul.submenu > li > span {
+    display: block;
+    text-decoration: none;
+    padding: 10px;
+    color: #ffffff;
+    background-color: #777777;
+}
+ul.submenu > li > span:hover {
+    background-color: #1684eb;
+}
+ul.selectLanguage > li:hover > ul.submenu {
+    display: block;
 }
