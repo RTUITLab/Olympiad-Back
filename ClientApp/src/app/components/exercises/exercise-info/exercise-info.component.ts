@@ -119,9 +119,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
       };
       fileReader.readAsText(this.model.File);
       }
-    } else {
-      this.model.File = null;
-      this.solutionPreview = null;
     }
   }
   onSubmit() {
