@@ -31,7 +31,7 @@
 
         <div class="upload-group">
           <label class="upload-FileName">
-            <span *ngIf="submitDisabled; else downloadedSolution">Решение не загружено</span>
+            <span *ngIf="!model.File; else downloadedSolution">Решение не загружено</span>
               <ng-template #downloadedSolution>
                 <span>{{model.File.name}}</span>
               </ng-template>

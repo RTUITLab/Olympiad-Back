@@ -52,16 +52,20 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   get shownResults() { return this.shownResultsService.ShownResults; }
   get submitDisabled() {
     if (!this.model.File) {
+      this.toastr.warning('Загрузите файл');
       return true;
-    }else if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
-      return true;
-    }
-    else if (this.model.Language === null) {
-      this.toastr.warning('Выберите язык программирования');
-      return true;
-    }
-    else {
-      return false;
+    } else {
+      if (this.model.Language === null) {
+        this.toastr.warning('Выберите язык программирования');
+        return true;
+      } else {
+        if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
+          this.toastr.warning(`Расширение загружаемого вами файла не соответсвует выбранному языку программирования`);
+          return true;
+        } else {
+          return false;
+        }
+      }
     }
   }
   get selectedLanguage() {
@@ -104,25 +108,21 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   }
   selectLanguage(Language: string) {
     this.model.Language = Language;
-    this.model.File = null;
-    this.solutionPreview = null;
   }
   setFile(event) {
     if (event.srcElement.files[0]) {
       if (this.model.Language === null) {
         this.toastr.warning('Выберите язык программирования');
-      }else {
+      }
       this.model.File = event.srcElement.files[0];
       const fileReader = new FileReader();
       fileReader.onload = _ => {
         this.solutionPreview = fileReader.result;
       };
       fileReader.readAsText(this.model.File);
-      }
     }
   }
   onSubmit() {
-    console.log(this.model.Language);
     if (!this.submitDisabled) {
       this.exercisesService.sendSolution(this.model)
         .subscribe(
@@ -147,14 +147,6 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
             }
           }
         );
-    } else if (!this.model.File) {
-      if (this.model.Language === null) {
-        this.toastr.warning('Выберите язык программирования');
-      }else {
-        this.toastr.warning('Загрузите файл');
-      }
-    } else if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
-      this.toastr.warning(`Расширение загружаемого вами файла не соответсвует выбранному языку программирования`);
     }
   }
 
