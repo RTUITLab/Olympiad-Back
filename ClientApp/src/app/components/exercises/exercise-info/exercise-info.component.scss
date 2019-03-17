@@ -50,6 +50,7 @@ th, td {
     grid-template-columns: auto 50px;
 }
 .upload-FileName {
+    cursor: pointer;
     grid-column: 1;
     align-self: center;
     border: 1px solid #28d;
