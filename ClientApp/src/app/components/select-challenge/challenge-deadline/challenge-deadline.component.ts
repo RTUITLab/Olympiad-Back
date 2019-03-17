@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, SimpleChanges, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnChanges, AfterViewInit, SimpleChanges, Input, ChangeDetectorRef } from '@angular/core';
 import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
 import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
 
@@ -7,7 +7,7 @@ import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
   templateUrl: './challenge-deadline.component.html',
   styleUrls: ['./challenge-deadline.component.scss']
 })
-export class ChallengeDeadlineComponent implements OnInit, OnChanges {
+export class ChallengeDeadlineComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() challenge: Challenge;
   constructor(
     private cdr: ChangeDetectorRef,
@@ -18,6 +18,9 @@ export class ChallengeDeadlineComponent implements OnInit, OnChanges {
 
   }
   ngOnInit() {
+  }
+  ngAfterViewInit() {
+    this.cdr.detectChanges();
   }
   public challengeTime(): string {
     return ChallengeHelpers.ChallengeTime(this.challenge);
