@@ -51,7 +51,18 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   model: SolutionViewModel = new SolutionViewModel();
   get shownResults() { return this.shownResultsService.ShownResults; }
   get submitDisabled() {
-    return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
+    if (!this.model.File) {
+      return true;
+    }else if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
+      return true;
+    }
+    else if (this.model.Language === null) {
+      this.toastr.warning('Выберите язык программирования');
+      return true;
+    }
+    else {
+      return false;
+    }
   }
   get selectedLanguage() {
     if (this.model.Language) {
@@ -59,7 +70,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     }
   }
   ngOnInit() {
-    this.model.Language = 'Java';
+    this.model.Language = null;
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
@@ -98,18 +109,23 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   }
   setFile(event) {
     if (event.srcElement.files[0]) {
+      if (this.model.Language === null) {
+        this.toastr.warning('Выберите язык программирования');
+      }else {
       this.model.File = event.srcElement.files[0];
       const fileReader = new FileReader();
       fileReader.onload = _ => {
         this.solutionPreview = fileReader.result;
       };
       fileReader.readAsText(this.model.File);
+      }
     } else {
       this.model.File = null;
       this.solutionPreview = null;
     }
   }
   onSubmit() {
+    console.log(this.model.Language);
     if (!this.submitDisabled) {
       this.exercisesService.sendSolution(this.model)
         .subscribe(
@@ -135,7 +151,11 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
           }
         );
     } else if (!this.model.File) {
-      this.toastr.warning('Загрузите файл');
+      if (this.model.Language === null) {
+        this.toastr.warning('Выберите язык программирования');
+      }else {
+        this.toastr.warning('Загрузите файл');
+      }
     } else if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
       this.toastr.warning(`Расширение загружаемого вами файла не соответсвует выбранному языку программирования`);
     }

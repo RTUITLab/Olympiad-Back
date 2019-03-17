@@ -30,12 +30,13 @@
         </div>
 
         <div class="upload-group">
-          <div class="upload-FileName">
+          <label class="upload-FileName">
             <span *ngIf="submitDisabled; else downloadedSolution">Решение не загружено</span>
               <ng-template #downloadedSolution>
-                <p>{{model.File.name}}</p>
+                <span>{{model.File.name}}</span>
               </ng-template>
-          </div>
+              <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" />
+          </label>
           <label for="Source" class="upload-file">
             <img src="../../../../assets/icons/upload.svg">
           </label>
