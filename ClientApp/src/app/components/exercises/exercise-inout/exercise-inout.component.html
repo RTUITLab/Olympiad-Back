@@ -6,13 +6,11 @@
   <tr *ngFor="let exData of exerciseDatas">
     <tr *ngFor="let exData of exerciseDatas">
       <td valign="top" >
-          <div *ngFor="let inRow of exData.InData.split('\n')">
-            {{inRow}}
+          <div innerHTML="{{rawHTML(inRow)}}" *ngFor="let inRow of exData.InData.split('\n')">
           </div>
       </td>
     <td valign="top" >
-        <div *ngFor="let inRow of exData.OutData.split('\n')">
-          {{inRow}}
+        <div innerHTML="{{rawHTML(inRow)}}" *ngFor="let inRow of exData.OutData.split('\n')">
         </div>
     </td>
   </tr>

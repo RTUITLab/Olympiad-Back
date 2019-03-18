@@ -21,5 +21,12 @@ export class ExerciseInoutComponent implements OnInit, OnChanges {
   }
   ngOnInit() {
   }
+  
+
+  rawHTML(input: string): string {
+    const l = input.replace(' ', '&#160;');
+    return l;
+  }
+
 
 }
