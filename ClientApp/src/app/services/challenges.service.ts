@@ -33,4 +33,9 @@ export class ChallengesService  extends BaseHttpService implements OnInit  {
     return this.http.put<Challenge>(
       `${this.baseUrl}/api/challenges/${id}`, challenge, this.userService.authOptions);
   }
+
+  getDump(id: string): Promise<object> {
+    return this.http.get<object>(
+      `${this.baseUrl}/api/dump/${id}`, this.userService.authOptions).toPromise();
+  }
 }

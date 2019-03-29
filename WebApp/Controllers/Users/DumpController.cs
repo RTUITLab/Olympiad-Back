@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using PublicAPI.Responses.Dump;
+using WebApp.Models;
 
 namespace WebApp.Controllers.Users
 {
@@ -28,10 +29,10 @@ namespace WebApp.Controllers.Users
         }
 
         [HttpGet("{challengeId:guid}")]
-        public async Task<IActionResult> ChallengeResults(Guid challengeId)
+        public async Task<Dictionary<string, Dictionary<string, SolutionDumpView>>> ChallengeResults(Guid challengeId)
         {
             if (!await dbContext.Challenges.AnyAsync(ch => ch.Id == challengeId))
-                return BadRequest();
+                throw StatusCodeException.BadRequest();
             var allSolutions = await dbContext
                 .Solutions
                 .Where(s => s.Exercise.ChallengeId == challengeId)
@@ -41,7 +42,7 @@ namespace WebApp.Controllers.Users
                     us.GroupBy(a => a.ExerciseName)
                         .ToDictionary(g => g.Key, g => g.Aggregate((a, b) => a.Status > b.Status ? a : b)));
 
-            return Json(allSolutions);
+            return allSolutions;
         }
     }
 }

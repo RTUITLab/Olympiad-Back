@@ -48,7 +48,8 @@ namespace WebApp.Formatting.ResponseMappers
 
             CreateMap<Solution, SolutionDumpView>()
                 .ForMember(d => d.ExerciseName, map => map.MapFrom(s => s.Exercise.ExerciseName))
-                .ForMember(d => d.UserId, map => map.MapFrom(s => s.User.StudentID));
+                .ForMember(d => d.UserId, map => map.MapFrom(s => s.User.StudentID))
+                .ForMember(d => d.ExerciseScore, map => map.MapFrom(s => s.Exercise.Score));
 
         }
     }
