@@ -12,6 +12,7 @@ namespace PublicAPI.Responses.Dump
         public string Raw { get; set; }
         public string UserId { get; set; }
         public string ExerciseName { get; set; }
+        public int ExerciseScore { get; set; }
         public SolutionStatus Status { get; set; }
         public DateTime SendingTime { get; set; }
         public DateTime? StartCheckingTime { get; set; }

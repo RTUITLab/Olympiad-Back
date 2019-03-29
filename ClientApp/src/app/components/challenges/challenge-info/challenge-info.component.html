@@ -1,12 +1,51 @@
 <div class="text" *ngIf="challenge; else loading">
     <div *ngIf="isAdmin()" style="border:1px solid grey;">
         <button (click)="editChallenge()">Изменить</button>
-        <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p> 
+        <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p>
+        <p *ngIf="!dump; else dumpTable">Нет дампа</p>
+        <ng-template #dumpTable>
+            <label>
+                Show all as numbers
+                <input type="radio" name="statusPick" value="allNumbers" [(ngModel)]="statusMode" />
+            </label>
+            <label>
+                Show all as pics
+                <input type="radio" name="statusPick" value="allPics" [(ngModel)]="statusMode" />
+            </label>
+            <label>
+                Show scores
+                <input type="radio" name="statusPick" value="scores" [(ngModel)]="statusMode" />
+            </label>
+            <table>
+                <tr>
+                    <th>User ID</th>
+                    <th *ngFor="let exerciseName of exerciseNames">{{exerciseName}}</th>
+                </tr>
+                <tr *ngFor="let user of userIds()">
+                    <td>{{user}}</td>
+                    <td *ngFor="let exerciseName of exerciseNames" [ngSwitch]="statusMode">
+                        <p *ngSwitchCase="'allNumbers'">
+                            {{solutionStatus(user, exerciseName)}}
+                        </p>
+                        <p *ngSwitchCase="'allPics'">
+                            <img class="statusIcon"
+                                src="assets/StatusCode/{{solutionStatus(user, exerciseName)}}.svg" />
+                        </p>
+                        <p *ngSwitchCase="'scores'">
+                            {{score(user, exerciseName)}}
+                        </p>
+                        <p *ngSwitchDefault>
+                            ERROR
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </ng-template>
     </div>
-<div class="challenge-info">
-    <h1>{{challenge.Name}}</h1>
-    <p>{{challengeTime(challenge)}}</p>   
-</div>
+    <div class="challenge-info">
+        <h1>{{challenge.Name}}</h1>
+        <p>{{challengeTime(challenge)}}</p>
+    </div>
 </div>
 <ng-template #loading>
     Загрузка...
