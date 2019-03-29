@@ -8,6 +8,7 @@ using PublicAPI.Responses.Users;
 using Shared.Models;
 using System;
 using System.Linq;
+using PublicAPI.Responses.Dump;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -44,6 +45,10 @@ namespace WebApp.Formatting.ResponseMappers
 
             CreateMap<ExerciseData, ExerciseDataResponse>();
             CreateMap<ExerciseData, ExerciseDataCompactResponse>();
+
+            CreateMap<Solution, SolutionDumpView>()
+                .ForMember(d => d.ExerciseName, map => map.MapFrom(s => s.Exercise.ExerciseName))
+                .ForMember(d => d.UserId, map => map.MapFrom(s => s.User.StudentID));
 
         }
     }
