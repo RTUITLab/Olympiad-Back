@@ -76,7 +76,7 @@ export class ChallengeInfoComponent implements OnInit {
 
   public score(userId: string, exerciseName: string): number {
     if (this.dump[userId][exerciseName]) {
-      return this.dump[userId][exerciseName].Score;
+      return this.dump[userId][exerciseName].ExerciseScore;
     }
     return 0;
   }
