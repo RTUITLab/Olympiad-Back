@@ -1,20 +1,17 @@
-﻿using Shared.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Models.Exercises;
+using Shared.Models;
 
-namespace Models.Solutions
+namespace PublicAPI.Responses.Dump
 {
-    public class Solution
+    public class SolutionDumpView
     {
         public Guid Id { get; set; }
         public string Language { get; set; }
         public string Raw { get; set; }
-        public Guid UserId { get; set; }
-        public User User { get; set; }
-        public Guid ExerciseId { get; set; }
-        public Exercise Exercise { get; set; }
+        public string UserId { get; set; }
+        public string ExerciseName { get; set; }
         public SolutionStatus Status { get; set; }
         public DateTime SendingTime { get; set; }
         public DateTime? StartCheckingTime { get; set; }
