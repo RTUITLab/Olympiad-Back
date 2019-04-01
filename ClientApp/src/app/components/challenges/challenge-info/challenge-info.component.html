@@ -16,10 +16,15 @@
                 Show scores
                 <input type="radio" name="statusPick" value="scores" [(ngModel)]="statusMode" />
             </label>
-            <table>
+            <table >
                 <tr>
                     <th>User ID</th>
-                    <th *ngFor="let exerciseName of exerciseNames">{{exerciseName}}</th>
+                    <th *ngFor="let exerciseName of exerciseNames">
+                        {{exerciseName}}
+                    </th>
+                    <th *ngIf="statusMode === 'scores'">
+                            Суммарное количество баллов
+                    </th>
                 </tr>
                 <tr *ngFor="let user of userIds()">
                     <td>{{user}}</td>
@@ -37,6 +42,9 @@
                         <p *ngSwitchDefault>
                             ERROR
                         </p>
+                    </td>
+                    <td *ngIf="statusMode === 'scores'">
+                        {{summaryScore(user)}}
                     </td>
                 </tr>
             </table>

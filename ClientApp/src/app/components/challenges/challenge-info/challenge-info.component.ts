@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ChallengesService } from 'src/app/services/challenges.service';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
@@ -22,7 +22,6 @@ export class ChallengeInfoComponent implements OnInit {
     private titleService: Title,
     private currentExerciseState: ExerciseStateService,
     private challengesService: ChallengesService) { }
-
   public challenge?: Challenge;
   public dump: object;
   public exerciseNames: string[] = [];
@@ -38,17 +37,24 @@ export class ChallengeInfoComponent implements OnInit {
         const dump = await this.challengesService.getDump(id);
         for (const userId in dump) {
           if (dump.hasOwnProperty(userId)) {
-            const element = dump[userId];
-            for (const exerciseName in element) {
-              if (element.hasOwnProperty(exerciseName) && this.exerciseNames.indexOf(exerciseName) === -1) {
-                this.exerciseNames.push(exerciseName);
+            const userData = dump[userId];
+            userData.summaryScore = 0;
+            for (const exerciseName in userData) {
+              if (userData.hasOwnProperty(exerciseName)) {
+                const exercise = userData[exerciseName];
+                if (this.exerciseNames.indexOf(exerciseName) === -1 && exerciseName !== 'summaryScore') {
+                  this.exerciseNames.push(exerciseName);
+                }
+                const score = exercise.ExerciseScore ;
+                if (score) {
+                  userData.summaryScore += score;
+                }
               }
             }
           }
         }
         this.exerciseNames.sort();
         this.dump = dump;
-        console.log(dump);
       }
     );
   }
@@ -77,6 +83,12 @@ export class ChallengeInfoComponent implements OnInit {
   public score(userId: string, exerciseName: string): number {
     if (this.dump[userId][exerciseName]) {
       return this.dump[userId][exerciseName].ExerciseScore;
+    }
+    return 0;
+  }
+  public summaryScore(userId: string): number {
+    if (this.dump[userId]) {
+      return this.dump[userId].summaryScore;
     }
     return 0;
   }
