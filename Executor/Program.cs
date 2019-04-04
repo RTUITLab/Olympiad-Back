@@ -55,7 +55,7 @@ namespace Executor
                 })
                 .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
                 .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
-                .AddTransient<DbManager>()
+                .AddTransient<ISolutionsBase, DbManager>()
                 .AddTransient<Executor>()
                 .AddHttpClient(DbManager.DbManagerHttpClientName, (sp, client) =>
                 {
