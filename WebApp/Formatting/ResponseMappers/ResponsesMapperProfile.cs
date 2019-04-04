@@ -51,6 +51,7 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(d => d.UserId, map => map.MapFrom(s => s.User.StudentID))
                 .ForMember(d => d.ExerciseScore, map => map.MapFrom(s => s.Exercise.Score));
 
+            CreateMap<SolutionCheck, SolutionCheckResponse>();
         }
     }
 }

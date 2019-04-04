@@ -155,7 +155,16 @@ namespace WebApp.Controllers
             return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
         }
 
-
+        [HttpGet("logs/{solutionId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<SolutionCheckResponse>>> GetLogs(Guid solutionId)
+        {
+            return await context
+                .SolutionChecks
+                .Where(sc => sc.SolutionId == solutionId)
+                .ProjectTo<SolutionCheckResponse>()
+                .ToListAsync();
+        }
         private static string GetExtensionsForLanguage(string language)
         {
             switch (language)
