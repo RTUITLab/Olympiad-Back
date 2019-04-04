@@ -169,6 +169,20 @@ namespace WebApp.Controllers
                 .ProjectTo<SolutionCheckResponse>()
                 .ToListAsync();
         }
+
+
+        [HttpGet("statistic")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> GetStatistic()
+        {
+            var statuses = await context
+                .Solutions
+                .Select(s => s.Status)
+                .GroupBy(s => s)
+                .ToDictionaryAsync(g => g.Key, g => g.Count());
+            return Json(statuses);
+        }
+
         private static string GetExtensionsForLanguage(string language)
         {
             switch (language)
