@@ -11,5 +11,6 @@ namespace PublicAPI.Requests
 
         public string ProgramOut { get; set; }
         public string ProgramErr { get; set; }
+        public TimeSpan Duration { get; set; }
     }
 }

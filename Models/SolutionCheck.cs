@@ -14,6 +14,7 @@ namespace Models
 
         public string ProgramOut { get; set; }
         public string ProgramErr { get; set; }
+        public TimeSpan Duration { get; set; }
 
         public Guid SolutionId { get; set; }
         public Solution Solution { get; set; }
