@@ -16,14 +16,14 @@ using PublicAPI.Requests;
 
 namespace Executor
 {
-    class DbManager
+    class DbManager : ISolutionsBase
     {
         public const string DbManagerHttpClientName = nameof(DbManagerHttpClientName);
 
         private readonly IOptions<UserInfo> options;
         private readonly ILogger<DbManager> logger;
         private readonly HttpClient client;
-        
+
 
         public DbManager(
             IOptions<UserInfo> options,
@@ -35,7 +35,6 @@ namespace Executor
 
             logger.LogInformation($"user name : {options.Value.UserName}");
             client = httpClientFactory.CreateClient(DbManagerHttpClientName);
-            Authorize();
         }
         public Task<ExerciseData[]> GetExerciseData(Guid exId)
         {
@@ -49,6 +48,14 @@ namespace Executor
         public Task<List<Solution>> GetInQueueSolutions()
         {
             return Invoke<List<Solution>>("api/Executor");
+        }
+
+
+        public async Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck)
+        {
+            var content = new StringContent(JsonConvert.SerializeObject(solutionCheck), Encoding.UTF8, "application/json");
+            var result = await InvokePostInternal($"api/executor/checklog/{solutionId}", content);
+            logger.LogDebug($"Sended logs, status code: {result.StatusCode}");
         }
 
 
@@ -67,18 +74,24 @@ namespace Executor
             }
         }
 
-        private async Task<T> InvokePost<T>(string path)
+
+        private async Task<T> InvokePost<T>(string path, HttpContent content = null)
+        {
+            var strResponse = await (await InvokePostInternal(path, content)).Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(strResponse);
+        }
+
+        private async Task<HttpResponseMessage> InvokePostInternal(string path, HttpContent content = null)
         {
             try
             {
-                var strResponse = await client.PostAsync(path, null).Result.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<T>(strResponse);
+                return await client.PostAsync(path, content);
             }
             catch (Exception ex)
             {
                 logger.LogWarning($"cant invoke POST action with path >{path}<, try auth", ex);
                 await Authorize();
-                return await InvokePost<T>(path);
+                return await InvokePostInternal(path, content);
             }
 
         }

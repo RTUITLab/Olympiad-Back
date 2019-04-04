@@ -17,7 +17,7 @@ namespace Executor
 {
     class Executor
     {
-        private DbManager dbManager;
+        private ISolutionsBase solutionBase;
         private readonly Dictionary<string, ExecuteWorker> executeWorkers;
 
         private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
@@ -31,25 +31,26 @@ namespace Executor
         };
 
 
-        public Executor(DbManager dbManager, IDockerClient dockerClient, ILoggerFactory logger)
+        public Executor(ISolutionsBase solutionBase, IDockerClient dockerClient, ILoggerFactory logger)
         {
             executeWorkers = buildProperties.ToDictionary(
                 kvp => kvp.Key,
                 kvp => new ExecuteWorker(
                         kvp.Value,
-                        dbManager.SaveChanges,
-                        dbManager.GetExerciseData,
+                        solutionBase.SaveChanges,
+                        solutionBase.GetExerciseData,
+                        solutionBase,
                         dockerClient,
                         logger)
             );
-            this.dbManager = dbManager;
+            this.solutionBase = solutionBase;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
             while (true)
             {
-                (await dbManager.GetInQueueSolutions())
+                (await solutionBase.GetInQueueSolutions())
                     .ForEach(s => executeWorkers[s.Language].Handle(s));
                 await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
                 Console.WriteLine("end sleep");
