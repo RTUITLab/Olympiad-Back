@@ -146,9 +146,13 @@ namespace WebApp.Controllers
         [HttpGet("download/{solutionId}")]
         public async Task<IActionResult> Download(Guid solutionId)
         {
-            var solution = await context
+            var solutions = context
                 .Solutions
-                .Where(s => s.Id == solutionId && s.UserId == UserId)
+                .Where(s => s.Id == solutionId);
+            if (!IsAdmin)
+                solutions = solutions.Where(s => s.UserId == UserId);
+            var solution = await solutions
+                .Select(s => new { s.Language, s.Raw })
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
