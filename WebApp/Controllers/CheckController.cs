@@ -105,6 +105,22 @@ namespace WebApp.Controllers
             return mapper.Map<SolutionResponse>(solution);
         }
 
+
+        [HttpPost("recheck/{exerciseId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RecheckSolutions(Guid exerciseId)
+        {
+            var solutions = await context
+                .Solutions
+                .Where(s => s.ExerciseId == exerciseId)
+                .ToListAsync();
+
+            solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
+            await context.SaveChangesAsync();
+            solutions.ForEach(s => queue.PutInQueue(s.Id));
+            return Json(solutions.Count);
+        }
+
         [HttpGet]
         public Task<List<SolutionResponse>> Get()
         {
