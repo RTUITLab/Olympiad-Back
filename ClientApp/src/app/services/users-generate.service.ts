@@ -27,9 +27,6 @@ export class UsersGenerateService {
     private http: HttpClient,
     ) { }
     generateUsers(NewUsersId: string[]): Observable<User[]> {
-      console.log({NewUsersId});
-      console.warn(`TODO Add url to generate Users`);
-      return this.http.post<User[]>(`${environment.baseUrl}/api/UserGenerate`, NewUsersId); // TODO Add url to generate Users
-      // return this.obs;
+      return this.http.post<User[]>(`${environment.baseUrl}/api/UserGenerate`, NewUsersId);
   }
 }

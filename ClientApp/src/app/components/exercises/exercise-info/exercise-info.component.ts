@@ -59,7 +59,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
         this.toastr.warning('Выберите язык программирования');
         return true;
       } else {
-        if (!this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language))) {
+        if (!this.model.File.name.endsWith(LanguageConverter.fileExtensionByPrettyName(this.model.Language))) {
           this.toastr.warning(`Расширение загружаемого вами файла не соответсвует выбранному языку программирования`);
           return true;
         } else {
@@ -70,7 +70,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
   }
   get selectedLanguage() {
     if (this.model.Language) {
-      return LanguageConverter.fileExtension(this.model.Language);
+      return LanguageConverter.fileExtensionByPrettyName(this.model.Language);
     }
   }
   ngOnInit() {
@@ -208,6 +208,10 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
       this.toastr.error(`Невозможно скачать решение`);
     }
     );
+  }
+  async startRecheck(exerciseId: string) {
+    const solutionsToRecheck = await this.exercisesService.recheckSolutions(exerciseId);
+    this.toastr.success(`Будет перепроверено решений: ${solutionsToRecheck}`);
   }
 }
 

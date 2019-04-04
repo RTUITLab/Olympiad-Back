@@ -7,7 +7,9 @@ import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { UserStateService } from 'src/app/services/user-state.service';
 import { ChallengeHelpers } from 'src/app/Helpers/ChallengeHelpers';
 import { Title } from '@angular/platform-browser';
-
+import * as JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { LanguageConverter } from 'src/app/models/Common/LanguageConverter';
 @Component({
   selector: 'app-challenge-info',
   templateUrl: './challenge-info.component.html',
@@ -38,17 +40,13 @@ export class ChallengeInfoComponent implements OnInit {
         for (const userId in dump) {
           if (dump.hasOwnProperty(userId)) {
             const userData = dump[userId];
-            userData.summaryScore = 0;
             for (const exerciseName in userData) {
               if (userData.hasOwnProperty(exerciseName)) {
                 const exercise = userData[exerciseName];
                 if (this.exerciseNames.indexOf(exerciseName) === -1 && exerciseName !== 'summaryScore') {
                   this.exerciseNames.push(exerciseName);
                 }
-                const score = exercise.ExerciseScore ;
-                if (score) {
-                  userData.summaryScore += score;
-                }
+
               }
             }
           }
@@ -77,21 +75,39 @@ export class ChallengeInfoComponent implements OnInit {
     if (this.dump[userId][exerciseName]) {
       return this.dump[userId][exerciseName].Status;
     }
-    return 0;
+    return -1;
   }
 
   public score(userId: string, exerciseName: string): number {
-    if (this.dump[userId][exerciseName]) {
+    if (this.dump[userId][exerciseName] && this.dump[userId][exerciseName].Status === 6) {
       return this.dump[userId][exerciseName].ExerciseScore;
     }
     return 0;
   }
-  public summaryScore(userId: string): number {
-    if (this.dump[userId]) {
-      return this.dump[userId].summaryScore;
+
+  public downloadSolutions() {
+    const zip = new JSZip();
+    for (const userId in this.dump) {
+      if (this.dump.hasOwnProperty(userId)) {
+        const user = this.dump[userId];
+        const userFolder = zip.folder(userId);
+        for (const exerciseId in user) {
+          if (user.hasOwnProperty(exerciseId)) {
+            const exercise = user[exerciseId];
+            if (typeof (exercise) === 'number') {
+              continue;
+            }
+            userFolder.file(exercise.ExerciseName + LanguageConverter.fileExtensionByWebName(exercise.Language), exercise.Raw);
+          }
+        }
+      }
     }
-    return 0;
+    zip.generateAsync({ type: 'blob' })
+      .then(function (content) {
+        saveAs(content, 'example.zip');
+      });
   }
+
 
   isAdmin(): boolean {
     return this.usersService.IsAdmin();

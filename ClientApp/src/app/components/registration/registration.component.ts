@@ -77,7 +77,6 @@ export class RegistrationComponent extends LoadingComponent implements OnInit {
   }
   onSubmit() {
     if (this.registrationForm.valid) {
-      console.log(this.registrationForm);
       this.model  = this.registrationForm.value;
       if (!this.model.RecaptchaToken) {
         alert('Выполните проверку!');

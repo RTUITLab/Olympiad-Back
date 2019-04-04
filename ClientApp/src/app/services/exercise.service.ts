@@ -19,6 +19,7 @@ import { ExerciseData } from '../models/ExerciseData';
 @Injectable()
 export class ExerciseService extends BaseHttpService implements OnInit {
 
+
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
   private solutionsBehavior = new BehaviorSubject<Solution>(undefined);
   public solutionStream = this.solutionsBehavior.asObservable();
@@ -91,5 +92,11 @@ export class ExerciseService extends BaseHttpService implements OnInit {
     return this.http.post(
       `${this.baseUrl}/api/ExerciseData/${exerciseId}`, inOutData, this.userService.authOptions
     );
+  }
+
+  recheckSolutions(exerciseId: string): Promise<number> {
+    return this.http.post<number>(
+      `${this.baseUrl}/api/check/recheck/${exerciseId}`, null, this.userService.authOptions
+    ).toPromise();
   }
 }

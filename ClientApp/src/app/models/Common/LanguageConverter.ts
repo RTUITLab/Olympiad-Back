@@ -38,8 +38,12 @@ export class LanguageConverter {
             fileName: 'Program.py'
         }
     ];
-    public static fileExtension(language: string) {
+    public static fileExtensionByPrettyName(language: string) {
         return LanguageConverter.info.find(LI => LI.language === language).fileExtension;
+    }
+
+    public static fileExtensionByWebName(language: string) {
+        return LanguageConverter.info.find(LI => LI.webName === language).fileExtension;
     }
 
     public static languages(): string[] {

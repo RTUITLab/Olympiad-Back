@@ -1,8 +1,13 @@
 <div class="exerciseInfo" *ngIf="exerciseInfo ; else loading">
   <div>
-    <button class="editExercise_btn text" *ngIf="isAdmin()" (click)="editExercise(exerciseInfo.Id)">
-      Изменить данные задания
-    </button>
+    <div *ngIf="isAdmin()">
+      <button class="editExercise_btn text" (click)="editExercise(exerciseInfo.Id)">
+        Изменить данные задания
+      </button>
+      <button class="editExercise_btn text" (click)="startRecheck(exerciseInfo.Id)">
+        Перепроверить задание
+      </button>
+    </div>
     <h1 class="text text-center">{{exerciseInfo.Name}}</h1>
   </div>
   <h3>
@@ -18,13 +23,13 @@
           <label for="Language">Язык программирования: </label>
           <ul class="selectLanguage">
             <li>
-                <span name="Language" *ngIf="model.Language; else noLanguage">{{model.Language}}</span>
-                <ng-template #noLanguage><span>Выберите язык программирования</span></ng-template>
-                <ul class="submenu">
-                    <li *ngFor="let lang of availableLanguages">
-                        <span (click)="selectLanguage(lang)">{{lang}}</span>
-                    </li>
-                </ul>
+              <span name="Language" *ngIf="model.Language; else noLanguage">{{model.Language}}</span>
+              <ng-template #noLanguage><span>Выберите язык программирования</span></ng-template>
+              <ul class="submenu">
+                <li *ngFor="let lang of availableLanguages">
+                  <span (click)="selectLanguage(lang)">{{lang}}</span>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -32,10 +37,10 @@
         <div class="upload-group">
           <label class="upload-FileName">
             <span *ngIf="!model.File; else downloadedSolution">Решение не загружено</span>
-              <ng-template #downloadedSolution>
-                <span>{{model.File.name}}</span>
-              </ng-template>
-              <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" />
+            <ng-template #downloadedSolution>
+              <span>{{model.File.name}}</span>
+            </ng-template>
+            <input type="file" class="input-btn" id="Source" (change)="setFile($event)" [accept]="selectedLanguage" />
           </label>
           <label for="Source" class="upload-file">
             <img src="../../../../assets/icons/upload.svg">
@@ -56,7 +61,7 @@
           <img src="../../../../assets/icons/source-code.svg">
         </div>
       </ng-template>
-      
+
     </form>
   </div>
 

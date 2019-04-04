@@ -4,6 +4,8 @@
         <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p>
         <p *ngIf="!dump; else dumpTable">Нет дампа</p>
         <ng-template #dumpTable>
+            <button (click)="downloadSolutions()">Скачать лучшие решения</button>
+            <br>
             <label>
                 Show all as numbers
                 <input type="radio" name="statusPick" value="allNumbers" [(ngModel)]="statusMode" />
@@ -22,9 +24,6 @@
                     <th *ngFor="let exerciseName of exerciseNames">
                         {{exerciseName}}
                     </th>
-                    <th *ngIf="statusMode === 'scores'">
-                            Суммарное количество баллов
-                    </th>
                 </tr>
                 <tr *ngFor="let user of userIds()">
                     <td>{{user}}</td>
@@ -33,7 +32,7 @@
                             {{solutionStatus(user, exerciseName)}}
                         </p>
                         <p *ngSwitchCase="'allPics'">
-                            <img class="statusIcon"
+                            <img *ngIf="solutionStatus(user, exerciseName)!==-1" class="statusIcon"
                                 src="assets/StatusCode/{{solutionStatus(user, exerciseName)}}.svg" />
                         </p>
                         <p *ngSwitchCase="'scores'">
@@ -42,9 +41,6 @@
                         <p *ngSwitchDefault>
                             ERROR
                         </p>
-                    </td>
-                    <td *ngIf="statusMode === 'scores'">
-                        {{summaryScore(user)}}
                     </td>
                 </tr>
             </table>
