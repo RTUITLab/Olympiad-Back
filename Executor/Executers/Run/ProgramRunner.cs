@@ -74,7 +74,7 @@ namespace Executor.Executers.Run
                 SolutionStatus localStatus;
                 if (!string.IsNullOrEmpty(stderr))
                     localStatus = SolutionStatus.RunTimeError;
-                if (string.Equals(stdout, exampleOut))
+                else if (string.Equals(stdout, exampleOut))
                     localStatus = SolutionStatus.Sucessful;
                 else
                     localStatus = SolutionStatus.WrongAnswer;
