@@ -19,5 +19,7 @@ namespace Models.Solutions
         public DateTime SendingTime { get; set; }
         public DateTime? StartCheckingTime { get; set; }
         public DateTime? CheckedTime { get; set; }
+
+        public List<SolutionCheck> SolutionChecks { get; set; }
     }
 }
