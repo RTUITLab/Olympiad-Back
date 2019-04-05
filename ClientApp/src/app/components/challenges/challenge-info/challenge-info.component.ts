@@ -27,7 +27,7 @@ export class ChallengeInfoComponent implements OnInit {
   public challenge?: Challenge;
   public dump: object;
   public exerciseNames: string[] = [];
-  public statusMode = 'allNumbers';
+  public statusMode = 'allPics';
   ngOnInit() {
     this.route.paramMap.subscribe(
       async params => {
@@ -106,6 +106,14 @@ export class ChallengeInfoComponent implements OnInit {
       .then(function (content) {
         saveAs(content, 'example.zip');
       });
+  }
+
+  showLogs(user: string, exercise: string) {
+    console.log(JSON.stringify(this.dump[user][exercise]));
+  }
+
+  solutionId(user: string, exercise: string) {
+    return this.dump[user][exercise].Id;
   }
 
 

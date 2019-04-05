@@ -12,6 +12,7 @@ using Docker.DotNet.Models;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using PublicAPI.Requests;
+using System.Collections.Generic;
 
 namespace Executor.Executers.Run
 {
@@ -24,7 +25,7 @@ namespace Executor.Executers.Run
         private readonly IDockerClient dockerClient;
         private readonly ILogger<ProgramRunner> logger;
         private Task runningTask;
-
+        private List<Guid> blackList = new List<Guid>();
 
 
         public ProgramRunner(
@@ -49,7 +50,18 @@ namespace Executor.Executers.Run
             await Task.Yield();
             foreach (var (solutionId, testData) in solutionQueue.GetConsumingEnumerable())
             {
-                await HandleSolution(solutionId, testData);
+                try
+                {
+                    if (!blackList.Contains(solutionId))
+                        await HandleSolution(solutionId, testData);
+                    else
+                        logger.LogError($"solution from black list {solutionId}");
+                }
+                catch (Exception ex)
+                {
+                    blackList.Add(solutionId);
+                    logger.LogError(ex, "Critical error");
+                }
             }
         }
 
@@ -62,26 +74,36 @@ namespace Executor.Executers.Run
             {
                 var exampleIn = data.InData + '\n';
                 var exampleOut = data.OutData.Trim();
-                var (stdout, stderr, duration) = await Run(imageName, exampleIn);
-                await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
+                try
                 {
-                    ExampleIn = exampleIn,
-                    ExampleOut = exampleOut,
-                    ProgramOut = stdout,
-                    ProgramErr = stderr,
-                    Duration = duration
-                });
-                SolutionStatus localStatus;
-                if (!string.IsNullOrEmpty(stderr))
-                    localStatus = SolutionStatus.RunTimeError;
-                else if (string.Equals(stdout, exampleOut))
-                    localStatus = SolutionStatus.Sucessful;
-                else
-                    localStatus = SolutionStatus.WrongAnswer;
+                    var (stdout, stderr, duration) = await Run(imageName, exampleIn);
 
-                logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {localStatus}");
-                if (localStatus < result)
-                    result = localStatus;
+                    await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
+                    {
+                        ExampleIn = exampleIn,
+                        ExampleOut = exampleOut,
+                        ProgramOut = stdout,
+                        ProgramErr = stderr,
+                        Duration = duration
+                    });
+                    SolutionStatus localStatus;
+                    if (!string.IsNullOrEmpty(stderr))
+                        localStatus = SolutionStatus.RunTimeError;
+                    else if (string.Equals(stdout, exampleOut))
+                        localStatus = SolutionStatus.Sucessful;
+                    else
+                        localStatus = SolutionStatus.WrongAnswer;
+
+                    logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {localStatus}");
+                    if (localStatus < result)
+                        result = localStatus;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "error while running");
+                    result = SolutionStatus.RunTimeError;
+                    break;
+                }
             }
             await solutionsBase.SaveChanges(solutionId, result);
             await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
@@ -121,12 +143,12 @@ namespace Executor.Executers.Run
             var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
             if (!started)
                 throw new Exception($"Cant start container {containerId}");
+
             var stream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = true, Stdout = true });
 
             var inStream = new MemoryStream(Encoding.UTF8.GetBytes(input));
             await stream.CopyFromAsync(inStream, CancellationToken.None);
             var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
-
 
             if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
             {

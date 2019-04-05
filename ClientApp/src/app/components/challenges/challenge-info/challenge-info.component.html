@@ -18,7 +18,7 @@
                 Show scores
                 <input type="radio" name="statusPick" value="scores" [(ngModel)]="statusMode" />
             </label>
-            <table >
+            <table>
                 <tr>
                     <th>User ID</th>
                     <th *ngFor="let exerciseName of exerciseNames">
@@ -31,10 +31,14 @@
                         <p *ngSwitchCase="'allNumbers'">
                             {{solutionStatus(user, exerciseName)}}
                         </p>
-                        <p *ngSwitchCase="'allPics'">
-                            <img *ngIf="solutionStatus(user, exerciseName)!==-1" class="statusIcon"
-                                src="assets/StatusCode/{{solutionStatus(user, exerciseName)}}.svg" />
-                        </p>
+                        <div *ngSwitchCase="'allPics'">
+                            <div *ngIf="solutionStatus(user, exerciseName)!==-1">
+
+                                <img (click)="showLogs(user, exerciseName)" class="statusIcon"
+                                    src="assets/StatusCode/{{solutionStatus(user, exerciseName)}}.svg" />
+                                {{solutionId(user, exerciseName)}}
+                            </div>
+                        </div>
                         <p *ngSwitchCase="'scores'">
                             {{score(user, exerciseName)}}
                         </p>
