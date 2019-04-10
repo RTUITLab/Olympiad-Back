@@ -9,6 +9,7 @@ using Shared.Models;
 using System;
 using System.Linq;
 using PublicAPI.Responses.Dump;
+using PublicAPI.Responses.Solutions;
 
 namespace WebApp.Formatting.ResponseMappers
 {
