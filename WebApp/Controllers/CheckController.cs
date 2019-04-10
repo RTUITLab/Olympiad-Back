@@ -15,6 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Solutions;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Dump;
+using PublicAPI.Responses.Solutions;
 using Shared.Models;
 using WebApp.Models;
 using WebApp.Services.Interfaces;
@@ -132,7 +134,7 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        [Route("{solutionId}")]
+        [Route("{solutionId:guid}")]
         public async Task<SolutionResponse> Get(Guid solutionId)
         {
             return await context
@@ -141,6 +143,19 @@ namespace WebApp.Controllers
                 .ProjectTo<SolutionResponse>()
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
+        }
+
+        [HttpGet]
+        [Route("{exerciseId:guid}/{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<SolutionDumpView> Get(Guid exerciseId, Guid userId)
+        {
+            return await context
+                       .Solutions
+                       .Where(p => p.ExerciseId == exerciseId && p.UserId == userId)
+                       .ProjectTo<SolutionDumpView>()
+                       .SingleOrDefaultAsync()
+                   ?? throw StatusCodeException.NotFount;
         }
 
         [HttpGet("download/{solutionId}")]
