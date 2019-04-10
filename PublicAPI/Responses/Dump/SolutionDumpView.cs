@@ -11,6 +11,7 @@ namespace PublicAPI.Responses.Dump
         public string Language { get; set; }
         public string Raw { get; set; }
         public string UserId { get; set; }
+        public string ExerciseId { get; set; }
         public string ExerciseName { get; set; }
         public int ExerciseScore { get; set; }
         public SolutionStatus Status { get; set; }
