@@ -55,7 +55,11 @@ export class LanguageConverter {
     }
 
     public static normalFromWeb(language: string) {
-        return LanguageConverter.info.find(LI => LI.webName === language).language;
+        if(LanguageConverter.info.find(LI => LI.webName === language)){
+            return LanguageConverter.info.find(LI => LI.webName === language).language;
+        } else {
+            return undefined;
+        }
     }
 
     public static fileName(language: string): string {

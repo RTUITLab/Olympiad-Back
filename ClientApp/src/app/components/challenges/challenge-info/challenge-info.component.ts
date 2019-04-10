@@ -10,6 +10,8 @@ import { Title } from '@angular/platform-browser';
 import * as JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { LanguageConverter } from 'src/app/models/Common/LanguageConverter';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
+import { ShowSolutionSourceCodeDialogComponent } from './show-solution-source-code-dialog/show-solution-source-code-dialog.component';
 @Component({
   selector: 'app-challenge-info',
   templateUrl: './challenge-info.component.html',
@@ -23,7 +25,9 @@ export class ChallengeInfoComponent implements OnInit {
     private usersService: UserStateService,
     private titleService: Title,
     private currentExerciseState: ExerciseStateService,
-    private challengesService: ChallengesService) { }
+    private challengesService: ChallengesService,
+    public dialog: MatDialog
+    ) { }
   public challenge?: Challenge;
   public dump: object;
   public exerciseNames: string[] = [];
@@ -109,7 +113,13 @@ export class ChallengeInfoComponent implements OnInit {
   }
 
   showLogs(user: string, exercise: string) {
-    console.log(JSON.stringify(this.dump[user][exercise]));
+      const dialogRef = this.dialog.open(ShowSolutionSourceCodeDialogComponent, {
+        width: '80vw', height: '90vh',
+        data: {solutionData: this.dump[user][exercise]}
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+      });
   }
 
   solutionId(user: string, exercise: string) {
