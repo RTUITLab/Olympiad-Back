@@ -1,0 +1,45 @@
+<h1 class="header">{{solutionData.ExerciseName}}</h1>
+<div>
+  <h2 class="header">Score: {{solutionData.ExerciseScore}}</h2>
+  <h3 class="header">UserId: {{solutionData.UserId}}</h3>
+
+  <h4>Код программы</h4>
+  <mat-form-field>
+    <textarea matInput [placeholder]="solutionData.Language" readonly [value]="solutionData.Raw"></textarea>
+  </mat-form-field>
+
+  <h4>Логи программы</h4>
+  <mat-accordion>
+    <mat-expansion-panel *ngFor="let log of solutionLogs">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Длительность: {{log.Duration}}
+        </mat-panel-title>
+        <mat-panel-description>
+          Проверено: {{log.CheckedTime}}
+        </mat-panel-description>
+    </mat-expansion-panel-header>
+    <div class="exLogs">
+      <mat-form-field class="exIn">
+        <textarea matInput placeholder="Входные данные" readonly [value]="log.ExampleIn"></textarea>
+      </mat-form-field>
+      
+      <mat-form-field class="exOut">
+        <textarea matInput placeholder="Предпологаемые выходные данные" readonly [value]="log.ExampleOut"></textarea>
+      </mat-form-field>
+      
+      <mat-form-field class="exPrOut">
+        <textarea matInput placeholder="Реальные выходные данные" readonly [value]="log.ProgramOut"></textarea>
+      </mat-form-field>
+      
+      <mat-form-field class="exPrErr">
+        <textarea matInput placeholder="Ошибки" readonly *ngIf="!log.ProgramErr == '';else noErrors" [value]="log.ProgramErr"></textarea>
+        <ng-template #noErrors>
+            <textarea matInput placeholder="Ошибки" readonly>Пустой поток ошибок</textarea>
+        </ng-template>
+      </mat-form-field>
+    </div>
+  </mat-expansion-panel>
+  </mat-accordion>
+
+</div>

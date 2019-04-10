@@ -14,6 +14,9 @@ import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import {MatDividerModule} from '@angular/material/divider';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatExpansionModule} from '@angular/material/expansion';
+
 
 
 
@@ -54,6 +57,7 @@ import { AboutComponent } from './components/about/about.component';
 import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
 import { ChallengeDeadlineComponent } from './components/select-challenge/challenge-deadline/challenge-deadline.component';
 import { ShownResults } from './components/helpers/ShownResults';
+import { ShowSolutionSourceCodeDialogComponent } from './components/challenges/challenge-info/show-solution-source-code-dialog/show-solution-source-code-dialog.component';
 
 const routes: Route[] = [
   {
@@ -158,7 +162,8 @@ const routes: Route[] = [
     AdminFunctionsComponent,
     AboutComponent,
     UsersGenerationComponent,
-    ChallengeDeadlineComponent
+    ChallengeDeadlineComponent,
+    ShowSolutionSourceCodeDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -167,6 +172,8 @@ const routes: Route[] = [
     MatTooltipModule,
     MatDividerModule,
     MatSelectModule,
+    MatDialogModule,
+    MatExpansionModule,
     MatFormFieldModule,
     ReactiveFormsModule,
     BrowserAnimationsModule, // required animations module
@@ -200,6 +207,7 @@ const routes: Route[] = [
     Title,
     ShownResults,
   ],
+  entryComponents: [ShowSolutionSourceCodeDialogComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

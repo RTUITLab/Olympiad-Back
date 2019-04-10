@@ -15,6 +15,7 @@ import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
 import { SolutionStatus } from '../models/SolutionStatus';
 import { Solution } from '../models/Solution';
 import { ExerciseData } from '../models/ExerciseData';
+import { SolutionLog } from '../models/SolutionLog';
 
 @Injectable()
 export class ExerciseService extends BaseHttpService implements OnInit {
@@ -49,6 +50,10 @@ export class ExerciseService extends BaseHttpService implements OnInit {
   getExercise(exId: string): Observable<ExerciseInfo> {
     return this.http.get<ExerciseInfo>(
       `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions);
+  }
+  checkSolutionLogs(solutionId: string): Promise<SolutionLog[]> {
+    return this.http.get<SolutionLog[]>(
+      `${this.baseUrl}/api/check/logs/${solutionId}`, this.userService.authOptions).toPromise();
   }
 
   checkSolution(solutionId: string): Observable<Solution> {
