@@ -3,10 +3,10 @@
   <h2 class="header">Score: {{solutionData.ExerciseScore}}</h2>
   <h3 class="header">UserId: {{solutionData.UserId}}</h3>
   <mat-form-field>
-    <mat-label>Best</mat-label>
+    <mat-label>Прислано</mat-label>
     <mat-select (selectionChange)="changeSolution($event.value)">
       <mat-option *ngFor="let solution of allSolutions" [value]="solution.Id">
-        {{solution.CheckedTime}}
+        {{solution.SendingTime}}
       </mat-option>
     </mat-select>
   </mat-form-field>
@@ -16,7 +16,7 @@
     <textarea matInput [placeholder]="solutionData.Language" readonly [value]="solutionData.Raw"></textarea>
   </mat-form-field>
 
-  <h4>Логи программы</h4>
+  <h4>Логи запусков</h4>
   <mat-accordion>
     <mat-expansion-panel *ngFor="let log of solutionLogs">
       <mat-expansion-panel-header>
