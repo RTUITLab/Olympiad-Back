@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace PublicAPI.Responses
+namespace PublicAPI.Responses.Solutions
 {
     public class SolutionCheckResponse
     {
