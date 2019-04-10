@@ -16,6 +16,7 @@ import { SolutionStatus } from '../models/SolutionStatus';
 import { Solution } from '../models/Solution';
 import { ExerciseData } from '../models/ExerciseData';
 import { SolutionLog } from '../models/SolutionLog';
+import { CheckedSolution } from '../models/CheckedSolution';
 
 @Injectable()
 export class ExerciseService extends BaseHttpService implements OnInit {
@@ -75,6 +76,10 @@ export class ExerciseService extends BaseHttpService implements OnInit {
         }
       );
     return observable;
+  }
+  getUserExerciseSolutions(exerciceId: string ,userId:string,): Promise<CheckedSolution[]> {
+    return this.http.get<CheckedSolution[]>(
+      `${this.baseUrl}/api/check/solutionlist/${exerciceId}/${userId}`, this.userService.authOptions).toPromise(); 
   }
 
   getExerciseInOutData(exerciseId: string): Observable<ExerciseData[]> {

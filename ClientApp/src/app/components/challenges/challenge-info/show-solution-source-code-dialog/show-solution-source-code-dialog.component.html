@@ -2,6 +2,14 @@
 <div>
   <h2 class="header">Score: {{solutionData.ExerciseScore}}</h2>
   <h3 class="header">UserId: {{solutionData.UserId}}</h3>
+  <mat-form-field>
+    <mat-label>Best</mat-label>
+    <mat-select (selectionChange)="changeSolution($event.value)">
+      <mat-option *ngFor="let solution of allSolutions" [value]="solution.Id">
+        {{solution.CheckedTime}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 
   <h4>Код программы</h4>
   <mat-form-field>

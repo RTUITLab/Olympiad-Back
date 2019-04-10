@@ -3,6 +3,7 @@ export class CheckedSolution {
     Language: string;
     Raw: string;
     UserId: string;
+    ExerciseId: string;
     ExerciseName: string;
     ExerciseScore: 0;
     Status: 0;
