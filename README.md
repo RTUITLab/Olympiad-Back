@@ -1,78 +1,83 @@
-# Система для тестирования студентов
+# Student Testing System
+[Russian README](README-RU.md)
+## Description
+System provides examination testing for students on the basis of the given test tasks.
 
-## Описание
-Система предназначена для проведения тестирования студентов, на основе заданных тестовых задач
+Student choses a task he wants to complete and reads the terms.
 
-Студент, попадая в систему выбирает задачу, которую он хочет решить, и читает условие задачи.
+He develops the program according to the task using one of the avaliable programming languages.
 
-Затем он пишет решение на одном из представленных ЯП
+After sending the solution the System executes the code and inputs test datasets. For being solved correctly the program must output the correct results for all test inputs.
 
-Послке отправки кода система выполняет этот код, и подает на вход тестовые наборы данных, для зачтения задания программа должна выдать правильный результат на всех наборах
-
-## Как запустить:
+## How to run:
 
 ### WebApp 
-Представляет BackEnd системыв, хранящий все необходимые сведения
+Represents the System BackEnd storing all the neccessary data.
 
-1. Создать файл _./WebApp/appsettings.Secret.json_
+First, install .Net Core 2.1
 
-2. Заполнить файл следующим содержанием
+
+1. Create _./WebApp/appsettings.Secret.json_ file
+
+2. Fill _./WebApp/appsettings.Secret.json_ with the following: 
 
 ```json
 {
     "JwtIssuerOptions": {
-        "SecretKey":"Любая случайная строка, желатьельно длиной около 30-и символов"
+        "SecretKey":"Random string nearly 30 symbols"
     },
     "ConnectionStrings": {
-        "PostgresDataBase": "Строка подключения к базе данных Postgres"
+        "PostgresDataBase": "The connection string to the Postgres database"
     }
 }
 ```
 
-Для поля ```ConnectionStrings:PostgresDataBase``` нужно использовать сроку подключения к реальной базе Postgres, например
+You must use connection string to your real Postgres database in the field  ```ConnectionStrings:PostgresDataBase```, for example:
 > _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;Integrated Security=true;_ 
 
 
-3. После настройки БД необходимо применить миграцию к существующей пустой БД, для этого необходимо в папке WebApp выполнить команду ```dotnet ef database update```. эта команда создаст необходимую базу данных, с необходимыми таблицами.
+3. After setting up the DB you must apply migration to the existing empty DB. For this you must run ```dotnet ef database update``` in WebApp folder. The command will create the required DB with all tables needed.
 
-4. После этого можно запускать приложение, при помощи команды ```dotnet run INIT_ROLES=true```
+
+4. You can run the application using ```dotnet run INIT_ROLES=true```
 
 ### Client App
 
-Представляет клиентсую часть на Angular
+Represents the client part on Angular
 
-Необходимо установить:
+Install the following:
 1. Node.js + NPM
 
-Запуск:
+How to run:
 
-1. В папке _./ClientApp_ выполнить команду ```npm instal``` Эта команда установит все зависимости в папку __node_modules__.
+1. Use ```npm instal``` in _./ClientApp_ folder. It will install all the dependecies in __node_modules__ folder.
 
-3. В папке _./ClientApp/src/environments_ создать файл _environment.ts_ с следующим содержанием:
+2. Create the _environment.ts_ in _./ClientApp/src/environments_ folder. Fill it with the following:
 
 ```json
 export const environment = {
     production: true,
     isAdmin: false,
     baseUrl: '',
-    recaptchaClientToken: 'Токен сервиса reCAPCHA'
+    recaptchaClientToken: 'reCAPCHA public token'
 };
 ```
-> baseUrl - url запущенного WebApp, при локальном запуске скорее всего будет ```http://localhost:64800```
+> baseUrl - url of running WebApp, when running locally it will most likely be ```http://localhost:64800```
  
-> recaptchaClientToken - **ПУБЛИЧНЫЙ** токен, получаемый при создании reCAPCTCHA v2
+> recaptchaClientToken - **PUBLIC** token got when creating reCAPCTCHA v2
 
-2. Для запуска сайта необходимо выполнить комманду ```npm start```. После выполнения команды в браузере можно открыть сайт по адресу [localhost:4200](http://localhost:4200), где будет видно сам сайт.
+2. After running the site, you must execute ```npm start```. After this you can see the site in your browser on [localhost:4200](http://localhost:4200).
 
 ### Executor
 
-Программа, которая подключается к WebApp и выполняет присланные участниками задания, и выполняет проверку.
+Apllication connected to WebApp which is executing received solutions and checks them.
 
-Необходимо чтобы на системе, где установлена данная программа был установлен **Docker**, так как именно с его помощью выполняется код участников.
+You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes the received programs.
 
-1. Создать файл _./Executor/appsettings.Secret.json_
 
-2. Заполнить файл следующим содержанием
+1. Create _./Executor/appsettings.Secret.json_
+
+2. Fill it with the following:
 
 ```json
 {
@@ -81,11 +86,11 @@ export const environment = {
         "DockerEndPoint":"http://localhost:2375"
     },
     "UserInfo": {
-        "UserName":"Имя пользователя, имеющего право Executor",
-        "Password":"Пароль этого пользователя "
+        "UserName":"Username having Executor rights",
+        "Password":"User password"
     }
 }
 ```
-> ```StartSettings:DockerEndPoint``` представляет url, указывающий на запущенный сервис **Docker**, при локальном запуске **Docker** слушает на порту *2375*
+> ```StartSettings:DockerEndPoint``` represents the url, pointing on **Docker** service, when running locally **Docker** is listening on port *2375*
 
-3. После создания такого файла можно выполнять команту ```dotnet run``` в папке _./Executor_
+3. After creating the file you can execute ```dotnet run``` in _./Executor_ folder.
