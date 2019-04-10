@@ -146,13 +146,13 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        [Route("{exerciseId:guid}/{userId:guid}")]
+        [Route("solutionList/{exerciseId:guid}/{studentId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<SolutionDumpView> Get(Guid exerciseId, Guid userId)
+        public async Task<SolutionDumpView> Get(Guid exerciseId, string studentId)
         {
             return await context
                        .Solutions
-                       .Where(p => p.ExerciseId == exerciseId && p.UserId == userId)
+                       .Where(p => p.ExerciseId == exerciseId && p.User.StudentID == studentId)
                        .ProjectTo<SolutionDumpView>()
                        .SingleOrDefaultAsync()
                    ?? throw StatusCodeException.NotFount;
