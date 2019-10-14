@@ -59,7 +59,9 @@ export const environment = {
     production: true,
     isAdmin: false,
     baseUrl: '',
-    recaptchaClientToken: 'reCAPCHA public token'
+    buildNumber: '',
+    showResults: true,
+    recaptchaClientToken: ''
 };
 ```
 > baseUrl - url of running WebApp, when running locally it will most likely be ```http://localhost:64800```
