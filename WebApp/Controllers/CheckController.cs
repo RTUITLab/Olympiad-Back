@@ -47,6 +47,18 @@ namespace WebApp.Controllers
         [Route("{language}/{exerciseId}")]
         public async Task<SolutionResponse> Post(IFormFile file, string language, Guid exerciseId)
         {
+            return await AddSolution(file, language, exerciseId, UserId);
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [Route("{language}/{exerciseId}/{authorId}")]
+        public async Task<SolutionResponse> AdminPost(IFormFile file, string language, Guid exerciseId, Guid authorId)
+        {
+            return await AddSolution(file, language, exerciseId, authorId, true);
+        }
+
+        private async Task<SolutionResponse> AddSolution(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
+        {
             string fileBody;
             if (file == null || file.Length > 5120)
             {
@@ -61,17 +73,20 @@ namespace WebApp.Controllers
                 throw StatusCodeException.BadRequest();
             }
 
-            var lastSendingDate = await context
-                .Solutions
-                .Where(s => s.UserId == UserId)
-                .Where(s => s.ExerciseId == exerciseId)
-                .Select(s => s.SendingTime)
-                .DefaultIfEmpty(DateTime.MinValue)
-                .MaxAsync();
-
-            if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
+            if (!isAdmin)
             {
-                throw StatusCodeException.TooManyRequests;
+                var lastSendingDate = await context
+                    .Solutions
+                    .Where(s => s.UserId == authorId)
+                    .Where(s => s.ExerciseId == exerciseId)
+                    .Select(s => s.SendingTime)
+                    .DefaultIfEmpty(DateTime.MinValue)
+                    .MaxAsync();
+
+                if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
+                {
+                    throw StatusCodeException.TooManyRequests;
+                }
             }
 
             using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
@@ -81,12 +96,12 @@ namespace WebApp.Controllers
 
             var oldSolution = await context
                 .Solutions
-                .Where(s => s.UserId == UserId)
+                .Where(s => s.UserId == authorId)
                 .Where(s => s.Raw == fileBody)
                 .Where(s => s.ExerciseId == exerciseId)
                 .FirstOrDefaultAsync(); // TODO change to SingleOrDefault before database drop
 
-            if (oldSolution != null)
+            if (!isAdmin && oldSolution != null)
             {
                 return Mapper.Map<SolutionResponse>(oldSolution);
             }
@@ -96,7 +111,7 @@ namespace WebApp.Controllers
                 Raw = fileBody,
                 Language = language,
                 ExerciseId = exerciseId,
-                UserId = UserId,
+                UserId = authorId,
                 Status = SolutionStatus.InQueue,
                 SendingTime = DateTime.UtcNow
             };
@@ -106,7 +121,6 @@ namespace WebApp.Controllers
             queue.PutInQueue(solution.Id);
             return mapper.Map<SolutionResponse>(solution);
         }
-
 
         [HttpPost("recheck/{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
@@ -130,6 +144,16 @@ namespace WebApp.Controllers
                 .Solutions
                 .Where(s => s.UserId == UserId)
                 .ProjectTo<SolutionResponse>()
+                .ToListAsync();
+        }
+
+        [HttpGet("statistic")]
+        public Task<List<SolutionsStatisticResponse>> GetStatistic()
+        {
+            return context
+                .Solutions
+                .GroupBy(s => s.Status)
+                .Select(g => new SolutionsStatisticResponse { SolutionStatus = g.Key.ToString(), Count = g.Count()  })
                 .ToListAsync();
         }
 
@@ -183,19 +207,6 @@ namespace WebApp.Controllers
                 .Where(sc => sc.SolutionId == solutionId)
                 .ProjectTo<SolutionCheckResponse>()
                 .ToListAsync();
-        }
-
-
-        [HttpGet("statistic")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> GetStatistic()
-        {
-            var statuses = await context
-                .Solutions
-                .Select(s => s.Status)
-                .GroupBy(s => s)
-                .ToDictionaryAsync(g => g.Key, g => g.Count());
-            return Json(statuses);
         }
 
         private static string GetExtensionsForLanguage(string language)
