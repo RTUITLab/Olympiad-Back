@@ -73,6 +73,10 @@ namespace Executor.Executers.Build
             {
                 return false;
             }
+            if (lang == "java")
+            {
+                //TODO rename Java class to main
+            }
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
             File.WriteAllText(Path.Combine(sourceDir.FullName, buildProperty.ProgramFileName), raw, new UTF8Encoding(false));
