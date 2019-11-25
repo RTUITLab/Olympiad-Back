@@ -1,8 +1,8 @@
-﻿using Shared.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Models.Exercises;
+using Olympiad.Shared.Models;
 
 namespace Models.Solutions
 {

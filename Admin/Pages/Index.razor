@@ -1,0 +1,107 @@
+﻿@page "/"
+
+@using Microsoft.EntityFrameworkCore
+@using Models
+@using Olympiad.Shared.Models
+@using System.Text.RegularExpressions
+
+@inject Models.ApplicationDbContext db
+
+<button class="btn-primary" @onclick="@RepairAll">Repair</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in db.Solutions.GroupBy(s => s.Status).Select(g => new { SolutionStatus = g.Key.ToString(), Count = g.Count() }).ToList())
+        {
+            <tr>
+                <td>@i.SolutionStatus</td>
+                <td>@i.Count</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>@db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).Count()</p>
+@foreach (var item in db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).ToList())
+{
+    <p>@(i++)</p>
+    <div>@(item.Raw)</div>
+    @if (Regex.IsMatch(item.Raw, @"public\s+class\s+\S+\s*{"))
+    {
+        <button class="btn-success">Finded</button>
+        @if (Regex.Match(item.Raw, @"public\s+class\s+(\S+)\s*{").Groups[1].Value != "Main")
+        {
+            <button class="btn-warning" @onclick="@(async () => await Repair(item))">Repair</button>
+        }
+    }
+    else
+    {
+        <button class="btn-danger">Other</button>
+    }
+}
+
+
+@foreach (var item in db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).Take(5).ToList())
+{
+    <div>
+        @db.Exercises.Single(e => e.ExerciseID == item.ExerciseId).ExerciseTask
+    </div>
+    <textarea rows="25">@item.Raw</textarea>
+    @foreach (var check in db.SolutionChecks.Where(ch => ch.SolutionId == item.Id))
+    {
+        <p>example</p>
+        <div class="row">
+            <div class="col-6">
+                <textarea rows="10">@check.ExampleIn</textarea>
+            </div>
+            <div class="col-6">
+                <textarea rows="10">@check.ExampleOut</textarea>
+            </div>
+        </div>
+        <p>program</p>
+        <div class="row">
+            <div class="col-6"><textarea rows="10">@check.ProgramOut</textarea></div>
+            <div class="col-6"><textarea rows="10">@check.ProgramOut</textarea></div>
+        </div>
+    }
+}
+
+
+@code {
+    int i = 0;
+
+    public List<Models.Solutions.Solution> Solutions { get; set; } = new List<Models.Solutions.Solution>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //Solutions = await db.Solutions.ToListAsync();
+    }
+
+    Task Repair(Models.Solutions.Solution solution)
+    {
+        solution.Status = SolutionStatus.InQueue;
+        return db.SaveChangesAsync();
+    }
+
+    void RepairAll()
+    {
+        foreach (var item in db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).ToList())
+        {
+            if (Regex.IsMatch(item.Raw, @"public\s+class\s+\S+\s*{"))
+            {
+                if (Regex.Match(item.Raw, @"public\s+class\s+(\S+)\s*{").Groups[1].Value != "Main")
+                {
+                    item.Status = SolutionStatus.InQueue;
+                }
+            }
+        }
+        db.SaveChanges();
+    }
+}
