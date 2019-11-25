@@ -5,9 +5,16 @@
 @using Olympiad.Shared.Models
 @using System.Text.RegularExpressions
 
+@using OpenQA.Selenium.Chrome
+@using OpenQA.Selenium
+@using NPOI.SS.UserModel;
+@using NPOI.XSSF.UserModel;
+
 @inject Models.ApplicationDbContext db
+@inject IJSRuntime jsRuntime
 
 <button class="btn-primary" @onclick="@RepairAll">Repair</button>
+<button class="btn-primary" @onclick="@WriteDump">Write dump</button>
 
 <table>
     <thead>
@@ -75,12 +82,18 @@
 
 @code {
     int i = 0;
+    ChromeDriver driver;
+
 
     public List<Models.Solutions.Solution> Solutions { get; set; } = new List<Models.Solutions.Solution>();
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        driver = new ChromeDriver(new ChromeOptions
+        {
+            DebuggerAddress = "127.0.0.1:9222"
+        });
         //Solutions = await db.Solutions.ToListAsync();
     }
 
@@ -88,6 +101,107 @@
     {
         solution.Status = SolutionStatus.InQueue;
         return db.SaveChangesAsync();
+    }
+
+    async Task WriteDump()
+    {
+        var results = db
+                .Solutions
+                .Select(s => new
+                {
+                    Id = s.Id,
+                    CheckedTime = s.CheckedTime,
+                    ExerciseId = s.ExerciseId.ToString(),
+                    ExerciseName = s.Exercise.ExerciseName,
+                    ExerciseText = s.Exercise.ExerciseTask,
+                    ExerciseScore = s.Exercise.Score,
+                    Language = s.Language,
+                    Raw = s.Raw,
+                    SendingTime = s.SendingTime,
+                    StartCheckingTime = s.StartCheckingTime,
+                    Status = s.Status,
+                    UserId = s.UserId.ToString()
+                })
+                .ToList()
+                .GroupBy(s => s.UserId)
+                .ToDictionary(us => us.Key, us =>
+                    us.GroupBy(a => a.ExerciseName)
+                        .ToDictionary(g => g.Key, g => g.Aggregate((a, b) => a.Status > b.Status ? a : b)));
+        IWorkbook workbook = new XSSFWorkbook();
+        var rolesTableSheet = workbook.CreateSheet("Сводка");
+
+        int rowNum = 0;
+
+        var titleRow = rolesTableSheet.CreateRow(rowNum++);
+        int columnNum = 0;
+        titleRow.CreateCell(columnNum++).SetCellValue("ФИО");
+        titleRow.CreateCell(columnNum++).SetCellValue("email");
+        for (int i = 0; i < 20; i++)
+        {
+            titleRow.CreateCell(columnNum++).SetCellValue((i + 1).ToString());
+        }
+        foreach (var userId in results.Keys)
+        {
+            var user = db.Users.Find(Guid.Parse(userId));
+            await Navigate($"https://lk.futuremirea.ru/admin/solutions/it/{user.Email.Replace("@", "%40")}/", () => driver.FindElementByXPath("/html/body/div/div/main/div[1]/h1")?.Text == "Институт информационных технологий");
+            await Log(user.Email);
+
+            var usersRow = rolesTableSheet.CreateRow(rowNum++);
+            columnNum = 0;
+
+
+
+            usersRow.CreateCell(columnNum++).SetCellValue(user.FirstName);
+            usersRow.CreateCell(columnNum++).SetCellValue(user.UserName);
+
+
+            foreach (var exerciseName in results[userId].Keys)
+            {
+                var id = await GetExerciseFromUser(results[userId][exerciseName].ExerciseText);
+                usersRow.CreateCell(columnNum + id).SetCellValue(results[userId][exerciseName].Status == SolutionStatus.Sucessful ? "+" : "-");
+            }
+        }
+        for (int i = 0; i < 22; i++)
+        {
+            rolesTableSheet.AutoSizeColumn(i);
+        }
+        using (var writeStream = System.IO.File.OpenWrite(@"C:\Users\maksa\Desktop\dump.xlsx"))
+        {
+            workbook.Write(writeStream);
+        }
+    }
+
+    private async Task<int> GetExerciseFromUser(string text)
+    {
+        await Task.Delay(1);
+        var webExercises = driver.FindElementByTagName("main").FindElements(By.ClassName("row"));
+        text = Regex.Replace(text, @"!\[\]\(\S+\)", "");
+
+        for (int i = 0; i < webExercises.Count; i++)
+        {
+            var we = webExercises[i];
+
+            var textEx = we.FindElements(By.TagName("div"))[1].Text;
+            await Log($"{i}: {textEx}");
+            if (text.StartsWith(textEx))
+                return i;
+        }
+        throw new Exception("no exercise");
+    }
+    private async Task Navigate(string url, Func<bool> predicate = null)
+    {
+        driver.Navigate().GoToUrl(url);
+        int i = 0;
+        while (true)
+        {
+            if (predicate?.Invoke() == true) break;
+            await Task.Delay(1);
+        }
+    }
+
+    protected async Task Log(string message)
+    {
+        await jsRuntime.InvokeAsync<string>("console.log", message);
     }
 
     void RepairAll()
