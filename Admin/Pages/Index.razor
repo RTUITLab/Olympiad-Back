@@ -98,10 +98,12 @@
             {
                 if (Regex.Match(item.Raw, @"public\s+class\s+(\S+)\s*{").Groups[1].Value != "Main")
                 {
+                    item.Raw = Regex.Replace(item.Raw, @"(public\s+class\s+)(\S+)(\s*{)", "$1Main$3");
                     item.Status = SolutionStatus.InQueue;
                 }
             }
         }
         db.SaveChanges();
     }
+
 }
