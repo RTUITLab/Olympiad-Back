@@ -81,7 +81,7 @@ stages:
               baseUrl: '',
               isAdmin: false,
               recaptchaClientToken: '6LeclMcUAAAAAM9VMLaM6er7VRkDpKAAZi1hN179',
-              buildNumber: '$(Build.BuildNumber),
+              buildNumber: '$(Build.BuildNumber)',
               showResults: false
             };
     - task: Npm@1
