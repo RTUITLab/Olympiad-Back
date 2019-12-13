@@ -20,6 +20,8 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<ChallengeEditRequest, Challenge>()
                 .ForAllMembers(opt => opt.Condition(a =>
                     a.GetType().GetProperty(opt.DestinationMember.Name)?.GetValue(a) != null));
+
+            CreateMap<SolutionCheckRequest, SolutionCheck>();
         }
     }
 }

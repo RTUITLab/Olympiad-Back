@@ -14,8 +14,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Solutions;
+using Olympiad.Shared.Models;
 using PublicAPI.Responses;
-using Shared.Models;
+using PublicAPI.Responses.Dump;
+using PublicAPI.Responses.Solutions;
 using WebApp.Models;
 using WebApp.Services.Interfaces;
 
@@ -45,21 +47,63 @@ namespace WebApp.Controllers
         [Route("{language}/{exerciseId}")]
         public async Task<SolutionResponse> Post(IFormFile file, string language, Guid exerciseId)
         {
+            return await AddSolution(file, language, exerciseId, UserId);
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [Route("{language}/{exerciseId}/{authorId}")]
+        public async Task<SolutionResponse> AdminPost(IFormFile file, string language, Guid exerciseId, Guid authorId)
+        {
+            return await AddSolution(file, language, exerciseId, authorId, true);
+        }
+
+        private async Task<SolutionResponse> AddSolution(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
+        {
             string fileBody;
             if (file == null || file.Length > 5120)
             {
                 throw StatusCodeException.BadRequest("Отсутствует файл или его размер превышает 5MB");
             }
-            var stream = file.OpenReadStream();
 
-            if (!context.Exercises.Any(p => p.ExerciseID == exerciseId))
+            if (!await context.Exercises.AnyAsync(
+                e => e.ExerciseID == exerciseId &&
+                (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now) &&
+                (e.Challenge.EndTime == null || e.Challenge.EndTime >= Now)))
             {
                 throw StatusCodeException.BadRequest();
             }
 
-            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+            if (!isAdmin)
+            {
+                var lastSendingDate = await context
+                    .Solutions
+                    .Where(s => s.UserId == authorId)
+                    .Where(s => s.ExerciseId == exerciseId)
+                    .Select(s => s.SendingTime)
+                    .DefaultIfEmpty(DateTime.MinValue)
+                    .MaxAsync();
+
+                if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
+                {
+                    throw StatusCodeException.TooManyRequests;
+                }
+            }
+
+            using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
             {
                 fileBody = await streamReader.ReadToEndAsync();
+            }
+
+            var oldSolution = await context
+                .Solutions
+                .Where(s => s.UserId == authorId)
+                .Where(s => s.Raw == fileBody)
+                .Where(s => s.ExerciseId == exerciseId)
+                .FirstOrDefaultAsync(); // TODO change to SingleOrDefault before database drop
+
+            if (!isAdmin && oldSolution != null)
+            {
+                return mapper.Map<SolutionResponse>(oldSolution);
             }
 
             Solution solution = new Solution()
@@ -67,7 +111,7 @@ namespace WebApp.Controllers
                 Raw = fileBody,
                 Language = language,
                 ExerciseId = exerciseId,
-                UserId = UserId,
+                UserId = authorId,
                 Status = SolutionStatus.InQueue,
                 SendingTime = DateTime.UtcNow
             };
@@ -78,38 +122,92 @@ namespace WebApp.Controllers
             return mapper.Map<SolutionResponse>(solution);
         }
 
-        [HttpGet]
-        public async Task<IEnumerable<SolutionResponse>> Get()
+        [HttpPost("recheck/{exerciseId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RecheckSolutions(Guid exerciseId)
         {
-            return await context
+            var solutions = await context
+                .Solutions
+                .Where(s => s.ExerciseId == exerciseId)
+                .ToListAsync();
+
+            solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
+            await context.SaveChangesAsync();
+            solutions.ForEach(s => queue.PutInQueue(s.Id));
+            return Json(solutions.Count);
+        }
+
+        [HttpGet]
+        public Task<List<SolutionResponse>> Get()
+        {
+            return context
                 .Solutions
                 .Where(s => s.UserId == UserId)
-                .ProjectTo<SolutionResponse>()
+                .ProjectTo<SolutionResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
+
+        [HttpGet("statistic")]
+        public Task<List<SolutionsStatisticResponse>> GetStatistic()
+        {
+            return context
+                .Solutions
+                .GroupBy(s => s.Status)
+                .Select(g => new SolutionsStatisticResponse { SolutionStatus = g.Key.ToString(), Count = g.Count()  })
                 .ToListAsync();
         }
 
         [HttpGet]
-        [Route("{solutionId}")]
+        [Route("{solutionId:guid}")]
         public async Task<SolutionResponse> Get(Guid solutionId)
         {
             return await context
                 .Solutions
                 .Where(p => p.Id == solutionId && p.UserId == UserId)
-                .ProjectTo<SolutionResponse>()
-                .SingleOrDefaultAsync();
+                .ProjectTo<SolutionResponse>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
+        }
+
+        [HttpGet]
+        [Route("solutionList/{exerciseId:guid}/{studentId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<List<SolutionDumpView>> Get(Guid exerciseId, string studentId)
+        {
+            return await context
+                       .Solutions
+                       .Where(p => p.ExerciseId == exerciseId && p.User.StudentID == studentId)
+                       .ProjectTo<SolutionDumpView>(mapper.ConfigurationProvider)
+                       .ToListAsync()
+                   ?? throw StatusCodeException.NotFount;
         }
 
         [HttpGet("download/{solutionId}")]
         public async Task<IActionResult> Download(Guid solutionId)
         {
-            var solution = await context
+            var solutions = context
                 .Solutions
-                .Where(s => s.Id == solutionId && s.UserId == UserId)
-                .SingleOrDefaultAsync();
+                .Where(s => s.Id == solutionId);
+            if (!IsAdmin)
+                solutions = solutions.Where(s => s.UserId == UserId);
+            var solution = await solutions
+                .Select(s => new { s.Language, s.Raw })
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
             return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
         }
 
+        [HttpGet("logs/{solutionId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<SolutionCheckResponse>>> GetLogs(Guid solutionId)
+        {
+            return await context
+                .SolutionChecks
+                .Where(sc => sc.SolutionId == solutionId)
+                .ProjectTo<SolutionCheckResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
 
         private static string GetExtensionsForLanguage(string language)
         {

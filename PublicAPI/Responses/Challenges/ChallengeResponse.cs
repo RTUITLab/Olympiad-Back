@@ -1,4 +1,4 @@
-﻿using Shared.Models;
+﻿using Olympiad.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +13,5 @@ namespace PublicAPI.Responses.Challenges
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public ChallengeAccessType ChallengeAccessType { get; set; }
-        public List<ExerciseCompactResponse> Exercises { get; set; }
     }
 }
