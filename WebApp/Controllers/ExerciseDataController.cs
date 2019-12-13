@@ -73,7 +73,7 @@ namespace WebApp.Controllers
                 .TestData
                 .Where(p => p.ExerciseId == exerciseId)
                 .Where(p => p.IsPublic)
-                .ProjectTo<ExerciseDataCompactResponse>()
+                .ProjectTo<ExerciseDataCompactResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 
@@ -86,7 +86,7 @@ namespace WebApp.Controllers
             return context
                 .TestData
                 .Where(p => p.ExerciseId == exerciseId)
-                .ProjectTo<ExerciseDataResponse>()
+                .ProjectTo<ExerciseDataResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 

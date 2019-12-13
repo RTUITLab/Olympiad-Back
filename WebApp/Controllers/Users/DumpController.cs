@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -20,12 +21,15 @@ namespace WebApp.Controllers.Users
     public class DumpController : AuthorizeController
     {
         private readonly ApplicationDbContext dbContext;
+        private readonly IMapper mapper;
 
         public DumpController(
             UserManager<User> userManager,
-            ApplicationDbContext dbContext) : base(userManager)
+            ApplicationDbContext dbContext,
+            IMapper mapper) : base(userManager)
         {
             this.dbContext = dbContext;
+            this.mapper = mapper;
         }
 
         [HttpGet("{challengeId:guid}")]
@@ -33,12 +37,13 @@ namespace WebApp.Controllers.Users
         {
             if (!await dbContext.Challenges.AnyAsync(ch => ch.Id == challengeId))
                 throw StatusCodeException.BadRequest();
-            var allSolutions = await dbContext
+            var allSolutions = (await dbContext
                 .Solutions
                 .Where(s => s.Exercise.ChallengeId == challengeId)
-                .ProjectTo<SolutionDumpView>()
+                .ProjectTo<SolutionDumpView>(mapper.ConfigurationProvider)
+                .ToListAsync())
                 .GroupBy(s => s.UserId)
-                .ToDictionaryAsync(us => us.Key, us => 
+                .ToDictionary(us => us.Key, us => 
                     us.GroupBy(a => a.ExerciseName)
                         .ToDictionary(g => g.Key, g => g.Aggregate((a, b) => a.Status > b.Status ? a : b)));
 

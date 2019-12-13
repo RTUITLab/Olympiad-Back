@@ -62,7 +62,7 @@ namespace WebApp.Controllers.Users
                     u.Email.ToUpper().Contains(matcher) ||
                     u.StudentID.ToUpper().Contains(matcher)));
             return users
-                .ProjectTo<UserInfoResponse>()
+                .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 

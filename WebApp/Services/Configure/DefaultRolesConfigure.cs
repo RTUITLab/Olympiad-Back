@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
-using WebApp.Configure.Models.Configure.Interfaces;
+using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using WebApp.Models.Settings;
 
 namespace WebApp.Services.Configure
@@ -30,7 +31,7 @@ namespace WebApp.Services.Configure
             this.options = options.Value;
         }
 
-        public async Task Configure()
+        public async Task Configure(CancellationToken cancellationToken)
         {
             if (options.CreateUser)
                 await CreateUser(options.Email, options.Name, options.StudentId, options.Password);

@@ -14,10 +14,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Solutions;
+using Olympiad.Shared.Models;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
-using Shared.Models;
 using WebApp.Models;
 using WebApp.Services.Interfaces;
 
@@ -103,7 +103,7 @@ namespace WebApp.Controllers
 
             if (!isAdmin && oldSolution != null)
             {
-                return Mapper.Map<SolutionResponse>(oldSolution);
+                return mapper.Map<SolutionResponse>(oldSolution);
             }
 
             Solution solution = new Solution()
@@ -143,7 +143,7 @@ namespace WebApp.Controllers
             return context
                 .Solutions
                 .Where(s => s.UserId == UserId)
-                .ProjectTo<SolutionResponse>()
+                .ProjectTo<SolutionResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 
@@ -164,7 +164,7 @@ namespace WebApp.Controllers
             return await context
                 .Solutions
                 .Where(p => p.Id == solutionId && p.UserId == UserId)
-                .ProjectTo<SolutionResponse>()
+                .ProjectTo<SolutionResponse>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
         }
@@ -177,7 +177,7 @@ namespace WebApp.Controllers
             return await context
                        .Solutions
                        .Where(p => p.ExerciseId == exerciseId && p.User.StudentID == studentId)
-                       .ProjectTo<SolutionDumpView>()
+                       .ProjectTo<SolutionDumpView>(mapper.ConfigurationProvider)
                        .ToListAsync()
                    ?? throw StatusCodeException.NotFount;
         }
@@ -205,7 +205,7 @@ namespace WebApp.Controllers
             return await context
                 .SolutionChecks
                 .Where(sc => sc.SolutionId == solutionId)
-                .ProjectTo<SolutionCheckResponse>()
+                .ProjectTo<SolutionCheckResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 
