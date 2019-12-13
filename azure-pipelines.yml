@@ -5,15 +5,25 @@
 
 trigger:
 - master
+- develop
 
+name: $(BuildID)-$(Build.SourceBranchName)
 pool:
   vmImage: 'ubuntu-18.04'
 
-variables:
-  solution: '**/*.sln'
+
+
+
 
 steps:
+
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '3.1.100'
+    includePreviewVersions: true
 - task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
@@ -21,6 +31,7 @@ steps:
 
 
 - task: DotNetCoreCLI@2
+  displayName: 'dotnet publish'
   inputs:
     command: 'publish'
     publishWebProjects: false
@@ -30,6 +41,7 @@ steps:
     modifyOutputPath: false
 
 - task: PublishBuildArtifacts@1
+  displayName: 'publish artifact olympiad-build'
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'olympiad-build'
