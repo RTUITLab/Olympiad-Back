@@ -1,48 +1,112 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
-
 trigger:
 - master
 - develop
 
 name: $(BuildID)-$(Build.SourceBranchName)
-pool:
-  vmImage: 'ubuntu-18.04'
 
 
+stages:
+- stage: build_client
+  displayName: Build client app
+  jobs:
+  - job: build_client_back
+    displayName: Build backend
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '3.1.100'
+        includePreviewVersions: true
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet restore'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'WebApp/WebApp.csproj'
+        arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-client-back-build'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'olympiad-client-back-build'
+        publishLocation: 'Container'
+
+  - job: build_client_front
+    displayName: Build frontend
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - task: Npm@1
+      displayName: 'npm ci'
+      inputs:
+        command: 'ci'
+        workingDir: 'ClientApp'
+
+    - task: file-creator@5
+      displayName: 'create environment.ts'
+      inputs:
+        fileoverwrite: true
+        filepath: 'ClientApp/src/environments/environment.ts'
+        filecontent: |
+          export const environment = {
+              production: true,
+              baseUrl: '',
+              isAdmin: false,
+              recaptchaClientToken: '',
+              buildNumber: '',
+              showResults: false
+            };
+    - task: file-creator@5
+      displayName: 'create environment.prod.ts'
+      inputs:
+        fileoverwrite: true
+        filepath: 'ClientApp/src/environments/environment.prod.ts'
+        filecontent: |
+          export const environment = {
+              production: true,
+              baseUrl: '',
+              isAdmin: false,
+              recaptchaClientToken: '6LeclMcUAAAAAM9VMLaM6er7VRkDpKAAZi1hN179',
+              buildNumber: '$(Build.BuildNumber),
+              showResults: false
+            };
+    - task: Npm@1
+      displayName: 'npm run build'
+      inputs:
+        command: 'custom'
+        workingDir: 'ClientApp'
+        customCommand: 'run build'
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-client-front-build'
+      inputs:
+        PathtoPublish: 'ClientApp/dist'
+        ArtifactName: 'olympiad-client-front-build'
+        publishLocation: 'Container'
 
 
-
-steps:
-
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '3.1.100'
-    includePreviewVersions: true
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet restore'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-    feedsToUse: 'select'
-
-
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet publish'
-  inputs:
-    command: 'publish'
-    publishWebProjects: false
-    projects: 'WebApp/WebApp.csproj'
-    arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
-    zipAfterPublish: false
-    modifyOutputPath: false
-
-- task: PublishBuildArtifacts@1
-  displayName: 'publish artifact olympiad-build'
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'olympiad-build'
-    publishLocation: 'Container'
+- stage: publish_deploy
+  displayName: Publish depoloy files
+  jobs:
+  - job: publish_client_deploy
+    displayName: 'Publish client deploy files'
+    steps:
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-client-deploy'
+      inputs:
+        PathtoPublish: 'deploy/client'
+        ArtifactName: 'olympiad-client-deploy'
+        publishLocation: 'Container'
