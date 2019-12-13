@@ -24,10 +24,6 @@ namespace WebApp.Services.Configure
         }
         public async Task Configure(CancellationToken cancellationToken)
         {
-            var pending = (await dbContext.Database.GetPendingMigrationsAsync()).ToArray();
-            logger.LogInformation($"pending {pending.Length}: {string.Join('\n', pending)}");
-            if (!pending.Any())
-                return;
             await dbContext.Database.MigrateAsync();
         }
     }
