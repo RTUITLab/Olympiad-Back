@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using System.IO;
 using Models.Exercises;
 using Models.Solutions;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
@@ -48,7 +48,7 @@ namespace WebApp.Controllers
                 .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
                            e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
                 .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
-                .ProjectTo<ExerciseCompactResponse>(new { userId = UserId })
+                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
         }
 

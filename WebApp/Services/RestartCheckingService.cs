@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Models;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
