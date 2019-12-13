@@ -6,7 +6,7 @@ using Docker.DotNet;
 using Microsoft.Extensions.Logging;
 using Models.Exercises;
 using Models.Solutions;
-using Shared.Models;
+using Olympiad.Shared.Models;
 
 namespace Executor.Executers
 {

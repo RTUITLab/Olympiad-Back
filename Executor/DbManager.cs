@@ -10,7 +10,7 @@ using Executor.Models.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models.Exercises;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using Models.Solutions;
 using PublicAPI.Requests;
 

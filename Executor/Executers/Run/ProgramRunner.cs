@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using Models.Exercises;
 using Docker.DotNet;
 using Docker.DotNet.Models;
