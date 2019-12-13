@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Exercises;
 using Models.Links;
+using Olympiad.Shared.Models;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
@@ -38,42 +39,29 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ChallengeCompactResponse>> GetAsync()
+        public Task<List<ChallengeResponse>> GetAsync()
         {
-            IQueryable<Challenge> query = context.Challenges;
-            if (!IsAdmin)
-            {
-                query = query
-                    .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
-                           c.UsersToChallenges.Any(utc => utc.UserId == UserId));
-            }
-            return await query
-                .ProjectTo<ChallengeCompactResponse>()
-                .ToListAsync();
+            return AvailableChallenges().ToListAsync();
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ChallengeResponse> Get(Guid id)
         {
-            var query = context
-                .Challenges
-                .Where(c => c.Id == id);
+            return await AvailableChallenges()
+                        .Where(c => c.Id == id)
+                        .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
+        }
 
-            IQueryable<ChallengeResponse> resultQuery;
-            var mappingParameter = new { userId = UserId };
-            if (IsAdmin)
+        private IQueryable<ChallengeResponse> AvailableChallenges()
+        {
+            IQueryable<Challenge> query = context.Challenges;
+            if (!IsAdmin)
             {
-                resultQuery = query.ProjectTo<ChallengeExtendedResponse>(mappingParameter);
+                query = query
+                    .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
+                           c.UsersToChallenges.Any(utc => utc.UserId == UserId));
             }
-            else
-            {
-                resultQuery = query
-                    .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
-                           c.UsersToChallenges.Any(utc => utc.UserId == UserId))
-                    .ProjectTo<ChallengeResponse>(mappingParameter);
-            }
-            return await resultQuery.SingleOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
+            return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
         }
 
         [HttpPost]

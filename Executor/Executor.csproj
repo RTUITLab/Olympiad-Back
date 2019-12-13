@@ -10,12 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Images\**" />
-    <EmbeddedResource Remove="Images\**" />
-    <None Remove="Images\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0-msbuild3-final" />
   </ItemGroup>
 
@@ -25,32 +19,36 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
     <PackageReference Include="SharpZipLib" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1"/>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
+    <ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
   </ItemGroup>
+
 
   <ItemGroup>
     <None Update="appsettings.Secret.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\cpp\DockerFile">
+    <None Update="Executers\Build\DockerFiles\DockerFile-cpp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\csharp\DockerFile">
+    <None Update="Executers\Build\DockerFiles\DockerFile-csharp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\java\DockerFile">
+    <None Update="Executers\Build\DockerFiles\DockerFile-java">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\pasabc\DockerFile">
+    <None Update="Executers\Build\DockerFiles\DockerFile-pasabc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\c\DockerFile">
+    <None Update="Executers\Build\DockerFiles\DockerFile-c">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Executers\Build\python\DockerFile">
+    <None Update="Executers\Build\DockerFiles\DockerFile-python">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,0 +1,21 @@
+.userData {
+    display: grid;
+    grid-template-columns: 120px auto;
+    margin-top: 12px;
+}
+.userDataInput {
+    grid-column: 2;
+}
+.userDataLabel {
+    grid-column: 1;
+    justify-self: center;
+    align-self: center;
+}
+.UserInfo {
+    padding: 12px;
+    border-radius: 20px;
+    display: grid;
+}
+h2 {
+    text-align: center;
+}

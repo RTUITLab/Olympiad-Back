@@ -11,40 +11,46 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
+using Microsoft.Extensions.Logging;
 
 namespace Executor
 {
     class Executor
     {
-        private DbManager dbManager;
+        private ISolutionsBase solutionBase;
         private readonly Dictionary<string, ExecuteWorker> executeWorkers;
 
-        public Executor(DbManager dbManager, IDockerClient dockerClient)
+        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
         {
-            executeWorkers = Assembly
-                .GetExecutingAssembly()
-                .GetTypes()
-                .Where(T =>
-                    T.BaseType == typeof(ProgramBuilder) ||
-                    T.BaseType == typeof(ProgramRunner))
-                .GroupBy(T => T.GetCustomAttribute<LanguageAttribute>().Lang)
-                .Select(G => new ExecuteWorker(
-                    G.Key,
-                    G.First(T => T.BaseType == typeof(ProgramBuilder)),
-                    G.First(T => T.BaseType == typeof(ProgramRunner)),
-                    dbManager.SaveChanges,
-                    dbManager.GetExerciseData,
-                    dockerClient
-                    ))
-                .ToDictionary(E => E.Lang);
-            this.dbManager = dbManager;
+            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
+            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
+            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
+            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
+            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
+            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } }
+        };
+
+
+        public Executor(ISolutionsBase solutionBase, IDockerClient dockerClient, ILoggerFactory logger)
+        {
+            executeWorkers = buildProperties.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new ExecuteWorker(
+                        kvp.Value,
+                        solutionBase.SaveChanges,
+                        solutionBase.GetExerciseData,
+                        solutionBase,
+                        dockerClient,
+                        logger)
+            );
+            this.solutionBase = solutionBase;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
             while (true)
             {
-                (await dbManager.GetInQueueSolutions())
+                (await solutionBase.GetInQueueSolutions())
                     .ForEach(s => executeWorkers[s.Language].Handle(s));
                 await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
                 Console.WriteLine("end sleep");

@@ -31,7 +31,7 @@ export class UserStateService extends BaseHttpService {
           this.InitUser(event);
           observer.next(event);
         },
-        error => observer.error('Неверные email/пароль')
+        error => observer.error('Неверные email (ID) или пароль')
       );
     return observable;
   }
@@ -44,7 +44,7 @@ export class UserStateService extends BaseHttpService {
     this.http.post(`${this.baseUrl}/api/account`, model, { responseType: 'text' })
       .subscribe(
         event => observer.next(event),
-        error => observer.error('Email занят')
+        error => observer.error('Email или ID занят')
       );
     return observable;
   }
@@ -61,6 +61,7 @@ export class UserStateService extends BaseHttpService {
           observer.next(true);
         },
         failure => {
+          this.logOut();
           observer.next(false);
         }
       );
@@ -88,13 +89,25 @@ export class UserStateService extends BaseHttpService {
     this.usersBehavior.next(user);
     this.currentUser = user;
   }
+
+  public get headers(): HttpHeaders {
+    return new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+    });
+  }
+
   public get authOptions(): object {
     return {
-      headers: new HttpHeaders({
-        'Authorization': `Bearer ${localStorage.getItem('userToken')}`
-      })
+      headers: this.headers
     };
   }
+
+  public logOut(): void {
+    localStorage.removeItem('userToken');
+    this.usersBehavior.next(null);
+    this.currentUser = null;
+  }
+
   private parseJwt(token: string): string[] {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace('-', '+').replace('_', '/');

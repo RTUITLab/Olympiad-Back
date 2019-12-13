@@ -13,10 +13,11 @@ using Microsoft.AspNetCore.Identity;
 using System.IO;
 using Models.Exercises;
 using Models.Solutions;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
+using AutoMapper.QueryableExtensions;
 
 namespace WebApp.Controllers
 {
@@ -37,8 +38,22 @@ namespace WebApp.Controllers
             this.mapper = mapper;
         }
 
+
+        [HttpGet]
+        public Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
+        {
+            return context
+                .Exercises
+                .Where(e => e.ChallengeId == challengeId)
+                .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
+                           e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
+                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider, new { userId = UserId })
+                .ToListAsync();
+        }
+
         [HttpPut]
-        [Route("{exerciseId}")]
+        [Route("{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExerciseRequest model)
         {
@@ -72,9 +87,14 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            var exercise = await context
+            var exerciseQuery = context
                 .Exercises
-                .SingleOrDefaultAsync(p => p.ExerciseID == exerciseId)
+                .Where(ex => ex.ExerciseID == exerciseId);
+
+            if (!IsInRole("Admin"))
+                exerciseQuery = exerciseQuery.Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now);
+
+            var exercise = await exerciseQuery.SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             
             var solutions = await context

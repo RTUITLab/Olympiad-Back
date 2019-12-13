@@ -1,54 +1,80 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs/';
 import { ParamMap } from '@angular/router/src/shared';
 import { Solution } from '../../../models/Solution';
 import { SolutionStatus } from '../../../models/SolutionStatus';
 import { SolutionStatusConverter } from '../../../models/Common/SolutionStatusConverter';
 import { LanguageConverter } from '../../../models/Common/LanguageConverter';
 import { ExerciseInfo } from '../../../models/Responses/ExerciseInfo';
-import { Subject } from 'rxjs';
 import { LoadingComponent } from '../../helpers/loading-component';
 import { UserStateService } from '../../../services/user-state.service';
 import { Router } from '@angular/router';
-import { Exercise } from 'src/app/models/Exercise';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
-import { Helpers } from 'src/app/Helpers/Helpers';
+import { DateHelpers } from 'src/app/Helpers/DateHelpers';
 import { ExerciseStateService } from 'src/app/services/exercise-state.service';
-// import { timingSafeEqual } from 'crypto';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChallengeState } from 'src/app/models/General/ChallengeState';
+import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
+import { ToastrService } from 'ngx-toastr';
+import { Title } from '@angular/platform-browser';
+import { ShownResults } from '../../helpers/ShownResults';
 
 
 
 @Component({
   selector: 'app-exercise-info',
   templateUrl: './exercise-info.component.html',
-  styleUrls: ['./exercise-info.component.css']
+  styleUrls: ['./exercise-info.component.scss']
 })
-export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
+export class ExerciseInfoComponent extends LoadingComponent implements OnInit, OnDestroy {
 
-
-
+  private solutionCheckTimers: Array<any> = [];
+  private challengeState: ChallengeState;
   constructor(
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
-    private exerciseEditServise: ExerciseEditService,
     private route: ActivatedRoute,
     private router: Router,
-    private currentExerciseState: ExerciseStateService) {
+    private toastr: ToastrService,
+    private titleService: Title,
+    private currentExerciseState: ExerciseStateService,
+    private shownResultsService: ShownResults
+    ) {
     super();
   }
 
   exerciseInfo: ExerciseInfo;
+  solutionPreview?: string | ArrayBuffer;
   availableLanguages = LanguageConverter.languages();
-
-  get submitDisabled() {
-    return !this.model.File || !this.model.File.name.endsWith(LanguageConverter.fileExtension(this.model.Language));
-  }
   model: SolutionViewModel = new SolutionViewModel();
+  get shownResults() { return this.shownResultsService.ShownResults; }
+  get submitDisabled() {
+    if (!this.model.File) {
+      this.toastr.warning('Загрузите файл');
+      return true;
+    } else {
+      if (this.model.Language === null) {
+        this.toastr.warning('Выберите язык программирования');
+        return true;
+      } else {
+        if (!this.model.File.name.endsWith(LanguageConverter.fileExtensionByPrettyName(this.model.Language))) {
+          this.toastr.warning(`Расширение загружаемого вами файла не соответсвует выбранному языку программирования`);
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+  }
+  get selectedLanguage() {
+    if (this.model.Language) {
+      return LanguageConverter.fileExtensionByPrettyName(this.model.Language);
+    }
+  }
   ngOnInit() {
-    this.model.Language = 'Java';
+    this.model.Language = null;
     this.route.paramMap
       .subscribe((params: ParamMap) => {
         this.model.ExerciseId = params.get('ExerciseID');
@@ -56,41 +82,82 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         this.exercisesService.getExercise(this.model.ExerciseId)
           .subscribe(
             exInfo => {
-              exInfo.Solutions = exInfo
-                .Solutions
-                .reverse();
               this.exerciseInfo = exInfo;
-              // this.exerciseInfo
-              //   .Solutions
-              //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-              //   .forEach(s => this.solutionCheckLoop(s));
+              this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
+              this.titleService.setTitle(`${this.exerciseInfo.Name}`);
+              this.exerciseInfo
+                .Solutions
+                .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+                .forEach(s => this.solutionCheckLoop(s));
               this.stopLoading();
               this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+              this.currentExerciseState.setExerciseId(exInfo.Id);
             },
-            fail => {
-              console.log(fail);
+            () => {
+              this.router.navigate(['overview']);
             }
           );
+        this.currentExerciseState.currentChallengeState.subscribe(s => {
+          this.challengeState = s;
+        });
       });
   }
 
+  ngOnDestroy(): void {
+    this.solutionCheckTimers.forEach(t => clearTimeout(t));
+  }
+  selectLanguage(Language: string) {
+    this.model.Language = Language;
+  }
   setFile(event) {
-    this.model.File = event.srcElement.files[0];
+    if (event.srcElement.files[0]) {
+      if (this.model.Language === null) {
+        this.toastr.warning('Выберите язык программирования');
+      }
+      this.model.File = event.srcElement.files[0];
+      const fileReader = new FileReader();
+      fileReader.onload = _ => {
+        this.solutionPreview = fileReader.result;
+      };
+      fileReader.readAsText(this.model.File);
+    }
   }
   onSubmit() {
-    this.exercisesService.sendSolution(this.model)
-      .subscribe(
-        success => {
-          if (!success) {
-            return;
+    if (!this.submitDisabled) {
+      this.exercisesService.sendSolution(this.model)
+        .subscribe(
+          createdSolution => {
+            if (!createdSolution) {
+              this.toastr.warning(`Решение не загружено`);
+              return;
+            }
+            if (this.exerciseInfo.Solutions.some(s => s.Id === createdSolution.Id)) {
+              this.toastr.warning(`Вы уже отправляли такое решение ${this.prettyTime(createdSolution.SendingTime)}`);
+              return;
+            }
+            const f = () => this.solutionCheckLoop(createdSolution);
+            this.toastr.success(`Решение успешно загружено`);
+            f();
+          },
+          (error: HttpErrorResponse) => {
+            if (error.status === 429) { // TooManyRequests HTTP Status
+              this.toastr.warning(`Отправлять решения можно только раз в минуту`);
+            } else {
+              this.toastr.error('Не удалось отправить решение');
+            }
           }
-          const f = () => this.solutionCheckLoop(success);
-          f();
-        }
-      );
+        );
+    }
   }
-  editTask(id: string) {
-    console.log(id);
+
+
+  needSendForm(): boolean {
+    return this.challengeState === ChallengeState.InProgress ||
+      this.challengeState === ChallengeState.NoLimits;
+  }
+
+
+  editExercise(id: string) {
     this.router.navigate(['exercises/edit/', id]);
   }
   solutionCheckLoop(checkSolution: Solution) {
@@ -106,7 +173,9 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
         }
         if (solution.Status === SolutionStatus.InQueue ||
           solution.Status === SolutionStatus.InProcessing) {
-          setTimeout(() => this.solutionCheckLoop(checkSolution), 800);
+          this.solutionCheckTimers.push(
+            setTimeout(() => this.solutionCheckLoop(checkSolution), 800)
+          );
         }
       });
   }
@@ -119,7 +188,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
     if (!time) {
       return 'нет данных';
     }
-    return Helpers.prettyTime(time);
+    return DateHelpers.prettyTime(time);
   }
 
   normalLang(lang: string): string {
@@ -127,6 +196,22 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit {
   }
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
+  }
+
+  downloadSolution(solution: Solution): void {
+    this.exercisesService.downloadSolution(solution.Id).subscribe(s => {
+      SolutionHelpers.downloadSolution(solution, s);
+      this.toastr.success(`Загрузка начата`);
+
+    }, fail => {
+      // console.log(fail)
+      this.toastr.error(`Невозможно скачать решение`);
+    }
+    );
+  }
+  async startRecheck(exerciseId: string) {
+    const solutionsToRecheck = await this.exercisesService.recheckSolutions(exerciseId);
+    this.toastr.success(`Будет перепроверено решений: ${solutionsToRecheck}`);
   }
 }
 

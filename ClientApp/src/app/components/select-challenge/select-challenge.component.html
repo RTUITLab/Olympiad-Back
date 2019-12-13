@@ -1,0 +1,26 @@
+<div>
+    <div class="select-bar">
+        <ul class="challenge">
+            <li>
+                <a *ngIf="currentChallenge; else noChallenge">{{currentChallenge.Name}}</a>
+                <ng-template #noChallenge><a>Выберите соревнование</a></ng-template>
+                <ul class="submenu">
+                    <li *ngFor="let challenge of challenges">
+                        <a routerLink='/challenges/{{challenge.Id}}' (click)="setDefaultExercise()">{{challenge.Name}}</a>
+                    </li>
+                </ul>
+            </li>
+            <li *ngIf="currentChallenge">
+                <a *ngIf="currentExercise; else noExercise">{{currentExercise.Name}}</a>
+                <ng-template #noExercise><a>Выберите задание</a></ng-template>
+                <ul class="submenu">
+                    <li *ngFor="let ex of currentExercises">
+                        <a routerLink="/exercises/{{ex.Id}}">{{ex.Name}}</a>
+                    </li>
+                </ul>
+            </li>
+
+        </ul>
+        <app-challenge-deadline class="challenge-deadline" [challenge]="currentChallenge"></app-challenge-deadline>
+    </div>
+</div>

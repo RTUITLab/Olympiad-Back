@@ -1,0 +1,7 @@
+﻿FROM mono:latest
+
+RUN curl http://pascalabc.net/downloads/PABCNETC.zip --output /home/pasabc.zip && apt-get update && apt-get install -y zip && unzip /home/pasabc.zip -d /pasbuilder && apt-get purge -y zip
+COPY ./Program.pas /src/src/Program.pas
+WORKDIR /src/src/
+RUN mono /pasbuilder/pabcnetcclear.exe Program.pas
+CMD mono Program.exe

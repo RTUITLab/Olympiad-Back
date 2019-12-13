@@ -1,44 +1,42 @@
-﻿using Models;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Executor.Logging;
 using Shared.Models;
-using Models.Solutions;
 using Models.Exercises;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
+using PublicAPI.Requests;
+using System.Collections.Generic;
 
 namespace Executor.Executers.Run
 {
-    abstract class ProgramRunner
+    class ProgramRunner
     {
         private readonly BlockingCollection<(Guid solutionId, ExerciseData[] testData)> solutionQueue
             = new BlockingCollection<(Guid solutionId, ExerciseData[] testData)>();
 
-        private readonly Func<Guid, SolutionStatus, Task> processSolution;
+        private readonly ISolutionsBase solutionsBase;
         private readonly IDockerClient dockerClient;
+        private readonly ILogger<ProgramRunner> logger;
         private Task runningTask;
-        private readonly Logger<ProgramRunner> logger;
-        private string lang;
-        private string Language => lang ??
-                                   (lang = GetType().GetCustomAttribute<LanguageAttribute>().Lang);
+        private List<Guid> blackList = new List<Guid>();
 
 
-        public ProgramRunner(Func<Guid, SolutionStatus, Task> processSolution, IDockerClient dockerClient)
+        public ProgramRunner(
+            ISolutionsBase solutionsBase,
+            IDockerClient dockerClient,
+            ILogger<ProgramRunner> logger)
         {
-            logger = Logger<ProgramRunner>.CreateLogger(Language);
             runningTask = Task.Run(RunLoop);
-            this.processSolution = processSolution;
+            this.solutionsBase = solutionsBase;
             this.dockerClient = dockerClient;
+            this.logger = logger;
         }
 
         public void Add(Guid solutionId, ExerciseData[] data)
@@ -52,7 +50,18 @@ namespace Executor.Executers.Run
             await Task.Yield();
             foreach (var (solutionId, testData) in solutionQueue.GetConsumingEnumerable())
             {
-                await HandleSolution(solutionId, testData);
+                try
+                {
+                    if (!blackList.Contains(solutionId))
+                        await HandleSolution(solutionId, testData);
+                    else
+                        logger.LogError($"solution from black list {solutionId}");
+                }
+                catch (Exception ex)
+                {
+                    blackList.Add(solutionId);
+                    logger.LogError(ex, "Critical error");
+                }
             }
         }
 
@@ -63,60 +72,97 @@ namespace Executor.Executers.Run
 
             foreach (var data in testData)
             {
-                result = await Run(imageName, data);
-                logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {result}");
-                if (result != SolutionStatus.Sucessful)
+                var exampleIn = data.InData + '\n';
+                var exampleOut = data.OutData.Trim();
+                try
                 {
+                    var (stdout, stderr, duration) = await Run(imageName, exampleIn);
+
+                    await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
+                    {
+                        ExampleIn = exampleIn,
+                        ExampleOut = exampleOut,
+                        ProgramOut = stdout,
+                        ProgramErr = stderr,
+                        Duration = duration
+                    });
+                    SolutionStatus localStatus;
+                    if (!string.IsNullOrEmpty(stderr))
+                        localStatus = SolutionStatus.RunTimeError;
+                    else if (string.Equals(stdout, exampleOut))
+                        localStatus = SolutionStatus.Sucessful;
+                    else
+                        localStatus = SolutionStatus.WrongAnswer;
+
+                    logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {localStatus}");
+                    if (localStatus < result)
+                        result = localStatus;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "error while running");
+                    result = SolutionStatus.RunTimeError;
                     break;
                 }
             }
-            await processSolution(solutionId, result);
+            await solutionsBase.SaveChanges(solutionId, result);
             await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
         }
 
-        protected async Task<SolutionStatus> Run(string imageName, ExerciseData testData)
+        private async Task<(string stdout, string stderr, TimeSpan duration)> Run(string imageName, string input)
         {
-            var container = await dockerClient.Containers.CreateContainerAsync(new Docker.DotNet.Models.CreateContainerParameters
+            var container = await dockerClient.Containers.CreateContainerAsync(new CreateContainerParameters
             {
                 Image = imageName,
-                OpenStdin = true
+                OpenStdin = true,
+                NetworkDisabled = true
             });
-            SolutionStatus status = SolutionStatus.InProcessing;
+            var result = ("", "", TimeSpan.Zero);
+            Exception exception = null;
             try
             {
-                status = await RunAndCheck(container.ID, testData);
+                var (stdout, stderr, duration) = await RunContainer(container.ID, input);
+                stdout = Clean(stdout);
+                stderr = Clean(stderr);
+                result = (stdout, stderr, duration);
             }
             catch (Exception ex)
             {
                 logger.LogWarning("error while checking solution", ex);
+                exception = ex;
             }
             await dockerClient.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters { Force = true });
-            return status;
+            if (exception != null)
+                throw exception;
+            return result;
         }
 
-        private async Task<SolutionStatus> RunAndCheck(string containerId, ExerciseData testData)
+        private async Task<(string stdout, string stderr, TimeSpan duration)> RunContainer(string containerId, string input)
         {
-            var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters { });
+            var startTime = DateTime.UtcNow;
+            var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
             if (!started)
                 throw new Exception($"Cant start container {containerId}");
+
             var stream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = true, Stdout = true });
 
-            var inStream = new MemoryStream(Encoding.UTF8.GetBytes(testData.InData + '\n'));
+            var inStream = new MemoryStream(Encoding.UTF8.GetBytes(input));
             await stream.CopyFromAsync(inStream, CancellationToken.None);
             var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
 
-            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(50)), readTask) == readTask)
+            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
             {
                 var (stdout, stderr) = readTask.Result;
-                if (!string.IsNullOrEmpty(stderr))
-                    return SolutionStatus.RunTimeError;
-                stdout = Regex.Replace(stdout, @"[\u0000-\u001F]+", string.Empty);
-                if (string.Equals(stdout, testData.OutData.Trim()))
-                    return SolutionStatus.Sucessful;
-                return SolutionStatus.WrongAnswer;
+                return (stdout, stderr, DateTime.UtcNow - startTime);
             }
-            return SolutionStatus.TooLongWork;
+            return ("", "", TimeSpan.MaxValue); // read all output streams
+        }
 
+        private static string Clean(string input)
+        {
+            input = Regex.Replace(input, @"[\u0000-\u0009]+", string.Empty);
+            input = Regex.Replace(input, @"[\u000B-\u001F]+", string.Empty).Trim();
+            return input;
         }
     }
 }

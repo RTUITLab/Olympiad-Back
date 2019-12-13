@@ -15,9 +15,12 @@ import { ExerciseInfo } from '../models/Responses/ExerciseInfo';
 import { SolutionStatus } from '../models/SolutionStatus';
 import { Solution } from '../models/Solution';
 import { ExerciseData } from '../models/ExerciseData';
+import { SolutionLog } from '../models/SolutionLog';
+import { CheckedSolution } from '../models/CheckedSolution';
 
 @Injectable()
 export class ExerciseService extends BaseHttpService implements OnInit {
+
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
   private solutionsBehavior = new BehaviorSubject<Solution>(undefined);
@@ -25,61 +28,33 @@ export class ExerciseService extends BaseHttpService implements OnInit {
 
   ngOnInit(): void {
   }
-  getExercises(): Observable<Array<ExerciseListResponse>> {
-    let observer = new Subscriber<Array<ExerciseListResponse>>(undefined);
-    const observable = new Observable<Array<ExerciseListResponse>>(obs => {
-      observer = obs;
-    });
-    this.http.get<Array<ExerciseListResponse>>(
-      `${this.baseUrl}/api/exercises`, this.userService.authOptions)
-      .subscribe(
-        success => {
-          observer.next(success);
-        },
-        err => {
-          observer.next([]);
-          console.log(err);
-        }
-      );
-    return observable;
+  getExercises(challengeId: string): Promise<Array<ExerciseListResponse>> {
+    return this.http.get<Array<ExerciseListResponse>>(
+      `${this.baseUrl}/api/Exercises?challengeId=${challengeId}`, this.userService.authOptions).toPromise();
   }
 
 
-  sendSolution(data: SolutionViewModel): Observable<Solution> {
-    const observer = new BehaviorSubject<Solution>(undefined);
-    const observable = observer.asObservable();
-
+  sendSolution(data: SolutionViewModel): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('file', data.File, data.File.name);
-    this.http.post<Solution>(
+    return this.http.post<Solution>(
       `${this.baseUrl}/api/check/${LanguageConverter.webName(data.Language)}/${data.ExerciseId}`,
-      formData, this.userService.authOptions)
-      .subscribe(
-        success => {
-          observer.next(success);
-        },
-        fail => {
-          console.log(fail);
-        }
-      );
-    return observable;
+      formData, this.userService.authOptions);
   }
+
+  downloadSolution(solutionId: string): Observable<any> {
+    return this.http.get(
+      `${this.baseUrl}/api/Check/download/${solutionId}`,
+      { headers: this.userService.headers, responseType: 'text'});
+  }
+
   getExercise(exId: string): Observable<ExerciseInfo> {
-    let observer: Subscriber<ExerciseInfo>;
-    const observable = new Observable<ExerciseInfo>(obs => {
-      observer = obs;
-    });
-    this.http.get<ExerciseInfo>(
-      `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions)
-      .subscribe(
-        success => {
-          observer.next(success);
-        },
-        err => {
-          observer.next(undefined);
-          console.log(err);
-        });
-    return observable;
+    return this.http.get<ExerciseInfo>(
+      `${this.baseUrl}/api/exercises/${exId}`, this.userService.authOptions);
+  }
+  checkSolutionLogs(solutionId: string): Promise<SolutionLog[]> {
+    return this.http.get<SolutionLog[]>(
+      `${this.baseUrl}/api/check/logs/${solutionId}`, this.userService.authOptions).toPromise();
   }
 
   checkSolution(solutionId: string): Observable<Solution> {
@@ -102,24 +77,36 @@ export class ExerciseService extends BaseHttpService implements OnInit {
       );
     return observable;
   }
+  getUserExerciseSolutions(exerciceId: string ,userId:string,): Promise<CheckedSolution[]> {
+    return this.http.get<CheckedSolution[]>(
+      `${this.baseUrl}/api/check/solutionlist/${exerciceId}/${userId}`, this.userService.authOptions).toPromise(); 
+  }
 
   getExerciseInOutData(exerciseId: string): Observable<ExerciseData[]> {
-    let observer: Subscriber<ExerciseData[]>;
-    const observable = new Observable<ExerciseData[]>(obs => {
-      observer = obs;
-    });
-    this.http.get<ExerciseData[]>(
-      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions).subscribe(
-        success => {
-          if (success) {
-            observer.next(success);
-          }
-        },
-        failure => {
-          console.log('error');
-          console.log(failure);
-        }
-      );
-    return observable;
+    return this.http.get<ExerciseData[]>(
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, this.userService.authOptions);
+  }
+
+  getAllExerciseInOutData(exerciseId: string): Observable<ExerciseData[]> {
+    return this.http.get<ExerciseData[]>(
+      `${this.baseUrl}/api/ExerciseData/all/${exerciseId}`, this.userService.authOptions);
+  }
+
+  updateExerciseInOutData(inOutData: ExerciseData): Observable<any> {
+    return this.http.put(
+      `${this.baseUrl}/api/ExerciseData/${inOutData.Id}`, inOutData, this.userService.authOptions
+    );
+  }
+
+  addExerciseInOutData(exerciseId: string, inOutData: ExerciseData): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/api/ExerciseData/${exerciseId}`, inOutData, this.userService.authOptions
+    );
+  }
+
+  recheckSolutions(exerciseId: string): Promise<number> {
+    return this.http.post<number>(
+      `${this.baseUrl}/api/check/recheck/${exerciseId}`, null, this.userService.authOptions
+    ).toPromise();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Exercise } from 'src/app/models/Exercise';
 import { UserStateService } from '../../../services/user-state.service';
@@ -10,6 +10,15 @@ import { ExerciseInoutComponent } from '../exercise-inout/exercise-inout.compone
 import { ExerciseData } from '../../../models/ExerciseData';
 import { ExerciseNewCondition } from '../../../models/ExerciseNewCondition';
 import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
+import { ChallengesService } from 'src/app/services/challenges.service';
+import { Challenge } from 'src/app/models/Responses/Challenges/Challenge';
+import { ToastrService } from 'ngx-toastr';
+import { FormControl } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
+import { MatAutocompleteSelectedEvent } from '@angular/material';
+import { CreateExerciseModel } from 'src/app/models/ViewModels/CreateExerciseModel';
+import { Title } from '@angular/platform-browser';
 
 
 
@@ -20,78 +29,64 @@ import { ExerciseEditService } from 'src/app/services/exercise-edit.service';
   templateUrl: './add-exercise.component.html',
   styleUrls: ['./add-exercise.component.scss']
 })
-export class AddExerciseComponent extends LoadingComponent implements OnInit, AfterViewInit {
+export class AddExerciseComponent extends LoadingComponent implements OnInit {
 
-  exerciseInfo: ExerciseInfo = new ExerciseInfo();
   //  variable for sending data to the server
-  NewTask: Exercise;
-  //  variable for task_text view
-  task_text_edit: boolean;
+  newExercise: CreateExerciseModel = new CreateExerciseModel();
+  public challenges?: Array<Challenge> = [];
+  public challengesNames?: Array<String> = [];
+  filteredOptions: Observable<Challenge[]>;
+  myControl = new FormControl();
 
   constructor(
     private exerciseEditServise: ExerciseEditService,
     private usersService: UserStateService,
-    private exercisesService: ExerciseService,
+    private challengesService: ChallengesService,
     private router: Router,
-    private route: ActivatedRoute,
+    private titleService: Title,
+    private toastr: ToastrService
   ) {
     super();
   }
-  // get InOutConditionData from conditions component
-  @ViewChild(ExerciseNewCondition) InOutNewConditionData;
-  public NewCondition: ExerciseNewCondition[];
-  ngAfterViewInit() {
-    this.NewCondition = [];
-    console.log(`${this.InOutNewConditionData.NewCondition}`);
-    this.NewCondition = this.InOutNewConditionData.NewCondition;
-  }
-
-  ngOnInit() {
+  async ngOnInit() {
+    this.titleService.setTitle('Добавление задания');
     this.startLoading();
-    this.NewTask = {};
-    this.NewCondition = [];
-    // deny editing task data
-    this.task_text_edit = true;
     this.stopLoading();
-  }
-  turnOnEditing() {
-    console.log('turnOnEditing()');
-    if (this.task_text_edit === false) {
-      this.task_text_edit = true;
-    }
-  }
-  turnOffEditing() {
-    console.log('turnOffEditing()');
-    if (this.task_text_edit === true) {
-      this.task_text_edit = false;
-    }
-  }
-  AddTask() {
-    console.log('AddTask()');
-    console.log(this.NewTask);
-    this.ngAfterViewInit();
-    // console.log(this.NewCondition);
-    // send Task to the server
-    this.exerciseEditServise.AddExercise(this.NewTask).subscribe(
-      _ => {
-        console.log(`sendEditedTask_complete`);
-      },
-      error => console.log(error),
+    this.challenges = await this.challengesService.getChallengesList();
+    this.filteredOptions = this.myControl.valueChanges
+    .pipe(
+      startWith<string | Challenge>(''),
+      map(value => typeof value === 'string' ? value : value.Name),
+      map(name => name ? this._filter(name) : this.challenges.slice())
     );
   }
-  sendNewCondition(NewTaskId: string) {
-    console.log('sendEditedCondition()');
-    this.ngAfterViewInit();
-    console.log(this.NewCondition);
-    this.exerciseEditServise.SendNewCondition(this.NewCondition, NewTaskId).subscribe(
-      _ => {
-        console.log(`sendEditedCondition_complete`);
-        this.router.navigate(['exercises/', NewTaskId]);
-      },
-      error => console.log(error),
-    );
 
+  displayFn(challenge?: Challenge): string | undefined {
+    return challenge ? challenge.Name : undefined;
   }
+
+  getSelectedOption(event: MatAutocompleteSelectedEvent) {
+    const selectedChallenge = event.option.value as Challenge;
+    this.newExercise.ChallengeId = selectedChallenge.Id;
+  }
+
+  private _filter(challenge: string): Challenge[] {
+    const filterValue = challenge.toLowerCase();
+
+    return this.challenges.filter(option => option.Name.toLowerCase().indexOf(filterValue) === 0);
+  }
+  addExercise() {
+    this.exerciseEditServise.AddExercise(this.newExercise).subscribe(
+      ex => {
+        this.toastr.success(`Задание добавлено успешно`);
+        this.router.navigate(['exercises/edit', ex.Id]);
+      },
+      error => {
+        this.toastr.error(error, `Ошибка добавления задания`);
+      }
+    );
+  }
+
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
   }

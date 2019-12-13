@@ -16,7 +16,7 @@ namespace WebApp.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
+                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -212,6 +212,32 @@ namespace WebApp.Migrations
                     b.ToTable("UserToChallenge");
                 });
 
+            modelBuilder.Entity("Models.SolutionCheck", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CheckedTime");
+
+                    b.Property<TimeSpan>("Duration");
+
+                    b.Property<string>("ExampleIn");
+
+                    b.Property<string>("ExampleOut");
+
+                    b.Property<string>("ProgramErr");
+
+                    b.Property<string>("ProgramOut");
+
+                    b.Property<Guid>("SolutionId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SolutionId");
+
+                    b.ToTable("SolutionChecks");
+                });
+
             modelBuilder.Entity("Models.Solutions.Solution", b =>
                 {
                     b.Property<Guid>("Id")
@@ -370,14 +396,22 @@ namespace WebApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("Models.SolutionCheck", b =>
+                {
+                    b.HasOne("Models.Solutions.Solution", "Solution")
+                        .WithMany("SolutionChecks")
+                        .HasForeignKey("SolutionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Models.Solutions.Solution", b =>
                 {
-                    b.HasOne("Models.Exercises.Exercise")
+                    b.HasOne("Models.Exercises.Exercise", "Exercise")
                         .WithMany("Solutions")
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Models.User")
+                    b.HasOne("Models.User", "User")
                         .WithMany("Solutions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

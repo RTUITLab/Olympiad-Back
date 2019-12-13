@@ -1,12 +1,26 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { NgxLoadingModule, ngxLoadingAnimationTypes } from 'ngx-loading';
 import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material';
+import { MatButtonModule, MatAutocompleteModule } from '@angular/material';
+import { MatMenuModule } from '@angular/material/menu';
+import {MatSelectModule} from '@angular/material/select';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatExpansionModule} from '@angular/material/expansion';
+
+
+
+
+
 
 
 
@@ -16,33 +30,49 @@ import { RegistrationComponent } from './components/registration/registration.co
 import { HeaderComponent } from './components/header/header.component';
 import { LoginComponent } from './components/login/login.component';
 import { UserStateService } from './services/user-state.service';
-import { ExercisesListComponent } from './components/exercises/exercises-list/exercises-list.component';
 import { ExerciseService } from './services/exercise.service';
-import { AuthGuardService } from './services/auth-guard.service';
+import { AuthGuardService } from './services/ComponentActivators/auth-guard.service';
 import { ExerciseInfoComponent } from './components/exercises/exercise-info/exercise-info.component';
-import { MenuComponent } from './components/menu/menu.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MarkdownModule, MarkedRenderer, MarkedOptions } from 'ngx-markdown';
 import { ExerciseInoutComponent } from './components/exercises/exercise-inout/exercise-inout.component';
 import { UserInfoComponent } from './components/user-info/user-info.component';
 
-import { ExerciseEditComponent } from './components/exercises/exercise-edit/exercise-edit.component';
-import { AddExerciseInOutComponent } from './components/exercises/add-exercise-in-out/add-exercise-in-out.component';
 import { AddExerciseComponent } from './components/exercises/add-exercise/add-exercise.component';
 import { ChallengesService } from './services/challenges.service';
 import { ExerciseStateService } from './services/exercise-state.service';
 import { ChallengeInfoComponent } from './components/challenges/challenge-info/challenge-info.component';
-import { ChallengesListComponent } from './components/menu/challenges-list/challenges-list.component';
-
+import { ExerciseEditComponent } from './components/exercises/exercise-editing/exercise-edit/exercise-edit.component';
+import { ConditionEditComponent } from './components/exercises/exercise-editing/condition-edit/condition-edit.component';
+import { ReCaptchaModule } from 'angular2-recaptcha';
+import { NotAuthGuardGuard as NotAuthGuard } from './services/ComponentActivators/not-auth.guard';
+import { ChallengeAddComponent } from './components/challenges/challenge-add/challenge-add.component';
+import { UsersComponent } from './components/users/users.component';
+import { PersonalPageComponent } from './components/personal-page/personal-page.component';
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { ChallengeEditComponent } from './components/challenges/challenge-edit/challenge-edit.component';
+import { SelectChallengeComponent } from './components/select-challenge/select-challenge.component';
+import { AdminFunctionsComponent } from './components/admin-functions/admin-functions.component';
+import { AboutComponent } from './components/about/about.component';
+import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
+import { ChallengeDeadlineComponent } from './components/select-challenge/challenge-deadline/challenge-deadline.component';
+import { ShownResults } from './components/helpers/ShownResults';
+import { ShowSolutionSourceCodeDialogComponent } from './components/challenges/challenge-info/show-solution-source-code-dialog/show-solution-source-code-dialog.component';
 
 const routes: Route[] = [
   {
     path: 'register',
-    component: RegistrationComponent
+    component: RegistrationComponent,
+    canActivate: [NotAuthGuard]
   },
   {
     path: 'login',
-    component: LoginComponent
+    component: LoginComponent,
+    canActivate: [NotAuthGuard]
+  },
+  {
+    path: 'about',
+    component: AboutComponent
   },
   {
     path: 'overview',
@@ -50,8 +80,8 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
-    path: 'exercises',
-    component: ExercisesListComponent,
+    path: 'admin-functions',
+    component: AdminFunctionsComponent,
     canActivate: [AuthGuardService]
   },
   {
@@ -75,10 +105,39 @@ const routes: Route[] = [
     canActivate: [AuthGuardService]
   },
   {
+    path: 'add-challenge',
+    component: ChallengeAddComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'edit-challenge/:ChallengeId',
+    component: ChallengeEditComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'user/:userId',
+    component: PersonalPageComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'users-list',
+    component: UsersComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
+    path: 'users-generation',
+    component: UsersGenerationComponent,
+    canActivate: [AuthGuardService]
+  },
+  {
     path: '',
-    pathMatch: 'prefix',
+    pathMatch: 'full',
     redirectTo: '/overview'
   },
+  {
+    path: '**',
+    redirectTo: '/overview'
+  }
 ];
 
 @NgModule({
@@ -87,24 +146,39 @@ const routes: Route[] = [
     RegistrationComponent,
     HeaderComponent,
     LoginComponent,
-    ExercisesListComponent,
     ExerciseInfoComponent,
-    MenuComponent,
     OverviewComponent,
     ExerciseInoutComponent,
     UserInfoComponent,
     AddExerciseComponent,
     ExerciseEditComponent,
-    AddExerciseInOutComponent,
-    ChallengesListComponent,
     ChallengeInfoComponent,
-
+    ConditionEditComponent,
+    ChallengeAddComponent,
+    UsersComponent,
+    ChallengeEditComponent,
+    PersonalPageComponent,
+    SelectChallengeComponent,
+    AdminFunctionsComponent,
+    AboutComponent,
+    UsersGenerationComponent,
+    ChallengeDeadlineComponent,
+    ShowSolutionSourceCodeDialogComponent
   ],
   imports: [
     BrowserModule,
     RouterModule.forRoot(routes),
     FormsModule,
+    MatTooltipModule,
+    MatDividerModule,
+    MatSelectModule,
+    MatDialogModule,
+    MatExpansionModule,
+    MatFormFieldModule,
     ReactiveFormsModule,
+    BrowserAnimationsModule, // required animations module
+    ToastrModule.forRoot({
+    }), // ToastrModule added
     HttpClientModule,
     NgxLoadingModule.forRoot({
       animationType: ngxLoadingAnimationTypes.cubeGrid
@@ -116,16 +190,24 @@ const routes: Route[] = [
       },
     }),
     MatTableModule,
+    MatMenuModule,
     MatButtonModule,
-    MatInputModule
+    MatInputModule,
+    MatAutocompleteModule,
+    ReCaptchaModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule,
   ],
   providers: [
     UserStateService,
     ExerciseStateService,
     ExerciseService,
     ChallengesService,
-    AuthGuardService
+    AuthGuardService,
+    Title,
+    ShownResults,
   ],
+  entryComponents: [ShowSolutionSourceCodeDialogComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

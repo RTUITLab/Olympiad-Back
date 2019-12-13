@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Shared.Models
+namespace Olympiad.Shared.Models
 {
     public enum ChallengeAccessType
     {
