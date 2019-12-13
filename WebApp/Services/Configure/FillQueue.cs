@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
-using Shared.Models;
-using WebApp.Configure.Models.Configure.Interfaces;
+using Olympiad.Shared.Models;
+using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using WebApp.Models.Settings;
 using WebApp.Services.Interfaces;
 
@@ -27,7 +28,7 @@ namespace WebApp.Services.Configure
             this.dbContext = dbContext;
         }
 
-        public async Task Configure()
+        public async Task Configure(CancellationToken cancellationToken)
         {
             (await dbContext
                 .Solutions

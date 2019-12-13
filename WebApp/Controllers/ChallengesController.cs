@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Exercises;
 using Models.Links;
+using Olympiad.Shared.Models;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
@@ -57,10 +58,10 @@ namespace WebApp.Controllers
             if (!IsAdmin)
             {
                 query = query
-                    .Where(c => c.ChallengeAccessType == Shared.Models.ChallengeAccessType.Public ||
+                    .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
                            c.UsersToChallenges.Any(utc => utc.UserId == UserId));
             }
-            return query.ProjectTo<ChallengeResponse>();
+            return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
         }
 
         [HttpPost]

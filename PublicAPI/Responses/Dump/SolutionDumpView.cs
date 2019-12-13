@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Olympiad.Shared.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using Shared.Models;
 
 namespace PublicAPI.Responses.Dump
 {
