@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Models.Solutions;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Logging;
 

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Models.Exercises;
 using Models.Solutions;
 using PublicAPI.Requests;
-using Shared.Models;
+using Olympiad.Shared.Models;
 
 namespace Executor
 {
