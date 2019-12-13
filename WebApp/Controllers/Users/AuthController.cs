@@ -15,7 +15,7 @@ using Models.Solutions;
 using Newtonsoft.Json;
 using PublicAPI.Requests;
 using PublicAPI.Responses;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using WebApp.Auth;
 using WebApp.Helpers;
 using WebApp.ViewModels;
@@ -30,15 +30,13 @@ namespace WebApp.Controllers
         private readonly IJwtFactory _jwtFactory;
         private readonly IMapper mapper;
         private readonly ApplicationDbContext context;
-        private readonly JwtIssuerOptions _jwtOptions;
 
-        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions, IMapper mapper, ApplicationDbContext context)
+        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IMapper mapper, ApplicationDbContext context)
         {
             _userManager = userManager;
             _jwtFactory = jwtFactory;
             this.mapper = mapper;
             this.context = context;
-            _jwtOptions = jwtOptions.Value;
         }
 
         // POST api/auth/login

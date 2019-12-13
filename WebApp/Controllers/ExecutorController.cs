@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Solutions;
 using PublicAPI.Requests;
-using Shared.Models;
+using Olympiad.Shared.Models;
 using WebApp.Services.Interfaces;
 
 namespace WebApp.Controllers

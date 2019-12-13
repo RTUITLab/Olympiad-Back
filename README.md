@@ -5,16 +5,16 @@ System provides examination testing for students on the basis of the given test 
 
 Student choses a task he wants to complete and reads the terms.
 
-He develops the program according to the task using one of the avaliable programming languages.
+He develops the program according to the task using one of the available programming languages.
 
 After sending the solution the System executes the code and inputs test datasets. For being solved correctly the program must output the correct results for all test inputs.
 
 ## How to run:
 
 ### WebApp 
-Represents the System BackEnd storing all the neccessary data.
+Represents the System BackEnd storing all the necessary data.
 
-First, install .Net Core 2.1
+First, install .Net Core 3.1
 
 
 1. Create _./WebApp/appsettings.Secret.json_ file
@@ -72,7 +72,7 @@ export const environment = {
 
 ### Executor
 
-Apllication connected to WebApp which is executing received solutions and checks them.
+Application connected to WebApp which is executing received solutions and checks them.
 
 You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes the received programs.
 

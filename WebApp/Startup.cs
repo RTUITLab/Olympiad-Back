@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,14 +19,18 @@ using Newtonsoft.Json.Serialization;
 using WebApp.Services;
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
-using WebApp.Configure.Models;
-using WebApp.Configure.Models.Invokations;
 using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
 using WebApp.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
 using WebApp.Services.ReCaptcha;
+using Microsoft.Extensions.Hosting;
+using WebApp.ViewModels.Mappings;
+using WebApp.Formatting.ResponseMappers;
+using Microsoft.OpenApi.Models;
+using RTUITLab.AspNetCore.Configure.Configure;
+using RTUITLab.AspNetCore.Configure.Invokations;
 
 namespace WebApp
 {
@@ -121,9 +124,10 @@ namespace WebApp
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
 
-            services.AddAutoMapper();
-            services.AddMvc()
-                .AddJsonOptions(options =>
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
@@ -133,7 +137,7 @@ namespace WebApp
             );
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Olympiad API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Olympiad API", Version = "v1" });
             });
             services.AddCors();
 
@@ -156,9 +160,9 @@ namespace WebApp
 
 
             services.AddWebAppConfigure()
-                .AddTransientConfigure<AutoMigrate>()
-                .AddTransientConfigure<DefaultRolesConfigure>()
-                .AddTransientConfigure<FillQueue>();
+                .AddTransientConfigure<AutoMigrate>(0)
+                .AddTransientConfigure<DefaultRolesConfigure>(1)
+                .AddTransientConfigure<FillQueue>(1);
 
             services.AddHostedService<RestartCheckingService>();
 
@@ -167,7 +171,7 @@ namespace WebApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -192,18 +196,16 @@ namespace WebApp
                 c.SwaggerEndpoint("/api/v1/swagger.json", "My API V1");
                 c.RoutePrefix = "api";
             });
+            app.UseRouting();
 
             app.UseAuthentication();
-            app.UseExceptionHandlerMiddleware();
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+            app.UseAuthorization();
 
-                routes.MapSpaFallbackRoute(
-                    name: "spa-fallback",
-                    defaults: new { controller = "Home", action = "Index" });
+            app.UseExceptionHandlerMiddleware();
+
+            app.UseEndpoints(ep =>
+            {
+                ep.MapControllers();
             });
             app.UseSpaStaticFiles();
             app.UseSpa(spa => { });
