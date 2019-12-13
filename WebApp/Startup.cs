@@ -163,8 +163,8 @@ namespace WebApp
                 .AddTransientConfigure<AutoMigrate>(0)
                 .AddTransientConfigure<DefaultRolesConfigure>(1)
                 .AddTransientConfigure<FillQueue>(1);
-
-            services.AddHostedService<RestartCheckingService>();
+            if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
+                services.AddHostedService<RestartCheckingService>();
 
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
 
