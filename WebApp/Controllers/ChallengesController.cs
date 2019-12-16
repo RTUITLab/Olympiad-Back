@@ -41,7 +41,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public Task<List<ChallengeResponse>> GetAsync()
         {
-            return AvailableChallenges().ToListAsync();
+            return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
         }
 
         [HttpGet("{id:guid}")]
