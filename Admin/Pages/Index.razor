@@ -1,7 +1,6 @@
 ﻿@page "/"
 
 @using Microsoft.EntityFrameworkCore
-@using Models
 @using Olympiad.Shared.Models
 @using System.Text.RegularExpressions
 
@@ -11,12 +10,11 @@
 @using NPOI.XSSF.UserModel;
 @using CsvHelper;
 
-@inject Models.ApplicationDbContext db
-@inject IJSRuntime jsRuntime
+@inject ApplicationDbContext db
 
-<button class="btn-primary" @onclick="@RepairAll">Repair</button>
-<button class="btn-primary" @onclick="@WriteDump">Write dump</button>
+<h2>Solutions count</h2>
 
+<button class="btn-primary" @onclick="@Update">Update</button>
 <table>
     <thead>
         <tr>
@@ -25,295 +23,36 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var i in db.Solutions.GroupBy(s => s.Status).Select(g => new { SolutionStatus = g.Key.ToString(), Count = g.Count() }).ToList())
+        @foreach (var i in solutionCountRecords)
         {
             <tr>
-                <td>@i.SolutionStatus</td>
+                <td>@i.Status</td>
                 <td>@i.Count</td>
             </tr>
         }
     </tbody>
 </table>
 
-<p>@db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).Count()</p>
-@foreach (var item in db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).ToList())
-{
-    <p>@(i++)</p>
-    <div>@(item.Raw)</div>
-    @if (Regex.IsMatch(item.Raw, @"public\s+class\s+\S+\s*{"))
-    {
-        <button class="btn-success">Finded</button>
-        @if (Regex.Match(item.Raw, @"public\s+class\s+(\S+)\s*{").Groups[1].Value != "Main")
-        {
-            <button class="btn-warning" @onclick="@(async () => await Repair(item))">Repair</button>
-        }
-    }
-    else
-    {
-        <button class="btn-danger">Other</button>
-    }
-}
-
-
-@foreach (var item in db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).Take(5).ToList())
-{
-    <div>
-        @db.Exercises.Single(e => e.ExerciseID == item.ExerciseId).ExerciseTask
-    </div>
-    <textarea rows="25">@item.Raw</textarea>
-    @foreach (var check in db.SolutionChecks.Where(ch => ch.SolutionId == item.Id))
-    {
-        <p>example</p>
-        <div class="row">
-            <div class="col-6">
-                <textarea rows="10">@check.ExampleIn</textarea>
-            </div>
-            <div class="col-6">
-                <textarea rows="10">@check.ExampleOut</textarea>
-            </div>
-        </div>
-        <p>program</p>
-        <div class="row">
-            <div class="col-6"><textarea rows="10">@check.ProgramOut</textarea></div>
-            <div class="col-6"><textarea rows="10">@check.ProgramOut</textarea></div>
-        </div>
-    }
-}
-
 
 @code {
-    int i = 0;
-    ChromeDriver driver;
 
+    List<SolutionCountRecord> solutionCountRecords = new List<SolutionCountRecord>();
 
-    public List<Models.Solutions.Solution> Solutions { get; set; } = new List<Models.Solutions.Solution>();
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        //driver = new ChromeDriver(new ChromeOptions
-        //{
-        //    DebuggerAddress = "127.0.0.1:9222"
-        //});
-        //Solutions = await db.Solutions.ToListAsync();
+        await Update();
     }
 
-    Task Repair(Models.Solutions.Solution solution)
+    private async Task Update()
     {
-        solution.Status = SolutionStatus.InQueue;
-        return db.SaveChangesAsync();
+        solutionCountRecords = await db.Solutions.GroupBy(s => s.Status).Select(g => new SolutionCountRecord { Status = g.Key.ToString(), Count = g.Count() }).ToListAsync();
     }
 
-    void LolKek()
+    class SolutionCountRecord
     {
-
-    }
-
-    async Task WriteDump()
-    {
-
-        var dumpedData = System.Text.Json.JsonSerializer.Deserialize<List<UserWithExercises>>(System.IO.File.ReadAllText(@"C:\Users\maksa\Downloads\users3.json"));
-        var checks = ReadChecks();
-
-
-        var results = db
-                .Solutions
-                .Select(s => new
-                {
-                    Id = s.Id,
-                    CheckedTime = s.CheckedTime,
-                    ExerciseId = s.ExerciseId.ToString(),
-                    ExerciseName = s.Exercise.ExerciseName,
-                    ExerciseText = s.Exercise.ExerciseTask,
-                    ExerciseScore = s.Exercise.Score,
-                    Language = s.Language,
-                    Raw = s.Raw,
-                    SendingTime = s.SendingTime,
-                    StartCheckingTime = s.StartCheckingTime,
-                    Status = s.Status,
-                    UserId = s.UserId.ToString()
-                })
-                .ToList()
-                .GroupBy(s => s.UserId)
-                .ToDictionary(us => us.Key, us =>
-                    us.GroupBy(a => a.ExerciseName)
-                        .ToDictionary(g => g.Key, g => g.Aggregate((a, b) => a.Status > b.Status ? a : b)));
-        IWorkbook workbook = new XSSFWorkbook();
-        var rolesTableSheet = workbook.CreateSheet("Сводка");
-
-        int rowNum = 0;
-
-        var titleRow = rolesTableSheet.CreateRow(rowNum++);
-        int columnNum = 0;
-        titleRow.CreateCell(columnNum++).SetCellValue("ФИО");
-        titleRow.CreateCell(columnNum++).SetCellValue("email");
-        titleRow.CreateCell(columnNum++).SetCellValue("Кто это?");
-        titleRow.CreateCell(columnNum++).SetCellValue("Адрес");
-        titleRow.CreateCell(columnNum++).SetCellValue("Дата рождения");
-        titleRow.CreateCell(columnNum++).SetCellValue("Телефон");
-        titleRow.CreateCell(columnNum++).SetCellValue("Школа");
-        for (int i = 0; i < 24; i++)
-        {
-            titleRow.CreateCell(columnNum++).SetCellValue((i + 1).ToString());
-        }
-        foreach (var userId in results.Keys)
-        {
-            var user = db.Users.Find(Guid.Parse(userId));
-            //await Navigate($"https://lk.futuremirea.ru/admin/solutions/it/{user.Email.Replace("@", "%40")}/", () => driver.FindElementByXPath("/html/body/div/div/main/div[1]/h1")?.Text == "Институт информационных технологий");
-            await Log(user.Email);
-
-            var usersRow = rolesTableSheet.CreateRow(rowNum++);
-            columnNum = 0;
-
-
-            var user1 = dumpedData.Single(dd => dd.User.Email == user.Email);
-
-            usersRow.CreateCell(columnNum++).SetCellValue(user.FirstName);
-            usersRow.CreateCell(columnNum++).SetCellValue(user.UserName);
-            usersRow.CreateCell(columnNum++).SetCellValue(user1.User.Type);
-            usersRow.CreateCell(columnNum++).SetCellValue(user1.User.Adres);
-            usersRow.CreateCell(columnNum++).SetCellValue(user1.User.Birthday);
-            usersRow.CreateCell(columnNum++).SetCellValue(user1.User.Phone);
-            usersRow.CreateCell(columnNum++).SetCellValue(user1.User.School);
-
-
-            foreach (var exerciseName in results[userId].Keys)
-            {
-                var text = results[userId][exerciseName].ExerciseText;
-                string image = null;
-                try
-                {
-                    image = Regex.Match(text, @"!\[\]\((\S*)\)").Groups[1].Value;
-                }
-                catch
-                {
-                }
-                if (string.IsNullOrEmpty(image))
-                {
-                    image = null;
-                }
-                //await Log(text);
-                //await Log(image);
-                var finded = user1.Exercises.Select((v, i) => (i: i, t: v.Text, i2: v.ImageUrl))
-                    .Where(p => text.StartsWith(p.t))
-                    .Where(p => image == p.i2).ToList();
-                if (finded.Count == 0)
-                {
-                    await Log((image == null).ToString());
-                    throw new Exception();
-                }
-                if (finded.Count > 1)
-                {
-                    await Log(string.Join(',', finded.Select(f => $"{f.t} {f.i2}")));
-                    throw new Exception();
-                }
-
-                var id = finded.Single().i;
-                usersRow.CreateCell(columnNum + id).SetCellValue(results[userId][exerciseName].Status == SolutionStatus.Sucessful ? "+" : "-");
-            }
-
-
-            for (int i = 20; i < 24; i++)
-            {
-                var exercise = user1.Exercises[i];
-                var check = checks.SingleOrDefault(c => c.Email == user1.User.Email && c.Task == exercise.Text && c.Image == exercise.ImageUrl);
-                usersRow.CreateCell(columnNum + i).SetCellValue(check?.Result switch { null => " ", true => "+", false => "-"  });
-            }
-        }
-        for (int i = 0; i < 27+4; i++)
-        {
-            rolesTableSheet.AutoSizeColumn(i);
-        }
-        using (var writeStream = System.IO.File.OpenWrite(@"C:\Users\maksa\Desktop\dump.xlsx"))
-        {
-            workbook.Write(writeStream);
-        }
-    }
-
-    public static List<Check> ReadChecks()
-    {
-        using var reader = new System.IO.StreamReader(@"C:\Users\maksa\Desktop\latest.csv");
-        using var csvReader = new CsvReader(reader);
-        return csvReader.GetRecords<Check>().ToList();
-    }
-
-    private async Task<int> GetExerciseFromWebUser(string text)
-    {
-        await Task.Delay(1);
-        var webExercises = driver.FindElementByTagName("main").FindElements(By.ClassName("row"));
-        text = Regex.Replace(text, @"!\[\]\(\S+\)", "");
-
-        for (int i = 0; i < webExercises.Count; i++)
-        {
-            var we = webExercises[i];
-
-            var textEx = we.FindElements(By.TagName("div"))[1].Text;
-            await Log($"{i}: {textEx}");
-            if (text.StartsWith(textEx))
-                return i;
-        }
-        throw new Exception("no exercise");
-    }
-    private async Task Navigate(string url, Func<bool> predicate = null)
-    {
-        driver.Navigate().GoToUrl(url);
-        int i = 0;
-        while (true)
-        {
-            if (predicate?.Invoke() == true) break;
-            await Task.Delay(1);
-        }
-    }
-
-    protected async Task Log(string message)
-    {
-        await jsRuntime.InvokeAsync<string>("console.log", message);
-    }
-
-    void RepairAll()
-    {
-        foreach (var item in db.Solutions.Where(s => s.Language == "java").Where(s => s.Status == SolutionStatus.CompileError).Where(s => s.Raw.Contains("public class")).ToList())
-        {
-            if (Regex.IsMatch(item.Raw, @"public\s+class\s+\S+\s*{"))
-            {
-                if (Regex.Match(item.Raw, @"public\s+class\s+(\S+)\s*{").Groups[1].Value != "Main")
-                {
-                    item.Raw = Regex.Replace(item.Raw, @"(public\s+class\s+)(\S+)(\s*{)", "$1Main$3");
-                    item.Status = SolutionStatus.InQueue;
-                }
-            }
-        }
-        db.SaveChanges();
-    }
-
-
-    public class UserWithExercises
-    {
-        public User User { get; set; }
-        public Exercise[] Exercises { get; set; }
-    }
-
-    public class Exercise
-    {
-        public string Text { get; set; }
-        public string ImageUrl { get; set; }
-    }
-    public class User
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Birthday { get; set; }
-        public string Adres { get; set; }
-        public string School { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-    }
-
-    public class Check
-    {
-        public string Email { get; set; }
-        public bool Result { get; set; }
-        public string Task { get; set; }
-        public string Image { get; set; }
+        public string Status { get; set; }
+        public int Count { get; set; }
     }
 }
