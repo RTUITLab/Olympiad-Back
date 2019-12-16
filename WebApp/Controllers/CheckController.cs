@@ -75,13 +75,14 @@ namespace WebApp.Controllers
 
             if (!isAdmin)
             {
-                var lastSendingDate = await context
+                var lastSendingDate = (await context
                     .Solutions
                     .Where(s => s.UserId == authorId)
                     .Where(s => s.ExerciseId == exerciseId)
                     .Select(s => s.SendingTime)
+                    .ToListAsync())
                     .DefaultIfEmpty(DateTime.MinValue)
-                    .MaxAsync();
+                    .Max();
 
                 if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
                 {
