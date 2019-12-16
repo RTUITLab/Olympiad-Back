@@ -59,8 +59,9 @@ namespace WebApp
             else
                 services
                 .AddEntityFrameworkNpgsql()
+                
                 .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
+                    options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
 
             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
@@ -163,8 +164,8 @@ namespace WebApp
                 .AddTransientConfigure<AutoMigrate>(0)
                 .AddTransientConfigure<DefaultRolesConfigure>(1)
                 .AddTransientConfigure<FillQueue>(1);
-
-            services.AddHostedService<RestartCheckingService>();
+            if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
+                services.AddHostedService<RestartCheckingService>();
 
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
 

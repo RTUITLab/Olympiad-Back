@@ -97,6 +97,40 @@ stages:
         ArtifactName: 'olympiad-client-front-build'
         publishLocation: 'Container'
 
+  - job: build_admin
+    displayName: Build admin
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '3.1.100'
+        includePreviewVersions: true
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet restore'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'Admin/Admin.csproj'
+        arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-admin-build'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'olympiad-admin-build'
+        publishLocation: 'Container'
 
 - stage: publish_deploy
   displayName: Publish depoloy files
@@ -109,4 +143,13 @@ stages:
       inputs:
         PathtoPublish: 'deploy/client'
         ArtifactName: 'olympiad-client-deploy'
+        publishLocation: 'Container'
+  - job: publish_admin_deploy
+    displayName: 'Publish admin deploy files'
+    steps:
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-admin-deploy'
+      inputs:
+        PathtoPublish: 'deploy/admin'
+        ArtifactName: 'olympiad-admin-deploy'
         publishLocation: 'Container'
