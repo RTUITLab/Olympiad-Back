@@ -144,3 +144,12 @@ stages:
         PathtoPublish: 'deploy/client'
         ArtifactName: 'olympiad-client-deploy'
         publishLocation: 'Container'
+  - job: publish_admin_deploy
+    displayName: 'Publish admin deploy files'
+    steps:
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-admin-deploy'
+      inputs:
+        PathtoPublish: 'deploy/admin'
+        ArtifactName: 'olympiad-admin-deploy'
+        publishLocation: 'Container'
