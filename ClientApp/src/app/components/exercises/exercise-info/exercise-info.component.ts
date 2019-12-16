@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, DoCheck, ChangeDetectorRef } from '@angular/core';
 import { SolutionViewModel } from '../../../models/ViewModels/SolutionViewModel';
 import { ExerciseService } from '../../../services/exercise.service';
 import { ActivatedRoute } from '@angular/router';
@@ -20,6 +20,7 @@ import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
 import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
 import { ShownResults } from '../../helpers/ShownResults';
+import { switchMap } from 'rxjs/operators';
 
 
 
@@ -28,10 +29,11 @@ import { ShownResults } from '../../helpers/ShownResults';
   templateUrl: './exercise-info.component.html',
   styleUrls: ['./exercise-info.component.scss']
 })
-export class ExerciseInfoComponent extends LoadingComponent implements OnInit, OnDestroy {
+export class ExerciseInfoComponent extends LoadingComponent implements OnInit, DoCheck, OnDestroy {
 
   private solutionCheckTimers: Array<any> = [];
   private challengeState: ChallengeState;
+
   constructor(
     private usersService: UserStateService,
     private exercisesService: ExerciseService,
@@ -41,15 +43,17 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     private titleService: Title,
     private currentExerciseState: ExerciseStateService,
     private shownResultsService: ShownResults
-    ) {
+  ) {
     super();
   }
 
   exerciseInfo: ExerciseInfo;
   solutionPreview?: string | ArrayBuffer;
   availableLanguages = LanguageConverter.languages();
-  model: SolutionViewModel = new SolutionViewModel();
+  model: SolutionViewModel;
+
   get shownResults() { return this.shownResultsService.ShownResults; }
+
   get submitDisabled() {
     if (!this.model.File) {
       this.toastr.warning('Загрузите файл');
@@ -73,36 +77,43 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
       return LanguageConverter.fileExtensionByPrettyName(this.model.Language);
     }
   }
-  ngOnInit() {
-    this.model.Language = null;
-    this.route.paramMap
-      .subscribe((params: ParamMap) => {
-        this.model.ExerciseId = params.get('ExerciseID');
-        this.startLoading();
-        this.exercisesService.getExercise(this.model.ExerciseId)
-          .subscribe(
-            exInfo => {
-              this.exerciseInfo = exInfo;
-              this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
-              this.titleService.setTitle(`${this.exerciseInfo.Name}`);
-              this.exerciseInfo
-                .Solutions
-                .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
-                .forEach(s => this.solutionCheckLoop(s));
-              this.stopLoading();
-              this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
-              this.currentExerciseState.setExerciseId(exInfo.Id);
-            },
-            () => {
-              this.router.navigate(['overview']);
-            }
-          );
-        this.currentExerciseState.currentChallengeState.subscribe(s => {
-          this.challengeState = s;
-        });
-      });
-  }
 
+  ngOnInit() {
+    this.model = new SolutionViewModel();
+    this.solutionPreview = null;
+    this.model.Language = null;
+    this.model.ExerciseId = this.route.snapshot.paramMap.get('ExerciseID');
+    this.startLoading();
+    this.exercisesService.getExercise(this.model.ExerciseId)
+      .subscribe(
+        (exInfo: ExerciseInfo) => {
+          if (document.getElementById('Source') && document.getElementById('Source').files[0] != null) {
+            document.getElementById('Source').files[0] = null;
+          }
+          this.exerciseInfo = exInfo;
+          this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
+          this.titleService.setTitle(`${this.exerciseInfo.Name}`);
+          // this.exerciseInfo
+          //   .Solutions
+          //   .filter(s => s.Status === SolutionStatus.InProcessing || s.Status === SolutionStatus.InQueue)
+          //   .forEach(s => this.solutionCheckLoop(s));
+          this.stopLoading();
+          this.currentExerciseState.setChallengeId(exInfo.ChallengeId);
+          this.currentExerciseState.setExerciseId(exInfo.Id);
+        },
+        () => {
+          this.router.navigate(['overview']);
+        }
+      );
+    this.currentExerciseState.currentChallengeState.subscribe(s => {
+      this.challengeState = s;
+    });
+  }
+  async ngDoCheck() {
+    if (this.model.ExerciseId !== this.route.snapshot.paramMap.get('ExerciseID')) {
+      this.ngOnInit();
+    }
+  }
   ngOnDestroy(): void {
     this.solutionCheckTimers.forEach(t => clearTimeout(t));
   }
@@ -110,6 +121,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, O
     this.model.Language = Language;
   }
   setFile(event) {
+
     if (event.srcElement.files[0]) {
       if (this.model.Language === null) {
         this.toastr.warning('Выберите язык программирования');
