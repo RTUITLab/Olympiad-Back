@@ -57,7 +57,8 @@ import { AboutComponent } from './components/about/about.component';
 import { UsersGenerationComponent } from './components/users-generation/users-generation.component';
 import { ChallengeDeadlineComponent } from './components/select-challenge/challenge-deadline/challenge-deadline.component';
 import { ShownResults } from './components/helpers/ShownResults';
-import { ShowSolutionSourceCodeDialogComponent } from './components/challenges/challenge-info/show-solution-source-code-dialog/show-solution-source-code-dialog.component';
+import { ShowSolutionSourceCodeDialogComponent } from
+ './components/challenges/challenge-info/show-solution-source-code-dialog/show-solution-source-code-dialog.component';
 
 const routes: Route[] = [
   {
