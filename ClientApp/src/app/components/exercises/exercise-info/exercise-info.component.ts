@@ -89,7 +89,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, D
         (exInfo: ExerciseInfo) => {
           this.exerciseInfo = exInfo;
           if (document.getElementById('Source') && (document.getElementById('Source') as any).files[0] != null) {
-            (document.getElementById('Source') as any).files[0] = null;
+            (document.getElementById('Source') as any).value = '';
           }
           this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
           this.titleService.setTitle(`${this.exerciseInfo.Name}`);

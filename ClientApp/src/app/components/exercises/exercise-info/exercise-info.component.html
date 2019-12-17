@@ -64,7 +64,7 @@
     </form>
   </div>
 
-  <div *ngIf="exerciseInfo.Solutions.length > 0">
+  <div *ngIf="exerciseInfo.Solutions && exerciseInfo.Solutions.length > 0">
     <h2 class="text-center">Отправленные решения ({{exerciseInfo.Solutions.length}})</h2>
     <table>
       <thead>
