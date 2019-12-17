@@ -20,7 +20,6 @@ import { SolutionHelpers } from 'src/app/Helpers/SolutionHelpers';
 import { ToastrService } from 'ngx-toastr';
 import { Title } from '@angular/platform-browser';
 import { ShownResults } from '../../helpers/ShownResults';
-import { switchMap } from 'rxjs/operators';
 
 
 
@@ -80,6 +79,7 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, D
 
   ngOnInit() {
     this.model = new SolutionViewModel();
+    this.exerciseInfo = new ExerciseInfo();
     this.solutionPreview = null;
     this.model.Language = null;
     this.model.ExerciseId = this.route.snapshot.paramMap.get('ExerciseID');
@@ -87,10 +87,10 @@ export class ExerciseInfoComponent extends LoadingComponent implements OnInit, D
     this.exercisesService.getExercise(this.model.ExerciseId)
       .subscribe(
         (exInfo: ExerciseInfo) => {
-          if (document.getElementById('Source') && document.getElementById('Source').files[0] != null) {
-            document.getElementById('Source').files[0] = null;
-          }
           this.exerciseInfo = exInfo;
+          if (document.getElementById('Source') && (document.getElementById('Source') as any).files[0] != null) {
+            (document.getElementById('Source') as any).files[0] = null;
+          }
           this.exerciseInfo.Solutions.sort((a, b) => new Date(a.SendingTime) < new Date(b.SendingTime) ? 1 : -1);
           this.titleService.setTitle(`${this.exerciseInfo.Name}`);
           // this.exerciseInfo
