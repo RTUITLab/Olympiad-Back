@@ -2,6 +2,7 @@
 
 @using Olympiad.Shared.Models
 @using Microsoft.EntityFrameworkCore
+@using System.Text.RegularExpressions
 
 @using Models.Solutions
 
@@ -21,6 +22,9 @@
                 <option value="@status">@status</option>
             }
         </select>
+        <select @bind="lang">
+            <option value="cpp c">cpp or c</option>
+        </select>
     </div>
     <div class="col">
         <button class="btn btn-primary" @onclick="SelectSolutions">Find solutions</button>
@@ -30,49 +34,123 @@
 
 <div class="row">
     <div class="col">
-        <h4>Solutions list</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Lang</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var solution in solutions)
-                {
-                    <tr>
-                        <td>@solution.Id</td>
-                        <td>@solution.Language</td>
-                        <td>@solution.Status</td>
-                        <td><button class="btn btn-primary" @onclick="@(() => selectedSolution = solution)">select</button></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <h4>Solutions list @findedSolutions.Where(g => !hidden.Contains(g.Key)).Count()</h4>
+
+        @foreach (var group in findedSolutions.Where(g => !hidden.Contains(g.Key)))
+        {
+            <p @onclick="() => findedSolutions[group.Key] = (!group.Value.opened, group.Value.solutions)">@group.Key (@group.Value.solutions.Count)</p>
+            <button class="btn btn-primary" @onclick="@(() => hidden.Add(group.Key))">hide</button>
+            if (group.Value.opened)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Lang</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var solution in group.Value.solutions)
+                        {
+                            <tr>
+                                <td>@solution.Id</td>
+                                <td>@solution.Language</td>
+                                <td>@solution.Status</td>
+                                <td><button class="btn btn-primary" @onclick="@(() => SelectSolution(solution.Id))">select</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+        <h4>Hidden</h4>
+        @foreach (var group in findedSolutions.Where(g => hidden.Contains(g.Key)))
+        {
+            <p @onclick="() => findedSolutions[group.Key] = (!group.Value.opened, group.Value.solutions)">@group.Key (@group.Value.solutions.Count)</p>
+            <button class="btn btn-primary" @onclick="@(() => hidden.Remove(group.Key))">show</button>
+            if (group.Value.opened)
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Lang</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var solution in group.Value.solutions)
+                        {
+                            <tr>
+                                <td>@solution.Id</td>
+                                <td>@solution.Language</td>
+                                <td>@solution.Status</td>
+                                <td><button class="btn btn-primary" @onclick="@(() => SelectSolution(solution.Id))">select</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        }
     </div>
     <div class="col">
-        <h4>Solution details</h4>
-        @if(selectedSolution != null)
-        {
-        <textarea rows="30" @bind="selectedSolution.Raw">
-        </textarea>
-
-        }
+       <Olympiad.Admin.Components.SolutionDetails SolutionId="@selectedSolutionId" />
     </div>
 </div>
 
 @code {
-    SolutionStatus solutionStatusTarget;
+
+
+    List<string> hidden = new List<string>();
+
+    SolutionStatus solutionStatusTarget = SolutionStatus.CompileError;
 
     List<Solution> solutions = new List<Solution>();
+    Dictionary<string, (bool opened, List<Solution> solutions)> findedSolutions = new Dictionary<string, (bool, List<Solution>)>();
 
-    Solution selectedSolution;
+    Guid selectedSolutionId;
+    string lang = "cpp c";
+
 
     private async Task SelectSolutions()
     {
-        solutions = await db.Solutions.Where(s => s.Status == solutionStatusTarget).ToListAsync();
+        var langs = lang.Split(" ");
+        solutions = await db.Solutions
+            .Where(s => langs.Contains(s.Language))
+            .Where(s => s.Status == solutionStatusTarget)
+            .Include(s => s.SolutionBuildLogs)
+            .ToListAsync();
+        Group();
+    }
+
+    private void Group()
+    {
+        findedSolutions = solutions
+            .GroupBy(FindGroupOf)
+            .ToDictionary(g => g.Key, v => (false, v.ToList()));
+        if (findedSolutions.ContainsKey("UNDEFINED"))
+            findedSolutions["UNDEFINED"] = (true, findedSolutions["UNDEFINED"].solutions);
+        StateHasChanged();
+    }
+
+    private string FindGroupOf(Solution s)
+    {
+        if (s.SolutionBuildLogs.Count == 0)
+            return "UNDEFINED";
+        if (s.SolutionBuildLogs.Any(b => b.Log.Contains("undefined reference to `main'")))
+            return "undefined reference to `main'";
+        var match = Regex.Match(s.SolutionBuildLogs[0].Log, @"error:\s*([^\\]*)");
+        if (match.Success)
+            return match.Groups[1].Value;
+
+        return "UNDEFINED";
+    }
+
+    private void SelectSolution(Guid id)
+    {
+        selectedSolutionId = id;
     }
 }
