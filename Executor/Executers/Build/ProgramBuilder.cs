@@ -17,6 +17,7 @@ namespace Executor.Executers.Build
     {
         private readonly BlockingCollection<Solution> solutionQueue = new BlockingCollection<Solution>();
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
+        private readonly Func<Guid, string, Task> saveBuildLogs;
         private readonly Func<Solution, Task> finishBuildSolution;
         private readonly BuildProperty buildProperty;
         private readonly IDockerClient dockerClient;
@@ -25,6 +26,7 @@ namespace Executor.Executers.Build
         private Task buildingTask;
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
+            Func<Guid, string, Task> saveBuildLogs,
             Func<Solution, Task> finishBuildSolution,
             BuildProperty buildProperty,
             IDockerClient dockerClient,
@@ -32,6 +34,7 @@ namespace Executor.Executers.Build
         {
             buildingTask = Task.Run(BuildLoop);
             this.processSolution = processSolution;
+            this.saveBuildLogs = saveBuildLogs;
             this.finishBuildSolution = finishBuildSolution;
             this.buildProperty = buildProperty;
             this.dockerClient = dockerClient;
@@ -53,7 +56,10 @@ namespace Executor.Executers.Build
                 logger.LogInformation($"build solution {solution.Id}");
                 try
                 {
-                    if (!await Build(solution.Id, solution.Language, solution.Raw))
+                    var (buildSuccess, buildLogs) = await Build(solution.Id, solution.Language, solution.Raw);
+                    await saveBuildLogs(solution.Id, buildLogs);
+
+                    if (!buildSuccess)
                     {
                         await processSolution(solution.Id, SolutionStatus.CompileError);
                         continue;
@@ -67,11 +73,11 @@ namespace Executor.Executers.Build
             }
         }
 
-        protected virtual async Task<bool> Build(Guid solutionId, string lang, string raw)
+        protected virtual async Task<(bool, string)> Build(Guid solutionId, string lang, string raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
             {
-                return false;
+                return (false, "EMPTY SOLUTION");
             }
             if (lang == "java")
             {
@@ -84,10 +90,9 @@ namespace Executor.Executers.Build
             File.WriteAllText(Path.Combine(sourceDir.FullName, "DockerFile"), dockerFile, new UTF8Encoding(false));
 
             var buildLogs = await BuildImageAsync($"solution:{solutionId}", sourceDir.FullName);
-
             sourceDir.Delete(true);
             Console.WriteLine(buildLogs);
-            return !buildProperty.IsCompilationFailed(buildLogs);
+            return (!buildProperty.IsCompilationFailed(buildLogs), buildLogs);
         }
 
         private async Task<string> BuildImageAsync(string imageName, string buildContext)

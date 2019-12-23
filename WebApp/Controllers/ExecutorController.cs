@@ -65,6 +65,27 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
+        [Route("buildlog/{solutionId}")]
+        public async Task<IActionResult> CheckLog(
+            [FromRoute]Guid solutionId,
+            [FromBody] string log)
+        {
+            var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
+            if (solution == null)
+                return NotFound();
+            var buildLogRecord = new SolutionBuildLog
+            {
+                BuildedTime = DateTime.UtcNow,
+                Log = log,
+                SolutionId = solutionId,
+                Solution = solution
+            };
+            dbContext.SolutionBuildLogs.Add(buildLogRecord);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
         [Route("checklog/{solutionId}")]
         public async Task<IActionResult> CheckLog(
             [FromRoute]Guid solutionId,

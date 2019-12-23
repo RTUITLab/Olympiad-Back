@@ -1,0 +1,78 @@
+﻿@page "/managesolutions"
+
+@using Olympiad.Shared.Models
+@using Microsoft.EntityFrameworkCore
+
+@using Models.Solutions
+
+
+@inject ApplicationDbContext db
+
+
+
+
+<h3>Manage solutions</h3>
+
+<div class="row">
+    <div class="col">
+        <select @bind="solutionStatusTarget">
+            @foreach (var status in Enum.GetValues(typeof(SolutionStatus)).Cast<SolutionStatus>())
+            {
+                <option value="@status">@status</option>
+            }
+        </select>
+    </div>
+    <div class="col">
+        <button class="btn btn-primary" @onclick="SelectSolutions">Find solutions</button>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col">
+        <h4>Solutions list</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Lang</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var solution in solutions)
+                {
+                    <tr>
+                        <td>@solution.Id</td>
+                        <td>@solution.Language</td>
+                        <td>@solution.Status</td>
+                        <td><button class="btn btn-primary" @onclick="@(() => selectedSolution = solution)">select</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <h4>Solution details</h4>
+        @if(selectedSolution != null)
+        {
+        <textarea rows="30" @bind="selectedSolution.Raw">
+        </textarea>
+
+        }
+    </div>
+</div>
+
+@code {
+    SolutionStatus solutionStatusTarget;
+
+    List<Solution> solutions = new List<Solution>();
+
+    Solution selectedSolution;
+
+    private async Task SelectSolutions()
+    {
+        solutions = await db.Solutions.Where(s => s.Status == solutionStatusTarget).ToListAsync();
+    }
+}
