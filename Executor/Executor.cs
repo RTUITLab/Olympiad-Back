@@ -38,6 +38,7 @@ namespace Executor
                 kvp => new ExecuteWorker(
                         kvp.Value,
                         solutionBase.SaveChanges,
+                        solutionBase.SaveBuildLog,
                         solutionBase.GetExerciseData,
                         solutionBase,
                         dockerClient,
