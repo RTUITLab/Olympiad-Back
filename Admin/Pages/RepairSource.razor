@@ -1,0 +1,40 @@
+﻿@page "/repairsource"
+<h3>RepairSource</h3>
+
+<h4>Select rule</h4>
+<select @bind="rule">
+    <option value="select option">Selec rule</option>
+    @foreach (var (id, description) in rules)
+    {
+        <option value="@id">@description</option>
+    }
+</select>
+
+@switch (rule)
+{
+    case "cppsin":
+        <Olympiad.Admin.Components.RepairSource.LineAdder />
+        break;
+    case "reset":
+        <Olympiad.Admin.Components.RepairSource.RepairReset />
+        break;
+    case "linecomment":
+        <Olympiad.Admin.Components.RepairSource.LineCommenter />
+        break;
+    default:
+        <h4>Select rule</h4>
+        break;
+}
+
+
+@code {
+
+    string rule = "cppsin";
+
+    List<(string, string)> rules = new List<(string, string)>
+{
+        { ("cppsin", "Add math to C++ programs, which use sin") },
+        { ("reset", "Undo editing") },
+        { ("linecomment", "Comment line") }
+    };
+}
