@@ -1,0 +1,45 @@
+﻿@foreach (var lang in langs)
+{
+    <label>
+        @lang.Key.title
+        <input type="checkbox" checked="@langs[lang.Key]" @onchange="@(async (e) => await InputChanged(e, lang.Key))" />
+    </label>
+}
+
+@code {
+
+    [Parameter]
+    public string[] SelectedLangs { get; set; }
+
+    [Parameter]
+    public EventCallback<string[]> SelectedLangsChanged { get; set; }
+
+
+    Dictionary<(string title, string value), bool> langs = new Dictionary<(string, string), bool>
+{
+        { ("C++", "cpp"), false },
+        {    ("C", "c"), false }
+    };
+
+    private async Task InputChanged(ChangeEventArgs e, (string, string) key)
+    {
+        var value = (bool)e.Value;
+        langs[key] = value;
+
+        SelectedLangs = langs.Where(p => p.Value).Select(p => p.Key.value).ToArray();
+        await SelectedLangsChanged.InvokeAsync(SelectedLangs);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (SelectedLangs == null)
+            return;
+
+        foreach (var item in langs.Keys.ToArray())
+        {
+            if (SelectedLangs.Contains(item.value))
+                langs[item] = true;
+        }
+    }
+}
