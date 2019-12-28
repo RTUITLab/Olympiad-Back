@@ -53,7 +53,7 @@ namespace Executor
             {
                 (await solutionBase.GetInQueueSolutions())
                     .ForEach(s => executeWorkers[s.Language].Handle(s));
-                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
                 Console.WriteLine("end sleep");
             }
         }
