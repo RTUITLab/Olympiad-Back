@@ -36,7 +36,7 @@
     <div class="col">
         <h4>Solutions list @findedSolutions.Where(g => !hidden.Contains(g.Key)).Count()</h4>
 
-        @foreach (var group in findedSolutions.Where(g => !hidden.Contains(g.Key)))
+        @foreach (var group in findedSolutions.Where(g => !hidden.Contains(g.Key)).OrderByDescending(g => g.Value.solutions.Count))
         {
             <p @onclick="() => findedSolutions[group.Key] = (!group.Value.opened, group.Value.solutions)">@group.Key (@group.Value.solutions.Count)</p>
             <button class="btn btn-primary" @onclick="@(() => hidden.Add(group.Key))">hide</button>

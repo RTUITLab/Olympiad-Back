@@ -12,7 +12,7 @@
 
 @switch (rule)
 {
-    case "cppsin":
+    case "lineadd":
         <Olympiad.Admin.Components.RepairSource.LineAdder />
         break;
     case "reset":
@@ -20,6 +20,9 @@
         break;
     case "linecomment":
         <Olympiad.Admin.Components.RepairSource.LineCommenter />
+        break;
+    case "regexreplace":
+        <Olympiad.Admin.Components.RepairSource.RegexReplace/>
         break;
     default:
         <h4>Select rule</h4>
@@ -29,12 +32,13 @@
 
 @code {
 
-    string rule = "cppsin";
+    string rule = "select option";
 
     List<(string, string)> rules = new List<(string, string)>
 {
-        { ("cppsin", "Add math to C++ programs, which use sin") },
+        { ("lineadd", "Add line to program") },
         { ("reset", "Undo editing") },
-        { ("linecomment", "Comment line") }
+        { ("linecomment", "Comment line") },
+        { ("regexreplace", "Replace by regex") }
     };
 }
