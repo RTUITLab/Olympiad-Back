@@ -14,7 +14,15 @@
 
 <h2>Solutions count</h2>
 
-<button class="btn btn-primary" @onclick="@Update">Update</button>
+<label>
+    Auto update
+    <input type="checkbox" @bind="autoUpdate" />
+</label>
+@if (!autoUpdate)
+{
+    <button class="btn btn-primary" @onclick="@Update">Update</button>
+}
+
 <table>
     <thead>
         <tr>
@@ -32,22 +40,47 @@
         }
     </tbody>
 </table>
-
+<Olympiad.Admin.Components.Logs @ref="Logs" />
 
 @code {
 
     List<SolutionCountRecord> solutionCountRecords = new List<SolutionCountRecord>();
 
+    bool autoUpdate = false;
+    Olympiad.Admin.Components.Logs Logs;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await Update();
+            UpdateCycle();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await Update();
+
+    }
+
+    private async Task UpdateCycle()
+    {
+        while (true)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            if (autoUpdate)
+                await Update();
+        }
     }
 
     private async Task Update()
     {
+        await Logs.Log($"Updating");
         solutionCountRecords = await db.Solutions.GroupBy(s => s.Status).Select(g => new SolutionCountRecord { Status = g.Key.ToString(), Count = g.Count() }).ToListAsync();
+        await Logs.Log($"Updated");
+        StateHasChanged();
     }
 
     class SolutionCountRecord
