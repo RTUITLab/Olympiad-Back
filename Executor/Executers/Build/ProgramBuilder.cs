@@ -84,8 +84,8 @@ namespace Executor.Executers.Build
             }
             if (lang == "java")
             {
-                var newRaw = Regex.Replace(raw, @"^public class [^ {]+", "public class Main {");
-
+                var newRaw = Regex.Replace(raw, @"^public class [^ {]+", "public class Main", RegexOptions.Multiline);
+                raw = newRaw;
                 //TODO rename Java class to main
             }
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
