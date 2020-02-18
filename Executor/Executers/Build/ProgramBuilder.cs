@@ -10,6 +10,7 @@ using Models.Solutions;
 using Olympiad.Shared.Models;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace Executor.Executers.Build
 {
@@ -62,8 +63,10 @@ namespace Executor.Executers.Build
                     if (!buildSuccess)
                     {
                         await processSolution(solution.Id, SolutionStatus.CompileError);
+                        logger.LogInformation($"{solution.Id} {SolutionStatus.CompileError}");
                         continue;
                     }
+                    logger.LogInformation($"{solution.Id} BUILDED");
                     await finishBuildSolution(solution);
                 }
                 catch (Exception ex)
@@ -81,17 +84,20 @@ namespace Executor.Executers.Build
             }
             if (lang == "java")
             {
+                var newRaw = Regex.Replace(raw, @"^public class [^ {]+", "public class Main {");
+
                 //TODO rename Java class to main
             }
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
+
             File.WriteAllText(Path.Combine(sourceDir.FullName, buildProperty.ProgramFileName), raw, new UTF8Encoding(false));
             var dockerFile = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles", $"DockerFile-{lang}"));
             File.WriteAllText(Path.Combine(sourceDir.FullName, "DockerFile"), dockerFile, new UTF8Encoding(false));
 
             var buildLogs = await BuildImageAsync($"solution:{solutionId}", sourceDir.FullName);
             sourceDir.Delete(true);
-            Console.WriteLine(buildLogs);
+            logger.LogDebug(buildLogs);
             return (!buildProperty.IsCompilationFailed(buildLogs), buildLogs);
         }
 

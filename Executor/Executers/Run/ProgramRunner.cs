@@ -95,8 +95,12 @@ namespace Executor.Executers.Run
                         localStatus = SolutionStatus.WrongAnswer;
 
                     logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {localStatus}");
+                    logger.LogInformation($"{solutionId} checked on {data.Id} {localStatus}");
                     if (localStatus < result)
+                    {
                         result = localStatus;
+                        break;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -105,6 +109,7 @@ namespace Executor.Executers.Run
                     break;
                 }
             }
+            logger.LogInformation($"{solutionId} total status {result}");
             await solutionsBase.SaveChanges(solutionId, result);
             await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
         }
