@@ -7,6 +7,15 @@
 
 @inject ApplicationDbContext db
 <h3>Regex replace</h3>
+<label>Predefined</label>
+<select @onchange="OnPredefinedSelected">
+    <option value="default">Select</option>
+    @foreach (var define in predefined)
+    {
+        <option value="@define.name">@define.name</option>
+    }
+</select>
+<br />
 
 <label>
     Pattern
@@ -31,6 +40,13 @@
 <Olympiad.Admin.Components.Logs @ref="logs" />
 
 @code {
+
+    private (string name, string pattern, string replacement)[] predefined = new (string name, string pattern, string replacement)[]
+    {
+        ("Java class name", "^public class [^ ]+", "public class Main")
+        };
+
+
     Olympiad.Admin.Components.Logs logs;
 
     string[] selectedLangs = new string[] { "cpp" };
@@ -41,6 +57,18 @@
     Task Log(object obj) => logs.Log(obj);
 
     List<Solution> targetSolutions = new List<Solution>();
+
+    private async Task OnPredefinedSelected(ChangeEventArgs e)
+    {
+        if (e.Value.ToString() == "default")
+        {
+            return;
+        }
+        await Log($"Change current pattern :\"{findPattern}\" replaceTo: \"{replaceTo}\" to predefined");
+        var target = predefined.Single(d => d.name == e.Value.ToString());
+        findPattern = target.pattern;
+        replaceTo = target.replacement;
+    }
 
     async Task FindSolutions()
     {

@@ -22,7 +22,8 @@
 {
     <button class="btn btn-primary" @onclick="@Update">Update</button>
 }
-
+<p>Done in last 2 minutes: @doneInLast10Mins</p>
+<p>Left: @Left() --- @(doneInLast10Mins == 0 ? "~" : TimeSpan.FromMinutes((Left() / (doneInLast10Mins == 0 ? 1 : doneInLast10Mins)) * 2).ToString())</p>
 <table>
     <thead>
         <tr>
@@ -45,7 +46,7 @@
 @code {
 
     List<SolutionCountRecord> solutionCountRecords = new List<SolutionCountRecord>();
-
+    int doneInLast10Mins = 0;
     bool autoUpdate = false;
     Olympiad.Admin.Components.Logs Logs;
 
@@ -57,6 +58,11 @@
             await Update();
             UpdateCycle();
         }
+    }
+
+    private int Left()
+    {
+        return solutionCountRecords.Where(r => r.Status == "InProcessing").Select(r => r.Count).SingleOrDefault() + solutionCountRecords.Where(r => r.Status == "InQueue").Select(r => r.Count).SingleOrDefault();
     }
 
     protected override async Task OnInitializedAsync()
@@ -79,6 +85,8 @@
     {
         await Logs.Log($"Updating");
         solutionCountRecords = await db.Solutions.GroupBy(s => s.Status).Select(g => new SolutionCountRecord { Status = g.Key.ToString(), Count = g.Count() }).ToListAsync();
+        var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
+        doneInLast10Mins = await db.Solutions.Where(s => s.CheckedTime > oldTime).CountAsync();
         await Logs.Log($"Updated");
         StateHasChanged();
     }

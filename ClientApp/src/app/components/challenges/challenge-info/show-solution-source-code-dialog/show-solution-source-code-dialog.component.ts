@@ -4,6 +4,7 @@ import { LanguageConverter } from 'src/app/models/Common/LanguageConverter';
 import { ExerciseService } from 'src/app/services/exercise.service';
 import { SolutionLog } from 'src/app/models/SolutionLog';
 import { CheckedSolution } from 'src/app/models/CheckedSolution';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-show-solution-source-code-dialog',
@@ -17,6 +18,7 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<ShowSolutionSourceCodeDialogComponent>,
     public exerciseService: ExerciseService,
+    private toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public data: CheckedSolution,
   ) { }
   ngOnInit() {
@@ -39,7 +41,7 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
     this.solutionLogs = this.solutionTimeSort(this.solutionLogs, 'CheckedTime');
   }
   solutionTimeConverter(array: any, key: string) {
-    array.forEach( el => {
+    array.forEach(el => {
       el[key] = new Date(el[key]);
     });
     return array;
@@ -65,5 +67,23 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   }
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  async recheck(id: string) {
+    console.log(id);
+    const count = await this.exerciseService.recheckSolution(id);
+
+    this.toastr.success(`Будет перепроверено решений: ${count}`);
+  }
+
+  runResult(log: SolutionLog): string {
+    if (log.ProgramErr) {
+      return "Есть поток ошибок";
+    }
+    if (log.ExampleOut === log.ProgramOut) {
+      return "Корректно";
+    }
+    return "Не совппадают вход и выход";
+
   }
 }

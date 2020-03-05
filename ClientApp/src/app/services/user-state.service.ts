@@ -48,6 +48,12 @@ export class UserStateService extends BaseHttpService {
       );
     return observable;
   }
+
+  public DeleteUser(studentId: string): Promise<number> {
+    return this.http.delete<number>(`${this.baseUrl}/api/account/deleteUser/${studentId}`, this.authOptions)
+      .toPromise();
+  }
+
   public GetMe(token: string): Observable<boolean> {
     let observer: Subscriber<boolean>;
     const observable = new Observable<boolean>(obs => {

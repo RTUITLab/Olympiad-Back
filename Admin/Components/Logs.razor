@@ -45,7 +45,12 @@
     {
         if (messages.Count == recordsCount)
             messages.RemoveAt(messages.Count - 1);
-        messages.Insert(0, $"{DateTime.Now.ToString("hh:mm:ss")}: {obj}");
+        string message;
+        if (obj is string)
+            message = obj.ToString();
+        else
+            message = System.Text.Json.JsonSerializer.Serialize(obj, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }).ConvertCyrillic();
+        messages.Insert(0, $"{DateTime.Now.ToString("hh:mm:ss")}: {message}");
         StateHasChanged();
         await Task.Delay(2);
     }
