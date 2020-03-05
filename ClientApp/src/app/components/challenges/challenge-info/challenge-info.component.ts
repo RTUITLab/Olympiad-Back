@@ -10,8 +10,10 @@ import { Title } from '@angular/platform-browser';
 import * as JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { LanguageConverter } from 'src/app/models/Common/LanguageConverter';
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ShowSolutionSourceCodeDialogComponent } from './show-solution-source-code-dialog/show-solution-source-code-dialog.component';
+import { ToastrService } from 'ngx-toastr';
+import { ExerciseService } from 'src/app/services/exercise.service';
 @Component({
   selector: 'app-challenge-info',
   templateUrl: './challenge-info.component.html',
@@ -26,8 +28,10 @@ export class ChallengeInfoComponent implements OnInit {
     private titleService: Title,
     private currentExerciseState: ExerciseStateService,
     private challengesService: ChallengesService,
-    public dialog: MatDialog
-    ) { }
+    public dialog: MatDialog,
+    private toastr: ToastrService,
+    private exerciseService: ExerciseService
+  ) { }
   public challenge?: Challenge;
   public dump: object;
   public exerciseNames: string[] = [];
@@ -113,13 +117,13 @@ export class ChallengeInfoComponent implements OnInit {
   }
 
   showLogs(user: string, exercise: string) {
-      const dialogRef = this.dialog.open(ShowSolutionSourceCodeDialogComponent, {
-        width: '80vw', height: '90vh',
-        data: {solutionData: this.dump[user][exercise]}
-      });
+    const dialogRef = this.dialog.open(ShowSolutionSourceCodeDialogComponent, {
+      width: '80vw', height: '90vh',
+      data: { solutionData: this.dump[user][exercise] }
+    });
 
-      dialogRef.afterClosed().subscribe(result => {
-      });
+    dialogRef.afterClosed().subscribe(result => {
+    });
   }
 
   solutionId(user: string, exercise: string) {
@@ -129,5 +133,16 @@ export class ChallengeInfoComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.usersService.IsAdmin();
+  }
+
+  async deleteUser(studentId: string) {
+    const result = await this.usersService.DeleteUser(studentId);
+    this.toastr.show(`Удалено ${result} пользователей`);
+  }
+
+  async recheckSolutions(studentId: string) {
+    const count = await this.exerciseService.recheckUserSolutions(studentId);
+
+    this.toastr.success(`Будет перепроверено решений: ${count}`);
   }
 }

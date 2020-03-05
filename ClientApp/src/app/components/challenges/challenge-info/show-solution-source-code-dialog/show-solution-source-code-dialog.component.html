@@ -6,10 +6,12 @@
     <mat-label>Прислано</mat-label>
     <mat-select (selectionChange)="changeSolution($event.value)">
       <mat-option *ngFor="let solution of allSolutions" [value]="solution.Id">
-        {{solution.SendingTime}}
+        {{solution.Language}} {{solution.SendingTime}}
       </mat-option>
     </mat-select>
   </mat-form-field>
+  <p>{{solutionData.Id}}</p>
+  <p (click)="recheck(solutionData.Id)">Перепроверить</p>
 
   <h4>Код программы</h4>
   <mat-form-field>
@@ -21,10 +23,10 @@
     <mat-expansion-panel *ngFor="let log of solutionLogs">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          Длительность: {{log.Duration}}
+          Проверено: {{log.CheckedTime}}
         </mat-panel-title>
         <mat-panel-description>
-          Проверено: {{log.CheckedTime}}
+          Результат: {{runResult(log)}}
         </mat-panel-description>
     </mat-expansion-panel-header>
     <div class="exLogs">

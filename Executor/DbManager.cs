@@ -58,6 +58,12 @@ namespace Executor
             logger.LogDebug($"Sended logs, status code: {result.StatusCode}");
         }
 
+        public async Task SaveBuildLog(Guid solutionId, string log)
+        {
+            var content = new StringContent(JsonConvert.SerializeObject(log), Encoding.UTF8, "application/json");
+            var result = await InvokePostInternal($"api/executor/buildlog/{solutionId}", content);
+            logger.LogDebug($"Sended build logs, status code: {result.StatusCode}");
+        }
 
         private async Task<T> Invoke<T>(string path)
         {

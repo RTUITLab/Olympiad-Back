@@ -27,7 +27,8 @@ namespace Executor
             { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
             { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
             { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
-            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } }
+            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
+            { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
         };
 
 
@@ -38,6 +39,7 @@ namespace Executor
                 kvp => new ExecuteWorker(
                         kvp.Value,
                         solutionBase.SaveChanges,
+                        solutionBase.SaveBuildLog,
                         solutionBase.GetExerciseData,
                         solutionBase,
                         dockerClient,
@@ -52,7 +54,7 @@ namespace Executor
             {
                 (await solutionBase.GetInQueueSolutions())
                     .ForEach(s => executeWorkers[s.Language].Handle(s));
-                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
                 Console.WriteLine("end sleep");
             }
         }
