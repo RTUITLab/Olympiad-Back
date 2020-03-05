@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -118,8 +118,27 @@ namespace WebApp.Controllers
             };
 
             await context.Solutions.AddAsync(solution);
+            Solution sol2 = null;
+            if (solution.Language == "pasabc")
+            {
+                sol2 = new Solution()
+                {
+                    Raw = fileBody,
+                    Language = "fpas",
+                    ExerciseId = exerciseId,
+                    UserId = authorId,
+                    Status = SolutionStatus.InQueue,
+                    SendingTime = DateTime.UtcNow
+                };
+                await context.Solutions.AddAsync(sol2);
+            }
+
             await context.SaveChangesAsync();
             queue.PutInQueue(solution.Id);
+            if (sol2 != null)
+            {
+                queue.PutInQueue(sol2.Id);
+            }
             return mapper.Map<SolutionResponse>(solution);
         }
 
@@ -129,8 +148,44 @@ namespace WebApp.Controllers
         {
             var solutions = await context
                 .Solutions
+                .Where(s => s.Status != SolutionStatus.CompileError)
                 .Where(s => s.ExerciseId == exerciseId)
                 .ToListAsync();
+
+            solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
+            await context.SaveChangesAsync();
+            solutions.ForEach(s => queue.PutInQueue(s.Id));
+            return Json(solutions.Count);
+        }
+
+        [HttpPost("rechecksolution/{solutionId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RecheckSolution(Guid solutionId)
+        {
+            var solution = await context
+                .Solutions
+                .SingleAsync(s => s.Id == solutionId);
+
+            solution.Status = SolutionStatus.InQueue;
+            await context.SaveChangesAsync();
+            queue.PutInQueue(solution.Id);
+            return Json(1);
+        }
+
+        [HttpPost("recheckusersolution/{studentId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RecheckUserSolutions(string studentId)
+        {
+            var solutions = await context
+                .Solutions
+                .Include(s => s.SolutionChecks)
+                .Include(s => s.SolutionBuildLogs)
+                .Where(s => s.User.StudentID == studentId)
+                .ToListAsync();
+
+
+            context.SolutionChecks.RemoveRange(solutions.SelectMany(s => s.SolutionChecks));
+            context.SolutionBuildLogs.RemoveRange(solutions.SelectMany(s => s.SolutionBuildLogs));
 
             solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
             await context.SaveChangesAsync();
@@ -154,7 +209,7 @@ namespace WebApp.Controllers
             return context
                 .Solutions
                 .GroupBy(s => s.Status)
-                .Select(g => new SolutionsStatisticResponse { SolutionStatus = g.Key.ToString(), Count = g.Count()  })
+                .Select(g => new SolutionsStatisticResponse { SolutionStatus = g.Key.ToString(), Count = g.Count() })
                 .ToListAsync();
         }
 

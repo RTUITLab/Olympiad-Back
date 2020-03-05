@@ -23,13 +23,14 @@ namespace Executor.Executers
         public ExecuteWorker(
             BuildProperty buildProperty,
             Func<Guid, SolutionStatus, Task> processSolution,
+            Func<Guid, string, Task> saveBuildLogs,
             Func<Guid, Task<ExerciseData[]>> getTests,
             ISolutionsBase solutionsBase,
             IDockerClient dockerClient,
             ILoggerFactory logger)
         {
             this.getTests = getTests;
-            builder = new ProgramBuilder(processSolution, BuildFinished, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
+            builder = new ProgramBuilder(processSolution, saveBuildLogs, BuildFinished, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
             runner = new ProgramRunner(solutionsBase, dockerClient, logger.CreateLogger<ProgramRunner>());
             this.logger = logger.CreateLogger<ExecuteWorker>();
         }

@@ -89,6 +89,16 @@ namespace WebApp.Controllers.Users
             return options.Value.IsRegisterAvailable;
         }
 
+
+        [HttpDelete("deleteUser/{studentId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DeleteUser(string studentId)
+        {
+            var targetIUser = await UserManager.Users.Where(u => u.StudentID == studentId).SingleAsync();
+            await UserManager.DeleteAsync(targetIUser);
+            return Json(1);
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Post([FromBody]RegistrationRequest model)
