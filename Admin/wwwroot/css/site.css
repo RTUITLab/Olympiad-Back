@@ -44,7 +44,12 @@ app {
             white-space: nowrap;
             margin-left: 1.5rem;
         }
-
+th.vertical {
+    height: 150px;
+    line-height: 14px;
+    padding-bottom: 20px;
+    text-align: left;
+}
 .main .top-row a:first-child {
     overflow: hidden;
     text-overflow: ellipsis;

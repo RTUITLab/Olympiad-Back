@@ -1,0 +1,390 @@
+﻿@page "/old/2019reports"
+@using Microsoft.EntityFrameworkCore
+@using Olympiad.Shared.Models
+@using System.Text.RegularExpressions
+@using System.IO
+
+@using OpenQA.Selenium.Chrome
+@using OpenQA.Selenium
+@using NPOI.SS.UserModel;
+@using NPOI.XSSF.UserModel;
+@using NPOI.SS.Util;
+@using CsvHelper;
+
+@inject ApplicationDbContext db
+
+<h3>Reports</h3>
+<p>Page with logic for generate excel reports about 2019 olympiad</p>
+<p>All methods locked</p>
+<button class="btn btn-primary" @onclick="Do">Do</button>
+<button class="btn btn-primary" @onclick="DoPerGroup">Do per group</button>
+<button class="btn btn-primary" @onclick="DoInOneFile">Do in one file</button>
+<h4>@groups.Count(g => g.isDone)/@groups.Count</h4>
+<div class="row">
+    <div class="col">
+
+        @foreach (var group in groups)
+        {
+            <br />
+            <label>
+                @group.name
+                @if (group.isDone)
+                {
+
+                    <input type="checkbox" checked disabled />
+                }
+                else
+                {
+
+                    <input type="checkbox" disabled />
+                }
+            </label>
+            @if (inProgressGroup == group.name)
+            {
+                <p>in progress</p>
+            }
+        }
+    </div>
+    <div class="col">
+        <Logs @ref="l"></Logs>
+
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>ID</th>
+            @foreach (var taskName in taskNames)
+            {
+                <th class="vertical">@taskName</th>
+                <th>Lang</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in userRecords)
+        {
+
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Id</td>
+                @foreach (var taskName in taskNames)
+                {
+                    @if (!item.Results.ContainsKey(taskName))
+                    {
+                        <td>0</td>
+                        <td>-</td>
+                    }
+                    else
+                    {
+                        <td>@item.Results[taskName].Score</td>
+                        <td>@item.Results[taskName].Lang</td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    Logs l;
+
+    private string inProgressGroup = "";
+
+    private string pathToReports = @"C:\Users\CAPCHIK\Desktop\DoneReports";
+
+    private List<string> taskNames = new List<string>
+{
+        "Арифметические операции",
+        "Условный оператор",
+        "Циклы",
+        "Сортировка и поиск",
+        "Рекурсия",
+        "Одномерные массивы",
+        "Двумерные массивы",
+        "Строки",
+    };
+    private List<UserRecord> userRecords = new List<UserRecord>();
+
+    private List<(string name, bool isDone)> groups = new List<(string, bool)>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        return; // locked
+        base.OnInitialized();
+        var g = await db.Challenges
+            .Where(ch => ch.Name.StartsWith("И"))
+            .GroupBy(ch => ch.Name.Substring(0, 10))
+            .Select(ch => ch.Key)
+            .ToListAsync();
+        foreach (var gr in g)
+        {
+            groups.Add((gr, false));
+        }
+        foreach (var item in Directory.GetFiles(pathToReports).Select(n => Path.GetFileNameWithoutExtension(n)))
+        {
+            groups.RemoveAll(i => i.name == item);
+            groups.Add((item, true));
+        }
+    }
+
+    private async Task Do()
+    {
+        return; // locked
+
+        inProgressGroup = groups.Where(g => !g.isDone).FirstOrDefault().name;
+        if (string.IsNullOrEmpty(inProgressGroup))
+        {
+            await l.Log("Done");
+        }
+        await l.Log(inProgressGroup);
+        var newUsers = await GetUsersOfGroup(inProgressGroup);
+
+        userRecords.AddRange(newUsers);
+        groups.RemoveAll(g => g.name == inProgressGroup);
+        groups.Add((inProgressGroup, true));
+        await GenerateExcelReport(userRecords, Path.Combine(pathToReports, $"{inProgressGroup}.xlsx"));
+        inProgressGroup = "";
+        await l.Log(newUsers.Count);
+    }
+
+    private async Task DoPerGroup()
+    {
+        return; // locked
+
+        while (groups.Any(g => !g.isDone))
+        {
+            userRecords.Clear();
+            await Do();
+            StateHasChanged();
+        }
+    }
+
+    private async Task DoInOneFile()
+    {
+        return; // locked
+
+        var groupNames = groups.Select(g => g.name).ToArray();
+        int i = 1;
+        var userRecords = new List<UserRecord>();
+        foreach (var groupName in groupNames)
+        {
+            await l.Log($"getting users for group {groupName} {i++}/{groupNames.Length}");
+            var newRecords = await GetUsersOfGroup(groupName);
+            userRecords.AddRange(newRecords);
+        }
+        await GenerateExcelReport(userRecords, Path.Combine(pathToReports, $"все.xlsx"));
+    }
+
+    private async Task<List<UserRecord>> GetUsersOfGroup(string group)
+    {
+        return null; // locked
+
+        var incorrectChallenges = new Guid[] { Guid.Parse("b64c8b58-b714-4bc7-8c73-f1f529fd5dc5"), Guid.Parse("b863b93c-b76d-46b6-b66d-d6943736cde6") };
+        var users = await db.Users.Where(u => u.StudentID != null)
+            .Where(u => u.UsersToChallenges.Any(utc => utc.Challenge.Name.StartsWith(group)))
+            .Select(u => new
+            {
+                u.FirstName,
+                u.StudentID,
+                solutions = u.Solutions
+                .Where(s => !incorrectChallenges.Contains(s.Exercise.ChallengeId))
+                .Select(s => new BestSolutionRecord
+                {
+                    Lang = s.Language,
+                    Result = s.Status,
+                    ExerciseName = s.Exercise.ExerciseName
+                }),
+            })
+            .ToListAsync();
+        return users.Select(u => new UserRecord
+        {
+            Name = u.FirstName,
+            Id = u.StudentID,
+            Group = group,
+            Results = u.solutions
+                .GroupBy(s => s.ExerciseName)
+                .ToDictionary(g => taskNames.SingleOrDefault(t => g.Key.StartsWith(t)) ?? "", v => v.OrderBy(r => r.Result).LastOrDefault())
+        }).ToList();
+    }
+
+    private async Task GenerateExcelReport(List<UserRecord> userRecords, string filePath)
+    {
+        return; // locked
+
+        IWorkbook workbook = new XSSFWorkbook();
+
+        ISheet sheet1 = workbook.CreateSheet("Результаты");
+
+        var rowNum = 0;
+        IRow row = sheet1.CreateRow(rowNum++);
+
+
+        var boldFont = workbook.CreateFont();
+        boldFont.FontHeightInPoints = ((short)10);
+        boldFont.FontName = "Calibri";
+        boldFont.Color = IndexedColors.Black.Index;
+        boldFont.IsBold = true;
+        boldFont.IsItalic = false;
+
+        var titleStyle = workbook.CreateCellStyle();
+        titleStyle.Alignment = HorizontalAlignment.Center;
+        titleStyle.SetFont(boldFont);
+
+        var endStyle = workbook.CreateCellStyle();
+        endStyle.Alignment = HorizontalAlignment.Center;
+        endStyle.BorderRight = BorderStyle.Medium;
+
+        var endTitleStyle = workbook.CreateCellStyle();
+        endTitleStyle.CloneStyleFrom(endStyle);
+        endTitleStyle.SetFont(boldFont);
+        endTitleStyle.Rotation = 90;
+
+
+        var scoreStyle = workbook.CreateCellStyle();
+        scoreStyle.Alignment = HorizontalAlignment.Center;
+        scoreStyle.BorderLeft = BorderStyle.Medium;
+
+        var langStyle = workbook.CreateCellStyle();
+        langStyle.Alignment = HorizontalAlignment.Center;
+        langStyle.BorderRight = BorderStyle.Medium;
+
+        var rotateStyle = workbook.CreateCellStyle();
+        rotateStyle.Alignment = HorizontalAlignment.Center;
+        rotateStyle.Rotation = 90;
+        rotateStyle.BorderLeft = BorderStyle.Medium;
+        rotateStyle.SetFont(boldFont);
+
+        var colNum = 0;
+        row.CreateCell(colNum++).SetCellValue("      ФИО");
+        row.CreateCell(colNum++).SetCellValue("      ID");
+        row.CreateCell(colNum++).SetCellValue("      Группа");
+        for (int i = 0; i < 3; i++)
+        {
+            row.GetCell(i).CellStyle = titleStyle;
+        }
+        foreach (var taskName in taskNames)
+        {
+            var cell = row.CreateCell(colNum++);
+            cell.SetCellValue("      " + taskName);
+            cell.CellStyle = rotateStyle;
+            cell = row.CreateCell(colNum++);
+            cell.SetCellValue("      ЯП");
+            cell.CellStyle = rotateStyle;
+        }
+
+        var endCell = row.CreateCell(colNum++);
+        endCell.SetCellValue("      Решено задач");
+        endCell.CellStyle = endTitleStyle;
+        int position = 1;
+        foreach (var userRecord in userRecords.OrderBy(ur => ur.Name))
+        {
+            position++;
+            if (position % 300 == 0)
+            {
+                await l.Log($"{position}/{userRecords.Count}");
+            }
+            row = sheet1.CreateRow(rowNum++);
+            colNum = 0;
+            row.CreateCell(colNum++).SetCellValue(userRecord.Name);
+            var idCell = row.CreateCell(colNum++);
+            idCell.SetCellValue(userRecord.Id);
+            if (userRecord.Id[2] != 'И')
+            {
+                var drawing = sheet1.CreateDrawingPatriarch();
+                var factory = workbook.GetCreationHelper();
+                var anchor = factory.CreateClientAnchor();
+                anchor.Col1 = colNum;
+                anchor.Col2 = colNum + 8;
+                anchor.Row1 = rowNum;
+                anchor.Row2 = rowNum + 2;
+                var comment = drawing.CreateCellComment(anchor);
+                comment.String = new XSSFRichTextString("НЕКОРРЕКТНЫЙ НОМЕР, ИНОСТРАНЕЦ");
+
+                idCell.SetCellValue("-------");
+                idCell.CellComment = comment;
+            }
+            row.CreateCell(colNum++).SetCellValue(userRecord.Group);
+            var formulas = new List<string>();
+            foreach (var taskName in taskNames)
+            {
+                ICell scoreCell;
+                ICell langCell;
+                if (!userRecord.Results.ContainsKey(taskName))
+                {
+                    scoreCell = row.CreateCell(colNum++);
+                    scoreCell.SetCellValue(0);
+                    scoreCell.CellStyle = scoreStyle;
+                    langCell = row.CreateCell(colNum++);
+                    langCell.SetCellValue(" - ");
+                    langCell.CellStyle = langStyle;
+                }
+                else
+                {
+                    scoreCell = row.CreateCell(colNum++);
+                    scoreCell.CellStyle = scoreStyle;
+                    scoreCell.SetCellValue(userRecord.Results[taskName].Score);
+
+                    langCell = row.CreateCell(colNum++);
+                    langCell.CellStyle = langStyle;
+                    if (userRecord.Results[taskName].Lang != "c" && userRecord.Results[taskName].Lang != "cpp")
+                    {
+                        var drawing = sheet1.CreateDrawingPatriarch();
+                        var factory = workbook.GetCreationHelper();
+                        var anchor = factory.CreateClientAnchor();
+                        anchor.Col1 = colNum;
+                        anchor.Col2 = colNum + 4;
+                        anchor.Row1 = rowNum;
+                        anchor.Row2 = rowNum + 2;
+                        var comment = drawing.CreateCellComment(anchor);
+                        comment.String = new XSSFRichTextString(userRecord.Results[taskName].Lang);
+
+                        langCell.CellComment = comment;
+                    }
+                    var lang = userRecord.Results[taskName].Lang == "c" ? " c " :
+                               userRecord.Results[taskName].Lang == "cpp" ? "cpp" : " # ";
+                    langCell.SetCellValue(lang);
+                }
+
+                var scoreCellName = CellReference.ConvertNumToColString(scoreCell.ColumnIndex);
+                var scoreCellPosition = scoreCellName + (row.RowNum + 1);
+                formulas.Add(scoreCellPosition);
+            }
+            var totalSumCell = row.CreateCell(colNum++);
+            totalSumCell.SetCellFormula(string.Join('+', formulas));
+            totalSumCell.CellStyle = langStyle;
+        }
+        foreach (var i in Enumerable.Range(0, 3 + taskNames.Count * 2 + 1))
+        {
+            await l.Log($"Auto size column {i}");
+            sheet1.AutoSizeColumn(i);
+        }
+        await l.Log($"Setup filter");
+        sheet1.SetAutoFilter(new CellRangeAddress(0, rowNum - 1, 0, colNum - 1));
+        await l.Log($"Setup freeze panels");
+        sheet1.CreateFreezePane(3, 1);
+        using var fileStream = File.OpenWrite(filePath);
+        await l.Log("Start writing");
+        workbook.Write(fileStream);
+        await l.Log("Done writing");
+    }
+
+    class BestSolutionRecord
+    {
+        public int Score => Result == SolutionStatus.Sucessful ? 1 : 0;
+        public SolutionStatus Result { get; set; }
+        public string Lang { get; set; }
+        public string ExerciseName { get; set; }
+    }
+
+    class UserRecord
+    {
+        public string Name { get; set; }
+        public string Id { get; set; }
+        public string Group { get; set; }
+        public Dictionary<string, BestSolutionRecord> Results { get; set; }
+    }
+}

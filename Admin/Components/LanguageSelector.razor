@@ -1,8 +1,10 @@
-﻿@foreach (var lang in langs)
+﻿<button @onclick="ToggleAll">toggle all</button>
+@foreach (var lang in langs)
 {
     <label>
         @lang.Key.title
         <input type="checkbox" checked="@langs[lang.Key]" @onchange="@(async (e) => await InputChanged(e, lang.Key))" />
+        |
     </label>
 }
 
@@ -17,17 +19,36 @@
 
     Dictionary<(string title, string value), bool> langs = new Dictionary<(string, string), bool>
 {
+        {    ("C", "c"), false },
         { ("C++", "cpp"), false },
-        {    ("C", "c"), false }
+        { ("C#", "csharp"), false },
+        { ("Java", "java"), false  },
+        { ("Pascal ABC", "pasabc"), false },
+        { ("Python 3", "python"), false }
     };
 
-    private async Task InputChanged(ChangeEventArgs e, (string, string) key)
+    private Task InputChanged(ChangeEventArgs e, (string, string) key)
     {
         var value = (bool)e.Value;
         langs[key] = value;
 
+        return UpdateValue();
+    }
+
+    private Task ToggleAll()
+    {
+        var firstPosition = langs.First().Value;
+        foreach (var key in langs.Keys.ToArray())
+        {
+            langs[key] = !firstPosition;
+        }
+        return UpdateValue();
+    }
+
+    private Task UpdateValue()
+    {
         SelectedLangs = langs.Where(p => p.Value).Select(p => p.Key.value).ToArray();
-        await SelectedLangsChanged.InvokeAsync(SelectedLangs);
+        return SelectedLangsChanged.InvokeAsync(SelectedLangs);
     }
 
     protected override void OnParametersSet()
