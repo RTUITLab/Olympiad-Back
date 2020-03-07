@@ -20,6 +20,7 @@ import { CheckedSolution } from '../models/CheckedSolution';
 
 @Injectable()
 export class ExerciseService extends BaseHttpService implements OnInit {
+  
 
 
   constructor(private http: HttpClient, private userService: UserStateService) { super(); }
@@ -107,6 +108,18 @@ export class ExerciseService extends BaseHttpService implements OnInit {
   recheckSolutions(exerciseId: string): Promise<number> {
     return this.http.post<number>(
       `${this.baseUrl}/api/check/recheck/${exerciseId}`, null, this.userService.authOptions
+    ).toPromise();
+  }
+
+  recheckSolution(solutionId: string): Promise<number> {
+    return this.http.post<number>(
+      `${this.baseUrl}/api/check/rechecksolution/${solutionId}`, null, this.userService.authOptions
+    ).toPromise();
+  }
+
+  recheckUserSolutions(studentId: string): Promise<number> {
+    return this.http.post<number>(
+      `${this.baseUrl}/api/check/recheckusersolution/${studentId}`, null, this.userService.authOptions
     ).toPromise();
   }
 }

@@ -21,5 +21,6 @@ namespace Models.Solutions
         public DateTime? CheckedTime { get; set; }
 
         public List<SolutionCheck> SolutionChecks { get; set; }
+        public List<SolutionBuildLog> SolutionBuildLogs { get; set; }
     }
 }

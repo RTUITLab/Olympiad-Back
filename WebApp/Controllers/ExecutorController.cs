@@ -39,7 +39,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IEnumerable<Solution>> GetAsync()
         {
-            var list = queue.GetFromQueue(10);
+            var list = queue.GetFromQueue(1);
             var targetSolutions = await dbContext
                 .Solutions
                 .Where(s => list.Contains(s.Id))
@@ -60,6 +60,27 @@ namespace WebApp.Controllers
                 solution.StartCheckingTime = DateTime.UtcNow;
             else
                 solution.CheckedTime = DateTime.UtcNow;
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("buildlog/{solutionId}")]
+        public async Task<IActionResult> CheckLog(
+            [FromRoute]Guid solutionId,
+            [FromBody] string log)
+        {
+            var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
+            if (solution == null)
+                return NotFound();
+            var buildLogRecord = new SolutionBuildLog
+            {
+                BuildedTime = DateTime.UtcNow,
+                Log = log,
+                SolutionId = solutionId,
+                Solution = solution
+            };
+            dbContext.SolutionBuildLogs.Add(buildLogRecord);
             await dbContext.SaveChangesAsync();
             return Ok();
         }

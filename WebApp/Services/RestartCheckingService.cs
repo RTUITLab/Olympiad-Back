@@ -33,7 +33,7 @@ namespace WebApp.Services
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                     var queue = scope.ServiceProvider.GetRequiredService<IQueueChecker>();
-                    var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(1);
+                    var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
                     var targetSolutions = await dbContext
                         .Solutions
                         .Where(s => s.Status == SolutionStatus.InProcessing)

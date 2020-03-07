@@ -18,6 +18,7 @@
                 Show scores
                 <input type="radio" name="statusPick" value="scores" [(ngModel)]="statusMode" />
             </label>
+            <p>{{userIds().length}}</p>
             <table>
                 <tr>
                     <th>User ID</th>
@@ -26,7 +27,7 @@
                     </th>
                 </tr>
                 <tr *ngFor="let user of userIds()">
-                    <td>{{user}}</td>
+                    <td>{{user}}<p (click)="recheckSolutions(user)">recheck</p><p (click)="deleteUser(user)" >delete</p></td>
                     <td *ngFor="let exerciseName of exerciseNames" [ngSwitch]="statusMode">
                         <p *ngSwitchCase="'allNumbers'">
                             {{solutionStatus(user, exerciseName)}}
