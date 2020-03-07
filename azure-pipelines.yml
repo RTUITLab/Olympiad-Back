@@ -6,7 +6,7 @@ name: $(BuildID)-$(Build.SourceBranchName)
 
 
 stages:
-- stage: build_client
+- stage: build
   displayName: Build client app
   jobs:
   - job: build_client_back
@@ -43,6 +43,42 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'olympiad-client-back-build'
         publishLocation: 'Container'
+
+  - job: build_executor
+    displayName: Build executor
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '3.1.100'
+        includePreviewVersions: true
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet restore'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'Executor/Executor.csproj'
+        arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-client-back-build'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'olympiad-executor-build'
+        publishLocation: 'Container'
+
 
   - job: build_client_front
     displayName: Build frontend
