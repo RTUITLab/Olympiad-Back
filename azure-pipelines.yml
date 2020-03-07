@@ -189,3 +189,12 @@ stages:
         PathtoPublish: 'deploy/admin'
         ArtifactName: 'olympiad-admin-deploy'
         publishLocation: 'Container'
+  - job: publish_executor_deploy
+    displayName: 'Publish executor deploy files'
+    steps:
+    - task: PublishBuildArtifacts@1
+      displayName: 'publish artifact olympiad-executor-deploy'
+      inputs:
+        PathtoPublish: 'deploy/executor'
+        ArtifactName: 'olympiad-executor-deploy'
+        publishLocation: 'Container'
