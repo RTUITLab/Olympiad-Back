@@ -1,0 +1,6 @@
+﻿FROM cmplopes/alpine-freepascal
+
+COPY ./Program.pas /src/src/Program.pas
+WORKDIR /src/src/
+RUN fpc Program.pas
+CMD ./Program

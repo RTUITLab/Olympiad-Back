@@ -1,4 +1,4 @@
 ﻿FROM gcc:latest
 COPY ./Program.c /src/Program.c
-RUN gcc -o /app /src/Program.c
+RUN gcc -lm -o /app /src/Program.c
 CMD /app 

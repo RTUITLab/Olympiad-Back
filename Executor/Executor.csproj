@@ -39,6 +39,9 @@
     <None Update="Executers\Build\DockerFiles\DockerFile-csharp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Executers\Build\DockerFiles\DockerFile-fpas">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Executers\Build\DockerFiles\DockerFile-java">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

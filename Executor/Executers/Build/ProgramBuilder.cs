@@ -10,6 +10,7 @@ using Models.Solutions;
 using Olympiad.Shared.Models;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace Executor.Executers.Build
 {
@@ -17,6 +18,7 @@ namespace Executor.Executers.Build
     {
         private readonly BlockingCollection<Solution> solutionQueue = new BlockingCollection<Solution>();
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
+        private readonly Func<Guid, string, Task> saveBuildLogs;
         private readonly Func<Solution, Task> finishBuildSolution;
         private readonly BuildProperty buildProperty;
         private readonly IDockerClient dockerClient;
@@ -25,6 +27,7 @@ namespace Executor.Executers.Build
         private Task buildingTask;
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
+            Func<Guid, string, Task> saveBuildLogs,
             Func<Solution, Task> finishBuildSolution,
             BuildProperty buildProperty,
             IDockerClient dockerClient,
@@ -32,6 +35,7 @@ namespace Executor.Executers.Build
         {
             buildingTask = Task.Run(BuildLoop);
             this.processSolution = processSolution;
+            this.saveBuildLogs = saveBuildLogs;
             this.finishBuildSolution = finishBuildSolution;
             this.buildProperty = buildProperty;
             this.dockerClient = dockerClient;
@@ -53,11 +57,16 @@ namespace Executor.Executers.Build
                 logger.LogInformation($"build solution {solution.Id}");
                 try
                 {
-                    if (!await Build(solution.Id, solution.Language, solution.Raw))
+                    var (buildSuccess, buildLogs) = await Build(solution.Id, solution.Language, solution.Raw);
+                    await saveBuildLogs(solution.Id, buildLogs);
+
+                    if (!buildSuccess)
                     {
                         await processSolution(solution.Id, SolutionStatus.CompileError);
+                        logger.LogInformation($"{solution.Id} {SolutionStatus.CompileError}");
                         continue;
                     }
+                    logger.LogInformation($"{solution.Id} BUILDED");
                     await finishBuildSolution(solution);
                 }
                 catch (Exception ex)
@@ -67,27 +76,29 @@ namespace Executor.Executers.Build
             }
         }
 
-        protected virtual async Task<bool> Build(Guid solutionId, string lang, string raw)
+        protected virtual async Task<(bool, string)> Build(Guid solutionId, string lang, string raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
             {
-                return false;
+                return (false, "EMPTY SOLUTION");
             }
             if (lang == "java")
             {
+                var newRaw = Regex.Replace(raw, @"^public class [^ {]+", "public class Main", RegexOptions.Multiline);
+                raw = newRaw;
                 //TODO rename Java class to main
             }
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
+
             File.WriteAllText(Path.Combine(sourceDir.FullName, buildProperty.ProgramFileName), raw, new UTF8Encoding(false));
             var dockerFile = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles", $"DockerFile-{lang}"));
             File.WriteAllText(Path.Combine(sourceDir.FullName, "DockerFile"), dockerFile, new UTF8Encoding(false));
 
             var buildLogs = await BuildImageAsync($"solution:{solutionId}", sourceDir.FullName);
-
             sourceDir.Delete(true);
-            Console.WriteLine(buildLogs);
-            return !buildProperty.IsCompilationFailed(buildLogs);
+            logger.LogDebug(buildLogs);
+            return (!buildProperty.IsCompilationFailed(buildLogs), buildLogs);
         }
 
         private async Task<string> BuildImageAsync(string imageName, string buildContext)
