@@ -11,6 +11,7 @@
     </mat-select>
   </mat-form-field>
   <p>{{solutionData.Id}}</p>
+  <p *ngIf="testsCounts">Пройдено тестов: {{testsCounts.success}}/{{testsCounts.all}}</p>
   <p (click)="recheck(solutionData.Id)">Перепроверить</p>
 
   <h4>Код программы</h4>

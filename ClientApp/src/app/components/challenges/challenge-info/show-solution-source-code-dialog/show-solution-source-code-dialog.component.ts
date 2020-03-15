@@ -14,6 +14,7 @@ import { ToastrService } from 'ngx-toastr';
 export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   solutionData: CheckedSolution;
   solutionLogs: SolutionLog[];
+  testsCounts: { success: number, all: number };
   allSolutions: CheckedSolution[];
   constructor(
     public dialogRef: MatDialogRef<ShowSolutionSourceCodeDialogComponent>,
@@ -39,6 +40,22 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
     this.solutionLogs = await this.exerciseService.checkSolutionLogs(solutionId);
     this.solutionLogs = this.solutionTimeConverter(this.solutionLogs, 'CheckedTime');
     this.solutionLogs = this.solutionTimeSort(this.solutionLogs, 'CheckedTime');
+    this.testsCounts = this.calculateTestsCounts();
+  }
+  calculateTestsCounts(): { success: number; all: number; } {
+    const result = { success: 0, all: 0 };
+    var inDataSet = new Set();
+    for (const check of this.solutionLogs.reverse()) {
+      if (inDataSet.has(check.ExampleIn)) {
+        continue;
+      }
+      inDataSet.add(check.ExampleIn)
+      if (this.runResult(check) == "Корректно") {
+        result.success += 1;
+      }
+      result.all += 1;
+    }
+    return result;
   }
   solutionTimeConverter(array: any, key: string) {
     array.forEach(el => {
