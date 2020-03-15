@@ -99,14 +99,14 @@ namespace Executor.Executers.Run
                     if (localStatus < result)
                     {
                         result = localStatus;
-                        break;
+                        //break;
                     }
                 }
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex, "error while running");
                     result = SolutionStatus.RunTimeError;
-                    break;
+                    //break;
                 }
             }
             logger.LogInformation($"{solutionId} total status {result}");
