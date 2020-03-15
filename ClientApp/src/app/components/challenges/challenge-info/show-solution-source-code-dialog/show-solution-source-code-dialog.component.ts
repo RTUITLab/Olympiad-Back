@@ -15,6 +15,8 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   solutionData: CheckedSolution;
   solutionLogs: SolutionLog[];
   allSolutions: CheckedSolution[];
+  globalCounter: number;
+  allCounter: number;
   constructor(
     public dialogRef: MatDialogRef<ShowSolutionSourceCodeDialogComponent>,
     public exerciseService: ExerciseService,
@@ -24,6 +26,8 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   ngOnInit() {
     this.getBestSolution();
     this.getAllSolutions();
+    this.globalCounter = 0;
+    this.allCounter = 0;
   }
   async getAllSolutions() {
     this.allSolutions = await this.exerciseService.getUserExerciseSolutions(this.solutionData.ExerciseId, this.solutionData.UserId);
@@ -77,10 +81,12 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   }
 
   runResult(log: SolutionLog): string {
+    this.allCounter++;
     if (log.ProgramErr) {
       return "Есть поток ошибок";
     }
     if (log.ExampleOut === log.ProgramOut) {
+      this.globalCounter++;
       return "Корректно";
     }
     return "Не совппадают вход и выход";

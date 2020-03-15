@@ -17,7 +17,7 @@
   <mat-form-field>
     <textarea matInput [placeholder]="solutionData.Language" readonly [value]="solutionData.Raw"></textarea>
   </mat-form-field>
-
+  <h4>Счётчик: {{globalCounter}} из {{allCounter}}</h4>
   <h4>Логи запусков</h4>
   <mat-accordion>
     <mat-expansion-panel *ngFor="let log of solutionLogs">
