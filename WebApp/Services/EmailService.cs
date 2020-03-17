@@ -5,16 +5,25 @@ using System.Threading.Tasks;
 using WebApp.Services.Interfaces;
 using MimeKit;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
+using WebApp.Models.Settings;
 
 namespace WebApp.Services
 {
     internal class EmailService : IEmailSender
     {
+        private readonly EmailSettings options;
+
+        public EmailService(IOptions<EmailSettings> options)
+        {
+            this.options = options.Value;
+        }
         public async Task SendEmailAsync(string email, string subject, string message)
         {
             var emailMessage = new MimeMessage();
+            
 
-            emailMessage.From.Add(new MailboxAddress("Администрация сайта", "olympiad-it@yandex.ru"));
+            emailMessage.From.Add(new MailboxAddress("Администрация сайта", options.Email));
             emailMessage.To.Add(new MailboxAddress("", email));
             emailMessage.Subject = subject;
 
@@ -25,8 +34,8 @@ namespace WebApp.Services
 
             using (var admin = new SmtpClient())
             {
-                await admin.ConnectAsync("smtp.yandex.ru", 465, true);
-                await admin.AuthenticateAsync("olympiad-it@yandex.ru", "AwesomePassword432");
+                await admin.ConnectAsync(options.SmtpHost, options.SmtpPort, options.SmtpUseSsl);
+                await admin.AuthenticateAsync(options.Email, options.Password);
                 await admin.SendAsync(emailMessage);
                 await admin.DisconnectAsync(true);
             }
