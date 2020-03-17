@@ -27,6 +27,14 @@ namespace Executor.Executers.Run
         private Task runningTask;
         private List<Guid> blackList = new List<Guid>();
 
+        public int RunQueueLength => solutionQueue.Count;
+
+        public Guid? Current { get; private set; }
+        public int CurrentTestDataIndex { get; private set; }
+        public int CurrentTestDataCount { get; private set; }
+        private DateTime currentStart;
+        public TimeSpan CurrentBuildTime => DateTime.Now - currentStart;
+
 
         public ProgramRunner(
             ISolutionsBase solutionsBase,
@@ -53,7 +61,12 @@ namespace Executor.Executers.Run
                 try
                 {
                     if (!blackList.Contains(solutionId))
+                    {
+                        currentStart = DateTime.Now;
+                        CurrentTestDataCount = testData.Length;
+                        Current = solutionId;
                         await HandleSolution(solutionId, testData);
+                    }
                     else
                         logger.LogError($"solution from black list {solutionId}");
                 }
@@ -61,6 +74,12 @@ namespace Executor.Executers.Run
                 {
                     blackList.Add(solutionId);
                     logger.LogError(ex, "Critical error");
+                }
+                finally
+                {
+                    Current = null;
+                    CurrentTestDataIndex = 0;
+                    CurrentTestDataCount = 0;
                 }
             }
         }
@@ -107,6 +126,10 @@ namespace Executor.Executers.Run
                     logger.LogWarning(ex, "error while running");
                     result = SolutionStatus.RunTimeError;
                     //break;
+                }
+                finally
+                {
+                    CurrentTestDataIndex++;
                 }
             }
             logger.LogInformation($"{solutionId} total status {result}");

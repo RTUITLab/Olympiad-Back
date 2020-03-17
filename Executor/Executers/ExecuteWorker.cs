@@ -13,12 +13,10 @@ namespace Executor.Executers
     class ExecuteWorker
     {
         private readonly Func<Guid, Task<ExerciseData[]>> getTests;
-        private readonly ProgramBuilder builder;
-        private readonly ProgramRunner runner;
+        public readonly ProgramBuilder builder;
+        public readonly ProgramRunner runner;
         private readonly ILogger<ExecuteWorker> logger;
 
-
-        public string Lang { get; }
 
         public ExecuteWorker(
             BuildProperty buildProperty,

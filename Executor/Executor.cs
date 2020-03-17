@@ -18,7 +18,11 @@ namespace Executor
     class Executor
     {
         private ISolutionsBase solutionBase;
-        private readonly Dictionary<string, ExecuteWorker> executeWorkers;
+        private readonly ILogger<Executor> logger;
+        public readonly Dictionary<string, ExecuteWorker> executeWorkers;
+
+        public int BuildQueueLength => executeWorkers.Select(w => w.Value.builder.BuildQueueLength).Sum();
+        public int RunQueueLength => executeWorkers.Select(w => w.Value.runner.RunQueueLength).Sum();
 
         private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
         {
@@ -32,7 +36,11 @@ namespace Executor
         };
 
 
-        public Executor(ISolutionsBase solutionBase, IDockerClient dockerClient, ILoggerFactory logger)
+        public Executor(
+            ISolutionsBase solutionBase,
+            IDockerClient dockerClient,
+            ILoggerFactory loggerFactory,
+            ILogger<Executor> logger)
         {
             executeWorkers = buildProperties.ToDictionary(
                 kvp => kvp.Key,
@@ -43,19 +51,28 @@ namespace Executor
                         solutionBase.GetExerciseData,
                         solutionBase,
                         dockerClient,
-                        logger)
+                        loggerFactory)
             );
             this.solutionBase = solutionBase;
+            this.logger = logger;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
             while (true)
             {
-                (await solutionBase.GetInQueueSolutions())
-                    .ForEach(s => executeWorkers[s.Language].Handle(s));
+                if (BuildQueueLength + RunQueueLength > 3)
+                {
+                    logger.LogInformation("Too large queue of tasks, waiting");
+                }
+                else
+                {
+                    var inQueueSolutions = await solutionBase.GetInQueueSolutions();
+                    inQueueSolutions
+                        .ForEach(s => executeWorkers[s.Language].Handle(s));
+                    logger.LogInformation($"added {inQueueSolutions.Count} solutions");
+                }
                 await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-                Console.WriteLine("end sleep");
             }
         }
     }
