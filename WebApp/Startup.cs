@@ -146,7 +146,10 @@ namespace WebApp
             if (Configuration.GetValue<bool>("USE_DEBUG_EMAIL_SENDER"))
                 services.AddTransient<IEmailSender, DebugEmailService>();
             else
+            {
+                services.Configure<EmailSettings>(Configuration.GetSection(nameof(EmailSettings)));
                 services.AddTransient<IEmailSender, EmailService>();
+            }
 
             if (Configuration.GetValue<bool>("USE_DEBUG_RECAPTCHA_VERIFIER"))
                 services.AddTransient<IRecaptchaVerifier, DebugRecaptchaVerifier>();
