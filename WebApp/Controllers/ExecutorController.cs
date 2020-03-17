@@ -39,7 +39,7 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IEnumerable<Solution>> GetAsync()
         {
-            var list = queue.GetFromQueue(1);
+            var list = queue.GetFromQueue(3);
             var targetSolutions = await dbContext
                 .Solutions
                 .Where(s => list.Contains(s.Id))

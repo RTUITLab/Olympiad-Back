@@ -14,7 +14,7 @@ namespace Executor
     {
         private const string SettingsFileName = "appsettings.Secret.json";
         private static IConfiguration configuration;
-
+        private static readonly ConsoleStatusReporterLoggerProvider consoleStatusReporterLoggerProvider = new ConsoleStatusReporterLoggerProvider();
 
         static async Task Main(string[] args)
         {
@@ -29,7 +29,9 @@ namespace Executor
             }
 
             var executor = servicesProvider.GetRequiredService<Executor>();
-            await executor.Start(CancellationToken.None);
+            var statusReporter = servicesProvider.GetRequiredService<ConsoleStatusReporter>();
+            await Task.WhenAll(executor.Start(CancellationToken.None),
+                statusReporter.Start(executor, consoleStatusReporterLoggerProvider, CancellationToken.None));
             Console.ReadLine();
         }
 
@@ -50,13 +52,15 @@ namespace Executor
             => new ServiceCollection()
                 .AddLogging(configure =>
                 {
-                    configure.AddConsole();
+                    //configure.AddConsole();
+                    configure.AddProvider(consoleStatusReporterLoggerProvider);
                     configure.AddConfiguration(configuration.GetSection("Logging"));
                 })
                 .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
                 .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
                 .AddTransient<ISolutionsBase, DbManager>()
-                .AddTransient<Executor>()
+                .AddSingleton<Executor>()
+                .AddSingleton<ConsoleStatusReporter>()
                 .AddHttpClient(DbManager.DbManagerHttpClientName, (sp, client) =>
                 {
                     var options = sp.GetRequiredService<IOptions<StartSettings>>();

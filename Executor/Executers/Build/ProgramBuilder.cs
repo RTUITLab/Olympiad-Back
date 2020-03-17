@@ -25,6 +25,15 @@ namespace Executor.Executers.Build
         private readonly ILogger<ProgramBuilder> logger;
 
         private Task buildingTask;
+
+
+        public int BuildQueueLength => solutionQueue.Count;
+
+
+        private DateTime currentStart;
+        public Solution Current { get; private set; }
+        public TimeSpan CurrentBuildTime => DateTime.Now - currentStart;
+
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, string, Task> saveBuildLogs,
@@ -52,6 +61,8 @@ namespace Executor.Executers.Build
             await Task.Yield();
             foreach (var solution in solutionQueue.GetConsumingEnumerable())
             {
+                Current = solution;
+                currentStart = DateTime.Now;
                 solution.Status = SolutionStatus.InProcessing;
                 await processSolution(solution.Id, SolutionStatus.InProcessing);
                 logger.LogInformation($"build solution {solution.Id}");
@@ -72,6 +83,10 @@ namespace Executor.Executers.Build
                 catch (Exception ex)
                 {
                     logger.LogWarning($"Build solution {solution.Id} with error", ex);
+                }
+                finally
+                {
+                    Current = null;
                 }
             }
         }
