@@ -135,7 +135,16 @@ export class ChallengeInfoComponent implements OnInit {
     return this.usersService.IsAdmin();
   }
 
+  isResultsViewer(): boolean {
+    return this.usersService.IsResultsViewer();
+  }
+
   async deleteUser(studentId: string) {
+    const isWant = confirm("Вы точно хотите удалить пользователя?");
+    if (!isWant) {
+      this.toastr.show(`Удаление отменено`);
+      return;
+    }
     const result = await this.usersService.DeleteUser(studentId);
     this.toastr.show(`Удалено ${result} пользователей`);
   }

@@ -43,6 +43,9 @@ export class LanguageConverter {
     }
 
     public static fileExtensionByWebName(language: string) {
+        if (language === "fpas") {
+            language = "pasabc";
+        }
         return LanguageConverter.info.find(LI => LI.webName === language).fileExtension;
     }
 

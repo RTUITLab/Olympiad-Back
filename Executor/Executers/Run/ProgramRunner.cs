@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using PublicAPI.Requests;
 using System.Collections.Generic;
+using Executor.Models.Settings;
 
 namespace Executor.Executers.Run
 {
@@ -23,19 +24,33 @@ namespace Executor.Executers.Run
 
         private readonly ISolutionsBase solutionsBase;
         private readonly IDockerClient dockerClient;
+        private readonly RunningSettings runningSettings;
         private readonly ILogger<ProgramRunner> logger;
         private Task runningTask;
         private List<Guid> blackList = new List<Guid>();
+
+        public int RunQueueLength => solutionQueue.Count;
+
+        public Guid? Current { get; private set; }
+        private int currentTestDataIndex;
+        private int currentTestDataChecked;
+        public int CurrentTestDataCheckedCount => currentTestDataChecked;
+        public int CurrentTestDataCount { get; private set; }
+        private DateTime currentStart;
+
+        public TimeSpan CurrentBuildTime => DateTime.Now - currentStart;
 
 
         public ProgramRunner(
             ISolutionsBase solutionsBase,
             IDockerClient dockerClient,
+            RunningSettings runningSettings,
             ILogger<ProgramRunner> logger)
         {
             runningTask = Task.Run(RunLoop);
             this.solutionsBase = solutionsBase;
             this.dockerClient = dockerClient;
+            this.runningSettings = runningSettings;
             this.logger = logger;
         }
 
@@ -50,28 +65,66 @@ namespace Executor.Executers.Run
             await Task.Yield();
             foreach (var (solutionId, testData) in solutionQueue.GetConsumingEnumerable())
             {
+                if (blackList.Contains(solutionId))
+                {
+                    // TODO what?
+                    logger.LogError($"solution from black list {solutionId}");
+                    continue;
+                }
+
+                CancellationTokenSource source = new CancellationTokenSource();
+                Task[] workTasks = null;
                 try
                 {
-                    if (!blackList.Contains(solutionId))
-                        await HandleSolution(solutionId, testData);
-                    else
-                        logger.LogError($"solution from black list {solutionId}");
+                    currentStart = DateTime.Now;
+                    CurrentTestDataCount = testData.Length;
+                    Current = solutionId;
+                    workTasks = Enumerable.Range(1, runningSettings.WorkersPerCheckCount).Select(_ => HandleSolutionWorker(solutionId, testData, source.Token)).ToArray();
+                    await Task.WhenAll(workTasks);
                 }
                 catch (Exception ex)
                 {
                     blackList.Add(solutionId);
                     logger.LogError(ex, "Critical error");
+                    source.Cancel();
+                    if (workTasks != null)
+                    {
+                        foreach (var task in workTasks.Where(t => t != null))
+                        {
+                            task.ContinueWith(t =>
+                            {
+                                if (t.IsFaulted)
+                                {
+                                    logger.LogError(t.Exception, "Critical error on worker");
+                                }
+                            }).Wait();
+                        }
+                    }
+                }
+                finally
+                {
+                    Current = null;
+                    currentTestDataIndex = 0;
+                    currentTestDataChecked = 0;
+                    CurrentTestDataCount = 0;
                 }
             }
         }
 
-        private async Task HandleSolution(Guid solutionId, ExerciseData[] testData)
+        private async Task HandleSolutionWorker(Guid solutionId, ExerciseData[] testData, CancellationToken token)
         {
             var result = SolutionStatus.Sucessful;
             var imageName = $"solution:{solutionId}";
 
-            foreach (var data in testData)
+            while (CurrentTestDataCheckedCount < CurrentTestDataCount && !token.IsCancellationRequested)
             {
+                var index = Interlocked.Increment(ref currentTestDataIndex);
+                if (index >= CurrentTestDataCount)
+                {
+                    return;
+                }
+                var data = testData[index];
+
                 var exampleIn = data.InData + '\n';
                 var exampleOut = data.OutData.Trim();
                 try
@@ -99,14 +152,16 @@ namespace Executor.Executers.Run
                     if (localStatus < result)
                     {
                         result = localStatus;
-                        //break;
                     }
                 }
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex, "error while running");
                     result = SolutionStatus.RunTimeError;
-                    //break;
+                }
+                finally
+                {
+                    Interlocked.Increment(ref currentTestDataChecked);
                 }
             }
             logger.LogInformation($"{solutionId} total status {result}");
