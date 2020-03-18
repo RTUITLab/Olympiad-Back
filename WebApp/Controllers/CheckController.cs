@@ -203,6 +203,7 @@ namespace WebApp.Controllers
                 .ToListAsync();
         }
 
+        [Authorize(Roles = "Admin,Executor")]
         [HttpGet("statistic")]
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
         {
@@ -258,11 +259,15 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<SolutionCheckResponse>>> GetLogs(Guid solutionId)
         {
-            return await context
+            var rawData = await context
                 .SolutionChecks
                 .Where(sc => sc.SolutionId == solutionId)
                 .ProjectTo<SolutionCheckResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
+            return rawData
+                .GroupBy(sch => sch.ExampleIn)
+                .Select(g => g.OrderBy(sch => sch.CheckedTime).Last())
+                .ToList();
         }
 
         private static string GetExtensionsForLanguage(string language)

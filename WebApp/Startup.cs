@@ -31,6 +31,7 @@ using WebApp.Formatting.ResponseMappers;
 using Microsoft.OpenApi.Models;
 using RTUITLab.AspNetCore.Configure.Configure;
 using RTUITLab.AspNetCore.Configure.Invokations;
+using Olympiad.Shared.Models.Settings;
 
 namespace WebApp
 {
@@ -51,6 +52,7 @@ namespace WebApp
             services.Configure<RecaptchaSettings>(Configuration.GetSection(nameof(RecaptchaSettings)));
             services.Configure<AccountSettings>(Configuration.GetSection(nameof(AccountSettings)));
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
+            services.Configure<AdminSettings>(Configuration.GetSection(nameof(AdminSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services

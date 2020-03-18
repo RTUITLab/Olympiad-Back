@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using PublicAPI.Responses.Solutions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,60 +21,117 @@ namespace Executor
             "[====>]",
             "[=====]"
         };
+        private List<SolutionsStatisticResponse> statistic;
+        private readonly ISolutionsBase solutionsBase;
+        private readonly ILogger<ConsoleStatusReporter> logger;
+        private DateTime lastClear;
+        public ConsoleStatusReporter(ISolutionsBase solutionsBase, ILogger<ConsoleStatusReporter> logger)
+        {
+            this.solutionsBase = solutionsBase;
+            this.logger = logger;
+        }
+
         internal async Task Start(
             Executor executor,
-            ConsoleStatusReporterLoggerProvider consoleStatusReporterLoggerProvider,
             CancellationToken cancellationToken)
         {
             Console.Clear();
+            lastClear = DateTime.Now;
+            var statisticTask = PingStatisticTask(cancellationToken);
             while (!cancellationToken.IsCancellationRequested)
             {
-                Console.SetCursorPosition(0, 0);
-                Console.WriteLine($"BUILD: {executor.BuildQueueLength}");
-                foreach (var worker in executor.executeWorkers)
+                try
                 {
-                    var current = worker.Value.builder.Current?.Id;
-                    var currentMessage = current == null ? "null" :
-                        $"{current} {worker.Value.builder.CurrentBuildTime:hh\\:mm\\:ss}";
-                    Console.WriteLine($"{worker.Key,6}: {worker.Value.builder.BuildQueueLength,3} | current: {currentMessage,45}");
-                }
-
-                Console.WriteLine($"RUN: {executor.RunQueueLength}");
-                foreach (var worker in executor.executeWorkers)
-                {
-                    var runner = worker.Value.runner;
-                    var current = runner.Current;
-                    string currentMessage;
-                    if (current == null)
+                    if (DateTime.Now - lastClear > TimeSpan.FromSeconds(10))
                     {
-                        currentMessage = "null";
+                        Console.Clear();
+                        lastClear = DateTime.Now;
+                    }
+                    Renderpage(executor, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"error while status printing");
+                }
+                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            }
+            await statisticTask;
+        }
+
+        private void Renderpage(Executor executor, CancellationToken cancellationToken)
+        {
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine($"BUILD: {executor.BuildQueueLength}");
+            foreach (var worker in executor.executeWorkers)
+            {
+                var current = worker.Value.builder.Current?.Id;
+                var currentMessage = current == null ? "null" :
+                    $"{current} {worker.Value.builder.CurrentBuildTime:hh\\:mm\\:ss}";
+                Console.WriteLine($"{worker.Key,6}: {worker.Value.builder.BuildQueueLength,3} | current: {currentMessage,45}");
+            }
+
+            Console.WriteLine($"RUN: {executor.RunQueueLength}");
+            foreach (var worker in executor.executeWorkers)
+            {
+                var runner = worker.Value.runner;
+                var current = runner.Current;
+                string currentMessage;
+                if (current == null)
+                {
+                    currentMessage = "null";
+                }
+                else
+                {
+                    string percentPart;
+                    if (runner.CurrentTestDataCount == 0)
+                    {
+                        percentPart = "[nodat]";
                     }
                     else
                     {
-                        string percentPart;
-                        if (runner.CurrentTestDataCount == 0)
-                        {
-                            percentPart = "[nodat]";
-                        } else
-                        {
-                            var twentyPartLength = runner.CurrentTestDataCount / 5d;
-                            var twentyPercentPartsCount = (int)(runner.CurrentTestDataIndex / twentyPartLength);
-                            percentPart = twentyPercentFillings[twentyPercentPartsCount];
-                        }
-                        currentMessage = current == null ? "null" :
-                            $"{current} ({runner.CurrentTestDataIndex,4}/{runner.CurrentTestDataCount,4}) {percentPart} {runner.CurrentBuildTime:hh\\:mm\\:ss}";
-
+                        var twentyPartLength = runner.CurrentTestDataCount / 5d;
+                        var twentyPercentPartsCount = (int)(runner.CurrentTestDataCheckedCount / twentyPartLength);
+                        percentPart = twentyPercentFillings[twentyPercentPartsCount];
                     }
-                    Console.WriteLine($"{worker.Key,6}: {runner.RunQueueLength,3} | current: {currentMessage,64}");
+                    currentMessage = current == null ? "null" :
+                        $"{current} ({runner.CurrentTestDataCheckedCount,4}/{runner.CurrentTestDataCount,4}) {percentPart} {runner.CurrentBuildTime:hh\\:mm\\:ss}";
+
                 }
+                Console.WriteLine($"{worker.Key,6}: {runner.RunQueueLength,3} | current: {currentMessage,65}");
+            }
+            string inQueueOnServerMessage;
+            var inQueueOnServerObject = statistic?.FirstOrDefault(o => o.SolutionStatus == "InQueue");
+            if (inQueueOnServerObject == null)
+            {
+                inQueueOnServerMessage = "no data";
+            }
+            else
+            {
+                inQueueOnServerMessage = $"{inQueueOnServerObject.Count,7}";
+            }
+            Console.WriteLine($"In queue on server: {inQueueOnServerMessage}");
 
-                Console.WriteLine("LOGS");
+            Console.WriteLine("LOGS");
 
-                foreach (var logMessage in ConsoleStatusReporterLoggerProvider.messages.OrderBy(m => m.Item1).ToArray())
+            foreach (var logMessage in ConsoleStatusReporterLoggerProvider.messages.OrderBy(m => m.Item1).ToArray())
+            {
+                Console.WriteLine($"{logMessage.Item1:hh:mm:ss} {logMessage.Item2,-100}");
+            }
+        }
+        private async Task PingStatisticTask(CancellationToken token)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(20), token);
+            while (!token.IsCancellationRequested)
+            {
+                try
                 {
-                    Console.WriteLine($"{logMessage.Item1:hh:mm:ss} {logMessage.Item2}");
+                    this.statistic = await solutionsBase.GetStatistic();
+                    await Task.Delay(TimeSpan.FromSeconds(5));
                 }
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Error while fetch statistic");
+                }
             }
         }
     }

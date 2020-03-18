@@ -5,13 +5,15 @@ using Models.Exercises;
 using Models.Solutions;
 using PublicAPI.Requests;
 using Olympiad.Shared.Models;
+using PublicAPI.Responses.Solutions;
 
 namespace Executor
 {
     interface ISolutionsBase
     {
         Task<ExerciseData[]> GetExerciseData(Guid exId);
-        Task<List<Solution>> GetInQueueSolutions();
+        Task<List<Solution>> GetInQueueSolutions(string lang, int count);
+        Task<List<SolutionsStatisticResponse>> GetStatistic();
         Task SaveChanges(Guid solutionId, SolutionStatus status);
         Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck);
         Task SaveBuildLog(Guid solutionId, string log);

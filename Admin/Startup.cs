@@ -11,6 +11,10 @@ using Microsoft.Extensions.Hosting;
 using Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Olympiad.Shared.Models.Settings;
+using Olympiad.Admin.Services;
+using OpenQA.Selenium;
+using Microsoft.Extensions.Options;
 
 namespace Olympiad.Admin
 {
@@ -27,6 +31,8 @@ namespace Olympiad.Admin
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<AdminServiceAdminSettings>(Configuration.GetSection(nameof(AdminServiceAdminSettings)));
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services
@@ -45,6 +51,14 @@ namespace Olympiad.Admin
             })
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
+
+            services.AddHttpClient(OlympiadWebAppHttpRequester.HttpClientName, (sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<AdminServiceAdminSettings>>();
+                client.DefaultRequestHeaders.Add("Authorization", options.Value.SecurityKey);
+                client.BaseAddress = new Uri(options.Value.OlympiadBaseAddress);
+            });
+            services.AddTransient<OlympiadWebAppHttpRequester>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

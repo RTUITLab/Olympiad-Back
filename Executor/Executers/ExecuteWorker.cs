@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Models.Exercises;
 using Models.Solutions;
 using Olympiad.Shared.Models;
+using Executor.Models.Settings;
 
 namespace Executor.Executers
 {
@@ -25,11 +26,12 @@ namespace Executor.Executers
             Func<Guid, Task<ExerciseData[]>> getTests,
             ISolutionsBase solutionsBase,
             IDockerClient dockerClient,
+            RunningSettings runningSettings,
             ILoggerFactory logger)
         {
             this.getTests = getTests;
             builder = new ProgramBuilder(processSolution, saveBuildLogs, BuildFinished, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
-            runner = new ProgramRunner(solutionsBase, dockerClient, logger.CreateLogger<ProgramRunner>());
+            runner = new ProgramRunner(solutionsBase, dockerClient, runningSettings, logger.CreateLogger<ProgramRunner>());
             this.logger = logger.CreateLogger<ExecuteWorker>();
         }
 

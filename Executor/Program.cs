@@ -14,7 +14,6 @@ namespace Executor
     {
         private const string SettingsFileName = "appsettings.Secret.json";
         private static IConfiguration configuration;
-        private static readonly ConsoleStatusReporterLoggerProvider consoleStatusReporterLoggerProvider = new ConsoleStatusReporterLoggerProvider();
 
         static async Task Main(string[] args)
         {
@@ -29,9 +28,16 @@ namespace Executor
             }
 
             var executor = servicesProvider.GetRequiredService<Executor>();
+
             var statusReporter = servicesProvider.GetRequiredService<ConsoleStatusReporter>();
-            await Task.WhenAll(executor.Start(CancellationToken.None),
-                statusReporter.Start(executor, consoleStatusReporterLoggerProvider, CancellationToken.None));
+            var statusReporterTask = configuration.GetConsoleMode() == ConsoleMode.StatusReporting ?
+                statusReporter.Start(executor, CancellationToken.None)
+                :
+                Task.CompletedTask;
+
+            await Task.WhenAll(
+                executor.Start(CancellationToken.None),
+                statusReporterTask);
             Console.ReadLine();
         }
 
@@ -52,12 +58,16 @@ namespace Executor
             => new ServiceCollection()
                 .AddLogging(configure =>
                 {
-                    //configure.AddConsole();
-                    configure.AddProvider(consoleStatusReporterLoggerProvider);
+                    if (configuration.GetConsoleMode() == ConsoleMode.Logs)
+                    {
+                        configure.AddConsole();
+                    }
+                    configure.AddProvider(new ConsoleStatusReporterLoggerProvider());
                     configure.AddConfiguration(configuration.GetSection("Logging"));
                 })
                 .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
                 .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
+                .ConfigureAndValidate<RunningSettings>(configuration.GetSection(nameof(RunningSettings)))
                 .AddTransient<ISolutionsBase, DbManager>()
                 .AddSingleton<Executor>()
                 .AddSingleton<ConsoleStatusReporter>()
