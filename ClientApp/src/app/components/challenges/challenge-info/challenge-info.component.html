@@ -1,24 +1,23 @@
 <div class="text" *ngIf="challenge; else loading">
-    <div *ngIf="isAdmin()" style="border:1px solid grey;">
-        <button (click)="editChallenge()">Изменить</button>
-        <p>Дата создания: {{prettyTime(challenge.CreationTime)}}</p>
+    <div *ngIf="isAdmin() || isResultsViewer()" style="border:1px solid grey;">
+        <button *ngIf="isAdmin()" (click)="editChallenge()">Изменить</button>
+        <p *ngIf="isAdmin()">Дата создания: {{prettyTime(challenge.CreationTime)}}</p>
         <p *ngIf="!dump; else dumpTable">Нет дампа</p>
         <ng-template #dumpTable>
             <button (click)="downloadSolutions()">Скачать лучшие решения</button>
             <br>
             <label>
-                Show all as numbers
+                Внутренние коды
                 <input type="radio" name="statusPick" value="allNumbers" [(ngModel)]="statusMode" />
             </label>
             <label>
-                Show all as pics
+                Изображения
                 <input type="radio" name="statusPick" value="allPics" [(ngModel)]="statusMode" />
             </label>
             <label>
-                Show scores
+                Очки
                 <input type="radio" name="statusPick" value="scores" [(ngModel)]="statusMode" />
             </label>
-            <p>{{userIds().length}}</p>
             <table>
                 <tr>
                     <th>User ID</th>
@@ -27,7 +26,10 @@
                     </th>
                 </tr>
                 <tr *ngFor="let user of userIds()">
-                    <td>{{user}}<p (click)="recheckSolutions(user)">recheck</p><p (click)="deleteUser(user)" >delete</p></td>
+                    <td>{{user}}
+                        <p *ngIf="isAdmin()" (click)="recheckSolutions(user)">recheck</p>
+                        <p *ngIf="isAdmin()" (click)="deleteUser(user)">delete</p>
+                    </td>
                     <td *ngFor="let exerciseName of exerciseNames" [ngSwitch]="statusMode">
                         <p *ngSwitchCase="'allNumbers'">
                             {{solutionStatus(user, exerciseName)}}
@@ -35,9 +37,7 @@
                         <div *ngSwitchCase="'allPics'">
                             <div *ngIf="solutionStatus(user, exerciseName)!==-1">
 
-                                <img (click)="showLogs(user, exerciseName)" class="statusIcon"
-                                    src="assets/StatusCode/{{solutionStatus(user, exerciseName)}}.svg" />
-                                {{solutionId(user, exerciseName)}}
+                                <img (click)="showLogs(user, exerciseName)" class="statusIcon" src="assets/StatusCode/{{solutionStatus(user, exerciseName)}}.svg" /> {{solutionId(user, exerciseName)}}
                             </div>
                         </div>
                         <p *ngSwitchCase="'scores'">

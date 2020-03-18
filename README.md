@@ -4,14 +4,14 @@ System provides examination testing for students on the basis of the given test 
 
 Student choses a task he wants to complete and reads the terms.
 
-He develops the program according to the task using one of the available programming languages.
+He writes a program according to the task using one of available programming languages.
 
-After sending the solution the System executes the code and inputs test datasets. For being solved correctly the program must output the correct results for all test inputs.
+After sending a solution System executes the code and inputs test datasets. To consider solved correctly, the program must return correct results for all test inputs.
 
 ## How to run:
 
 ### WebApp 
-Represents the System BackEnd storing all the necessary data.
+Represents System BackEnd storing all the necessary data.
 
 First, install .Net Core 3.1
 
@@ -78,11 +78,11 @@ Install the following:
 
 How to run:
 
-1. Use ```npm instal``` in _./ClientApp_ folder. It will install all the dependecies in __node_modules__ folder.
+1. Use ```npm instal``` in _./ClientApp_ folder. It will install all the dependencies in __node_modules__ folder.
 
 2. Create the _environment.ts_ in _./ClientApp/src/environments_ folder. Fill it with the following:
 
-```json
+```ts
 export const environment = {
     production: true,
     isAdmin: false,
@@ -92,7 +92,7 @@ export const environment = {
     recaptchaClientToken: ''
 };
 ```
-> baseUrl - url of running WebApp, when running locally it will most likely be ```http://localhost:64800```
+> baseUrl - url of running WebApp, when running locally it will likely be ```http://localhost:64800```
  
 > recaptchaClientToken - **PUBLIC** token got when creating reCAPCTCHA v2
 
@@ -100,9 +100,9 @@ export const environment = {
 
 ### Executor
 
-Application connected to WebApp which is executing received solutions and checks them.
+Application connected to WebApp, which is executing received solutions and checks them.
 
-You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes the received programs.
+You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes received programs.
 
 
 1. Create _./Executor/appsettings.Secret.json_
@@ -118,7 +118,11 @@ You must have **Docker** installed on the system you want to run Executor on. Ac
     "UserInfo": {
         "UserName":"Username having Executor rights",
         "Password":"User password"
-    }
+    },
+    "RunningSettings": {
+        "WorkersPerCheckCount": 5 // Every solution will be checked with that count of parallel workers (valid values - [1..100]), select value according to your machine configuration (for surface book 2 - optimal is 5-10). Too large value can break your docker.
+    },
+    "CONSOLE_MODE": "Logs" | "StatusReporting"// Logs - just write logs, StatusReporting - updatable status and 10 last logs with possible artifacts 
 }
 ```
 

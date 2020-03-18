@@ -12,6 +12,10 @@ namespace WebApp.Services
     {
         private readonly ConcurrentQueue<Guid> queue = new ConcurrentQueue<Guid>();
 
+        public void Clear()
+        {
+            queue.Clear();
+        }
         public void PutInQueue(Guid solutionId)
         {
             queue.Enqueue(solutionId);

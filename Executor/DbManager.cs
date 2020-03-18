@@ -13,6 +13,7 @@ using Models.Exercises;
 using Olympiad.Shared.Models;
 using Models.Solutions;
 using PublicAPI.Requests;
+using PublicAPI.Responses.Solutions;
 
 namespace Executor
 {
@@ -45,11 +46,15 @@ namespace Executor
             => InvokePost<object>($"api/Executor/{solutionId}/{(int)status}");
 
 
-        public Task<List<Solution>> GetInQueueSolutions()
+        public Task<List<Solution>> GetInQueueSolutions(string lang, int count)
         {
-            return Invoke<List<Solution>>("api/Executor");
+            return Invoke<List<Solution>>($"api/Executor?lang={lang}&count={count}");
         }
 
+        public Task<List<SolutionsStatisticResponse>> GetStatistic()
+        {
+            return Invoke<List<SolutionsStatisticResponse>>("api/Check/statistic");
+        }
 
         public async Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck)
         {

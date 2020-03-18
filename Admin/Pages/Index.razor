@@ -11,6 +11,7 @@
 @using CsvHelper;
 
 @inject ApplicationDbContext db
+@inject Olympiad.Admin.Services.OlympiadWebAppHttpRequester webAppRequester;
 
 <h2>Solutions count</h2>
 
@@ -24,6 +25,7 @@
 }
 <p>Done in last 2 minutes: @doneInLast10Mins</p>
 <p>Left: @Left() --- @(doneInLast10Mins == 0 ? "~" : TimeSpan.FromMinutes((Left() / (doneInLast10Mins == 0 ? 1 : doneInLast10Mins)) * 2).ToString())</p>
+<button class="btn btn-primary" @onclick="@ForceResetQueue">Force reset queue</button>
 <table>
     <thead>
         <tr>
@@ -79,6 +81,13 @@
             if (autoUpdate)
                 await Update();
         }
+    }
+
+    private async Task ForceResetQueue()
+    {
+        var updated = await webAppRequester.ForceResetQueue();
+        await Logs.Log(updated);
+        await Update();
     }
 
     private async Task Update()

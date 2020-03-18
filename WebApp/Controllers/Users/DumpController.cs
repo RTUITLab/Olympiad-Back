@@ -17,7 +17,7 @@ namespace WebApp.Controllers.Users
 {
     [Produces("application/json")]
     [Route("api/dump")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ResultsViewer")]
     public class DumpController : AuthorizeController
     {
         private readonly ApplicationDbContext dbContext;

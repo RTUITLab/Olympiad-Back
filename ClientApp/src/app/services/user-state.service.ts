@@ -76,10 +76,27 @@ export class UserStateService extends BaseHttpService {
 
 
   public IsAdmin(): boolean {
+    if (!this.currentUser) {
+      return false;
+    }
     if (!environment.production) {
       return environment.isAdmin;
     }
+    console.log(this.currentUser);
+    if (!this.currentUser.Roles) {
+      return false;
+    }
     return this.currentUser.Roles.indexOf('Admin') !== -1;
+  }
+
+  public IsResultsViewer(): boolean {
+    if (!this.currentUser) {
+      return false;
+    }
+    if (!this.currentUser.Roles) {
+      return false;
+    }
+    return this.currentUser.Roles.indexOf('ResultsViewer') !== -1;
   }
 
   private InitUser(response: LoginResponse) {
