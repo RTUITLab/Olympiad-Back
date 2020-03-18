@@ -1,18 +1,17 @@
 # Student Testing System
-[Russian README](README-RU.md)
 ## Description
 System provides examination testing for students on the basis of the given test tasks.
 
 Student choses a task he wants to complete and reads the terms.
 
-He develops the program according to the task using one of the available programming languages.
+He writes a program according to the task using one of available programming languages.
 
-After sending the solution the System executes the code and inputs test datasets. For being solved correctly the program must output the correct results for all test inputs.
+After sending a solution System executes the code and inputs test datasets. To consider solved correctly, the program must return correct results for all test inputs.
 
 ## How to run:
 
 ### WebApp 
-Represents the System BackEnd storing all the necessary data.
+Represents System BackEnd storing all the necessary data.
 
 First, install .Net Core 3.1
 
@@ -21,14 +20,46 @@ First, install .Net Core 3.1
 
 2. Fill _./WebApp/appsettings.Secret.json_ with the following: 
 
-```json
+```js
 {
     "JwtIssuerOptions": {
         "SecretKey":"Random string nearly 30 symbols"
     },
     "ConnectionStrings": {
         "PostgresDataBase": "The connection string to the Postgres database"
-    }
+    },
+    "EmailSettings": {
+        "Email": "Email of sender account",
+        "Password": "Password of sender account",
+        "SmtpHost": "smtp.host",
+        "SmtpPort": "smtp.port",
+        "SmtpUseSsl": true|false
+	},
+    "AccountSettings": {
+        "IsRegisterAvailable": true|false // if false - new users can be added only via admin panel
+	},
+    "DefaultUserSettings": {
+        "Email": "email of user, which can be created",
+        "Password": "password of user, which can be created",
+        "Name": "name of user, which can be created",
+        "StudentId": "student id of user, which be created",
+        "CreateUser": true|false // if true - user with parameters, written above will be created,
+        "Roles": [ // All roles will be applyed to account with written email, ignoring CreateUser field
+            "Admin",
+            "User",
+            "Executer",
+            "ResultsViewer"
+		]
+	},
+    "GenerateSettings": {
+        "Domain": "domain, attached to user email while generating, '@rtuitlab.dev' for example"
+	},
+    "RecaptchaSettings": {
+        "SecretKey": "PRIVATE token got when creating reCAPCTCHA v2"
+	},
+    "USE_DEBUG_EMAIL_SENDER": true|false // if true email messages will be printed to console
+    "USE_DEBUG_RECAPTCHA_VERIFIER": true|false //if true recaptcha always will be valid,
+    "USE_CHECKING_RESTART": true|false // if true, solutions the check of which has started more than 2 minutes ago would be placed in the queue again.
 }
 ```
 
@@ -36,10 +67,7 @@ You must use connection string to your real Postgres database in the field  ```C
 > _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;Integrated Security=true;_ 
 
 
-3. After setting up the DB you must apply migration to the existing empty DB. For this you must run ```dotnet ef database update``` in WebApp folder. The command will create the required DB with all tables needed.
-
-
-4. You can run the application using ```dotnet run INIT_ROLES=true```
+3. Use ```dotnet run``` to start web app in Development environment (appsettings.Development.json will be used)
 
 ### Client App
 
@@ -50,11 +78,11 @@ Install the following:
 
 How to run:
 
-1. Use ```npm instal``` in _./ClientApp_ folder. It will install all the dependecies in __node_modules__ folder.
+1. Use ```npm instal``` in _./ClientApp_ folder. It will install all the dependencies in __node_modules__ folder.
 
 2. Create the _environment.ts_ in _./ClientApp/src/environments_ folder. Fill it with the following:
 
-```json
+```ts
 export const environment = {
     production: true,
     isAdmin: false,
@@ -64,7 +92,7 @@ export const environment = {
     recaptchaClientToken: ''
 };
 ```
-> baseUrl - url of running WebApp, when running locally it will most likely be ```http://localhost:64800```
+> baseUrl - url of running WebApp, when running locally it will likely be ```http://localhost:64800```
  
 > recaptchaClientToken - **PUBLIC** token got when creating reCAPCTCHA v2
 
@@ -72,27 +100,30 @@ export const environment = {
 
 ### Executor
 
-Application connected to WebApp which is executing received solutions and checks them.
+Application connected to WebApp, which is executing received solutions and checks them.
 
-You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes the received programs.
+You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes received programs.
 
 
 1. Create _./Executor/appsettings.Secret.json_
 
 2. Fill it with the following:
 
-```json
+```js
 {
     "StartSettings": {
-        "Address":"http://localhost:55471",
-        "DockerEndPoint":"http://localhost:2375"
+        "Address":"http://localhost:5000", // Address of olympiad webapp
+        "DockerEndPoint":"http://localhost:2375" // Address of docker endpoint
     },
     "UserInfo": {
         "UserName":"Username having Executor rights",
         "Password":"User password"
-    }
+    },
+    "RunningSettings": {
+        "WorkersPerCheckCount": 5 // Every solution will be checked with that count of parallel workers (valid values - [1..100]), select value according to your machine configuration (for surface book 2 - optimal is 5-10). Too large value can break your docker.
+    },
+    "CONSOLE_MODE": "Logs" | "StatusReporting"// Logs - just write logs, StatusReporting - updatable status and 10 last logs with possible artifacts 
 }
 ```
-> ```StartSettings:DockerEndPoint``` represents the url, pointing on **Docker** service, when running locally **Docker** is listening on port *2375*
 
 3. After creating the file you can execute ```dotnet run``` in _./Executor_ folder.

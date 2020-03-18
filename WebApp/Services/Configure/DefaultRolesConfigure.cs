@@ -53,7 +53,7 @@ namespace WebApp.Services.Configure
 
         private async Task ApplyRoles()
         {
-            string[] roles = { "Admin", "User", "Executor" };
+            string[] roles = { "Admin", "User", "Executor", "ResultsViewer" };
             IdentityResult roleResult;
 
             foreach (var role in roles)

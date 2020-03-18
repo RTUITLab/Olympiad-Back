@@ -12,13 +12,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Microsoft.Extensions.Logging;
+using Executor.Models.Settings;
+using Microsoft.Extensions.Options;
+using System.Xml.XPath;
 
 namespace Executor
 {
     class Executor
     {
         private ISolutionsBase solutionBase;
-        private readonly Dictionary<string, ExecuteWorker> executeWorkers;
+        private readonly ILogger<Executor> logger;
+        public readonly Dictionary<string, ExecuteWorker> executeWorkers;
+
+        public int BuildQueueLength => executeWorkers.Select(w => w.Value.builder.BuildQueueLength).Sum();
+        public int RunQueueLength => executeWorkers.Select(w => w.Value.runner.RunQueueLength).Sum();
 
         private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
         {
@@ -32,7 +39,12 @@ namespace Executor
         };
 
 
-        public Executor(ISolutionsBase solutionBase, IDockerClient dockerClient, ILoggerFactory logger)
+        public Executor(
+            ISolutionsBase solutionBase,
+            IDockerClient dockerClient,
+            ILoggerFactory loggerFactory,
+            IOptions<RunningSettings> runningOptions,
+            ILogger<Executor> logger)
         {
             executeWorkers = buildProperties.ToDictionary(
                 kvp => kvp.Key,
@@ -43,19 +55,34 @@ namespace Executor
                         solutionBase.GetExerciseData,
                         solutionBase,
                         dockerClient,
-                        logger)
+                        runningOptions.Value,
+                        loggerFactory)
             );
             this.solutionBase = solutionBase;
+            this.logger = logger;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                (await solutionBase.GetInQueueSolutions())
-                    .ForEach(s => executeWorkers[s.Language].Handle(s));
+                foreach (var pair in executeWorkers)
+                {
+                    await HandleWorker(pair.Key, pair.Value);
+                }
+
                 await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-                Console.WriteLine("end sleep");
+            }
+        }
+
+        private async Task HandleWorker(string lang, ExecuteWorker worker)
+        {
+            if ((worker.runner.Current == null || worker.runner.RunQueueLength == 0) && worker.builder.Current == null)
+            {
+                var solutionToCheck = await solutionBase.GetInQueueSolutions(lang, 1);
+                solutionToCheck
+                        .ForEach(s => worker.Handle(s));
+                logger.LogInformation($"added {solutionToCheck.Count} solutions");
             }
         }
     }
