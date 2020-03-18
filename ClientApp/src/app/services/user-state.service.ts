@@ -82,7 +82,6 @@ export class UserStateService extends BaseHttpService {
     if (!environment.production) {
       return environment.isAdmin;
     }
-    console.log(this.currentUser);
     if (!this.currentUser.Roles) {
       return false;
     }
