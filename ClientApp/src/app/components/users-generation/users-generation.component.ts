@@ -41,7 +41,6 @@ export class UsersGenerationComponent extends LoadingComponent implements OnInit
     this.userGenService.generateUsers(this.usersId).subscribe(
       data => {
         this.allNewUsers = data;
-        console.log(this.allNewUsers);
         this.toastr.success(`Пользователи успешно сгенерированы`);
         this.downloadUsers();
       },
