@@ -228,7 +228,7 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("solutionList/{exerciseId:guid}/{studentId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ResultsViewer")]
         public async Task<List<SolutionDumpView>> Get(Guid exerciseId, string studentId)
         {
             return await context
@@ -256,7 +256,7 @@ namespace WebApp.Controllers
         }
 
         [HttpGet("logs/{solutionId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ResultsViewer")]
         public async Task<ActionResult<List<SolutionCheckResponse>>> GetLogs(Guid solutionId)
         {
             var rawData = await context
