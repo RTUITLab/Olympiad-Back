@@ -127,3 +127,20 @@ You must have **Docker** installed on the system you want to run Executor on. Ac
 ```
 
 3. After creating the file you can execute ```dotnet run``` in _./Executor_ folder.
+
+## How to run self hosted executor on Windows machine:
+
+1. Install [dotnet core sdk 3.1](https://dotnet.microsoft.com/download)
+
+2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+3. In docker desktop settings set flag __Expose daemon on tcp://localhost:2375 without TLS__
+
+4. Do steps 1,2 from [run executor](#Executor)
+
+5. In _appsettings.Secret.json_ set field _CONSOLE\_MODE_ to _StatusReporting_.
+
+6. Run command in _./Executor_ folder:
+```bash
+dotnet run -c Release
+```

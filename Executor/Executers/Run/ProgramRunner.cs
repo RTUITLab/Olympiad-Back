@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using PublicAPI.Requests;
 using System.Collections.Generic;
 using Executor.Models.Settings;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Executor.Executers.Run
 {
@@ -79,8 +80,23 @@ namespace Executor.Executers.Run
                     currentStart = DateTime.Now;
                     CurrentTestDataCount = testData.Length;
                     Current = solutionId;
-                    workTasks = Enumerable.Range(1, runningSettings.WorkersPerCheckCount).Select(_ => HandleSolutionWorker(solutionId, testData, source.Token)).ToArray();
+                    var imageName = $"solution:{solutionId}";
+                    ConcurrentQueue <SolutionStatus> statuses = new ConcurrentQueue<SolutionStatus>();
+                    workTasks = Enumerable
+                        .Range(1, runningSettings.WorkersPerCheckCount)
+                        .Select(_ =>
+                            HandleSolutionWorker(
+                                solutionId,
+                                imageName,
+                                testData, 
+                                (s) => statuses.Enqueue(s),
+                                source.Token))
+                        .ToArray();
                     await Task.WhenAll(workTasks);
+                    var result = statuses.Min();
+                    logger.LogInformation($"{solutionId} TOTAL STATUS {result}");
+                    await solutionsBase.SaveChanges(solutionId, result);
+                    await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
                 }
                 catch (Exception ex)
                 {
@@ -111,11 +127,8 @@ namespace Executor.Executers.Run
             }
         }
 
-        private async Task HandleSolutionWorker(Guid solutionId, ExerciseData[] testData, CancellationToken token)
+        private async Task HandleSolutionWorker(Guid solutionId, string imageName, ExerciseData[] testData, Action<SolutionStatus> storeSolutionStatus, CancellationToken token)
         {
-            var result = SolutionStatus.Sucessful;
-            var imageName = $"solution:{solutionId}";
-
             while (CurrentTestDataCheckedCount < CurrentTestDataCount && !token.IsCancellationRequested)
             {
                 var index = Interlocked.Increment(ref currentTestDataIndex);
@@ -146,27 +159,23 @@ namespace Executor.Executers.Run
                         localStatus = SolutionStatus.Sucessful;
                     else
                         localStatus = SolutionStatus.WrongAnswer;
+                    if (duration > TimeSpan.FromSeconds(30))
+                        localStatus = SolutionStatus.TooLongWork;
 
                     logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {localStatus}");
                     logger.LogInformation($"{solutionId} checked on {data.Id} {localStatus}");
-                    if (localStatus < result)
-                    {
-                        result = localStatus;
-                    }
+                    storeSolutionStatus(localStatus);
                 }
                 catch (Exception ex)
                 {
                     logger.LogWarning(ex, "error while running");
-                    result = SolutionStatus.RunTimeError;
+                    storeSolutionStatus(SolutionStatus.RunTimeError);
                 }
                 finally
                 {
                     Interlocked.Increment(ref currentTestDataChecked);
                 }
             }
-            logger.LogInformation($"{solutionId} total status {result}");
-            await solutionsBase.SaveChanges(solutionId, result);
-            await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
         }
 
         private async Task<(string stdout, string stderr, TimeSpan duration)> Run(string imageName, string input)
@@ -199,7 +208,6 @@ namespace Executor.Executers.Run
 
         private async Task<(string stdout, string stderr, TimeSpan duration)> RunContainer(string containerId, string input)
         {
-            var startTime = DateTime.UtcNow;
             var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
             if (!started)
                 throw new Exception($"Cant start container {containerId}");
@@ -207,15 +215,16 @@ namespace Executor.Executers.Run
             var stream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = true, Stdout = true });
 
             var inStream = new MemoryStream(Encoding.UTF8.GetBytes(input));
+            var startTime = DateTime.UtcNow;
             await stream.CopyFromAsync(inStream, CancellationToken.None);
             var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
 
-            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
+            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(30)), readTask) == readTask)
             {
                 var (stdout, stderr) = readTask.Result;
                 return (stdout, stderr, DateTime.UtcNow - startTime);
             }
-            return ("", "", TimeSpan.MaxValue); // read all output streams
+            return ("", "", TimeSpan.MaxValue); // TODO read all output streams
         }
 
         private static string Clean(string input)
