@@ -12,28 +12,17 @@
     text-decoration: none;
     outline: none;
     display: inline-block;
-    background: white;
     margin-top: 10px;
     transition: .15s ease-in-out;
 }
-.btn:hover{
-        box-shadow: 0 0 3px 0 rgb(67, 55, 241) inset, 0 0 3px 1px rgb(67, 55, 241);
-        color: rgb(67, 55, 241);
-}
+
 .color-red{
-    color:red;
-}
-.color-red:hover{
-    box-shadow: 0 0 3px 0 red inset, 0 0 3px 1px red;
-    color: red;
+    color:rgb(255, 4, 4);
 }
 .color-green{
-    color:green;
+    color:rgb(0, 255, 0);
 }
-.color-green:hover{
-    box-shadow: 0 0 3px 0 green inset, 0 0 3px 1px green;
-    color: green;
-}
+
 .text{
     word-wrap: break-word;
     max-width: 100%;
