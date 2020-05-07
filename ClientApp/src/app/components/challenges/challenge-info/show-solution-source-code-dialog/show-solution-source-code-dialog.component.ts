@@ -5,6 +5,7 @@ import { ExerciseService } from 'src/app/services/exercise.service';
 import { SolutionLog } from 'src/app/models/SolutionLog';
 import { CheckedSolution } from 'src/app/models/CheckedSolution';
 import { ToastrService } from 'ngx-toastr';
+import { UserStateService } from 'src/app/services/user-state.service';
 
 @Component({
   selector: 'app-show-solution-source-code-dialog',
@@ -18,6 +19,7 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
   allSolutions: CheckedSolution[];
   constructor(
     public dialogRef: MatDialogRef<ShowSolutionSourceCodeDialogComponent>,
+    private usersService: UserStateService,
     public exerciseService: ExerciseService,
     private toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public data: CheckedSolution,
@@ -91,6 +93,10 @@ export class ShowSolutionSourceCodeDialogComponent implements OnInit {
     const count = await this.exerciseService.recheckSolution(id);
 
     this.toastr.success(`Будет перепроверено решений: ${count}`);
+  }
+
+  isAdmin(): boolean {
+    return this.usersService.IsAdmin();
   }
 
   runResult(log: SolutionLog): string {
