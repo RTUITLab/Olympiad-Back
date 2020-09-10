@@ -51,6 +51,11 @@ namespace Executor
             return Invoke<List<Solution>>($"api/Executor?lang={lang}&count={count}");
         }
 
+        public Task<Solution> GetSolutionInfo(Guid solutionId)
+        {
+            return Invoke<Solution>($"api/Executor?solutionId={solutionId}");
+        }
+
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
         {
             return Invoke<List<SolutionsStatisticResponse>>("api/Check/statistic");

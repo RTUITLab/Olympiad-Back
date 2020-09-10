@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.2.1" />
     <PackageReference Include="SharpZipLib" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.0" />
@@ -30,7 +31,7 @@
 
 
   <ItemGroup>
-    <None Update="appsettings.Secret.json">
+    <None Update="appsettings.Development.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Executers\Build\DockerFiles\DockerFile-cpp">

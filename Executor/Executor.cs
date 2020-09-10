@@ -15,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Options;
 using System.Xml.XPath;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace Executor
 {
@@ -64,15 +66,50 @@ namespace Executor
 
         public async Task Start(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            using var connection = factory.CreateConnection();
+
+            var channel = connection.CreateModel();
+
+            channel.QueueDeclare(queue: "solutions_to_check",
+                                 durable: false,
+                                 exclusive: false,
+                                 autoDelete: false,
+                                 arguments: null);
+
+            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            var consumer = new EventingBasicConsumer(channel);
+            consumer.Received += (model, ea) =>
             {
-                foreach (var pair in executeWorkers)
+                var body = ea.Body.ToArray();
+                Guid solutinoId;
+                try
                 {
-                    await HandleWorker(pair.Key, pair.Value);
+                    solutinoId = new Guid(body);
+                    var solution = solutionBase.GetSolutionInfo(solutinoId).GetAwaiter().GetResult();
+                    executeWorkers[solution.Language].Handle(solution);
+
+                } catch (Exception ex)
+                {
+                    logger.LogWarning("Incorrect data");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-            }
+
+                logger.LogInformation(" [x] Done");
+                channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+            };
+            channel.BasicConsume(queue: "solutions_to_check", autoAck: false, consumer: consumer);
+            logger.LogInformation(" [x] Start listening");
+            await Task.Delay(-1);
+            //while (!cancellationToken.IsCancellationRequested)
+            //{
+            //    foreach (var pair in executeWorkers)
+            //    {
+            //        await HandleWorker(pair.Key, pair.Value);
+            //    }
+
+            //    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            //}
         }
 
         private async Task HandleWorker(string lang, ExecuteWorker worker)
