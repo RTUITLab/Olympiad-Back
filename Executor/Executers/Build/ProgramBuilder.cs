@@ -11,20 +11,28 @@ using Olympiad.Shared.Models;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace Executor.Executers.Build
 {
     class ProgramBuilder
     {
+        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
+        {
+            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
+            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
+            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
+            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
+            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
+            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
+            { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
+        };
+
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
         private readonly Func<Guid, string, Task> saveBuildLogs;
-        private readonly BuildProperty buildProperty;
         private readonly IDockerClient dockerClient;
         private readonly ILogger<ProgramBuilder> logger;
 
-
-
-        public int BuildQueueLength => 0;
 
 
         private DateTime currentStart;
@@ -34,13 +42,11 @@ namespace Executor.Executers.Build
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, string, Task> saveBuildLogs,
-            BuildProperty buildProperty,
             IDockerClient dockerClient,
             ILogger<ProgramBuilder> logger)
         {
             this.processSolution = processSolution;
             this.saveBuildLogs = saveBuildLogs;
-            this.buildProperty = buildProperty;
             this.dockerClient = dockerClient;
             this.logger = logger;
         }
@@ -84,6 +90,9 @@ namespace Executor.Executers.Build
             {
                 return (false, "EMPTY SOLUTION");
             }
+
+            var buildProperty = buildProperties[lang];
+
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
 

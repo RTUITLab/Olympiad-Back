@@ -24,21 +24,7 @@ namespace Executor
     {
         private ISolutionsBase solutionBase;
         private readonly ILogger<Executor> logger;
-        public readonly Dictionary<string, ExecuteWorker> executeWorkers;
-
-        public int BuildQueueLength => executeWorkers.Select(w => w.Value.builder.BuildQueueLength).Sum();
-        public int RunQueueLength => executeWorkers.Select(w => w.Value.runner.RunQueueLength).Sum();
-
-        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
-        {
-            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
-            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
-            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
-            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
-            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
-            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
-            { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
-        };
+        public readonly List<ExecuteWorker> executeWorkers;
 
 
         public Executor(
@@ -48,78 +34,70 @@ namespace Executor
             IOptions<RunningSettings> runningOptions,
             ILogger<Executor> logger)
         {
-            executeWorkers = buildProperties.ToDictionary(
-                kvp => kvp.Key,
-                kvp => new ExecuteWorker(
-                        kvp.Value,
-                        solutionBase.SaveChanges,
-                        solutionBase.SaveBuildLog,
-                        solutionBase.GetExerciseData,
-                        solutionBase,
-                        dockerClient,
-                        runningOptions.Value,
-                        loggerFactory)
-            );
+            executeWorkers = Enumerable.Repeat(0, runningOptions.Value.WorkersCount)
+                .Select(n =>
+                            new ExecuteWorker(
+                                    solutionBase.SaveChanges,
+                                    solutionBase.SaveBuildLog,
+                                    solutionBase.GetExerciseData,
+                                    solutionBase,
+                                    dockerClient,
+                                    runningOptions.Value,
+                                    loggerFactory)
+                        )
+                .ToList();
             this.solutionBase = solutionBase;
             this.logger = logger;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "localhost", DispatchConsumersAsync = true };
             using var connection = factory.CreateConnection();
-
-            var channel = connection.CreateModel();
-
-            channel.QueueDeclare(queue: "solutions_to_check",
-                                 durable: false,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
-
-            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, ea) =>
+            foreach (var worker in executeWorkers)
             {
-                var body = ea.Body.ToArray();
-                Guid solutinoId;
-                try
+                CreateChannel(connection, out var channel, out var consumer);
+                consumer.Received += async (model, ea) =>
                 {
-                    solutinoId = new Guid(body);
-                } catch (Exception ex)
-                {
-                    logger.LogWarning("Incorrect data");
-                    return;
-                }
-
-                var solution = solutionBase.GetSolutionInfo(solutinoId).GetAwaiter().GetResult();
-                executeWorkers[solution.Language].Handle(solution).GetAwaiter().GetResult();
-
-                channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
-            };
-            channel.BasicConsume(queue: "solutions_to_check", autoAck: false, consumer: consumer);
+                    await HandleSolution(ea, worker, channel);
+                };
+                channel.BasicConsume(queue: "solutions_to_check", autoAck: false, consumer: consumer);
+            }
             logger.LogInformation(" [x] Start listening");
             await Task.Delay(-1);
-            //while (!cancellationToken.IsCancellationRequested)
-            //{
-            //    foreach (var pair in executeWorkers)
-            //    {
-            //        await HandleWorker(pair.Key, pair.Value);
-            //    }
-
-            //    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-            //}
         }
 
-        private async Task HandleWorker(string lang, ExecuteWorker worker)
+        private async Task HandleSolution(BasicDeliverEventArgs ea, ExecuteWorker worker, IModel channel)
         {
-            if ((worker.runner.Current == null || worker.runner.RunQueueLength == 0) && worker.builder.Current == null)
+            var body = ea.Body.ToArray();
+            Guid solutinoId;
+            try
             {
-                var solutionToCheck = await solutionBase.GetInQueueSolutions(lang, 1);
-                solutionToCheck
-                        .ForEach(s => worker.Handle(s));
-                logger.LogInformation($"added {solutionToCheck.Count} solutions");
+                solutinoId = new Guid(body);
             }
+            catch
+            {
+                logger.LogWarning("Incorrect data");
+                return;
+            }
+
+            var solution = await solutionBase.GetSolutionInfo(solutinoId);
+            await worker.Handle(solution);
+
+            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+        }
+
+        private static void CreateChannel(IConnection connection, out IModel channel, out AsyncEventingBasicConsumer consumer)
+        {
+            channel = connection.CreateModel();
+            channel.QueueDeclare(queue: "solutions_to_check",
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            consumer = new AsyncEventingBasicConsumer(channel);
         }
     }
 }
