@@ -30,20 +30,19 @@ namespace Executor.Executers
             ILoggerFactory logger)
         {
             this.getTests = getTests;
-            builder = new ProgramBuilder(processSolution, saveBuildLogs, BuildFinished, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
+            builder = new ProgramBuilder(processSolution, saveBuildLogs, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
             runner = new ProgramRunner(solutionsBase, dockerClient, runningSettings, logger.CreateLogger<ProgramRunner>());
             this.logger = logger.CreateLogger<ExecuteWorker>();
         }
 
-        public void Handle(Solution solution)
+        public async Task Handle(Solution solution)
         {
-            builder.Add(solution);
-        }
-
-        private async Task BuildFinished(Solution solution)
-        {
-            logger.LogInformation($"Finish build solution {solution.Id}, run it");
-            runner.Add(solution.Id, await getTests(solution.ExerciseId));
+            var success = await builder.BuildSolution(solution);
+            if (success)
+            {
+                var tasksForExercise = await getTests(solution.ExerciseId);
+                await runner.RunAndCheckSolution(solution.Id, tasksForExercise);
+            }
         }
     }
 }
