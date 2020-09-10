@@ -86,16 +86,15 @@ namespace Executor
                 try
                 {
                     solutinoId = new Guid(body);
-                    var solution = solutionBase.GetSolutionInfo(solutinoId).GetAwaiter().GetResult();
-                    executeWorkers[solution.Language].Handle(solution);
-
                 } catch (Exception ex)
                 {
                     logger.LogWarning("Incorrect data");
+                    return;
                 }
 
+                var solution = solutionBase.GetSolutionInfo(solutinoId).GetAwaiter().GetResult();
+                executeWorkers[solution.Language].Handle(solution).GetAwaiter().GetResult();
 
-                logger.LogInformation(" [x] Done");
                 channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
             };
             channel.BasicConsume(queue: "solutions_to_check", autoAck: false, consumer: consumer);
