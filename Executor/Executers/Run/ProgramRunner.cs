@@ -26,7 +26,6 @@ namespace Executor.Executers.Run
         private readonly ILogger<ProgramRunner> logger;
         private readonly List<Guid> blackList = new List<Guid>();
 
-        public int RunQueueLength => 0;
 
         public Guid? Current { get; private set; }
         private int currentTestDataIndex = -1;
