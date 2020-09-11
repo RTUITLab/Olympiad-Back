@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Olympiad.Shared.Models.Settings
 {
     public class RabbitMqQueueSettings
     {
+        [Required]
         public string Host { get; set; }
+        [Required]
         public string QueueName { get; set; }
     }
 }

@@ -68,7 +68,7 @@ namespace Executor
                 })
                 .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
                 .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
-                .Configure<RabbitMqQueueSettings>(configuration.GetSection(nameof(RabbitMqQueueSettings)))
+                .ConfigureAndValidate<RabbitMqQueueSettings>(configuration.GetSection(nameof(RabbitMqQueueSettings)))
                 .ConfigureAndValidate<RunningSettings>(configuration.GetSection(nameof(RunningSettings)))
                 .AddTransient<ISolutionsBase, DbManager>()
                 .AddSingleton<Executor>()

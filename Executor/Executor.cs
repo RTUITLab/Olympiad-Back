@@ -17,12 +17,14 @@ using Microsoft.Extensions.Options;
 using System.Xml.XPath;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Olympiad.Shared.Models.Settings;
 
 namespace Executor
 {
     class Executor
     {
         private ISolutionsBase solutionBase;
+        private readonly IOptions<RabbitMqQueueSettings> rabbitMQOptinos;
         private readonly ILogger<Executor> logger;
         public readonly List<ExecuteWorker> executeWorkers;
 
@@ -32,6 +34,7 @@ namespace Executor
             IDockerClient dockerClient,
             ILoggerFactory loggerFactory,
             IOptions<RunningSettings> runningOptions,
+            IOptions<RabbitMqQueueSettings> rabbitMQOptinos,
             ILogger<Executor> logger)
         {
             executeWorkers = Enumerable.Repeat(0, runningOptions.Value.WorkersCount)
@@ -47,12 +50,15 @@ namespace Executor
                         )
                 .ToList();
             this.solutionBase = solutionBase;
+            this.rabbitMQOptinos = rabbitMQOptinos;
             this.logger = logger;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost", DispatchConsumersAsync = true };
+            var factory = new ConnectionFactory() { 
+                HostName = rabbitMQOptinos.Value.Host,
+                DispatchConsumersAsync = true };
             using var connection = factory.CreateConnection();
             foreach (var worker in executeWorkers)
             {
@@ -61,9 +67,9 @@ namespace Executor
                 {
                     await HandleSolution(ea, worker, channel);
                 };
-                channel.BasicConsume(queue: "solutions_to_check", autoAck: false, consumer: consumer);
+                channel.BasicConsume(queue: rabbitMQOptinos.Value.QueueName, autoAck: false, consumer: consumer);
             }
-            logger.LogInformation(" [x] Start listening");
+            logger.LogInformation("Start listening");
             await Task.Delay(-1);
         }
 
@@ -87,10 +93,10 @@ namespace Executor
             channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
         }
 
-        private static void CreateChannel(IConnection connection, out IModel channel, out AsyncEventingBasicConsumer consumer)
+        private void CreateChannel(IConnection connection, out IModel channel, out AsyncEventingBasicConsumer consumer)
         {
             channel = connection.CreateModel();
-            channel.QueueDeclare(queue: "solutions_to_check",
+            channel.QueueDeclare(queue: rabbitMQOptinos.Value.QueueName,
                 durable: false,
                 exclusive: false,
                 autoDelete: false,
