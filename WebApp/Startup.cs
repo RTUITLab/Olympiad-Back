@@ -162,8 +162,6 @@ namespace WebApp
                 services.AddTransient<IRecaptchaVerifier, HttpRecaptchaVerifier>();
             }
 
-
-            //services.AddSingleton<IQueueChecker, QueueService>();            
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
 
 

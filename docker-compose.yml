@@ -1,13 +1,30 @@
-version: '3.8'
+version: "3.8"
 
-services: 
+services:
+    api:
+        image: rtuitlab/olympiad-api
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
     postgres:
         image: postgres:13-alpine
         ports:
             - 5432:5432
-        environment: 
+        environment:
             - POSTGRES_PASSWORD=password
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
     rabbitmq:
         image: rabbitmq
         ports:
             - 5672:5672
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
