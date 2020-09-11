@@ -53,6 +53,7 @@ namespace WebApp
             services.Configure<AccountSettings>(Configuration.GetSection(nameof(AccountSettings)));
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
             services.Configure<AdminSettings>(Configuration.GetSection(nameof(AdminSettings)));
+            services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services
@@ -161,8 +162,7 @@ namespace WebApp
                 services.AddTransient<IRecaptchaVerifier, HttpRecaptchaVerifier>();
             }
 
-
-            services.AddSingleton<IQueueChecker, QueueService>();
+            services.AddSingleton<IQueueChecker, RabbitMQQueue>();
 
 
             services.AddWebAppConfigure()

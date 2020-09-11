@@ -18,9 +18,9 @@ namespace Executor.Executers
         public readonly ProgramRunner runner;
         private readonly ILogger<ExecuteWorker> logger;
 
-
+        public Solution Current { get; private set; }
+        public ExecuteWorkerStatus Status { get; private set; }
         public ExecuteWorker(
-            BuildProperty buildProperty,
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, string, Task> saveBuildLogs,
             Func<Guid, Task<ExerciseData[]>> getTests,
@@ -30,20 +30,24 @@ namespace Executor.Executers
             ILoggerFactory logger)
         {
             this.getTests = getTests;
-            builder = new ProgramBuilder(processSolution, saveBuildLogs, BuildFinished, buildProperty, dockerClient, logger.CreateLogger<ProgramBuilder>());
+            builder = new ProgramBuilder(processSolution, saveBuildLogs, dockerClient, logger.CreateLogger<ProgramBuilder>());
             runner = new ProgramRunner(solutionsBase, dockerClient, runningSettings, logger.CreateLogger<ProgramRunner>());
             this.logger = logger.CreateLogger<ExecuteWorker>();
         }
 
-        public void Handle(Solution solution)
+        public async Task Handle(Solution solution)
         {
-            builder.Add(solution);
-        }
-
-        private async Task BuildFinished(Solution solution)
-        {
-            logger.LogInformation($"Finish build solution {solution.Id}, run it");
-            runner.Add(solution.Id, await getTests(solution.ExerciseId));
+            Current = solution;
+            Status = ExecuteWorkerStatus.Build;
+            var success = await builder.BuildSolution(solution);
+            if (success)
+            {
+                var tasksForExercise = await getTests(solution.ExerciseId);
+                Status = ExecuteWorkerStatus.Checking;
+                await runner.RunAndCheckSolution(solution.Id, tasksForExercise);
+            }
+            Current = null;
+            Status = ExecuteWorkerStatus.Wait;
         }
     }
 }

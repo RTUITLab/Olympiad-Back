@@ -15,28 +15,18 @@ using Microsoft.Extensions.Logging;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Options;
 using System.Xml.XPath;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using Olympiad.Shared.Models.Settings;
 
 namespace Executor
 {
     class Executor
     {
         private ISolutionsBase solutionBase;
+        private readonly IOptions<RabbitMqQueueSettings> rabbitMQOptinos;
         private readonly ILogger<Executor> logger;
-        public readonly Dictionary<string, ExecuteWorker> executeWorkers;
-
-        public int BuildQueueLength => executeWorkers.Select(w => w.Value.builder.BuildQueueLength).Sum();
-        public int RunQueueLength => executeWorkers.Select(w => w.Value.runner.RunQueueLength).Sum();
-
-        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
-        {
-            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
-            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
-            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
-            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
-            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
-            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
-            { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
-        };
+        public readonly List<ExecuteWorker> executeWorkers;
 
 
         public Executor(
@@ -44,46 +34,76 @@ namespace Executor
             IDockerClient dockerClient,
             ILoggerFactory loggerFactory,
             IOptions<RunningSettings> runningOptions,
+            IOptions<RabbitMqQueueSettings> rabbitMQOptinos,
             ILogger<Executor> logger)
         {
-            executeWorkers = buildProperties.ToDictionary(
-                kvp => kvp.Key,
-                kvp => new ExecuteWorker(
-                        kvp.Value,
-                        solutionBase.SaveChanges,
-                        solutionBase.SaveBuildLog,
-                        solutionBase.GetExerciseData,
-                        solutionBase,
-                        dockerClient,
-                        runningOptions.Value,
-                        loggerFactory)
-            );
+            executeWorkers = Enumerable.Repeat(0, runningOptions.Value.WorkersCount)
+                .Select(n =>
+                            new ExecuteWorker(
+                                    solutionBase.SaveChanges,
+                                    solutionBase.SaveBuildLog,
+                                    solutionBase.GetExerciseData,
+                                    solutionBase,
+                                    dockerClient,
+                                    runningOptions.Value,
+                                    loggerFactory)
+                        )
+                .ToList();
             this.solutionBase = solutionBase;
+            this.rabbitMQOptinos = rabbitMQOptinos;
             this.logger = logger;
         }
 
         public async Task Start(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var factory = new ConnectionFactory() { 
+                HostName = rabbitMQOptinos.Value.Host,
+                DispatchConsumersAsync = true };
+            using var connection = factory.CreateConnection();
+            foreach (var worker in executeWorkers)
             {
-                foreach (var pair in executeWorkers)
+                CreateChannel(connection, out var channel, out var consumer);
+                consumer.Received += async (model, ea) =>
                 {
-                    await HandleWorker(pair.Key, pair.Value);
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                    await HandleSolution(ea, worker, channel);
+                };
+                channel.BasicConsume(queue: rabbitMQOptinos.Value.QueueName, autoAck: false, consumer: consumer);
             }
+            logger.LogInformation("Start listening");
+            await Task.Delay(-1);
         }
 
-        private async Task HandleWorker(string lang, ExecuteWorker worker)
+        private async Task HandleSolution(BasicDeliverEventArgs ea, ExecuteWorker worker, IModel channel)
         {
-            if ((worker.runner.Current == null || worker.runner.RunQueueLength == 0) && worker.builder.Current == null)
+            var body = ea.Body.ToArray();
+            Guid solutinoId;
+            try
             {
-                var solutionToCheck = await solutionBase.GetInQueueSolutions(lang, 1);
-                solutionToCheck
-                        .ForEach(s => worker.Handle(s));
-                logger.LogInformation($"added {solutionToCheck.Count} solutions");
+                solutinoId = new Guid(body);
             }
+            catch
+            {
+                logger.LogWarning("Incorrect data");
+                return;
+            }
+
+            var solution = await solutionBase.GetSolutionInfo(solutinoId);
+            await worker.Handle(solution);
+
+            channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+        }
+
+        private void CreateChannel(IConnection connection, out IModel channel, out AsyncEventingBasicConsumer consumer)
+        {
+            channel = connection.CreateModel();
+            channel.QueueDeclare(queue: rabbitMQOptinos.Value.QueueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+            consumer = new AsyncEventingBasicConsumer(channel);
         }
     }
 }

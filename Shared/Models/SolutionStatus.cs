@@ -6,6 +6,7 @@ namespace Olympiad.Shared.Models
 {
     public enum SolutionStatus
     {
+        ErrorWhileCompile,
         CompileError,
         RunTimeError,
         WrongAnswer,

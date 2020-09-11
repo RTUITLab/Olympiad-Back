@@ -7,6 +7,5 @@ namespace WebApp.Services.Interfaces
     {
         void Clear();
         void PutInQueue(Guid solutionId);
-        List<Guid> GetFromQueue(int count);
     }
 }
