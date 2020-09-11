@@ -273,3 +273,5 @@ ClientApp/src/environments/environment\.prod\.ts
 WebApp/wwwroot/
 
 ClientApp/src/environment/
+
+tools

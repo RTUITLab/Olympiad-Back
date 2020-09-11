@@ -29,12 +29,7 @@ namespace WebApp.Services
         }
         public void Clear()
         {
-            throw new NotImplementedException();
-        }
-
-        public List<Guid> GetFromQueue(int count)
-        {
-            throw new NotImplementedException();
+            channel.QueuePurge(options.QueueName);
         }
 
         public void PutInQueue(Guid solutionId)
