@@ -17,5 +17,6 @@ namespace Executor
         Task SaveChanges(Guid solutionId, SolutionStatus status);
         Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck);
         Task SaveBuildLog(Guid solutionId, string log);
+        Task<Solution> GetSolutionInfo(Guid solutionId);
     }
 }

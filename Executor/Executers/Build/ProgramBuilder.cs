@@ -11,23 +11,28 @@ using Olympiad.Shared.Models;
 using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace Executor.Executers.Build
 {
     class ProgramBuilder
     {
-        private readonly BlockingCollection<Solution> solutionQueue = new BlockingCollection<Solution>();
+        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
+        {
+            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
+            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
+            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
+            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
+            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
+            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
+            { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
+        };
+
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
         private readonly Func<Guid, string, Task> saveBuildLogs;
-        private readonly Func<Solution, Task> finishBuildSolution;
-        private readonly BuildProperty buildProperty;
         private readonly IDockerClient dockerClient;
         private readonly ILogger<ProgramBuilder> logger;
 
-        private Task buildingTask;
-
-
-        public int BuildQueueLength => solutionQueue.Count;
 
 
         private DateTime currentStart;
@@ -37,72 +42,57 @@ namespace Executor.Executers.Build
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, string, Task> saveBuildLogs,
-            Func<Solution, Task> finishBuildSolution,
-            BuildProperty buildProperty,
             IDockerClient dockerClient,
             ILogger<ProgramBuilder> logger)
         {
-            buildingTask = Task.Run(BuildLoop);
             this.processSolution = processSolution;
             this.saveBuildLogs = saveBuildLogs;
-            this.finishBuildSolution = finishBuildSolution;
-            this.buildProperty = buildProperty;
             this.dockerClient = dockerClient;
             this.logger = logger;
         }
-        public void Add(Solution solution)
-        {
-            logger.LogDebug($"Add solution {solution.Id}");
-            if (solutionQueue.Any(s => s.Id == solution.Id)) return;
-            solutionQueue.Add(solution);
-        }
-        private async Task BuildLoop()
-        {
-            await Task.Yield();
-            foreach (var solution in solutionQueue.GetConsumingEnumerable())
-            {
-                Current = solution;
-                currentStart = DateTime.Now;
-                solution.Status = SolutionStatus.InProcessing;
-                await processSolution(solution.Id, SolutionStatus.InProcessing);
-                logger.LogInformation($"build solution {solution.Id}");
-                try
-                {
-                    var (buildSuccess, buildLogs) = await Build(solution.Id, solution.Language, solution.Raw);
-                    await saveBuildLogs(solution.Id, buildLogs);
 
-                    if (!buildSuccess)
-                    {
-                        await processSolution(solution.Id, SolutionStatus.CompileError);
-                        logger.LogInformation($"{solution.Id} {SolutionStatus.CompileError}");
-                        continue;
-                    }
-                    logger.LogInformation($"{solution.Id} BUILDED");
-                    await finishBuildSolution(solution);
-                }
-                catch (Exception ex)
+        public async Task<bool> BuildSolution(Solution solution)
+        {
+            Current = solution;
+            currentStart = DateTime.Now;
+            solution.Status = SolutionStatus.InProcessing;
+            await processSolution(solution.Id, SolutionStatus.InProcessing);
+            logger.LogInformation($"build solution {solution.Id}");
+            try
+            {
+                var (buildSuccess, buildLogs) = await BuidSource(solution.Id, solution.Language, solution.Raw);
+                await saveBuildLogs(solution.Id, buildLogs);
+
+                if (!buildSuccess)
                 {
-                    logger.LogWarning($"Build solution {solution.Id} with error", ex);
+                    await processSolution(solution.Id, SolutionStatus.CompileError);
+                    logger.LogInformation($"{solution.Id} {SolutionStatus.CompileError}");
+                    return false;
                 }
-                finally
-                {
-                    Current = null;
-                }
+                logger.LogInformation($"{solution.Id} BUILDED");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await processSolution(solution.Id, SolutionStatus.ErrorWhileCompile);
+                logger.LogWarning($"Build solution {solution.Id} with error", ex);
+                return false;
+            }
+            finally
+            {
+                Current = null;
             }
         }
 
-        protected virtual async Task<(bool, string)> Build(Guid solutionId, string lang, string raw)
+        protected async Task<(bool, string)> BuidSource(Guid solutionId, string lang, string raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
             {
                 return (false, "EMPTY SOLUTION");
             }
-            if (lang == "java")
-            {
-                var newRaw = Regex.Replace(raw, @"^public class [^ {]+", "public class Main", RegexOptions.Multiline);
-                raw = newRaw;
-                //TODO rename Java class to main
-            }
+
+            var buildProperty = buildProperties[lang];
+
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
 

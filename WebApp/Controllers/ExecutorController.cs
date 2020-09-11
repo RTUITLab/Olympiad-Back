@@ -37,23 +37,15 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Solution>> GetAsync(string lang, int count)
+        public async Task<ActionResult<Solution>> GetAsync(Guid solutionId)
         {
-            var list = queue.GetFromQueue(50);
-            var targetSolutions = await dbContext
+            var targetSolution = await dbContext
                 .Solutions
-                .Where(s => list.Contains(s.Id))
-                .Where(s => s.Language == lang)
-                .Take(count)
-                .ToListAsync();
-            foreach (var id in list)
-            {
-                if (!targetSolutions.Any(s => s.Id == id))
-                {
-                    queue.PutInQueue(id);
-                }
-            }
-            return targetSolutions;
+                .Where(s => s.Id == solutionId)
+                .SingleOrDefaultAsync();
+            if (targetSolution == null)
+                return NotFound();
+            return targetSolution;
         }
 
         [HttpPost()]

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Olympiad.Shared.Models.Settings;
 
 namespace Executor
 {
@@ -67,6 +68,7 @@ namespace Executor
                 })
                 .Configure<StartSettings>(configuration.GetSection(nameof(StartSettings)))
                 .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
+                .ConfigureAndValidate<RabbitMqQueueSettings>(configuration.GetSection(nameof(RabbitMqQueueSettings)))
                 .ConfigureAndValidate<RunningSettings>(configuration.GetSection(nameof(RunningSettings)))
                 .AddTransient<ISolutionsBase, DbManager>()
                 .AddSingleton<Executor>()
@@ -86,7 +88,8 @@ namespace Executor
 
         private static IConfiguration SetupConfigs(string[] args)
             => new ConfigurationBuilder()
-                .AddJsonFile(SettingsFileName)
+                .AddJsonFile("appsettings.Development.json", optional: true)
+                .AddJsonFile(SettingsFileName, optional: true)
                 .Build();
     }
 }

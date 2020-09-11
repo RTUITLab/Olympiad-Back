@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Executor.Executers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using PublicAPI.Responses.Solutions;
 using System;
@@ -61,43 +62,55 @@ namespace Executor
         private void Renderpage(Executor executor, CancellationToken cancellationToken)
         {
             Console.SetCursorPosition(0, 0);
-            Console.WriteLine($"BUILD: {executor.BuildQueueLength}");
+            int workerIndex = 0;
             foreach (var worker in executor.executeWorkers)
             {
-                var current = worker.Value.builder.Current?.Id;
-                var currentMessage = current == null ? "null" :
-                    $"{current} {worker.Value.builder.CurrentBuildTime:hh\\:mm\\:ss}";
-                Console.WriteLine($"{worker.Key,6}: {worker.Value.builder.BuildQueueLength,3} | current: {currentMessage,45}");
-            }
+                string currentMessage = "";
+                string status = "";
+                string lang = "";
 
-            Console.WriteLine($"RUN: {executor.RunQueueLength}");
-            foreach (var worker in executor.executeWorkers)
-            {
-                var runner = worker.Value.runner;
-                var current = runner.Current;
-                string currentMessage;
-                if (current == null)
+                switch (worker.Status)
                 {
-                    currentMessage = "null";
-                }
-                else
-                {
-                    string percentPart;
-                    if (runner.CurrentTestDataCount == 0)
-                    {
-                        percentPart = "[nodat]";
-                    }
-                    else
-                    {
-                        var twentyPartLength = runner.CurrentTestDataCount / 5d;
-                        var twentyPercentPartsCount = (int)(runner.CurrentTestDataCheckedCount / twentyPartLength);
-                        percentPart = twentyPercentFillings[twentyPercentPartsCount];
-                    }
-                    currentMessage = current == null ? "null" :
-                        $"{current} ({runner.CurrentTestDataCheckedCount,4}/{runner.CurrentTestDataCount,4}) {percentPart} {runner.CurrentBuildTime:hh\\:mm\\:ss}";
+                    case ExecuteWorkerStatus.Wait:
+                        currentMessage = "";
+                        status = "WAIT";
+                        break;
+                    case ExecuteWorkerStatus.Build:
+                        var solutionId = worker.Current.Id;
+                        currentMessage = solutionId == null ? "null" :
+                            $"{solutionId} {worker.builder.CurrentBuildTime:hh\\:mm\\:ss}";
+                        status = "BUILD";
+                        lang = worker.Current.Language;
+                        break;
+                    case ExecuteWorkerStatus.Checking:
+                        var runner = worker.runner;
+                        var current = runner.Current;
 
+                        string percentPart;
+                        if (runner.CurrentTestDataCount == 0)
+                        {
+                            percentPart = "[nodat]";
+                        }
+                        else
+                        {
+                            var twentyPartLength = runner.CurrentTestDataCount / 5d;
+                            var twentyPercentPartsCount = (int)(runner.CurrentTestDataCheckedCount / twentyPartLength);
+                            percentPart = twentyPercentFillings[twentyPercentPartsCount];
+                        }
+
+                        currentMessage = current == null ? "null" :
+                            $"{current} ({runner.CurrentTestDataCheckedCount,4}/{runner.CurrentTestDataCount,4}) {percentPart} {runner.CurrentBuildTime:hh\\:mm\\:ss}";
+                        status = "CHECK";
+                        lang = worker.Current.Language;
+                        break;
+                    default:
+                        currentMessage = "";
+                        status = "ERROR";
+                        lang = "";
+                        break;
                 }
-                Console.WriteLine($"{worker.Key,6}: {runner.RunQueueLength,3} | current: {currentMessage,65}");
+                Console.WriteLine($"{workerIndex,6}: {status,-5} | {lang,-6} | {currentMessage,-65}");
+                workerIndex++;
             }
             string inQueueOnServerMessage;
             var inQueueOnServerObject = statistic?.FirstOrDefault(o => o.SolutionStatus == "InQueue");
