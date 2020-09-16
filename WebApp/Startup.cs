@@ -175,7 +175,7 @@ namespace WebApp
 
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
             services.AddSignalR();
-
+            services.AddTransient<NotifyUsersService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
