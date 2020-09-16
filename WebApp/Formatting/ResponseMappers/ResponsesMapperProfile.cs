@@ -21,13 +21,13 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<Exercise, ExerciseCompactResponse>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                //.ForMember(r => r.Status, map => map.MapFrom(e => e
-                //    .Solutions
-                //    .Where(s => s.UserId == userId)
-                //    .Select(s => (int)s.Status)
-                //    .DefaultIfEmpty(-1)
-                //    .Max()))
-                ;
+                .ForMember(r => r.Status, map => map.MapFrom(e => e
+                    .Solutions
+                    .Where(s => s.UserId == userId)
+                    .OrderByDescending(s => s.Status)
+                    .Select(s => s.Status)
+                    .FirstOrDefault()
+                    ));
 
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))

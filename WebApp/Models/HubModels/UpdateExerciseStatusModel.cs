@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace WebApp.Models.HubModels
 {
-    public class UpdateSolutionStatusModel
+    public class UpdateExerciseStatusModel
     {
-        public Guid SolutionId { get; set; }
-        public SolutionStatus SolutionStatus { get; set; }
+        public Guid ExerciseId { get; set; }
+        public SolutionStatus ExerciseStatus { get; set; }
     }
 }

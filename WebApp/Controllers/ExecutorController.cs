@@ -16,6 +16,7 @@ using WebApp.Services.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using WebApp.Hubs;
 using WebApp.Models.HubModels;
+using WebApp.Services;
 
 namespace WebApp.Controllers
 {
@@ -55,7 +56,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> Post(
             Guid solutionId, 
             SolutionStatus state,
-            [FromServices] IHubContext<SolutionStatusHub, IHubClient> solutionStatusHubContext)
+            [FromServices] NotifyUsersService notifyUserService)
         {
             var solution = dbContext.Solutions.FirstOrDefault(S => S.Id == solutionId);
             if (solution == null)
@@ -67,7 +68,7 @@ namespace WebApp.Controllers
             else
                 solution.CheckedTime = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
-            await solutionStatusHubContext.Clients.All.UpdateSolutionStatus(new UpdateSolutionStatusModel { SolutionId = solutionId, SolutionStatus = state });
+            await notifyUserService.NewSolutionAdded(solution);
             return Ok();
         }
 
