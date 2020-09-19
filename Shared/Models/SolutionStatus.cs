@@ -13,6 +13,6 @@ namespace Olympiad.Shared.Models
         TooLongWork,
         InQueue,
         InProcessing,
-        Sucessful
+        Successful
     }
 }

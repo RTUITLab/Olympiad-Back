@@ -140,7 +140,7 @@ namespace Executor.Executers.Run
                     if (!string.IsNullOrEmpty(stderr))
                         localStatus = SolutionStatus.RunTimeError;
                     else if (string.Equals(stdout, exampleOut))
-                        localStatus = SolutionStatus.Sucessful;
+                        localStatus = SolutionStatus.Successful;
                     else
                         localStatus = SolutionStatus.WrongAnswer;
                     if (duration > TimeSpan.FromSeconds(30))

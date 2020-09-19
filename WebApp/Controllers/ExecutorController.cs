@@ -13,6 +13,10 @@ using Models.Solutions;
 using PublicAPI.Requests;
 using Olympiad.Shared.Models;
 using WebApp.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
+using WebApp.Hubs;
+using WebApp.Models.HubModels;
+using WebApp.Services;
 
 namespace WebApp.Controllers
 {
@@ -48,9 +52,11 @@ namespace WebApp.Controllers
             return targetSolution;
         }
 
-        [HttpPost()]
-        [Route("{solutionId}/{state}")]
-        public async Task<IActionResult> Post(Guid solutionId, SolutionStatus state)
+        [HttpPost("{solutionId}/{state}")]
+        public async Task<IActionResult> Post(
+            Guid solutionId, 
+            SolutionStatus state,
+            [FromServices] NotifyUsersService notifyUserService)
         {
             var solution = dbContext.Solutions.FirstOrDefault(S => S.Id == solutionId);
             if (solution == null)
@@ -62,11 +68,11 @@ namespace WebApp.Controllers
             else
                 solution.CheckedTime = DateTime.UtcNow;
             await dbContext.SaveChangesAsync();
+            await notifyUserService.NewSolutionAdded(solution);
             return Ok();
         }
 
-        [HttpPost]
-        [Route("buildlog/{solutionId}")]
+        [HttpPost("buildlog/{solutionId}")]
         public async Task<IActionResult> CheckLog(
             [FromRoute]Guid solutionId,
             [FromBody] string log)
@@ -86,8 +92,7 @@ namespace WebApp.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        [Route("checklog/{solutionId}")]
+        [HttpPost("checklog/{solutionId}")]
         public async Task<IActionResult> CheckLog(
             [FromRoute]Guid solutionId,
             [FromBody] SolutionCheckRequest request)

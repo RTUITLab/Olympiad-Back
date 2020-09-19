@@ -56,10 +56,25 @@ namespace Executor
 
         public async Task Start(CancellationToken cancellationToken)
         {
-            var factory = new ConnectionFactory() { 
+            try
+            {
+                SubscibeWorkers();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Can't subscribe workers to rabbitmq");
+            }
+            await Task.Delay(-1);
+        }
+
+        private IConnection SubscibeWorkers()
+        {
+            var factory = new ConnectionFactory()
+            {
                 HostName = rabbitMQOptinos.Value.Host,
-                DispatchConsumersAsync = true };
-            using var connection = factory.CreateConnection();
+                DispatchConsumersAsync = true
+            };
+            var connection = factory.CreateConnection();
             foreach (var worker in executeWorkers)
             {
                 CreateChannel(connection, out var channel, out var consumer);
@@ -70,7 +85,7 @@ namespace Executor
                 channel.BasicConsume(queue: rabbitMQOptinos.Value.QueueName, autoAck: false, consumer: consumer);
             }
             logger.LogInformation("Start listening");
-            await Task.Delay(-1);
+            return connection;
         }
 
         private async Task HandleSolution(BasicDeliverEventArgs ea, ExecuteWorker worker, IModel channel)

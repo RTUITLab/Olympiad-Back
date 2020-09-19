@@ -32,6 +32,7 @@ using Microsoft.OpenApi.Models;
 using RTUITLab.AspNetCore.Configure.Configure;
 using RTUITLab.AspNetCore.Configure.Invokations;
 using Olympiad.Shared.Models.Settings;
+using WebApp.Hubs;
 
 namespace WebApp
 {
@@ -173,7 +174,8 @@ namespace WebApp
                 services.AddHostedService<RestartCheckingService>();
 
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
-
+            services.AddSignalR();
+            services.AddTransient<NotifyUsersService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -208,10 +210,10 @@ namespace WebApp
             app.UseAuthorization();
 
             app.UseExceptionHandlerMiddleware();
-
             app.UseEndpoints(ep =>
             {
                 ep.MapControllers();
+                ep.MapHub<SolutionStatusHub>("/api/hubs/solutionStatus");
             });
             app.UseSpaStaticFiles();
             app.UseSpa(spa => { });
