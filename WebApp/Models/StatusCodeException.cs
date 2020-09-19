@@ -25,5 +25,6 @@ namespace WebApp.Models
 
         public static StatusCodeException BadRequest() => new StatusCodeException(HttpStatusCode.BadRequest);
         public static StatusCodeException BadRequest(string message) => new StatusCodeException(HttpStatusCode.BadRequest, message);
+        public static StatusCodeException Conflict(string message) => new StatusCodeException(HttpStatusCode.Conflict, message);
     }
 }

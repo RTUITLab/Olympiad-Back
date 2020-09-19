@@ -60,9 +60,14 @@ namespace WebApp.Controllers
         private async Task<SolutionResponse> AddSolution(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
         {
             string fileBody;
-            if (file == null || file.Length > 5120)
+            if (file == null)
             {
-                throw StatusCodeException.BadRequest("Отсутствует файл или его размер превышает 5MB");
+                throw StatusCodeException.BadRequest("file not exists");
+            }
+
+            if (file.Length > 5120)
+            {
+                throw StatusCodeException.BadRequest("file size more than 5MB");
             }
 
             if (!await context.Exercises.AnyAsync(
@@ -70,7 +75,7 @@ namespace WebApp.Controllers
                 (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now) &&
                 (e.Challenge.EndTime == null || e.Challenge.EndTime >= Now)))
             {
-                throw StatusCodeException.BadRequest();
+                throw StatusCodeException.Conflict("Not found started challenge and exercise");
             }
 
             if (!isAdmin)
