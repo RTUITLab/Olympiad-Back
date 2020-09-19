@@ -3,6 +3,10 @@ version: "3.8"
 services:
     api:
         image: rtuitlab/olympiad-api
+        environment:
+            - ASPNETCORE_ENVIRONMENT=${SERVICE_ASPNETCORE_ENVIRONMENT}
+            - ConnectionStrings__PostgresDataBase=${SERVICE_POSTGRES_DB}
+            - RabbitMqQueueSettings__Host=${SERVICE_RABBITMQ_HOST}
         logging:
             driver: "json-file"
             options:

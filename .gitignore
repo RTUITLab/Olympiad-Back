@@ -275,3 +275,5 @@ WebApp/wwwroot/
 ClientApp/src/environment/
 
 tools
+
+deploy/api/api-build
