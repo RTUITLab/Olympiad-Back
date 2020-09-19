@@ -1,200 +1,35 @@
-trigger:
-- master
-- develop
-
 name: $(BuildID)-$(Build.SourceBranchName)
 
+pool:
+  vmImage: 'ubuntu-18.04'
 
 stages:
 - stage: build
-  displayName: Build client app
+  displayName: BuildServices
   jobs:
-  - job: build_client_back
-    displayName: Build backend
-    pool:
-      vmImage: 'ubuntu-18.04'
-
+  - job: buildApi
     steps:
-    - task: UseDotNet@2
+    - task: Cake@2
       inputs:
-        packageType: 'sdk'
-        version: '3.1.100'
-        includePreviewVersions: true
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet restore'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
-        feedsToUse: 'select'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet publish'
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: 'WebApp/WebApp.csproj'
-        arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
-        zipAfterPublish: false
-        modifyOutputPath: false
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-client-back-build'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'olympiad-client-back-build'
-        publishLocation: 'Container'
-
-  - job: build_executor
-    displayName: Build executor
-    pool:
-      vmImage: 'ubuntu-18.04'
-
-    steps:
-    - task: UseDotNet@2
-      inputs:
-        packageType: 'sdk'
-        version: '3.1.100'
-        includePreviewVersions: true
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet restore'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
-        feedsToUse: 'select'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet publish'
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: 'Executor/Executor.csproj'
-        arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
-        zipAfterPublish: false
-        modifyOutputPath: false
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-client-back-build'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'olympiad-executor-build'
-        publishLocation: 'Container'
-
-
-  - job: build_client_front
-    displayName: Build frontend
-    pool:
-      vmImage: 'ubuntu-18.04'
-
-    steps:
-    - task: Npm@1
-      displayName: 'npm ci'
-      inputs:
-        command: 'ci'
-        workingDir: 'ClientApp'
-
-    - task: file-creator@5
-      displayName: 'create environment.ts'
-      inputs:
-        fileoverwrite: true
-        filepath: 'ClientApp/src/environments/environment.ts'
-        filecontent: |
-          export const environment = {
-              production: true,
-              baseUrl: '',
-              isAdmin: false,
-              recaptchaClientToken: '',
-              buildNumber: '',
-              showResults: false
-            };
-    - task: file-creator@5
-      displayName: 'create environment.prod.ts'
-      inputs:
-        fileoverwrite: true
-        filepath: 'ClientApp/src/environments/environment.prod.ts'
-        filecontent: |
-          export const environment = {
-              production: true,
-              baseUrl: '',
-              isAdmin: false,
-              recaptchaClientToken: '6LeclMcUAAAAAM9VMLaM6er7VRkDpKAAZi1hN179',
-              buildNumber: '$(Build.BuildNumber)',
-              showResults: false
-            };
-    - task: Npm@1
-      displayName: 'npm run build'
-      inputs:
-        command: 'custom'
-        workingDir: 'ClientApp'
-        customCommand: 'run build'
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-client-front-build'
-      inputs:
-        PathtoPublish: 'ClientApp/dist'
-        ArtifactName: 'olympiad-client-front-build'
-        publishLocation: 'Container'
-
-  - job: build_admin
-    displayName: Build admin
-    pool:
-      vmImage: 'ubuntu-18.04'
-
-    steps:
-    - task: UseDotNet@2
-      inputs:
-        packageType: 'sdk'
-        version: '3.1.100'
-        includePreviewVersions: true
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet restore'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
-        feedsToUse: 'select'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'dotnet publish'
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: 'Admin/Admin.csproj'
-        arguments: '-c Release -o $(Build.ArtifactStagingDirectory)'
-        zipAfterPublish: false
-        modifyOutputPath: false
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-admin-build'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'olympiad-admin-build'
-        publishLocation: 'Container'
-
-- stage: publish_deploy
-  displayName: Publish depoloy files
+        script: 'build.cake'
+        target: 'PublishApi'
+        verbosity: 'Verbose'
+    - publish: deploy/api
+      artifact: api-build
+- stage: packInDocker
   jobs:
-  - job: publish_client_deploy
-    displayName: 'Publish client deploy files'
+  - job: packApi
     steps:
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-client-deploy'
-      inputs:
-        PathtoPublish: 'deploy/client'
-        ArtifactName: 'olympiad-client-deploy'
-        publishLocation: 'Container'
-  - job: publish_admin_deploy
-    displayName: 'Publish admin deploy files'
-    steps:
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-admin-deploy'
-      inputs:
-        PathtoPublish: 'deploy/admin'
-        ArtifactName: 'olympiad-admin-deploy'
-        publishLocation: 'Container'
-  - job: publish_executor_deploy
-    displayName: 'Publish executor deploy files'
-    steps:
-    - task: PublishBuildArtifacts@1
-      displayName: 'publish artifact olympiad-executor-deploy'
-      inputs:
-        PathtoPublish: 'deploy/executor'
-        ArtifactName: 'olympiad-executor-deploy'
-        publishLocation: 'Container'
+      - download: current
+        artifact: api-build
+      - task: Docker@2
+        inputs:
+          containerRegistry: 'rtuitlab connection by admin'
+          repository: 'rtuitlab/olympiad-api'
+          command: 'buildAndPush'
+          Dockerfile: '$(Pipeline.Workspace)/api-build/Dockerfile'
+          buildContext: '$(Pipeline.Workspace)/api-build'
+          tags: |
+            $(Build.BuildId)
+            latest
+
