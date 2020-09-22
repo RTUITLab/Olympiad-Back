@@ -277,3 +277,4 @@ ClientApp/src/environment/
 tools
 
 deploy/api/api-build
+deploy/executor/executor-build

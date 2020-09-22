@@ -90,6 +90,7 @@ namespace Executor
             => new ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json", optional: true)
                 .AddJsonFile(SettingsFileName, optional: true)
+                .AddEnvironmentVariables()
                 .Build();
     }
 }

@@ -16,6 +16,15 @@ stages:
         verbosity: 'Verbose'
     - publish: deploy/api
       artifact: api-build
+  - job: buildExecutor
+    steps:
+    - task: Cake@2
+      inputs:
+        script: 'build.cake'
+        target: 'PublishExecutor'
+        verbosity: 'Verbose'
+    - publish: deploy/executor
+      artifact: executor-build
 - stage: packInDocker
   jobs:
   - job: packApi
@@ -29,6 +38,20 @@ stages:
           command: 'buildAndPush'
           Dockerfile: '$(Pipeline.Workspace)/api-build/Dockerfile'
           buildContext: '$(Pipeline.Workspace)/api-build'
+          tags: |
+            $(Build.BuildId)
+            latest
+  - job: packExecutor
+    steps:
+      - download: current
+        artifact: executor-build
+      - task: Docker@2
+        inputs:
+          containerRegistry: 'rtuitlab connection by admin'
+          repository: 'rtuitlab/olympiad-executor'
+          command: 'buildAndPush'
+          Dockerfile: '$(Pipeline.Workspace)/executor-build/Dockerfile'
+          buildContext: '$(Pipeline.Workspace)/executor-build'
           tags: |
             $(Build.BuildId)
             latest

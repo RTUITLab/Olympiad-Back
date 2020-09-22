@@ -5,4 +5,26 @@ services:
         build: deploy/api
         ports:
             - 5501:5501
+    executor:
+        build: deploy/executor
+    postgres:
+        image: postgres:13-alpine
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_PASSWORD=password
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
+    rabbitmq:
+        image: rabbitmq
+        ports:
+            - 5672:5672
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
 
