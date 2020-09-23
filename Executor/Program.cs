@@ -24,8 +24,7 @@ namespace Executor
 
             if (!await IsDockerAvailable(servicesProvider.GetRequiredService<IDockerClient>()))
             {
-                Console.WriteLine("host must see docker!");
-                return;
+                throw new Exception("host must see docker!");
             }
 
             var executor = servicesProvider.GetRequiredService<Executor>();

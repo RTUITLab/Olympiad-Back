@@ -2,11 +2,16 @@ version: "3.8"
 
 services:
     api:
-        build: deploy/api
+        build: ${BACK_CONTEXT:-.}/deploy/api
         ports:
             - 5501:5501
+        depends_on:
+            - postgres
+            - rabbitmq
     executor:
-        build: deploy/executor
+        build: ${BACK_CONTEXT:-.}/deploy/executor
+        depends_on:
+            - rabbitmq
     postgres:
         image: postgres:13-alpine
         ports:

@@ -3,14 +3,9 @@ version: "3.8"
 services:
     api:
         image: rtuitlab/olympiad-api
-        environment:
-            - ASPNETCORE_ENVIRONMENT=${SERVICE_ASPNETCORE_ENVIRONMENT}
-            - ConnectionStrings__PostgresDataBase=${SERVICE_POSTGRES_DB}
-            - RabbitMqQueueSettings__Host=${SERVICE_RABBITMQ_HOST}
+        env_file:
+            - ${BACK_CONTEXT:-.}/api.env
         restart: on-failure
-        depends_on:
-            - postgres
-            - rabbitmq
         logging:
             driver: "json-file"
             options:
@@ -18,15 +13,10 @@ services:
                 max-file: "10"
     executor:
         image: rtuitlab/olympiad-executor
-        environment:
-            - ASPNETCORE_ENVIRONMENT=${SERVICE_ASPNETCORE_ENVIRONMENT}
-            - RabbitMqQueueSettings__Host=${SERVICE_RABBITMQ_HOST}
-            - StartSettings__Address=http://api:5501
-            - StartSettings__DockerEndPoint=http://dind:2375
-            - CONSOLE_MODE=Logs
+        env_file:
+            - ${BACK_CONTEXT:-.}/executor.env
         restart: on-failure
         depends_on:
-            - rabbitmq
             - api
             - dind
         logging:
