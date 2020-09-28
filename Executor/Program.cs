@@ -18,27 +18,38 @@ namespace Executor
 
         static async Task Main(string[] args)
         {
-            configuration = SetupConfigs(args);
-
-            var servicesProvider = BuildServices();
-
-            if (!await IsDockerAvailable(servicesProvider.GetRequiredService<IDockerClient>()))
+            Console.WriteLine($"Started {DateTime.Now}");
+            try
             {
-                throw new Exception("host must see docker!");
+
+                configuration = SetupConfigs(args);
+
+                var servicesProvider = BuildServices();
+
+                if (!await IsDockerAvailable(servicesProvider.GetRequiredService<IDockerClient>()))
+                {
+                    throw new Exception("host must see docker!");
+                }
+
+                var executor = servicesProvider.GetRequiredService<Executor>();
+
+                var statusReporter = servicesProvider.GetRequiredService<ConsoleStatusReporter>();
+                var statusReporterTask = configuration.GetConsoleMode() == ConsoleMode.StatusReporting ?
+                    statusReporter.Start(executor, CancellationToken.None)
+                    :
+                    Task.CompletedTask;
+
+                await Task.WhenAll(
+                    executor.Start(CancellationToken.None),
+                    statusReporterTask);
+                Console.ReadLine();
             }
-
-            var executor = servicesProvider.GetRequiredService<Executor>();
-
-            var statusReporter = servicesProvider.GetRequiredService<ConsoleStatusReporter>();
-            var statusReporterTask = configuration.GetConsoleMode() == ConsoleMode.StatusReporting ?
-                statusReporter.Start(executor, CancellationToken.None)
-                :
-                Task.CompletedTask;
-
-            await Task.WhenAll(
-                executor.Start(CancellationToken.None),
-                statusReporterTask);
-            Console.ReadLine();
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(ex.StackTrace);
+                Console.Error.WriteLine($"Exited {DateTime.Now}");
+            }
         }
 
         private static async Task<bool> IsDockerAvailable(IDockerClient dockerClient)
