@@ -54,6 +54,7 @@ namespace WebApp
             services.Configure<AccountSettings>(Configuration.GetSection(nameof(AccountSettings)));
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
             services.Configure<AdminSettings>(Configuration.GetSection(nameof(AdminSettings)));
+            services.Configure<DefaultChallengeSettings>(Configuration.GetSection(nameof(DefaultChallengeSettings)));
             services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
@@ -169,7 +170,9 @@ namespace WebApp
             services.AddWebAppConfigure()
                 .AddTransientConfigure<AutoMigrate>(0)
                 .AddTransientConfigure<DefaultRolesConfigure>(1)
-                .AddTransientConfigure<FillQueue>(1);
+                .AddTransientConfigure<FillQueue>(1) // TODO send events table
+                .AddTransientConfigure<DefaultChallengeCreator>(2);
+
             if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
                 services.AddHostedService<RestartCheckingService>();
 

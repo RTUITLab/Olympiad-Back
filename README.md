@@ -68,36 +68,6 @@ You must use connection string to your real Postgres database in the field  ```C
 
 
 3. Use ```dotnet run``` to start web app in Development environment (appsettings.Development.json will be used)
-
-### Client App
-
-Represents the client part on Angular
-
-Install the following:
-1. Node.js + NPM
-
-How to run:
-
-1. Use ```npm instal``` in _./ClientApp_ folder. It will install all the dependencies in __node_modules__ folder.
-
-2. Create the _environment.ts_ in _./ClientApp/src/environments_ folder. Fill it with the following:
-
-```ts
-export const environment = {
-    production: true,
-    isAdmin: false,
-    baseUrl: '',
-    buildNumber: '',
-    showResults: true,
-    recaptchaClientToken: ''
-};
-```
-> baseUrl - url of running WebApp, when running locally it will likely be ```http://localhost:64800```
- 
-> recaptchaClientToken - **PUBLIC** token got when creating reCAPCTCHA v2
-
-2. After running the site, you must execute ```npm start```. After this you can see the site in your browser on [localhost:4200](http://localhost:4200).
-
 ### Executor
 
 Application connected to WebApp, which is executing received solutions and checks them.

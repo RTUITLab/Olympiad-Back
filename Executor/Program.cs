@@ -49,6 +49,7 @@ namespace Executor
                 Console.Error.WriteLine(ex.Message);
                 Console.Error.WriteLine(ex.StackTrace);
                 Console.Error.WriteLine($"Exited {DateTime.Now}");
+                Environment.Exit(1);
             }
         }
 
