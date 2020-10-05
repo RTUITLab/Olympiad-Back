@@ -5,6 +5,8 @@ services:
         image: rtuitlab/olympiad-api
         env_file:
             - ${BACK_CONTEXT:-.}/api.env
+        environment:
+            - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
         restart: on-failure
         logging:
             driver: "json-file"
@@ -15,19 +17,10 @@ services:
         image: rtuitlab/olympiad-executor
         env_file:
             - ${BACK_CONTEXT:-.}/executor.env
-        restart: on-failure
-        depends_on:
-            - api
-            - dind
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
-    dind:
-        image: docker:stable-dind
-        privileged: true
-        command: dockerd --host=tcp://0.0.0.0:2375 -l=debug
+        environment:
+            - StartSettings__DockerEndPoint=unix:///var/run/docker.sock
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
         restart: on-failure
         logging:
             driver: "json-file"
@@ -36,8 +29,6 @@ services:
                 max-file: "10"
     postgres:
         image: postgres:13-alpine
-        ports:
-            - 5432:5432
         environment:
             - POSTGRES_PASSWORD=password
         logging:
@@ -47,8 +38,6 @@ services:
                 max-file: "10"
     rabbitmq:
         image: rabbitmq
-        ports:
-            - 5672:5672
         logging:
             driver: "json-file"
             options:

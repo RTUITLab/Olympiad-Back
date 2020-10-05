@@ -3,6 +3,8 @@ version: "3.8"
 services:
     api:
         build: ${BACK_CONTEXT:-.}/deploy/api
+        environment:
+           ASPNETCORE_ENVIRONMENT: Development
         ports:
             - 5501:5501
         depends_on:
@@ -10,8 +12,23 @@ services:
             - rabbitmq
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor
+        environment:
+           - ASPNETCORE_ENVIRONMENT=Development
+           - StartSettings__DockerEndPoint=http://dind:2375
         depends_on:
+            - api
+            - dind
             - rabbitmq
+    dind:
+        image: docker:stable-dind
+        privileged: true
+        command: dockerd --host=tcp://0.0.0.0:2375 -l=debug
+        restart: on-failure
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
     postgres:
         ports:
             - 5432:5432

@@ -170,7 +170,7 @@ namespace WebApp
             services.AddWebAppConfigure()
                 .AddTransientConfigure<AutoMigrate>(0)
                 .AddTransientConfigure<DefaultRolesConfigure>(1)
-                .AddTransientConfigure<FillQueue>(1) // TODO send events table
+                // .AddTransientConfigure<FillQueue>(1) // TODO send events table
                 .AddTransientConfigure<DefaultChallengeCreator>(2);
 
             if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
