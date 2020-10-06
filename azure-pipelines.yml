@@ -26,6 +26,7 @@ stages:
     - publish: deploy/executor
       artifact: executor-build
 - stage: packInDocker
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: packApi
     steps:
