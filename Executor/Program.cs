@@ -1,7 +1,11 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
+using Docker.DotNet.Models;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,12 +36,16 @@ namespace Executor
                 }
 
                 var executor = servicesProvider.GetRequiredService<Executor>();
-
                 var statusReporter = servicesProvider.GetRequiredService<ConsoleStatusReporter>();
                 var statusReporterTask = configuration.GetConsoleMode() == ConsoleMode.StatusReporting ?
                     statusReporter.Start(executor, CancellationToken.None)
                     :
                     Task.CompletedTask;
+
+                await DownloadBaseImages(
+                    servicesProvider.GetRequiredService<IDockerClient>(),
+                    servicesProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DockerImagesDownloader"));
+
 
                 await Task.WhenAll(
                     executor.Start(CancellationToken.None),
@@ -51,6 +59,38 @@ namespace Executor
                 Console.Error.WriteLine($"Exited {DateTime.Now}");
                 Environment.Exit(1);
             }
+        }
+
+
+        private static async Task DownloadBaseImages(
+            IDockerClient dockerClient,
+            ILogger logger)
+        {
+            var dockerFileInfos = Directory
+                .GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles"))
+                .Select(f => (imageName: File.ReadAllLines(f)[0].Substring("FROM ".Length), lang: Path.GetFileName(f).Substring("Dockerfile-".Length)))
+                .ToList();
+            var imageRegex = new Regex("([^:]+):([^:]+)");
+            foreach (var (imageName, lang) in dockerFileInfos)
+            {
+                var parsed = imageRegex.Match(imageName);
+                var name = parsed.Groups[1].Value;
+                var tag = parsed.Groups[2].Value;
+
+                var progress = new Progress<JSONMessage>();
+                logger.LogInformation($"Creating image for {lang}");
+                progress.ProgressChanged += (s, m) =>
+                {
+                    logger.LogInformation($"{name}:{tag} {m.ID} {m.Status} {m.ProgressMessage}");
+                };
+                await dockerClient.Images.CreateImageAsync(new ImagesCreateParameters
+                {
+                    FromImage = name,
+                    Tag = tag
+                }, null, progress);
+
+            }
+
         }
 
         private static async Task<bool> IsDockerAvailable(IDockerClient dockerClient)

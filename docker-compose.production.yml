@@ -1,0 +1,6 @@
+version: "3.8"
+
+services:
+    api:
+        environment:
+            - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
