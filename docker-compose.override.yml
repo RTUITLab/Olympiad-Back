@@ -4,7 +4,8 @@ services:
     api:
         build: ${BACK_CONTEXT:-.}/deploy/api
         environment:
-           ASPNETCORE_ENVIRONMENT: Development
+           - ASPNETCORE_ENVIRONMENT=Development
+        restart: on-failure
         ports:
             - 5501:5501
         depends_on:
@@ -15,6 +16,7 @@ services:
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - StartSettings__DockerEndPoint=http://dind:2375
+        restart: on-failure
         depends_on:
             - api
             - dind
@@ -32,6 +34,8 @@ services:
     postgres:
         ports:
             - 5432:5432
+        restart: on-failure
     rabbitmq:
         ports:
             - 5672:5672
+        restart: on-failure

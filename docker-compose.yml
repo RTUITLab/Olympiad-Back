@@ -5,9 +5,6 @@ services:
         image: rtuitlab/olympiad-api
         env_file:
             - ${BACK_CONTEXT:-.}/api.env
-        environment:
-            - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
-        restart: on-failure
         logging:
             driver: "json-file"
             options:
@@ -21,7 +18,6 @@ services:
             - StartSettings__DockerEndPoint=unix:///var/run/docker.sock
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-        restart: on-failure
         logging:
             driver: "json-file"
             options:

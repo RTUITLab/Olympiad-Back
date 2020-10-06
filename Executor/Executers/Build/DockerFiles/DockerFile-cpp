@@ -1,4 +1,4 @@
-﻿FROM gcc:latest
+﻿FROM gcc:10.2.0
 COPY ./Program.cpp /src/Program.cpp
 RUN g++ /src/Program.cpp
 CMD /a.out
