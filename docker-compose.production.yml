@@ -4,3 +4,21 @@ services:
     api:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
+        networks:
+            - net
+    executor:
+        networks:
+            - net
+    postgres:
+        networks:
+            - net
+    rabbitmq:
+        networks:
+            - net
+    front:
+        networks:
+            - net
+networks:
+    net:
+        driver: overlay
+        attachable: true
