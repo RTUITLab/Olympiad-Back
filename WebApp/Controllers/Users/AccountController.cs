@@ -57,7 +57,7 @@ namespace WebApp.Controllers.Users
             var words = (match ?? "").ToUpper().Split(' ');
             var users = UserManager.Users;
             users = words.Aggregate(users, (usersCollection, matcher) => usersCollection.Where(
-                u => 
+                u =>
                     u.FirstName.ToUpper().Contains(matcher) ||
                     u.Email.ToUpper().Contains(matcher) ||
                     u.StudentID.ToUpper().Contains(matcher)));
@@ -101,7 +101,7 @@ namespace WebApp.Controllers.Users
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Post([FromBody]RegistrationRequest model)
+        public async Task<IActionResult> Post([FromBody] RegistrationRequest model)
         {
             if (!ModelState.IsValid || !options.Value.IsRegisterAvailable)
             {
@@ -132,6 +132,8 @@ namespace WebApp.Controllers.Users
         }
 
         [HttpPost("changePassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<IdentityError>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest model)
         {
             var user = await UserManager.FindByIdAsync(UserManager.GetUserId(User));
