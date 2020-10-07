@@ -19,6 +19,8 @@ using Olympiad.Shared.Models;
 using WebApp.Auth;
 using WebApp.Helpers;
 using WebApp.ViewModels;
+using WebApp.Services;
+using WebApp.Models.Settings;
 
 namespace WebApp.Controllers
 {
@@ -41,7 +43,10 @@ namespace WebApp.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Post([FromBody]CredentialsRequest credentials)
+        public async Task<IActionResult> Post(
+            [FromBody] CredentialsRequest credentials,
+            [FromServices] NotifyUsersService notifyUsersService,
+            [FromServices] IOptions<DefaultUserSettings> defaultUserSettings)
         {
             if (!ModelState.IsValid)
             {
@@ -55,8 +60,13 @@ namespace WebApp.Controllers
             {
                 return Unauthorized("invalid username or password");
             }
-
+            
             var loginInfo = await GenerateResponse(user);
+            if (defaultUserSettings.Value.StudentId == user.StudentID && credentials.Password == defaultUserSettings.Value.Password)
+            {
+                _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
+            }
+
             return Ok(loginInfo);
         }
 
@@ -75,8 +85,8 @@ namespace WebApp.Controllers
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
             loginInfo.Token = token;
-
-            var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), _userManager.GetRolesAsync(user).Result.ToArray());
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), userRoles.ToArray());
 
             loginInfo.Token = await Tokens.GenerateJwt(identity, _jwtFactory, user.UserName);
             return loginInfo;
