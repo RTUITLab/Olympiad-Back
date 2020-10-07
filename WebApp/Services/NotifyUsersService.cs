@@ -45,11 +45,17 @@ namespace WebApp.Services
 
         private Task SolutionStatusChanged(Solution solution)
         {
-            return hubContext.Clients.All.UpdateSolutionStatus(mapper.Map<SolutionResponse>(solution));
+            return hubContext
+                .Clients
+                .User(solution.UserId.ToString())
+                .UpdateSolutionStatus(mapper.Map<SolutionResponse>(solution));
         }
         private Task ExerciseStatusChanged(Guid userId, Guid exerciseId, SolutionStatus exerciseStatus)
         {
-            return hubContext.Clients.All.UpdateExerciseStatus(new UpdateExerciseStatusModel
+            return hubContext
+                .Clients
+                .User(userId.ToString())
+                .UpdateExerciseStatus(new UpdateExerciseStatusModel
             {
                 ExerciseId = exerciseId,
                 ExerciseStatus = exerciseStatus
