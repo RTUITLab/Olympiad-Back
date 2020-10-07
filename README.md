@@ -1,4 +1,5 @@
 # Student Testing System
+[![Build Status](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_apis/build/status/Olympiad/Olympiad-Back?branchName=master)](https://dev.azure.com/rtuitlab/RTU%20IT%20Lab/_build/latest?definitionId=125&branchName=master)
 ## Description
 System provides examination testing for students on the basis of the given test tasks.
 
