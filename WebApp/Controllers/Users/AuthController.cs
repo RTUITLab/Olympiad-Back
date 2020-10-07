@@ -47,21 +47,17 @@ namespace WebApp.Controllers
             {
                 return BadRequest(ModelState);
             }
-            if (string.IsNullOrEmpty(credentials.Login) || string.IsNullOrEmpty(credentials.Password))
-            {
-                return BadRequest();
-            }
             var user = await context.Students.SingleOrDefaultAsync(c => c.StudentID == credentials.Login || c.UserName == credentials.Login);
             if (user == null) return BadRequest();
             if (!await _userManager.CheckPasswordAsync(user, credentials.Password)
                 //|| await _userManager.IsEmailConfirmedAsync(userToVerify)
                 )
             {
-                return BadRequest();
+                return Unauthorized("invalid username or password");
             }
 
             var loginInfo = await GenerateResponse(user);
-            return Json(loginInfo);
+            return Ok(loginInfo);
         }
 
 

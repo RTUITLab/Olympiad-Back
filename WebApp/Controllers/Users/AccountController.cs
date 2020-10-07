@@ -130,5 +130,18 @@ namespace WebApp.Controllers.Users
 
             return Ok();
         }
+
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest model)
+        {
+            var user = await UserManager.FindByIdAsync(UserManager.GetUserId(User));
+
+            var result = await UserManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            return BadRequest(result.Errors);
+        }
     }
 }
