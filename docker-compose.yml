@@ -5,6 +5,11 @@ services:
         image: rtuitlab/olympiad-api
         env_file:
             - ${BACK_CONTEXT:-.}/api.env
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.30'
+                    memory: 100M
         logging:
             driver: "json-file"
             options:
@@ -18,6 +23,11 @@ services:
             - StartSettings__DockerEndPoint=unix:///var/run/docker.sock
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.30'
+                    memory: 100M
         logging:
             driver: "json-file"
             options:
@@ -27,6 +37,11 @@ services:
         image: postgres:13-alpine
         environment:
             - POSTGRES_PASSWORD=password
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.50'
+                    memory: 300M
         logging:
             driver: "json-file"
             options:
@@ -34,6 +49,11 @@ services:
                 max-file: "10"
     rabbitmq:
         image: rabbitmq
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.50'
+                    memory: 300M
         logging:
             driver: "json-file"
             options:

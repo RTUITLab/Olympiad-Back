@@ -6,7 +6,7 @@ function fn() {
   }
   var config = {
     env: env,
-	baseUrl: 'http://127.0.0.1:5000'
+	baseUrl: 'http://127.0.0.1:5501'
   }
   var result = karate.callSingle('classpath:olympiad/auth.feature', config);
   config.accessToken = 'Bearer ' + result.accessToken;
