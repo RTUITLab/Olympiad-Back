@@ -56,4 +56,37 @@ stages:
           tags: |
             $(Build.BuildId)
             latest
+- stage: deploy
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+    - deployment: DeployApi
+      displayName: Deploy api
+      pool:
+        vmImage: 'Ubuntu-16.04'
+      environment: 'production'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: SSH@0
+                inputs:
+                  sshEndpoint: 'swarm manager'
+                  runOptions: 'commands'
+                  commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) olympiad_api'
+                  readyTimeout: '20000'
+    - deployment: DeployExecutor
+      displayName: Deploy executor
+      pool:
+        vmImage: 'Ubuntu-16.04'
+      environment: 'production'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: SSH@0
+                inputs:
+                  sshEndpoint: 'swarm manager'
+                  runOptions: 'commands'
+                  commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) olympiad_executor'
+                  readyTimeout: '20000'
 
