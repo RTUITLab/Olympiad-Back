@@ -11,5 +11,6 @@ namespace WebApp.Models.HubModels
     {
         Task UpdateSolutionStatus(SolutionResponse solution);
         Task UpdateExerciseStatus(UpdateExerciseStatusModel statusModel);
+        Task InformationMessage(string message);
     }
 }

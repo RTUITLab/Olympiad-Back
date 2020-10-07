@@ -12,6 +12,7 @@ namespace WebApp.Models.Settings
         public string Name { get; set; }
         public string StudentId { get; set; }
         public bool CreateUser { get; set; }
+        public string ResetPasswordWarningText { get; set; }
         public List<string> Roles { get; set; }
     }
 }
