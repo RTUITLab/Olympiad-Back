@@ -209,12 +209,17 @@ namespace WebApp
             {
                 app.UseExceptionHandler("/Home/Error");
             }
-
+            var origins = Configuration.GetSection("AllowedOrigins")
+                .AsEnumerable()
+                .Skip(1)
+                .Select(kvp => kvp.Value)
+                .ToArray();
             app.UseCors(builder =>
                 builder
-                    .AllowAnyOrigin()
+                    .WithOrigins(origins)
                     .AllowAnyMethod()
-                    .AllowAnyHeader());
+                    .AllowAnyHeader()
+                    .AllowCredentials());
 
             app.UseWebAppConfigure();
 
