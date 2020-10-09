@@ -33,20 +33,6 @@ services:
             options:
                 max-size: "200k"
                 max-file: "10"
-    postgres:
-        image: postgres:13-alpine
-        environment:
-            - POSTGRES_PASSWORD=password
-        deploy:
-            resources:
-                limits:
-                    cpus: '0.50'
-                    memory: 300M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
     rabbitmq:
         image: rabbitmq
         deploy:

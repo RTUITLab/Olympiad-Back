@@ -32,9 +32,18 @@ services:
                 max-size: "200k"
                 max-file: "10"
     postgres:
+        image: postgres:13-alpine
+        environment:
+            - POSTGRES_PASSWORD=password
         ports:
             - 5432:5432
         restart: on-failure
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
+        
     rabbitmq:
         ports:
             - 5672:5672
