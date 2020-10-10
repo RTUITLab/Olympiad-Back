@@ -73,8 +73,8 @@ namespace Olympiad.Admin
                 app.UseExceptionHandler("/Error");
             }
 
+            app.UsePathBase("/admin");
             app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
