@@ -33,6 +33,7 @@ using RTUITLab.AspNetCore.Configure.Configure;
 using RTUITLab.AspNetCore.Configure.Invokations;
 using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
+using WebApp.Formatting;
 
 namespace WebApp
 {
@@ -64,7 +65,6 @@ namespace WebApp
             else
                 services
                 .AddEntityFrameworkNpgsql()
-                
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
 
@@ -150,14 +150,11 @@ namespace WebApp
             services.AddAutoMapper(typeof(Startup));
 
             services.AddControllers()
-                .AddNewtonsoftJson(options =>
+                .AddJsonOptions(options =>
                 {
-                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                    options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                }
-            );
+                    options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
+                });
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Olympiad API", Version = "v1" });

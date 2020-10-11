@@ -8,5 +8,5 @@ Scenario:
   And request { login: 'admin@localhost.ru', password: "VeryStrongPass1" }
   When method post
   Then status 200
-  * print response.Token
-  * def accessToken = response.Token
+  * print response.token
+  * def accessToken = response.token
