@@ -101,7 +101,7 @@ namespace WebApp.Controllers
                 fileBody = await streamReader.ReadToEndAsync();
                 if (!fileBody.IsLegalUnicode())
                 {
-                    return BadRequest($"The file contains illegal Unicode");
+                    return BadRequest($"The file contains invalid Unicode");
                 }
             }
 
