@@ -131,7 +131,7 @@ namespace Executor
                 }
                 var strResponse = await response.Content.ReadAsStringAsync();
                 logger.LogDebug($"server return {strResponse}");
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JsonConvert.DeserializeObject<JObject>(strResponse)["Token"].ToString());
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", JsonConvert.DeserializeObject<JObject>(strResponse)["token"].ToString());
             }
             catch (Exception ex)
             {
