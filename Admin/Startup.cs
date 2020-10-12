@@ -15,6 +15,7 @@ using Olympiad.Shared.Models.Settings;
 using Olympiad.Admin.Services;
 using OpenQA.Selenium;
 using Microsoft.Extensions.Options;
+using Olympiad.Services;
 
 namespace Olympiad.Admin
 {
@@ -39,7 +40,9 @@ namespace Olympiad.Admin
                 .AddEntityFrameworkNpgsql()
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
-
+            
+            services.AddScoped<ChallengesService>();
+            
             services.AddIdentity<User, IdentityRole<Guid>>(o =>
             {
                 // configure identity options
@@ -51,6 +54,7 @@ namespace Olympiad.Admin
             })
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
+
 
             services.AddHttpClient(OlympiadWebAppHttpRequester.HttpClientName, (sp, client) =>
             {
@@ -73,8 +77,8 @@ namespace Olympiad.Admin
                 app.UseExceptionHandler("/Error");
             }
 
+            app.UsePathBase("/admin");
             app.UseStaticFiles();
-
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>

@@ -1,0 +1,61 @@
+﻿@page "/challenges"
+@inject NavigationManager navigationManager
+@inject ChallengesService challengesService
+@inject ApplicationDbContext dbContext
+<h3>Challenges</h3>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Access mode</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>.</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (challenges == null)
+        {
+            <tr><td>Loading</td></tr>
+        }
+        else
+        {
+            @foreach (var ch in challenges)
+            {
+                <tr>
+                    <td>@ch.Name</td>
+                    <td>@ch.ChallengeAccessType</td>
+                    <td>@(ch.StartTime?.ToString() ?? "null")</td>
+                    <td>@(ch.EndTime?.ToString() ?? "null")</td>
+                    <td><NavLink href=@($"challenges/{ch.Id}")>Edit</NavLink></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<button class="btn btn-primary" @onclick="CreateChallenge">Create challenge</button>
+
+
+@code {
+    List<Models.Exercises.Challenge> challenges;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        challenges = await challengesService.GetChallenges();
+    }
+
+    private async Task CreateChallenge()
+    {
+        var newChallenge = new Models.Exercises.Challenge
+        {
+            Name = "NEW CHALLENGE NAME",
+            ChallengeAccessType = Olympiad.Shared.Models.ChallengeAccessType.Private,
+            CreationTime = DateTime.UtcNow
+        };
+        dbContext.Challenges.Add(newChallenge);
+        await dbContext.SaveChangesAsync();
+        navigationManager.NavigateTo($"challenges/{newChallenge.Id}");
+    }
+}

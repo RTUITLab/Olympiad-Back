@@ -1,0 +1,67 @@
+﻿@page "/challenges/{ChallengeId:guid}/exercises"
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext dbContext
+@inject NavigationManager navigationManager
+
+<h3>Challenge exercises</h3>
+<h4>@challengeTitle</h4>
+<NavLink href=@($"challenges/{ChallengeId}/")>Back to @challengeTitle</NavLink>
+
+@if (exercises == null)
+{
+    <p>Loading</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Score</th>
+                <th>.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var exercise in exercises)
+            {
+                <tr>
+                    <td>@exercise.ExerciseName</td>
+                    <td>@exercise.Score</td>
+                    <td><NavLink href=@($"challenges/{exercise.ChallengeId}/exercises/{exercise.ExerciseID}")>Edit</NavLink></td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddExercise">Add exercise</button>
+}
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private string challengeTitle = "Loading...";
+    private List<Models.Exercises.Exercise> exercises;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        challengeTitle = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
+        exercises = await dbContext.Exercises.Where(ex => ex.ChallengeId == ChallengeId).ToListAsync();
+    }
+
+    private async Task AddExercise()
+    {
+        var newExercise = new Models.Exercises.Exercise
+        {
+            ChallengeId = ChallengeId,
+            ExerciseName = "NEW EXERCISE NAME",
+            ExerciseTask = "NEW EXERCISE TASK",
+        };
+        dbContext.Exercises.Add(newExercise);
+        await dbContext.SaveChangesAsync();
+        navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises/{newExercise.ExerciseID}");
+    }
+}

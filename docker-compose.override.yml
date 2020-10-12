@@ -11,6 +11,11 @@ services:
         depends_on:
             - postgres
             - rabbitmq
+    admin:
+        build: ${BACK_CONTEXT:-.}/deploy/admin
+        environment:
+           - ASPNETCORE_ENVIRONMENT=Development
+           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=itlab-db;Integrated Security=true; 
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor
         environment:

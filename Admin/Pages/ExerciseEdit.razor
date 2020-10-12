@@ -1,0 +1,100 @@
+﻿@page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}"
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext dbContext
+@inject NavigationManager navigationManager
+
+
+<h3>Exercise edit</h3>
+<h4>@challengeName</h4>
+<NavLink href=@($"challenges/{ChallengeId}/exercises")>Go to exercises list</NavLink>
+
+
+@if (exercise == null)
+{
+    <p>Loading</p>
+}
+else
+{
+
+    <EditForm Model="exercise" OnValidSubmit="UpdateExercise">
+        <div class="form-group">
+            <label for="exercise-title">Title</label>
+            <InputText id="exercise-title" class="form-control" @bind-Value="exercise.ExerciseName" />
+        </div>
+        <div class="form-group">
+            <label for="exercise-description">Task text</label>
+            <InputTextArea id="exercise-description" class="form-control" @bind-Value="exercise.ExerciseTask" />
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>In</th>
+                    <th>Out</th>
+                    <th>IsPublic</th>
+                    <th>.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var exerciseData in exercise.ExerciseDatas)
+                {
+                    <tr>
+                        <td><textarea class="form-control" @bind="exerciseData.InData" /></td>
+                        <td><textarea class="form-control" @bind="exerciseData.OutData" /></td>
+                        <td><input class="form-check" type="checkbox" @bind="exerciseData.IsPublic" /></td>
+                        <td><button class="btn btn-danger" @onclick="() => DelInOutData(exerciseData)">Del</button></td>
+                        <td><p>@dbContext.Entry(exerciseData).State</p></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-primary" @onclick="AddInOutData">Add In/Out data</button>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <button class="btn btn-danger" @onclick="DeleteExercise">Delete</button>
+    </EditForm>
+}
+
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+
+    private string challengeName = "Loading...";
+    private Models.Exercises.Exercise exercise;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        challengeName = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
+        exercise = await dbContext.Exercises.Include(e => e.ExerciseDatas).SingleOrDefaultAsync(ex => ex.ExerciseID == ExerciseId);
+    }
+
+    private async Task UpdateExercise()
+    {
+        await dbContext.SaveChangesAsync();
+    }
+
+    private void AddInOutData()
+    {
+        var inOutData = new Models.Exercises.ExerciseData();
+        inOutData.ExerciseId = exercise.ExerciseID;
+        exercise.ExerciseDatas.Add(inOutData);
+        dbContext.TestData.Add(inOutData);
+    }
+
+    private void DelInOutData(Models.Exercises.ExerciseData data)
+    {
+        exercise.ExerciseDatas.Remove(data);
+        dbContext.TestData.Remove(data);
+    }
+
+    private async Task DeleteExercise()
+    {
+        dbContext.Exercises.Remove(exercise);
+        await dbContext.SaveChangesAsync();
+        navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
+    }
+}
