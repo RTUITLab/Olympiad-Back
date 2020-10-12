@@ -4,3 +4,9 @@ services:
     api:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
+    admin:
+        environment:
+            - AdminServiceAdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key}
+            - AdminServiceAdminSettings__OlympiadBaseAddress=${OLYMPIAD_URI?pass olympiad uri}
+            - GenerateSettings__Domain=${OLYMPIAD_DOMAIN?pass olympiad domain}
+

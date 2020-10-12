@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Models;
+using Olympiad.Shared.Models.Settings;
 using PublicAPI.Responses;
-using WebApp.Models.Settings;
 
 namespace WebApp.Controllers
 {
@@ -42,7 +42,8 @@ namespace WebApp.Controllers
                 User user = new User()
                 {
                     UserName = $"{studentId}{options.Value.Domain}",
-                    StudentID = studentId
+                    StudentID = studentId,
+                    FirstName = studentId
                 };
                 var password = new Random().Next(MIN, MAX).ToString();
 

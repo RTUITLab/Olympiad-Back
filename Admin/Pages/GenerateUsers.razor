@@ -1,0 +1,56 @@
+﻿@page "/users/generate"
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext dbContext
+@inject Microsoft.AspNetCore.Identity.UserManager<User> userManager
+@inject Microsoft.Extensions.Options.IOptions<Olympiad.Shared.Models.Settings.GenerateSettings> generateSettings
+<h3>GenerateUsers</h3>
+
+<textarea @bind="rows"></textarea>
+<button @onclick="Generate">Generate</button>
+
+
+@if (generatedUsers == null)
+{
+    <p>No generated users</p>
+}
+else
+{
+    <ul>
+        @foreach (var generatedUser in generatedUsers)
+        {
+            <li>@($"{generatedUser.Email} {generatedUser.Password}")</li>
+        }
+    </ul>
+}
+
+@code {
+    string rows = "";
+    List<PublicAPI.Responses.GenerateUsersRespponce> generatedUsers;
+    private async Task Generate()
+    {
+        var userIds = rows.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        const int MIN = 11111111;
+        const int MAX = 99999999;
+
+
+        List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
+
+
+        foreach (var studentId in userIds)
+        {
+            User user = new User()
+            {
+                UserName = $"{studentId}{generateSettings.Value.Domain}",
+                StudentID = studentId
+            };
+            var password = new Random().Next(MIN, MAX).ToString();
+
+            generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Email = user.UserName, Password = password });
+            var result = await userManager.CreateAsync(user, password);
+            result = await userManager.AddToRoleAsync(user, "User");
+        }
+
+        generatedUsers = generates;
+    }
+}

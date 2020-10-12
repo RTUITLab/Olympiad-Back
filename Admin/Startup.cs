@@ -33,7 +33,7 @@ namespace Olympiad.Admin
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AdminServiceAdminSettings>(Configuration.GetSection(nameof(AdminServiceAdminSettings)));
-
+            services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services

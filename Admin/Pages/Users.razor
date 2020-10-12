@@ -1,0 +1,47 @@
+﻿@page "/users"
+
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext dbContext
+
+<h3>Users</h3>
+
+@if (users == null)
+{
+    <p>Loading</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>StudentID</th>
+                <th>Username</th>
+                <th>.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.FirstName</td>
+                    <td>@user.StudentID</td>
+                    <td>@user.UserName</td>
+                    <td><NavLink href=@($"users/{user.Id}")>Edit</NavLink></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<NavLink href="users/generate">Generate users</NavLink>
+
+@code {
+    List<User> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        users = await dbContext.Users.ToListAsync();
+    }
+}
