@@ -5,6 +5,7 @@
 @inject Microsoft.AspNetCore.Identity.UserManager<User> userManager
 @inject Microsoft.Extensions.Options.IOptions<Olympiad.Shared.Models.Settings.GenerateSettings> generateSettings
 <h3>GenerateUsers</h3>
+<NavLink href="users">Back to users</NavLink>
 
 <textarea @bind="rows"></textarea>
 <button @onclick="Generate">Generate</button>

@@ -1,10 +1,13 @@
 ﻿@page "/users/{UserId:guid}"
 
-<h3>EditUser</h3>
 @using Microsoft.EntityFrameworkCore
 
 @inject ApplicationDbContext dbContext
 @inject NavigationManager navigationManager
+
+
+<h3>EditUser</h3>
+<NavLink href="users">Back to users</NavLink>
 
 @if (user == null)
 {
