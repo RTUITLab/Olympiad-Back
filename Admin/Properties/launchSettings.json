@@ -2,7 +2,7 @@
   "profiles": {
     "Admin": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "http://localhost:5001",
       "applicationUrl": "http://0.0.0.0:5001",
       "environmentVariables": {
