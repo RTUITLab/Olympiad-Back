@@ -55,9 +55,9 @@ else
                     }
             </InputSelect>
         </div>
-        <button type="submit" class="btn btn-primary" @onclick="UpdateChallenge">Update</button>
-        <button class="btn btn-danger" @onclick="DeleteChallenge">Delete</button>
+        <button type="submit" class="btn btn-primary">Update</button>
     </EditForm>
+    <button class="btn btn-danger" @onclick="DeleteChallenge">Delete</button>
 
     <NavLink href=@($"challenges/{ChallengeId}/exercises")>Exercises</NavLink>
 }

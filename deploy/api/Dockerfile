@@ -4,5 +4,5 @@ WORKDIR /app
 
 COPY api-build .
 
-ENV ASPNETCORE_URLS=http://*:5501 
+ENV ASPNETCORE_URLS=http://*:5501
 CMD [ "dotnet", "WebApp.dll" ]

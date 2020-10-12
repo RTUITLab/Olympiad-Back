@@ -15,6 +15,18 @@ services:
             options:
                 max-size: "200k"
                 max-file: "10"
+    admin:
+        image: rtuitlab/olympiad-admin
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.30'
+                    memory: 100M
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
     executor:
         image: rtuitlab/olympiad-executor
         env_file:

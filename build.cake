@@ -7,6 +7,10 @@ var apiProject = "WebApp/WebApp.csproj";
 var executorPublishDir = "deploy/executor/executor-build";
 var executorProject = "Executor/Executor.csproj";
 
+var adminPublishDir = "deploy/admin/admin-build";
+var adminProject = "Admin/Admin.csproj";
+
+
 Setup(ctx =>
 {
    CleanDirectory(apiPublishDir);
@@ -66,9 +70,33 @@ Task("PublishExecutor")
    DotNetCorePublish(executorProject, settings);
 });
 
+Task("BuildAdmin")
+   .IsDependentOn("RestoreSolution")
+   .Does(() =>
+{
+   var settings = new DotNetCoreBuildSettings {
+      Configuration = configuration
+   };
+   DotNetCoreBuild(adminProject, settings);
+});
+
+Task("PublishAdmin")
+   .IsDependentOn("BuildAdmin")
+   .Does(() =>
+{
+   var settings = new DotNetCorePublishSettings
+   {
+      Configuration = configuration,
+      OutputDirectory = adminPublishDir
+   };
+
+   DotNetCorePublish(adminProject, settings);
+});
+
 Task("PublishAll")
    .IsDependentOn("PublishApi")
    .IsDependentOn("PublishExecutor")
+   .IsDependentOn("PublishAdmin")
    .Does(() =>
 {
    
