@@ -18,6 +18,7 @@ using Olympiad.Shared.Models;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
+using WebApp.Extensions;
 using WebApp.Models;
 using WebApp.Services.Interfaces;
 
@@ -45,19 +46,19 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Route("{language}/{exerciseId}")]
-        public async Task<SolutionResponse> Post(IFormFile file, string language, Guid exerciseId)
+        public async Task<ActionResult<SolutionResponse>> Post(IFormFile file, string language, Guid exerciseId)
         {
             return await AddSolution(file, language, exerciseId, UserId);
         }
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [Route("{language}/{exerciseId}/{authorId}")]
-        public async Task<SolutionResponse> AdminPost(IFormFile file, string language, Guid exerciseId, Guid authorId)
+        public async Task<ActionResult<SolutionResponse>> AdminPost(IFormFile file, string language, Guid exerciseId, Guid authorId)
         {
             return await AddSolution(file, language, exerciseId, authorId, true);
         }
 
-        private async Task<SolutionResponse> AddSolution(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
+        private async Task<ActionResult<SolutionResponse>> AddSolution(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
         {
             string fileBody;
             if (file == null)
@@ -98,6 +99,10 @@ namespace WebApp.Controllers
             using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
             {
                 fileBody = await streamReader.ReadToEndAsync();
+                if (!fileBody.IsLegalUnicode())
+                {
+                    return BadRequest($"The file contains invalid Unicode");
+                }
             }
 
             var oldSolution = await context
