@@ -53,7 +53,7 @@ namespace WebApp.Controllers
                 return BadRequest(ModelState);
             }
             var user = await context.Students.SingleOrDefaultAsync(c => c.StudentID == credentials.Login || c.UserName == credentials.Login);
-            if (user == null) return BadRequest();
+            if (user == null) return BadRequest($"Can't find user with StudentID or UserName \"{credentials.Login}\"");
             if (!await _userManager.CheckPasswordAsync(user, credentials.Password)
                 //|| await _userManager.IsEmailConfirmedAsync(userToVerify)
                 )

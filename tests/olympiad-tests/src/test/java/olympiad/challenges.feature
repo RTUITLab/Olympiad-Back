@@ -12,8 +12,8 @@ Scenario: create challenge and get it
   When method post
   Then status 200
 
-  * def createdSolutionId = response.Id
+  * def createdSolutionId = response.id
   Given path 'api/challenges/', createdSolutionId
   When method get
   Then status 200
-  Then match response contains {Id: #(createdSolutionId)}  
+  Then match response contains {id: #(createdSolutionId)}
