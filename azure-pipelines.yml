@@ -60,8 +60,8 @@ stages:
           containerRegistry: 'rtuitlab connection by admin'
           repository: 'rtuitlab/olympiad-admin'
           command: 'buildAndPush'
-          Dockerfile: '$(Pipeline.Workspace)/api-admin/Dockerfile'
-          buildContext: '$(Pipeline.Workspace)/api-admin'
+          Dockerfile: '$(Pipeline.Workspace)/admin-build/Dockerfile'
+          buildContext: '$(Pipeline.Workspace)/admin-build'
           tags: |
             $(Build.BuildId)
             latest
