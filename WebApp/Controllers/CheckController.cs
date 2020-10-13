@@ -128,27 +128,10 @@ namespace WebApp.Controllers
             };
 
             await context.Solutions.AddAsync(solution);
-            Solution sol2 = null;
-            if (solution.Language == "pasabc")
-            {
-                sol2 = new Solution()
-                {
-                    Raw = fileBody,
-                    Language = "fpas",
-                    ExerciseId = exerciseId,
-                    UserId = authorId,
-                    Status = SolutionStatus.InQueue,
-                    SendingTime = DateTime.UtcNow
-                };
-                await context.Solutions.AddAsync(sol2);
-            }
-
             await context.SaveChangesAsync();
+
             queue.PutInQueue(solution.Id);
-            if (sol2 != null)
-            {
-                queue.PutInQueue(sol2.Id);
-            }
+
             return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
         }
 
