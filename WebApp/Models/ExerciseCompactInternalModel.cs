@@ -36,7 +36,11 @@ namespace WebApp.Models
             {
                 return null;
             }
-            return (HiddenSolutionStatus)((int)Status);
+            if (Enum.IsDefined(typeof(HiddenSolutionStatus), (int)Status))
+            {
+                return (HiddenSolutionStatus)(int)Status;
+            }
+            return HiddenSolutionStatus.Accepted;
         }
     }
 }
