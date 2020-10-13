@@ -46,7 +46,7 @@ services:
                 max-size: "200k"
                 max-file: "10"
     rabbitmq:
-        image: rabbitmq
+        image: rabbitmq:3-management
         deploy:
             resources:
                 limits:

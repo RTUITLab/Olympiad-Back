@@ -49,7 +49,7 @@ namespace WebApp.Controllers
         public async Task<ActionResult<SolutionResponse>> Post(IFormFile file, string language, Guid exerciseId)
         {
             return await AddSolution(file, language, exerciseId, UserId);
-        }
+            }
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [Route("{language}/{exerciseId}/{authorId}")]
@@ -110,11 +110,11 @@ namespace WebApp.Controllers
                 .Where(s => s.UserId == authorId)
                 .Where(s => s.Raw == fileBody)
                 .Where(s => s.ExerciseId == exerciseId)
-                .FirstOrDefaultAsync(); // TODO change to SingleOrDefault before database drop
+                .FirstOrDefaultAsync();
 
             if (!isAdmin && oldSolution != null)
             {
-                return mapper.Map<SolutionResponse>(oldSolution);
+                return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(oldSolution));
             }
 
             Solution solution = new Solution()
@@ -149,7 +149,7 @@ namespace WebApp.Controllers
             {
                 queue.PutInQueue(sol2.Id);
             }
-            return mapper.Map<SolutionResponse>(solution);
+            return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
         }
 
         [HttpPost("recheck/{exerciseId:guid}")]
@@ -204,13 +204,44 @@ namespace WebApp.Controllers
         }
 
         [HttpGet]
-        public Task<List<SolutionResponse>> Get()
+        public async Task<List<SolutionResponse>> Get()
         {
-            return context
+            var solutionResonses = await context
+               .Solutions
+               .Where(s => s.UserId == UserId)
+               .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
+               .ToListAsync();
+            return solutionResonses
+                .Select(sim => mapper.Map<SolutionResponse>(sim))
+                .ToList();
+        }
+
+        [HttpGet("forExercise")]
+        public async Task<List<SolutionResponse>> GetForExercise(Guid exerciseId)
+        {
+            var solutionResonses = await context
+               .Solutions
+               .Where(s => s.UserId == UserId)
+               .Where(s => s.ExerciseId == exerciseId)
+               .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
+               .ToListAsync();
+            return solutionResonses
+                .Select(sim => mapper.Map<SolutionResponse>(sim))
+                .ToList();
+        }
+
+        [HttpGet]
+        [Route("{solutionId:guid}")]
+        public async Task<SolutionResponse> Get(Guid solutionId)
+        {
+            var solutionInternal = await context
                 .Solutions
-                .Where(s => s.UserId == UserId)
-                .ProjectTo<SolutionResponse>(mapper.ConfigurationProvider)
-                .ToListAsync();
+                .Where(p => p.Id == solutionId && p.UserId == UserId)
+                .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
+
+            return mapper.Map<SolutionResponse>(solutionInternal);
         }
 
         [Authorize(Roles = "Admin,Executor")]
@@ -222,18 +253,6 @@ namespace WebApp.Controllers
                 .GroupBy(s => s.Status)
                 .Select(g => new SolutionsStatisticResponse { SolutionStatus = g.Key.ToString(), Count = g.Count() })
                 .ToListAsync();
-        }
-
-        [HttpGet]
-        [Route("{solutionId:guid}")]
-        public async Task<SolutionResponse> Get(Guid solutionId)
-        {
-            return await context
-                .Solutions
-                .Where(p => p.Id == solutionId && p.UserId == UserId)
-                .ProjectTo<SolutionResponse>(mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
         }
 
         [HttpGet]
@@ -282,23 +301,16 @@ namespace WebApp.Controllers
 
         private static string GetExtensionsForLanguage(string language)
         {
-            switch (language)
+            return language switch
             {
-                case "java":
-                    return ".java";
-                case "csharp":
-                    return ".cs";
-                case "pasabc":
-                    return ".pas";
-                case "c":
-                    return ".c";
-                case "cpp":
-                    return ".cpp";
-                case "python":
-                    return ".py";
-                default:
-                    return "";
-            }
+                "java" => ".java",
+                "csharp" => ".cs",
+                "pasabc" => ".pas",
+                "c" => ".c",
+                "cpp" => ".cpp",
+                "python" => ".py",
+                _ => "",
+            };
         }
     }
 }

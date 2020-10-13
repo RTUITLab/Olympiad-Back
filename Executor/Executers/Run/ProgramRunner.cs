@@ -127,15 +127,15 @@ namespace Executor.Executers.Run
                 try
                 {
                     var (stdout, stderr, duration) = await Run(imageName, exampleIn);
-
-                    await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
-                    {
-                        ExampleIn = exampleIn,
-                        ExampleOut = exampleOut,
-                        ProgramOut = stdout,
-                        ProgramErr = stderr,
-                        Duration = duration
-                    });
+                    logger.LogWarning("SKIP CHECK LOGS SENDIND whil a bug not fixed");
+                    //await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
+                    //{
+                    //    ExampleIn = exampleIn,
+                    //    ExampleOut = exampleOut,
+                    //    ProgramOut = stdout,
+                    //    ProgramErr = stderr,
+                    //    Duration = duration
+                    //});
                     SolutionStatus localStatus;
                     if (!string.IsNullOrEmpty(stderr))
                         localStatus = SolutionStatus.RunTimeError;

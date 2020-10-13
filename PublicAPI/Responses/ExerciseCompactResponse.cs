@@ -11,7 +11,7 @@ namespace PublicAPI.Responses
 
         public int Score { get; set; }
 
-        public SolutionStatus Status { get; set; }
-        public string ExerciseTask { get; set; }
+        public SolutionStatus? Status { get; set; }
+        public HiddenSolutionStatus? HiddenStatus { get; set; }
     }
 }

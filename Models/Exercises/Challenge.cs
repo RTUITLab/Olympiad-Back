@@ -14,6 +14,7 @@ namespace Models.Exercises
         public DateTime CreationTime { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public ChallengeViewMode ViewMode { get; set; }
         public ChallengeAccessType ChallengeAccessType { get; set; }
 
         public List<UserToChallenge> UsersToChallenges { get; set; }

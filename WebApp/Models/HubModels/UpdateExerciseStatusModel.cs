@@ -8,7 +8,7 @@ namespace WebApp.Models.HubModels
 {
     public class UpdateExerciseStatusModel
     {
-        public Guid ExerciseId { get; set; }
-        public SolutionStatus ExerciseStatus { get; set; }
+        public Guid Id { get; set; }
+        public SolutionStatus? Status { get; set; }
     }
 }

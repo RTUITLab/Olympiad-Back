@@ -15,6 +15,6 @@ namespace PublicAPI.Responses
         public Guid ChallengeId { get; set; }
         public ChallengeResponse Challenge { get; set; }
 
-        public IEnumerable<SolutionResponse> Solutions { get; set; }
+        public int[] Solutions { get; set; } = new int[0];
     }
 }

@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Olympiad.Shared.Models
+namespace PublicAPI.Responses
 {
-    public enum SolutionStatus
+    public enum HiddenSolutionStatus
     {
         ErrorWhileCompile = 0,
         CompileError = 1,
-        RunTimeError = 2,
-        WrongAnswer = 3,
-        TooLongWork = 4,
         InQueue = 5,
         InProcessing = 6,
-        Successful = 7,
+        Accepted = 8
     }
 }

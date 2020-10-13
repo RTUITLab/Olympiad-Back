@@ -40,16 +40,17 @@ namespace WebApp.Controllers
 
 
         [HttpGet]
-        public Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
+        public async Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
         {
-            return context
+            var exercises = await context
                 .Exercises
                 .Where(e => e.ChallengeId == challengeId)
                 .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
                            e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
                 .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
-                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider, new { userId = UserId })
+                .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
+            return exercises.Select(e => mapper.Map<ExerciseCompactResponse>(e)).ToList();
         }
 
         [HttpPut]
@@ -96,13 +97,7 @@ namespace WebApp.Controllers
 
             var exercise = await exerciseQuery.SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
-            
-            var solutions = await context
-                .Solutions
-                .Where(s => s.ExerciseId == exerciseId)
-                .Where(s => s.UserId == UserId)
-                .ToListAsync();
-            exercise.Solutions = solutions;
+
             var exView = mapper.Map<ExerciseInfo>(exercise);
             return exView;
         }

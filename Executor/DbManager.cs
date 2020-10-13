@@ -63,7 +63,8 @@ namespace Executor
 
         public async Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck)
         {
-            var content = new StringContent(JsonConvert.SerializeObject(solutionCheck), Encoding.UTF8, "application/json");
+            var jsonString = JsonConvert.SerializeObject(solutionCheck);
+            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
             var result = await InvokePostInternal($"api/executor/checklog/{solutionId}", content);
             logger.LogDebug($"Sended logs, status code: {result.StatusCode}");
         }

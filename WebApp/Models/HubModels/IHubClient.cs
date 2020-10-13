@@ -1,4 +1,5 @@
 ﻿using Olympiad.Shared.Models;
+using PublicAPI.Responses;
 using PublicAPI.Responses.Solutions;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace WebApp.Models.HubModels
     public interface IHubClient
     {
         Task UpdateSolutionStatus(SolutionResponse solution);
-        Task UpdateExerciseStatus(UpdateExerciseStatusModel statusModel);
+        Task UpdateExerciseStatus(ExerciseCompactResponse exerciseCompactResponse);
         Task InformationMessage(string message);
     }
 }

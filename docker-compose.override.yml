@@ -13,6 +13,8 @@ services:
             - rabbitmq
     admin:
         build: ${BACK_CONTEXT:-.}/deploy/admin
+        ports:
+            - 5503:5503
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=itlab-db;Integrated Security=true; 
@@ -52,4 +54,5 @@ services:
     rabbitmq:
         ports:
             - 5672:5672
+            - 8080:15672
         restart: on-failure

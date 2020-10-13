@@ -25,17 +25,14 @@ namespace WebApp.Controllers
     [Authorize(Roles = "Executor")]
     public class ExecutorController : AuthorizeController
     {
-        private readonly IQueueChecker queue;
         private readonly ApplicationDbContext dbContext;
         private readonly IMapper mapper;
 
         public ExecutorController(
             UserManager<User> userManager,
-            IQueueChecker queue,
             ApplicationDbContext dbContext,
             IMapper mapper) : base(userManager)
         {
-            this.queue = queue;
             this.dbContext = dbContext;
             this.mapper = mapper;
         }
@@ -73,8 +70,8 @@ namespace WebApp.Controllers
         }
 
         [HttpPost("buildlog/{solutionId}")]
-        public async Task<IActionResult> CheckLog(
-            [FromRoute]Guid solutionId,
+        public async Task<IActionResult> BuildLog(
+            [FromRoute] Guid solutionId,
             [FromBody] string log)
         {
             var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
@@ -94,9 +91,15 @@ namespace WebApp.Controllers
 
         [HttpPost("checklog/{solutionId}")]
         public async Task<IActionResult> CheckLog(
-            [FromRoute]Guid solutionId,
+            [FromRoute] Guid solutionId,
             [FromBody] SolutionCheckRequest request)
         {
+            string g = "";
+            using (var reader = new System.IO.StreamReader(HttpContext.Request.Body))
+            {
+                g = await reader.ReadToEndAsync();
+            }
+            
             var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
             if (solution == null)
                 return NotFound();

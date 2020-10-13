@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using WebApp.Extensions;
 using WebApp.Hubs;
+using WebApp.Models;
 using WebApp.Models.HubModels;
 
 namespace WebApp.Services
@@ -36,12 +37,13 @@ namespace WebApp.Services
         public async Task NewSolutionAdded(Solution solution)
         {
             await SolutionStatusChanged(solution);
-            var exerciseStatus = await dbContext
+            var exerciseInternal = await dbContext
                 .Exercises
                 .Where(ex => ex.ExerciseID == solution.ExerciseId)
-                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider, new { userId = solution.UserId })
+                .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = solution.UserId })
                 .SingleOrDefaultAsync();
-            await ExerciseStatusChanged(solution.UserId, solution.ExerciseId, exerciseStatus.Status);
+            var exercise = mapper.Map<ExerciseCompactResponse>(exerciseInternal);
+            await ExerciseStatusChanged(solution.UserId, exercise);
         }
 
         public async Task SendInformationMessageToUser(Guid userId, string message)
@@ -53,16 +55,12 @@ namespace WebApp.Services
         private Task SolutionStatusChanged(Solution solution)
         {
             return hubContext.Clients.User(solution.UserId)
-                .UpdateSolutionStatus(mapper.Map<SolutionResponse>(solution));
+                .UpdateSolutionStatus(mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution)));
         }
-        private Task ExerciseStatusChanged(Guid userId, Guid exerciseId, SolutionStatus exerciseStatus)
+        private Task ExerciseStatusChanged(Guid userId, ExerciseCompactResponse exerciseCompactResponse)
         {
             return hubContext.Clients.User(userId.ToString())
-                .UpdateExerciseStatus(new UpdateExerciseStatusModel
-                {
-                    ExerciseId = exerciseId,
-                    ExerciseStatus = exerciseStatus
-                });
+                .UpdateExerciseStatus(exerciseCompactResponse);
         }
     }
 }
