@@ -1,4 +1,4 @@
-﻿FROM cmplopes/alpine-freepascal:3.2.0
+﻿FROM cmplopes/alpine-freepascal:3.0.4
 
 COPY ./Program.pas /src/src/Program.pas
 WORKDIR /src/src/
