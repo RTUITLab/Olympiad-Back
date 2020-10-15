@@ -36,7 +36,14 @@ namespace WebApp.Services
 
         public async Task NewSolutionAdded(Solution solution)
         {
-            await SolutionStatusChanged(solution);
+            var solutionInternal = await dbContext
+                .Solutions
+                .Where(s => s.Id == solution.Id)
+                .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync();
+            await SolutionStatusChanged(mapper.Map<SolutionResponse>(solutionInternal));
+
+
             var exerciseInternal = await dbContext
                 .Exercises
                 .Where(ex => ex.ExerciseID == solution.ExerciseId)
@@ -52,10 +59,10 @@ namespace WebApp.Services
                 .InformationMessage(message);
         }
 
-        private Task SolutionStatusChanged(Solution solution)
+        private Task SolutionStatusChanged(SolutionResponse solutionResponse)
         {
-            return hubContext.Clients.User(solution.UserId)
-                .UpdateSolutionStatus(mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution)));
+            return hubContext.Clients.User(solutionResponse.UserId)
+                .UpdateSolutionStatus(solutionResponse);
         }
         private Task ExerciseStatusChanged(Guid userId, ExerciseCompactResponse exerciseCompactResponse)
         {
