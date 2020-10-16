@@ -5,6 +5,8 @@ services:
         build: ${BACK_CONTEXT:-.}/deploy/api
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
+           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad-dev-db;Integrated Security=true;
+           - RabbitMqQueueSettings__Host=rabbitmq
         restart: on-failure
         ports:
             - 5501:5501
@@ -17,7 +19,7 @@ services:
             - 5503:5503
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
-           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=itlab-db;Integrated Security=true; 
+           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad-dev-db;Integrated Security=true;
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor
         environment:

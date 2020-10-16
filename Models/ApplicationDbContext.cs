@@ -30,6 +30,10 @@ namespace Models
                 .HasOne(utc => utc.User)
                 .WithMany(u => u.UsersToChallenges)
                 .HasForeignKey(utc => utc.UserId);
+
+            builder.Entity<User>()
+                .HasIndex(u => u.StudentID)
+                .IsUnique();
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }

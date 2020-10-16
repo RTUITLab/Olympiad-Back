@@ -8,6 +8,7 @@
     <thead>
         <tr>
             <th>Title</th>
+            <th>View mode</th>
             <th>Access mode</th>
             <th>Start</th>
             <th>End</th>
@@ -24,11 +25,12 @@
             @foreach (var ch in challenges)
             {
                 <tr>
-                    <td>@ch.Name</td>
+                    <td><NavLink href=@($"challenges/{ch.Id}")>@ch.Name</NavLink></td>
+                    <td>@ch.ViewMode</td>
                     <td>@ch.ChallengeAccessType</td>
                     <td>@(ch.StartTime?.ToString() ?? "null")</td>
                     <td>@(ch.EndTime?.ToString() ?? "null")</td>
-                    <td><NavLink href=@($"challenges/{ch.Id}")>Edit</NavLink></td>
+                    <td><NavLink href=@($"challenges/{ch.Id}/results")>Results</NavLink></td>
                 </tr>
             }
         }

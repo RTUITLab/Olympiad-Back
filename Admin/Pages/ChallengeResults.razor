@@ -1,0 +1,105 @@
+﻿@page "/challenges/{ChallengeId:guid}/results"
+
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext dbContext
+<h3>ChallengeResults</h3>
+
+<h4>@challengeName</h4>
+@if (exercises == null)
+{
+    <p>Loading</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Student Id</th>
+                @foreach (var exercise in exercises)
+                {
+                    <th>@exercise.ExerciseName</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (userSolutions == null)
+            {
+                <tr>Loading users</tr>
+            }
+            else
+            {
+
+                @foreach (var userSolution in userSolutions)
+                {
+                    <tr>
+                        <td>@userSolution.StudentId</td>
+                        @foreach (var exercise in exercises)
+                        {
+                            if (userSolution.Results.ContainsKey(exercise.ExerciseID))
+                            {
+                                <th>@userSolution.Results[exercise.ExerciseID]</th>
+                            }
+                            else
+                            {
+                                <th>-</th>
+                            }
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private string challengeName = "Loading challenge name";
+    private List<Models.Exercises.Exercise> exercises;
+    private List<UserSolutions> userSolutions;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        challengeName = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(ch => ch.Name).SingleOrDefaultAsync();
+        StateHasChanged();
+
+        exercises = await dbContext.Exercises.Where(e => e.ChallengeId == ChallengeId).ToListAsync();
+        StateHasChanged();
+
+        var simpleData = await dbContext
+                .Solutions
+                .Include(s => s.User)
+                .GroupBy(m => new { m.UserId, m.User.StudentID, m.ExerciseId })
+                .Select(g => new
+                {
+                    UserId = g.Key.UserId,
+                    StudentId = g.Key.StudentID,
+                    ExerciseId = g.Key.ExerciseId,
+                    Status = g.Max(s => s.Status)
+                })
+                .ToListAsync();
+        userSolutions = simpleData
+            .GroupBy(s => new { s.UserId, s.StudentId })
+            .Select(g => new UserSolutions
+            {
+                UserId = g.Key.UserId,
+                StudentId = g.Key.StudentId,
+                Results = g.ToDictionary(g => g.ExerciseId, g => g.Status)
+            })
+            .ToList();
+    }
+
+    class UserSolutions
+    {
+        public Guid UserId { get; set; }
+        public string StudentId { get; set; }
+        public Dictionary<Guid, Olympiad.Shared.Models.SolutionStatus> Results { get; set; }
+    }
+
+}

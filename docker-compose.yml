@@ -3,8 +3,6 @@ version: "3.8"
 services:
     api:
         image: rtuitlab/olympiad-api
-        env_file:
-            - ${BACK_CONTEXT:-.}/api.env
         deploy:
             resources:
                 limits:
