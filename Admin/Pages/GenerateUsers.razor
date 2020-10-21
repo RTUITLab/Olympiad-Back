@@ -42,14 +42,16 @@ else
         {
             User user = new User()
             {
-                UserName = $"{studentId}{generateSettings.Value.Domain}",
+                Email = $"{studentId}{generateSettings.Value.Domain}",
+                UserName = studentId,
+                EmailConfirmed = true,
                 StudentID = studentId
             };
             var password = new Random().Next(MIN, MAX).ToString();
 
-            generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Email = user.UserName, Password = password });
             var result = await userManager.CreateAsync(user, password);
             result = await userManager.AddToRoleAsync(user, "User");
+            generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
         }
 
         generatedUsers = generates;
