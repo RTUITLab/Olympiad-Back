@@ -47,7 +47,7 @@ namespace WebApp.Controllers
                 };
                 var password = new Random().Next(MIN, MAX).ToString();
 
-                generates.Add(new GenerateUsersRespponce { Email = user.UserName, Password = password });
+                generates.Add(new GenerateUsersRespponce { Login = user.UserName, Password = password });
                 var result = await userManager.CreateAsync(user, password);
                 result = await userManager.AddToRoleAsync(user, "User");
             }
