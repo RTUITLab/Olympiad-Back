@@ -69,7 +69,7 @@ namespace WebApp.Controllers
         public async Task<ChallengeResponse> PostAsync([FromBody]ChallengeCreateRequest request)
         {
             var challenge = mapper.Map<Challenge>(request);
-            challenge.CreationTime = DateTime.UtcNow;
+            challenge.CreationTime = DateTimeOffset.UtcNow;
             context.Challenges.Add(challenge);
             await context.SaveChangesAsync();
             return mapper.Map<ChallengeResponse>(challenge);

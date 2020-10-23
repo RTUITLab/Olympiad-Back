@@ -30,7 +30,7 @@ else
         else
         {
             <p>Null</p>
-            <button class="btn btn-warning" @onclick="@(() => challenge.StartTime = DateTime.Now)">Add</button>
+            <button class="btn btn-warning" @onclick="@(() => challenge.StartTime = DateTimeOffset.UtcNow)">Add</button>
         }
     </div>
     <div class="form-group">
@@ -43,7 +43,7 @@ else
         else
         {
             <p>Null</p>
-            <button class="btn btn-warning" @onclick="@(() => challenge.EndTime = DateTime.Now)">Add</button>
+            <button class="btn btn-warning" @onclick="@(() => challenge.EndTime = DateTimeOffset.UtcNow)">Add</button>
         }
     </div>
 

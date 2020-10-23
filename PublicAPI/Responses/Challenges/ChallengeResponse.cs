@@ -10,9 +10,10 @@ namespace PublicAPI.Responses.Challenges
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime CreationTime { get; set; }
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        public DateTimeOffset? StartTime { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
+        public TimeSpan? ToStart => StartTime == null ? null : StartTime - DateTimeOffset.UtcNow;
+        public TimeSpan? ToEnd => EndTime == null ? null : EndTime - DateTimeOffset.UtcNow;
         public ChallengeAccessType ChallengeAccessType { get; set; }
     }
 }

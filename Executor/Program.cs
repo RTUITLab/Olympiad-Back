@@ -22,7 +22,7 @@ namespace Executor
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine($"Started {DateTime.Now}");
+            Console.WriteLine($"Started {DateTime.UtcNow}");
             try
             {
 
@@ -56,7 +56,7 @@ namespace Executor
             {
                 Console.Error.WriteLine(ex.Message);
                 Console.Error.WriteLine(ex.StackTrace);
-                Console.Error.WriteLine($"Exited {DateTime.Now}");
+                Console.Error.WriteLine($"Exited {DateTime.UtcNow}");
                 Environment.Exit(1);
             }
         }

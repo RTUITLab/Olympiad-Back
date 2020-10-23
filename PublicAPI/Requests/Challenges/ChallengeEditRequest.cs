@@ -9,8 +9,8 @@ namespace PublicAPI.Requests.Challenges
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        public DateTimeOffset? StartTime { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
         public ChallengeAccessType? ChallengeAccessType { get; set; }
         public List<Guid> AddPersons { get; set; }
         public List<Guid> RemovePersons { get; set; }

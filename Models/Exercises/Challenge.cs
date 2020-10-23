@@ -11,9 +11,9 @@ namespace Models.Exercises
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime CreationTime { get; set; }
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
+        public DateTimeOffset CreationTime { get; set; }
+        public DateTimeOffset? StartTime { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
         public ChallengeViewMode ViewMode { get; set; }
         public ChallengeAccessType ChallengeAccessType { get; set; }
 

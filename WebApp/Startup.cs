@@ -153,6 +153,7 @@ namespace WebApp
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
+                    options.JsonSerializerOptions.Converters.Add(new TimeSpanConverter());
                 });
             
             services.AddSwaggerGen(c =>

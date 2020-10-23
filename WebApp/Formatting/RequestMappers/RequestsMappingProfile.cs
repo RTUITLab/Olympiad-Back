@@ -16,7 +16,9 @@ namespace WebApp.ViewModels.Mappings
         {
             CreateMap<RegistrationRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
             CreateMap<ExerciseRequest, Exercise>();
-            CreateMap<ChallengeCreateRequest, Challenge>();
+            CreateMap<ChallengeCreateRequest, Challenge>()
+                .ForMember(ch => ch.StartTime, map => map.MapFrom(ccr => ccr.StartTime == null ? null as DateTimeOffset? : ccr.StartTime.Value.ToUniversalTime()))
+                .ForMember(ch => ch.EndTime, map => map.MapFrom(ccr => ccr.EndTime == null ? null as DateTimeOffset? : ccr.EndTime.Value.ToUniversalTime()));
             CreateMap<ChallengeEditRequest, Challenge>()
                 .ForAllMembers(opt => opt.Condition(a =>
                     a.GetType().GetProperty(opt.DestinationMember.Name)?.GetValue(a) != null));
