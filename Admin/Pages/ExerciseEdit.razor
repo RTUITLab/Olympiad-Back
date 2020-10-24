@@ -1,8 +1,9 @@
 ﻿@page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}"
+@page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}/{DataPage:int}"
 @using Microsoft.EntityFrameworkCore
+@using BlazorStrap
 @inject ApplicationDbContext dbContext
 @inject NavigationManager navigationManager
-
 
 <h3>Exercise edit</h3>
 <h4>@challengeName</h4>
@@ -26,6 +27,17 @@ else
             <InputTextArea id="exercise-description" class="form-control" @bind-Value="exercise.ExerciseTask" />
         </div>
 
+        <BSPagination>
+            <BSPaginationItem IsDisabled=@(DataPage==0)>
+                <BSPaginationLink Href=@GetPageLink(DataPage - 1) PaginationLinkType="PaginationLinkType.PreviousText" />
+            </BSPaginationItem>
+            <BSPaginationItem IsActive="true">
+                <BSPaginationLink Href=@GetPageLink(DataPage)>@DataPage <span class="sr-only">(current)</span></BSPaginationLink>
+            </BSPaginationItem>
+            <BSPaginationItem>
+                <BSPaginationLink Href=@GetPageLink(DataPage + 1) PaginationLinkType="PaginationLinkType.NextText" />
+            </BSPaginationItem>
+        </BSPagination>
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -36,16 +48,25 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var exerciseData in exercise.ExerciseDatas)
+                @if (exercise.ExerciseDatas != null)
                 {
-                    <tr>
-                        <td><textarea class="form-control" @bind="exerciseData.InData" /></td>
-                        <td><textarea class="form-control" @bind="exerciseData.OutData" /></td>
-                        <td><input class="form-check" type="checkbox" @bind="exerciseData.IsPublic" /></td>
-                        <td><button class="btn btn-danger" @onclick="() => DelInOutData(exerciseData)">Del</button></td>
-                        <td><p>@dbContext.Entry(exerciseData).State</p></td>
-                    </tr>
+
+                    @foreach (var exerciseData in exercise.ExerciseDatas)
+                    {
+                        <tr>
+                            <td><textarea class="form-control" @bind="exerciseData.InData" /></td>
+                            <td><textarea class="form-control" @bind="exerciseData.OutData" /></td>
+                            <td><input class="form-check" type="checkbox" @bind="exerciseData.IsPublic" /></td>
+                            <td><button class="btn btn-danger" @onclick="() => DelInOutData(exerciseData)">Del</button></td>
+                            <td><p>@dbContext.Entry(exerciseData).State</p></td>
+                        </tr>
+                    }
                 }
+                else
+                {
+                    <tr>Loading in out data</tr>
+                }
+
             </tbody>
         </table>
         <button class="btn btn-primary" @onclick="AddInOutData">Add In/Out data</button>
@@ -60,16 +81,32 @@ else
     public Guid ChallengeId { get; set; }
     [Parameter]
     public Guid ExerciseId { get; set; }
+    [Parameter]
+    public int DataPage { get; set; }
 
     private string challengeName = "Loading...";
     private Models.Exercises.Exercise exercise;
+
+
+    private string GetPageLink(int pageNum)
+    {
+        string pageNumStr = pageNum <= 0 ? "" : pageNum.ToString();
+        return $"challenges/{ChallengeId}/exercises/{ExerciseId}/{pageNumStr}";
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
         challengeName = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
-        exercise = await dbContext.Exercises.Include(e => e.ExerciseDatas).SingleOrDefaultAsync(ex => ex.ExerciseID == ExerciseId);
+        exercise = await dbContext.Exercises.SingleOrDefaultAsync(ex => ex.ExerciseID == ExerciseId);
+        exercise.ExerciseDatas = await dbContext.TestData
+            .Where(td => td.ExerciseId == ExerciseId)
+            .OrderByDescending(d => d.IsPublic ? 1 : 0)
+            .ThenBy(d => d.InData)
+            .Skip(DataPage * 10)
+            .Take(10)
+            .ToListAsync();
     }
 
     private async Task UpdateExercise()

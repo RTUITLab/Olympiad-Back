@@ -38,7 +38,6 @@ namespace Olympiad.Admin
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services
-                .AddEntityFrameworkNpgsql()
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
             

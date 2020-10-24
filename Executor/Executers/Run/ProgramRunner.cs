@@ -135,7 +135,7 @@ namespace Executor.Executers.Run
                         localStatus = SolutionStatus.Successful;
                     else
                         localStatus = SolutionStatus.WrongAnswer;
-                    if (duration > TimeSpan.FromSeconds(30))
+                    if (duration > TimeSpan.FromSeconds(10))
                         localStatus = SolutionStatus.TooLongWork;
 
                     await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
