@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Models.Solutions;
 
-namespace Models
+namespace Models.Checking
 {
     public class SolutionCheck
     {

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Models;
+using Models.Checking;
 using Models.Exercises;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;

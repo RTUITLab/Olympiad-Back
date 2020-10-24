@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.SignalR;
 using WebApp.Hubs;
 using WebApp.Models.HubModels;
 using WebApp.Services;
+using Models.Checking;
 
 namespace WebApp.Controllers
 {
