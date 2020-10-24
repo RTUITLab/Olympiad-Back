@@ -15,9 +15,9 @@ namespace WebApp.Models
         public Guid UserId { get; set; }
         public Guid ExerciseId { get; set; }
         public SolutionStatus Status { get; set; }
-        public DateTime SendingTime { get; set; }
-        public DateTime? StartCheckingTime { get; set; }
-        public DateTime? CheckedTime { get; set; }
+        public DateTimeOffset SendingTime { get; set; }
+        public DateTimeOffset? StartCheckingTime { get; set; }
+        public DateTimeOffset? CheckedTime { get; set; }
 
         public ChallengeViewMode ChallengeViewMode { get; set; }
         public SolutionStatus? GetStatus()

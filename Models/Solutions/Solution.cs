@@ -17,9 +17,9 @@ namespace Models.Solutions
         public Guid ExerciseId { get; set; }
         public Exercise Exercise { get; set; }
         public SolutionStatus Status { get; set; }
-        public DateTime SendingTime { get; set; }
-        public DateTime? StartCheckingTime { get; set; }
-        public DateTime? CheckedTime { get; set; }
+        public DateTimeOffset SendingTime { get; set; }
+        public DateTimeOffset? StartCheckingTime { get; set; }
+        public DateTimeOffset? CheckedTime { get; set; }
 
         public List<SolutionCheck> SolutionChecks { get; set; }
         public List<SolutionBuildLog> SolutionBuildLogs { get; set; }

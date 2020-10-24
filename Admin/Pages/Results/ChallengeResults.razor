@@ -33,7 +33,7 @@ else
                 @foreach (var userSolution in userSolutions)
                 {
                     <tr>
-                        <td>@userSolution.StudentId</td>
+                        <td><NavLink href=@($"challenges/{ChallengeId}/results/{userSolution.StudentId}")>@userSolution.StudentId</NavLink></td>
                         @foreach (var exercise in exercises)
                         {
                             if (userSolution.Results.ContainsKey(exercise.ExerciseID))

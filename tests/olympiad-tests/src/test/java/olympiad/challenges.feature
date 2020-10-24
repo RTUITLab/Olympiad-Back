@@ -63,3 +63,12 @@ Scenario: create challenge and get toStart and toEnd
   * print toEnd
   Then assert toStart.h == 1.0
   Then assert toEnd.h == 3.0
+
+Scenario: check exercise
+  * def uuid =
+  """
+      function() { return '' + java.util.UUID.randomUUID(); }
+  """
+  Given path 'api/executor/checklog', uuid()
+  And request { "exampleIn": "1 2", "exampleOut": "3", "programOut": "3", "programErr": null, "duration": "0:0:1"}
+  When method post

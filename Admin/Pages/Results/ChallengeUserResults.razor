@@ -1,0 +1,160 @@
+﻿@page "/challenges/{ChallengeId:guid}/results/{UserStudentId}"
+@using Microsoft.EntityFrameworkCore
+@using BlazorStrap
+@inject ApplicationDbContext dbContext
+
+<h3>ChallengeUserResults</h3>
+
+<h4>Challenge: @(challenge?.Name ?? "Loading...")</h4>
+<h4>User student id: @(user?.StudentID ?? "Loading...")</h4>
+
+
+@if (exercises == null)
+{
+    <p>Loading exercises</p>
+}
+else
+{
+    <BSCollapseGroup>
+        @foreach (var exercise in exercises)
+        {
+            <BSCollapseItem @key="exercise.ExerciseID">
+                <BSCard CardType="CardType.Card">
+                    <BSCard CardType="CardType.Header">
+                        <BSCollapseToggle IsLink="true">@exercise.ExerciseName</BSCollapseToggle>
+                    </BSCard>
+                    <BSCollapse>
+                        <BSCard CardType="CardType.Body">
+                            @if (solutionsDict.TryGetValue(exercise.ExerciseID, out var solutions))
+                            {
+                                <BSCollapseGroup>
+                                    @foreach (var solution in solutions)
+                                    {
+                                        <BSCollapseItem @key="solution.Id">
+                                            <BSCard CardType="CardType.Card">
+                                                <BSCard CardType="CardType.Header">
+                                                    <BSCollapseToggle IsLink="false" Class="mb-1">@solution.Status | @solution.Language | @solution.SendingTime</BSCollapseToggle>
+                                                </BSCard>
+                                                <BSCollapse>
+                                                    <BSCard CardType="CardType.Body">
+                                                        @*БЛОК КОДА*@
+                                                        <BSCollapseGroup>
+                                                            <BSCollapseItem>
+                                                                <BSCollapseToggle Color="Color.Primary">
+                                                                    Код
+                                                                </BSCollapseToggle>
+                                                                <BSCollapse>
+                                                                    <pre><code>
+                                                                    <BSCard CardType="CardType.Text">@solution.Raw</BSCard>
+                                                                    </code></pre>
+                                                                </BSCollapse>
+                                                            </BSCollapseItem>
+                                                        </BSCollapseGroup>
+                                                        <BSCollapseGroup>
+                                                            @foreach (var check in solution.SolutionChecks)
+                                                            {
+                                                                <BSCollapseItem @key="check.Id">
+                                                                    <BSCard CardType="CardType.Card">
+                                                                        <BSCard CardType="CardType.Header">
+                                                                            <BSCollapseToggle IsLink="false" Class="mb-0">@check.Status</BSCollapseToggle>
+                                                                        </BSCard>
+                                                                        <BSCollapse>
+                                                                            <BSCard CardType="CardType.Body">
+                                                                                <div class="row">
+                                                                                    <div class="col-6">
+                                                                                        Example in
+                                                                                    </div>
+                                                                                    <div class="col-6">
+                                                                                        Program Err
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row">
+                                                                                    <div class="col-6">
+                                                                                        <textarea rows="20" class="form-control">@check.ExampleIn</textarea>
+                                                                                    </div>
+                                                                                    <div class="col-6">
+                                                                                        <textarea rows="20" class="form-control">@check.ProgramErr</textarea>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="row">
+                                                                                    <div class="col-6">
+                                                                                        Example Out
+                                                                                    </div>
+                                                                                    <div class="col-6">
+                                                                                        Program Out
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="row">
+                                                                                    
+                                                                                    <div class="col-6">
+                                                                                        <textarea rows="20" class="form-control">@check.ExampleOut</textarea>
+                                                                                    </div>
+                                                                                    <div class="col-6">
+                                                                                        <textarea rows="20" class="form-control">@check.ProgramOut</textarea>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </BSCard>
+                                                                        </BSCollapse>
+                                                                    </BSCard>
+                                                                </BSCollapseItem>
+                                                            }
+                                                        </BSCollapseGroup>
+                                                    </BSCard>
+                                                </BSCollapse>
+                                            </BSCard>
+                                        </BSCollapseItem>
+
+                                    }
+                                </BSCollapseGroup>
+
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary" @onclick="@(async() => await LoadSolutionsForExercise(exercise.ExerciseID))">Load</button>
+                            }
+                        </BSCard>
+                    </BSCollapse>
+                </BSCard>
+            </BSCollapseItem>
+        }
+    </BSCollapseGroup>
+
+}
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public string UserStudentId { get; set; }
+
+    private User user;
+    private Models.Exercises.Challenge challenge;
+
+    private List<Models.Exercises.Exercise> exercises;
+
+    private System.Collections.Concurrent.ConcurrentDictionary<Guid, List<Models.Solutions.Solution>> solutionsDict
+        = new System.Collections.Concurrent.ConcurrentDictionary<Guid, List<Models.Solutions.Solution>>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        challenge = await dbContext.Challenges.SingleOrDefaultAsync(c => c.Id == ChallengeId);
+        user = await dbContext.Users.SingleOrDefaultAsync(u => u.StudentID == UserStudentId);
+
+        exercises = await dbContext.Exercises
+            .Where(e => e.Solutions.Any(s => s.UserId == user.Id))
+            .ToListAsync();
+    }
+
+    private async Task LoadSolutionsForExercise(Guid exerciseId)
+    {
+        var loadedList = await dbContext
+            .Solutions
+            .Include(s => s.SolutionChecks)
+            .OrderByDescending(s => s.Status)
+            .ThenByDescending(s => s.SendingTime)
+            .Where(s => s.UserId == user.Id && s.ExerciseId == exerciseId).ToListAsync();
+        solutionsDict.AddOrUpdate(exerciseId, id => loadedList, (id, old) => loadedList);
+    }
+}
