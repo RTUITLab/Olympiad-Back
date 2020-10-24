@@ -176,7 +176,9 @@ else
         user = await dbContext.Users.SingleOrDefaultAsync(u => u.StudentID == UserStudentId);
 
         exercises = await dbContext.Exercises
+            .Where(e => e.ChallengeId == ChallengeId)
             .Where(e => e.Solutions.Any(s => s.UserId == user.Id))
+            .OrderBy(e => e.ExerciseName)
             .ToListAsync();
     }
 
@@ -189,6 +191,11 @@ else
             .OrderByDescending(s => s.Status)
             .ThenByDescending(s => s.SendingTime)
             .Where(s => s.UserId == user.Id && s.ExerciseId == exerciseId).ToListAsync();
+        loadedList.ForEach(s =>
+        {
+            s.SolutionChecks = s.SolutionChecks.OrderByDescending(ch => ch.Status).ThenByDescending(ch => ch.CheckedTime).ToList();
+            s.SolutionBuildLogs = s.SolutionBuildLogs.OrderByDescending(l => l.BuildedTime).ToList();
+        });
         solutionsDict.AddOrUpdate(exerciseId, id => loadedList, (id, old) => loadedList);
     }
 }
