@@ -127,16 +127,8 @@ namespace Executor.Executers.Run
                 try
                 {
                     var (stdout, stderr, duration) = await Run(imageName, exampleIn);
-                    logger.LogWarning("SKIP CHECK LOGS SENDIND whil a bug not fixed");
-                    //await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
-                    //{
-                    //    ExampleIn = exampleIn,
-                    //    ExampleOut = exampleOut,
-                    //    ProgramOut = stdout,
-                    //    ProgramErr = stderr,
-                    //    Duration = duration
-                    //});
                     SolutionStatus localStatus;
+
                     if (!string.IsNullOrEmpty(stderr))
                         localStatus = SolutionStatus.RunTimeError;
                     else if (string.Equals(stdout, exampleOut))
@@ -145,6 +137,16 @@ namespace Executor.Executers.Run
                         localStatus = SolutionStatus.WrongAnswer;
                     if (duration > TimeSpan.FromSeconds(30))
                         localStatus = SolutionStatus.TooLongWork;
+
+                    await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
+                    {
+                        ExampleIn = exampleIn,
+                        ExampleOut = exampleOut,
+                        ProgramOut = stdout,
+                        ProgramErr = stderr,
+                        Duration = duration,
+                        Status = localStatus
+                    });
 
                     logger.LogTrace($"check solution {solutionId} in {data.InData} out {data.OutData} result: {localStatus}");
                     logger.LogInformation($"{solutionId} checked on {data.Id} {localStatus}");

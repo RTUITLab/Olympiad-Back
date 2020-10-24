@@ -87,7 +87,7 @@ namespace WebApp.Controllers
                     .Where(s => s.ExerciseId == exerciseId)
                     .Select(s => s.SendingTime)
                     .ToListAsync())
-                    .DefaultIfEmpty(DateTime.MinValue)
+                    .DefaultIfEmpty(DateTimeOffset.MinValue)
                     .Max();
 
                 if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
@@ -124,7 +124,7 @@ namespace WebApp.Controllers
                 ExerciseId = exerciseId,
                 UserId = authorId,
                 Status = SolutionStatus.InQueue,
-                SendingTime = DateTime.UtcNow
+                SendingTime = DateTimeOffset.UtcNow
             };
 
             await context.Solutions.AddAsync(solution);

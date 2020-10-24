@@ -17,12 +17,12 @@ namespace WebApp.Controllers
     {
         protected readonly UserManager<User> UserManager;
 
-        public DateTime Now { get; }
+        public DateTimeOffset Now { get; }
 
         public AuthorizeController(UserManager<User> userManager)
         {
             UserManager = userManager;
-            Now = DateTime.UtcNow;
+            Now = DateTimeOffset.UtcNow;
         }
 
         protected Guid UserId => Guid.Parse(UserManager.GetUserId(User));

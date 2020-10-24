@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.SignalR;
 using WebApp.Hubs;
 using WebApp.Models.HubModels;
 using WebApp.Services;
+using Models.Checking;
 
 namespace WebApp.Controllers
 {
@@ -61,9 +62,9 @@ namespace WebApp.Controllers
 
             solution.Status = state;
             if (state == SolutionStatus.InProcessing)
-                solution.StartCheckingTime = DateTime.UtcNow;
+                solution.StartCheckingTime = DateTimeOffset.UtcNow;
             else
-                solution.CheckedTime = DateTime.UtcNow;
+                solution.CheckedTime = DateTimeOffset.UtcNow;
             await dbContext.SaveChangesAsync();
             await notifyUserService.NewSolutionAdded(solution);
             return Ok();
@@ -79,7 +80,7 @@ namespace WebApp.Controllers
                 return NotFound();
             var buildLogRecord = new SolutionBuildLog
             {
-                BuildedTime = DateTime.UtcNow,
+                BuildedTime = DateTimeOffset.UtcNow,
                 Log = log,
                 SolutionId = solutionId,
                 Solution = solution
@@ -93,19 +94,13 @@ namespace WebApp.Controllers
         public async Task<IActionResult> CheckLog(
             [FromRoute] Guid solutionId,
             [FromBody] SolutionCheckRequest request)
-        {
-            string g = "";
-            using (var reader = new System.IO.StreamReader(HttpContext.Request.Body))
-            {
-                g = await reader.ReadToEndAsync();
-            }
-            
+        {            
             var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
             if (solution == null)
                 return NotFound();
             var newCheck = mapper.Map<SolutionCheck>(request);
             newCheck.SolutionId = solution.Id;
-            newCheck.CheckedTime = DateTime.UtcNow;
+            newCheck.CheckedTime = DateTimeOffset.UtcNow;
             dbContext.SolutionChecks.Add(newCheck);
             await dbContext.SaveChangesAsync();
             return Ok();

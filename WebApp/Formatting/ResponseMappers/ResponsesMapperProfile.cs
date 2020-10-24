@@ -11,6 +11,7 @@ using System.Linq;
 using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
 using WebApp.Models;
+using Models.Checking;
 
 namespace WebApp.Formatting.ResponseMappers
 {

@@ -16,6 +16,7 @@ using Olympiad.Admin.Services;
 using OpenQA.Selenium;
 using Microsoft.Extensions.Options;
 using Olympiad.Services;
+using BlazorStrap;
 
 namespace Olympiad.Admin
 {
@@ -63,6 +64,7 @@ namespace Olympiad.Admin
                 client.BaseAddress = new Uri(options.Value.OlympiadBaseAddress);
             });
             services.AddTransient<OlympiadWebAppHttpRequester>();
+            services.AddBootstrapCss();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
