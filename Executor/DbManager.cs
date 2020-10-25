@@ -85,6 +85,7 @@ namespace Executor
             }
             catch (Exception ex)
             {
+                logger.LogWarning(ex.Message);
                 logger.LogWarning($"cant invoke GET action with path >{path}<, try auth", ex);
                 await Authorize();
                 return await Invoke<T>(path);
