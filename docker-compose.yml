@@ -3,6 +3,8 @@ version: "3.8"
 services:
     api:
         image: rtuitlab/olympiad-api
+        environment:
+            - RabbitMqQueueSettings__Host=rabbitmq
         deploy:
             resources:
                 limits:

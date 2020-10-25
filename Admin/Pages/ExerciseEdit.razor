@@ -3,6 +3,7 @@
 @using Microsoft.EntityFrameworkCore
 @using BlazorStrap
 @inject ApplicationDbContext dbContext
+@inject Microsoft.Extensions.Options.IOptions<Olympiad.Admin.Services.AdminServiceAdminSettings> adminServiceOptions
 @inject NavigationManager navigationManager
 
 <h3>Exercise edit</h3>
@@ -72,6 +73,7 @@ else
         <button class="btn btn-primary" @onclick="AddInOutData">Add In/Out data</button>
         <button type="submit" class="btn btn-primary">Update</button>
         <button class="btn btn-danger" @onclick="DeleteExercise">Delete</button>
+        <button class="btn btn-warning" @onclick="RecheckExercise">Recheck exercise</button>
     </EditForm>
 }
 
@@ -133,5 +135,12 @@ else
         dbContext.Exercises.Remove(exercise);
         await dbContext.SaveChangesAsync();
         navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
+    }
+    private async Task RecheckExercise()
+    {
+        var client = new HttpClient();
+        client.BaseAddress = new Uri(adminServiceOptions.Value.OlympiadBaseAddress);
+        client.DefaultRequestHeaders.Add("Authorization", adminServiceOptions.Value.SecurityKey);
+        await client.PostAsync($"/api/Check/recheck/{ExerciseId}/adminPanel", null);
     }
 }

@@ -6,7 +6,6 @@ services:
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad-dev-db;Integrated Security=true;
-           - RabbitMqQueueSettings__Host=rabbitmq
         restart: on-failure
         ports:
             - 5501:5501
