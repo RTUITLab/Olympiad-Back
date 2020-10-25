@@ -4,6 +4,7 @@ services:
     api:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
+            - AdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key}
     admin:
         environment:
             - AdminServiceAdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key}

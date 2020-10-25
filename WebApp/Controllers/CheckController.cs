@@ -12,9 +12,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
 using Olympiad.Shared.Models;
+using Olympiad.Shared.Models.Settings;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
@@ -133,6 +135,18 @@ namespace WebApp.Controllers
             queue.PutInQueue(solution.Id);
 
             return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
+        }
+
+        [HttpPost("recheck/{exerciseId:guid}/adminPanel")]
+        [AllowAnonymous]
+        public async Task<ActionResult> RecheckSolutionsAdminPanel(
+            Guid exerciseId,
+            [FromServices] IOptions<AdminSettings> options
+)
+        {
+            if (HttpContext.Request.Headers["Authorization"].ToString() != options.Value.SecurityKey)
+                return NotFound();
+            return await RecheckSolution(exerciseId);
         }
 
         [HttpPost("recheck/{exerciseId:guid}")]
