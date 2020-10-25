@@ -146,7 +146,7 @@ namespace WebApp.Controllers
         {
             if (HttpContext.Request.Headers["Authorization"].ToString() != options.Value.SecurityKey)
                 return NotFound();
-            return await RecheckSolution(exerciseId);
+            return await RecheckSolutions(exerciseId);
         }
 
         [HttpPost("recheck/{exerciseId:guid}")]
