@@ -71,7 +71,9 @@ else
         challengeName = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(ch => ch.Name).SingleOrDefaultAsync();
         StateHasChanged();
 
-        exercises = await dbContext.Exercises.Where(e => e.ChallengeId == ChallengeId).ToListAsync();
+        exercises = await dbContext.Exercises
+            .OrderBy(e => e.ExerciseName)
+            .Where(e => e.ChallengeId == ChallengeId).ToListAsync();
         StateHasChanged();
 
         var simpleData = await dbContext

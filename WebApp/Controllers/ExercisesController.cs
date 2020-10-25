@@ -48,6 +48,7 @@ namespace WebApp.Controllers
                 .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
                            e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
                 .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .OrderBy(e => e.ExerciseName)
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
             return exercises.Select(e => mapper.Map<ExerciseCompactResponse>(e)).ToList();

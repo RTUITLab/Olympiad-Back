@@ -49,7 +49,9 @@ else
     {
         await base.OnParametersSetAsync();
         challengeTitle = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
-        exercises = await dbContext.Exercises.Where(ex => ex.ChallengeId == ChallengeId).ToListAsync();
+        exercises = await dbContext.Exercises
+            .OrderBy(e => e.ExerciseName)
+            .Where(ex => ex.ChallengeId == ChallengeId).ToListAsync();
     }
 
     private async Task AddExercise()
