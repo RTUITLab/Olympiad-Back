@@ -186,7 +186,8 @@ namespace WebApp
                 .AddTransientConfigure<AutoMigrate>(0)
                 .AddTransientConfigure<DefaultRolesConfigure>(1)
                 // .AddTransientConfigure<FillQueue>(1) // TODO send events table
-                .AddTransientConfigure<DefaultChallengeCreator>(2);
+                .AddTransientConfigure<DefaultChallengeCreator>(2)
+                .AddTransientConfigure<FillGroupInviteTokenConfig>(2);
 
             if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
                 services.AddHostedService<RestartCheckingService>();
@@ -194,6 +195,8 @@ namespace WebApp
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
             services.AddSignalR();
             services.AddTransient<NotifyUsersService>();
+
+            services.AddSingleton<GroupsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

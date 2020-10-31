@@ -4,8 +4,9 @@ using System.Text;
 
 namespace PublicAPI.Requests
 {
-    public class GroupCreateRequest
+    public class GroupCreateEditRequest
     {
         public string Name { get; set; }
+        public string LessonsTime { get; set; }
     }
 }

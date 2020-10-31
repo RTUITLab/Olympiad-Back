@@ -4,10 +4,11 @@ using System.Text;
 
 namespace PublicAPI.Responses
 {
-    public class GroupCompactResponse
+    public class GroupResponse
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public string InviteToken { get; set; }
         public string LessonsTime { get; set; }
     }
 }

@@ -38,8 +38,37 @@ namespace WebApp.Controllers
                 .ToListAsync();
         }
 
+        [HttpGet("{groupId:guid}")]
+        public async Task<ActionResult<GroupCompactResponse>> Get(Guid groupId)
+        {
+            var model = await dbContext.Groups
+                .Where(c => c.Id == groupId)
+                .ProjectTo<GroupCompactResponse>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync();
+            if (model == null)
+            {
+                return NotFound("Group not found");
+            }
+            return model;
+        }
+
+        [HttpGet("{groupId:guid}/full")]
+        public async Task<ActionResult<GroupResponse>> GetFull(Guid groupId)
+        {
+            var model = await dbContext.Groups
+                .Where(c => c.Id == groupId)
+                .ProjectTo<GroupResponse>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync();
+            if (model == null)
+            {
+                return NotFound("Group not found");
+            }
+            return model;
+        }
+
+
         [HttpPost]
-        public async Task<GroupCompactResponse> Post(GroupCreateRequest request)
+        public async Task<GroupCompactResponse> Post(GroupCreateEditRequest request)
         {
             var newModel = mapper.Map<Group>(request);
             dbContext.Groups.Add(newModel);
