@@ -70,9 +70,12 @@ namespace WebApp.Formatting.ResponseMappers
 
             CreateMap<SolutionCheck, SolutionCheckResponse>();
 
-            CreateMap<Course, CourseCompactResponse>();
-            CreateMap<Group, GroupCompactResponse>();
+            CreateMap<Course, CourseCompactResponse>()
+                .ForMember(ccr => ccr.GroupsCount, map => map.MapFrom(c => c.GroupToCourses.Count));
+            CreateMap<Course, CourseResponse>()
+                .ForMember(cr => cr.Groups, map => map.MapFrom(c => c.GroupToCourses.Select(gtc => gtc.Group)));
 
+            CreateMap<Group, GroupCompactResponse>();
         }
     }
 }

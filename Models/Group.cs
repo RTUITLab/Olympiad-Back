@@ -10,5 +10,6 @@ namespace Models
         public string Name { get; set; }
 
         public List<UserToGroup> UserToGroups { get; set; }
+        public List<GroupToCourse> GroupToCourses { get; set; }
     }
 }

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Models.Lessons
+namespace PublicAPI.Responses.Lessons
 {
-    public class Course
+    public class CourseResponse
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
-        public List<GroupToCourse> GroupToCourses { get; set; }
+        public List<GroupCompactResponse> Groups { get; set; }
     }
 }
