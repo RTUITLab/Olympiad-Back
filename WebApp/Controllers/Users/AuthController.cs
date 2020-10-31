@@ -73,7 +73,7 @@ namespace WebApp.Controllers
 
         [HttpGet("getme")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public async Task<IActionResult> Get()
+        public async Task<ActionResult<LoginResponse>> Get()
         {
             var user = await _userManager.FindByIdAsync(_userManager.GetUserId(User));
             if (user == null)

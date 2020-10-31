@@ -36,6 +36,17 @@ namespace Models
             builder.Entity<User>()
                 .HasIndex(u => u.StudentID)
                 .IsUnique();
+
+            builder.Entity<UserToGroup>(utg =>
+            {
+                utg.HasKey(u => new { u.GroupId, u.UserId });
+                utg.HasOne(u => u.User)
+                    .WithMany(u => u.UserToGroups)
+                    .HasForeignKey(u => u.UserId);
+                utg.HasOne(u => u.Group)
+                    .WithMany(u => u.UserToGroups)
+                    .HasForeignKey(u => u.GroupId);
+            });
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }
@@ -46,5 +57,6 @@ namespace Models
         public DbSet<SolutionCheck> SolutionChecks { get; set; }
         public DbSet<SolutionBuildLog> SolutionBuildLogs { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<Group> Groups { get; set; }
     }
 }

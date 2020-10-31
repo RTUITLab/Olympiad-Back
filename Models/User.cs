@@ -12,5 +12,6 @@ namespace Models
         public string StudentID { get; set; }
         public List<Solution> Solutions { get; set; }
         public List<UserToChallenge> UsersToChallenges { get; set; }
+        public List<UserToGroup> UserToGroups { get; set; }
     }
 }

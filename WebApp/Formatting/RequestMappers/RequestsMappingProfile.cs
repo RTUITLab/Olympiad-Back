@@ -29,6 +29,7 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<SolutionCheckRequest, SolutionCheck>();
 
             CreateMap<CourseCreateRequest, Course>();
+            CreateMap<GroupCreateRequest, Group>();
         }
     }
 }

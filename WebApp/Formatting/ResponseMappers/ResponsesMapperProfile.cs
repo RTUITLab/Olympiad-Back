@@ -71,6 +71,7 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<SolutionCheck, SolutionCheckResponse>();
 
             CreateMap<Course, CourseCompactResponse>();
+            CreateMap<Group, GroupCompactResponse>();
 
         }
     }
