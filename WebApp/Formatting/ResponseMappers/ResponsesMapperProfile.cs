@@ -76,7 +76,8 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(cr => cr.Groups, map => map.MapFrom(c => c.GroupToCourses.Select(gtc => gtc.Group)));
 
             CreateMap<Group, GroupCompactResponse>();
-            CreateMap<Group, GroupResponse>();
+            CreateMap<Group, GroupResponse>()
+                .ForMember(gr => gr.Users, map => map.MapFrom(g => g.UserToGroups.Select(utg => utg.User)));
         }
     }
 }
