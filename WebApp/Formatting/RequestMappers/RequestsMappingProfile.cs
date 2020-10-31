@@ -2,8 +2,10 @@
 using Models;
 using Models.Checking;
 using Models.Exercises;
+using Models.Lessons;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
+using PublicAPI.Requests.Lessons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +27,8 @@ namespace WebApp.ViewModels.Mappings
                     a.GetType().GetProperty(opt.DestinationMember.Name)?.GetValue(a) != null));
 
             CreateMap<SolutionCheckRequest, SolutionCheck>();
+
+            CreateMap<CourseCreateRequest, Course>();
         }
     }
 }

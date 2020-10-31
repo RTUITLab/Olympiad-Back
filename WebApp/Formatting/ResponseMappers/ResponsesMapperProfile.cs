@@ -12,6 +12,8 @@ using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
 using WebApp.Models;
 using Models.Checking;
+using Models.Lessons;
+using PublicAPI.Responses.Lessons;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -67,6 +69,9 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(d => d.ExerciseScore, map => map.MapFrom(s => s.Exercise.Score));
 
             CreateMap<SolutionCheck, SolutionCheckResponse>();
+
+            CreateMap<Course, CourseCompactResponse>();
+
         }
     }
 }

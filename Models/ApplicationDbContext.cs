@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Models.Checking;
 using Models.Exercises;
+using Models.Lessons;
 using Models.Links;
 using Models.Solutions;
 using System;
@@ -44,5 +45,6 @@ namespace Models
         public DbSet<Comment> Comments { get; set; }
         public DbSet<SolutionCheck> SolutionChecks { get; set; }
         public DbSet<SolutionBuildLog> SolutionBuildLogs { get; set; }
+        public DbSet<Course> Courses { get; set; }
     }
 }

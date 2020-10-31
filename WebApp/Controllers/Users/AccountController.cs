@@ -92,11 +92,11 @@ namespace WebApp.Controllers.Users
 
         [HttpDelete("deleteUser/{studentId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteUser(string studentId)
+        public async Task<ActionResult<string>> DeleteUser(string studentId)
         {
             var targetIUser = await UserManager.Users.Where(u => u.StudentID == studentId).SingleAsync();
             await UserManager.DeleteAsync(targetIUser);
-            return Json(1);
+            return studentId;
         }
 
         [HttpPost]
