@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using PublicAPI.Requests;
 using PublicAPI.Responses;
+using WebApp.Services;
 
 namespace WebApp.Controllers
 {
@@ -68,12 +69,15 @@ namespace WebApp.Controllers
 
 
         [HttpPost]
-        public async Task<GroupCompactResponse> Post(GroupCreateEditRequest request)
+        public async Task<GroupResponse> Post(
+            [FromBody] GroupCreateEditRequest request,
+            [FromServices] GroupsService groupsService)
         {
             var newModel = mapper.Map<Group>(request);
+            newModel.InviteToken = groupsService.GenerateInvoteToken();
             dbContext.Groups.Add(newModel);
             await dbContext.SaveChangesAsync();
-            return mapper.Map<GroupCompactResponse>(newModel);
+            return mapper.Map<GroupResponse>(newModel);
         }
 
         [HttpDelete("{id:guid}")]
@@ -85,6 +89,23 @@ namespace WebApp.Controllers
             dbContext.Groups.Remove(model);
             await dbContext.SaveChangesAsync();
             return id;
+        }
+
+        [HttpPost("{groupId:guid}/join/{token}")]
+        public async Task<ActionResult<GroupCompactResponse>> Join(Guid groupId, string inviteToken)
+        {
+            var group = await dbContext.Groups.SingleOrDefaultAsync(g => g.Id == groupId);
+            if (group == null)
+            {
+                return NotFound("Group not found");
+            }
+            if (group.InviteToken != inviteToken)
+            {
+                Conflict("Invite token incorrect");
+            }
+            dbContext.Add(new UserToGroup { GroupId = groupId, UserId = UserId });
+            await dbContext.SaveChangesAsync();
+            return mapper.Map<GroupCompactResponse>(group);
         }
     }
 }
