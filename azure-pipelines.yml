@@ -96,7 +96,7 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) olympiad_api'
+                  commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) mycode_api'
                   readyTimeout: '20000'
     - deployment: DeployAdmin
       displayName: Deploy admin
@@ -112,7 +112,7 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) olympiad_admin'
+                  commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) mycode_admin'
                   readyTimeout: '20000'
     - deployment: DeployExecutor
       displayName: Deploy executor
@@ -128,6 +128,6 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) olympiad_executor'
+                  commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) mycode_executor'
                   readyTimeout: '20000'
 
