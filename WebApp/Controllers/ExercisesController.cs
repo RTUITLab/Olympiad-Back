@@ -85,7 +85,7 @@ namespace WebApp.Controllers
             return exercises.Select(e => mapper.Map<ExerciseCompactResponse>(e)).ToList();
         }
 
-        [HttpGet]
+        [HttpGet("forTeacher")]
         public async Task<List<TeacherExerciseCompactResponse>> GetForChallengeForTeacher(Guid challengeId)
         {
             var exercises = await AvailableExercises()
