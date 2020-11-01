@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
@@ -35,12 +36,12 @@ namespace WebApp.Services.Configure
         {
             if (options.CreateUser)
                 await CreateUser(options.Email, options.Name, options.StudentId, options.Password);
-            await CreateUser("user1@mycode.rtuitlab.dev", "Пользователь Первый", "ИдентификаторПервогоПользователя", "LongPassword");
-            await CreateUser("user2@mycode.rtuitlab.dev", "Пользователь Второй", "ИдентификаторВторогоПользователя", "LongPassword");
-            await CreateUser("user3@mycode.rtuitlab.dev", "Пользователь Третий", "ИдентификаторТретьегоПользователя", "LongPassword");
-            await CreateUser("user4@mycode.rtuitlab.dev", "Пользователь Четвертый", "ИдентификаторЧетвертогоПользователя", "LongPassword");
-            await CreateUser("user5@mycode.rtuitlab.dev", "Пользователь Пятый", "ИдентификаторПятогоПользователя", "LongPassword");
             await ApplyRoles();
+            var users = await userManager.Users.ToListAsync();
+            foreach (var user in users)
+            {
+                await userManager.AddToRoleAsync(user, "User");
+            }
         }
 
         private async Task CreateUser(string email, string name, string studentId, string password)

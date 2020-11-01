@@ -23,5 +23,6 @@ namespace Models.Solutions
 
         public List<SolutionCheck> SolutionChecks { get; set; }
         public List<SolutionBuildLog> SolutionBuildLogs { get; set; }
+        public List<Comment> Comments { get; set; }
     }
 }

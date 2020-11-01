@@ -13,5 +13,6 @@ namespace Models
         public List<Solution> Solutions { get; set; }
         public List<UserToGroup> UserToGroups { get; set; }
         public List<UserToExercise> UserToExercises { get; set; }
+        public List<Comment> Comments { get; set; }
     }
 }

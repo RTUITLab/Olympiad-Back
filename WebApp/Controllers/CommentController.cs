@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using PublicAPI.Requests;
 using PublicAPI.Responses;
 
 namespace WebApp.Controllers
@@ -28,43 +29,28 @@ namespace WebApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostComment()
+        public async Task<IActionResult> PostComment(List<PostComment> comments)
         {
-            string reviewBody;
-
-            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
+            var dbComments = comments.Select(c => new Comment
             {
-                reviewBody = await reader.ReadToEndAsync();
-            }
+                AuthorId = UserId,
+                Raw = c.Raw,
+                SendTime = DateTimeOffset.UtcNow,
+                SolutionId = c.SolutionId
+            }).ToList();
 
-            Comment comment = new Comment()
-            {
-                Raw = reviewBody,
-                UserId = UserId,
-                Time = DateTime.Now
-            };
-
-            await context.Comments.AddAsync(comment);
+            context.Comments.AddRange(dbComments);
             await context.SaveChangesAsync();
             return Ok();
         }
 
         [HttpGet]
-        [Route("{pageNum}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<List<CommentResponce>>> GetComments(int pageNum)
+        public async Task<ActionResult<List<Comment>>> GetComments(Guid solutionId)
         {
             return await context
                 .Comments
-                .Skip((pageNum - 1) * 10)
-                .Take(10)
-                .Select(C => new CommentResponce
-                {
-                    UserId = UserId,
-                    UserName = context.Users.FirstOrDefault(P => P.Id == C.UserId).FirstName,
-                    Raw = C.Raw,
-                    Time = C.Time
-                }).ToListAsync();
+                .Where(c => c.SolutionId == solutionId)
+                .ToListAsync();
         }
     }
 }
