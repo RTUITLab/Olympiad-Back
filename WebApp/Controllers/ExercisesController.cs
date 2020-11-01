@@ -66,6 +66,23 @@ namespace WebApp.Controllers
                 list[i].UserSum = 30;
                 list[i].SendedTime = DateTimeOffset.UtcNow;
             }
+            var anotherUsers = await context.Users.Where(u => u.UserToGroups.Any(g => g.Group.Challenges.Any(c => c.Exercises.Any(e => e.ExerciseID == exerciseId))))
+                .ToListAsync();
+
+            foreach (var item in anotherUsers)
+            {
+                var now = list.FirstOrDefault(l => l.User.Id == item.Id);
+                if (now == null)
+                {
+                    list.Add(new CompactExerciseUserResult
+                    {
+                        User = mapper.Map<UserInfoResponse>(item),
+                        TotalSum = 100,
+                        UserSum = 0
+                    });
+                }
+            }
+
             //var solutions = context
             //    .Solutions
             //    .Where(s => s.ExerciseId == exerciseId)
