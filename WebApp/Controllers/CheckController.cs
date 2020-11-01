@@ -298,6 +298,26 @@ namespace WebApp.Controllers
             return buildLog.Log;
         }
 
+        [HttpGet("runLogs/{solutionId:Guid}")]
+        public async Task<ActionResult<List<SolutionCheckResponse>>> GetRunLogs(Guid solutionId)
+        {
+            if (!await context.Solutions.AnyAsync(s => s.Id == solutionId && s.UserId == UserId))
+            {
+                return Forbid($"You don't have access to that solution");
+            }
+
+            var checkLogs = await context.SolutionChecks
+                .OrderByDescending(l => l.CheckedTime)
+                .Where(c => c.SolutionId == solutionId)
+                .Where(c => c.Solution.Exercise.ExerciseDatas.Any(d => d.InData == c.ExampleIn))
+                .ProjectTo<SolutionCheckResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+            if (checkLogs.Count == 0)
+            {
+                return NotFound("No check logs for solution");
+            }
+            return checkLogs;
+        }
 
         [HttpGet("logs/{solutionId}")]
         [Authorize(Roles = "Admin,ResultsViewer")]
