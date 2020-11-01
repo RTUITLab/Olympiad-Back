@@ -43,6 +43,12 @@ namespace WebApp.Controllers
             return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
         }
 
+        //[HttpGet("")]
+        //public Task<List<ChallengeResponse>> GetForGroup()
+        //{
+        //    return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
+        //}
+
         [HttpGet("{id:guid}")]
         public async Task<ChallengeResponse> Get(Guid id)
         {

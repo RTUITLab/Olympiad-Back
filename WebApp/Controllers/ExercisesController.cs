@@ -90,7 +90,7 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ExerciseInfo>> Post([FromBody] ExerciseRequest model)
+        public async Task<ActionResult<ExerciseInfo>> Post([FromBody] ExerciseExtendedRequest model)
         {
             if (!await context.Challenges.AnyAsync(c => c.Id == model.ChallengeId))
             {
@@ -102,6 +102,11 @@ namespace WebApp.Controllers
                 exeIdentity.UserToExercises
                     = model.SpecificUsers.Select(u => new UserToExercise { UserId = u, Exercise = exeIdentity }).ToList();
             }
+            if (model.InOutData != null)
+            {
+                exeIdentity.ExerciseDatas
+                    = model.InOutData.Select(u => new ExerciseData { InData = u.InData, OutData = u.OutData, IsPublic = u.IsPublic }).ToList();
+            }
             context.Exercises.Add(exeIdentity);
             await context.SaveChangesAsync();
             return mapper.Map<ExerciseInfo>(exeIdentity);
@@ -111,7 +116,6 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Post(IFormFile markdown, Guid id)
         {
-            System.Console.WriteLine(markdown.Length);
             var target = context.Exercises.FirstOrDefault(e => e.ExerciseID == id);
             if (target == null) return NotFound();
             using (var reader = new StreamReader(markdown.OpenReadStream()))
