@@ -16,15 +16,15 @@ stages:
         verbosity: 'Verbose'
     - publish: deploy/api
       artifact: api-build
-  - job: buildAdmin
-    steps:
-    - task: Cake@2
-      inputs:
-        script: 'build.cake'
-        target: 'PublishAdmin'
-        verbosity: 'Verbose'
-    - publish: deploy/admin
-      artifact: admin-build
+  # - job: buildAdmin
+  #   steps:
+  #   - task: Cake@2
+  #     inputs:
+  #       script: 'build.cake'
+  #       target: 'PublishAdmin'
+  #       verbosity: 'Verbose'
+  #   - publish: deploy/admin
+  #     artifact: admin-build
   - job: buildExecutor
     steps:
     - task: Cake@2
@@ -51,20 +51,20 @@ stages:
           tags: |
             $(Build.BuildId)
             latest
-  - job: packAdmin
-    steps:
-      - download: current
-        artifact: admin-build
-      - task: Docker@2
-        inputs:
-          containerRegistry: 'rtuitlab connection by admin'
-          repository: 'rtuitlab/olympiad-admin'
-          command: 'buildAndPush'
-          Dockerfile: '$(Pipeline.Workspace)/admin-build/Dockerfile'
-          buildContext: '$(Pipeline.Workspace)/admin-build'
-          tags: |
-            $(Build.BuildId)
-            latest
+  # - job: packAdmin
+  #   steps:
+  #     - download: current
+  #       artifact: admin-build
+  #     - task: Docker@2
+  #       inputs:
+  #         containerRegistry: 'rtuitlab connection by admin'
+  #         repository: 'rtuitlab/olympiad-admin'
+  #         command: 'buildAndPush'
+  #         Dockerfile: '$(Pipeline.Workspace)/admin-build/Dockerfile'
+  #         buildContext: '$(Pipeline.Workspace)/admin-build'
+  #         tags: |
+  #           $(Build.BuildId)
+  #           latest
   - job: packExecutor
     steps:
       - download: current
@@ -98,22 +98,22 @@ stages:
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) mycode_api'
                   readyTimeout: '20000'
-    - deployment: DeployAdmin
-      displayName: Deploy admin
-      pool:
-        vmImage: 'Ubuntu-16.04'
-      environment: 'production'
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) mycode_admin'
-                  readyTimeout: '20000'
+    # - deployment: DeployAdmin
+    #   displayName: Deploy admin
+    #   pool:
+    #     vmImage: 'Ubuntu-16.04'
+    #   environment: 'production'
+    #   strategy:
+    #     runOnce:
+    #       deploy:
+    #         steps:
+    #           - download: none
+    #           - task: SSH@0
+    #             inputs:
+    #               sshEndpoint: 'swarm manager'
+    #               runOptions: 'commands'
+    #               commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) mycode_admin'
+    #               readyTimeout: '20000'
     - deployment: DeployExecutor
       displayName: Deploy executor
       pool:
