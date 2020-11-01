@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -83,6 +83,17 @@ namespace WebApp.Controllers
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
             return exercises.Select(e => mapper.Map<ExerciseCompactResponse>(e)).ToList();
+        }
+
+        [HttpGet]
+        public async Task<List<TeacherExerciseCompactResponse>> GetForChallengeForTeacher(Guid challengeId)
+        {
+            var exercises = await AvailableExercises()
+                .Where(e => e.ChallengeId == challengeId)
+                .OrderBy(e => e.ExerciseName)
+                .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
+                .ToListAsync();
+            return exercises.Select(e => mapper.Map<TeacherExerciseCompactResponse>(e)).ToList();
         }
 
         [HttpPut]

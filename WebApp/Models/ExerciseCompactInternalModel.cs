@@ -19,6 +19,8 @@ namespace WebApp.Models
 
         public SolutionStatus Status { get; set; }
         public string ExerciseTask { get; set; }
+        public List<UserToExercise> UserToExercises { get; set; }
+
 
         public ChallengeViewMode ChallengeViewMode { get; set; }
         public SolutionStatus? GetStatus()

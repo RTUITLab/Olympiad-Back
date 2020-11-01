@@ -38,6 +38,11 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(ecim => ecim.Status, map => map.MapFrom(ecr => ecr.GetStatus()))
                 .ForMember(ecim => ecim.HiddenStatus, map => map.MapFrom(ecr => ecr.GetHiddenStatus()));
 
+            CreateMap<ExerciseCompactInternalModel, TeacherExerciseCompactResponse>()
+                .ForMember(ecim => ecim.Status, map => map.MapFrom(ecr => ecr.GetStatus()))
+                .ForMember(ecim => ecim.HiddenStatus, map => map.MapFrom(ecr => ecr.GetHiddenStatus()))
+                .ForMember(tecim => tecim.UserNames, map => map.MapFrom(ecim => ecim.UserToExercises.Select(ute => ute.User.FirstName)));
+
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
