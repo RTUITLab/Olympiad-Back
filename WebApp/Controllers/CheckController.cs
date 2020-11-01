@@ -243,7 +243,7 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("getForExercise/{exerciseId:guid}/{userId:guid}")]
-        public async Task<SolutionTeacherResponse> GetForExercise(Guid exerciseId, Guid userId)
+        public async Task<ActionResult<SolutionTeacherResponse>> GetForExercise(Guid exerciseId, Guid userId)
         {
             var solutionInternal = await context
                 .Solutions
@@ -257,8 +257,12 @@ namespace WebApp.Controllers
                     TotalScore = 100,
                     UserScore = 30
                 })
-                .FirstOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
+                .FirstOrDefaultAsync();
+            if (solutionInternal == null)
+            {
+                return NotFound("Solution for exercise not found");
+            }
+                
             solutionInternal.Solutions =  (await context.Solutions.Where(s => s.ExerciseId == exerciseId && s.UserId == userId)
                 .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
                 .ToListAsync()).Select(s => mapper.Map<SolutionResponse>(s)).ToList();
