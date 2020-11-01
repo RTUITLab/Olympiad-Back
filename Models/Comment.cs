@@ -9,6 +9,7 @@ namespace Models
     {
         public Guid Id { get; set; }
         public string Raw { get; set; }
+        public int RowNumber { get; set; }
         public DateTimeOffset SendTime { get; set; }
 
         public Guid AuthorId { get; set; }
