@@ -56,9 +56,6 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()));
 
             CreateMap<Challenge, ChallengeResponse>();
-            CreateMap<Challenge, ChallengeExtendedResponse>()
-                .ForMember(cer => cer.Invited, map => map.MapFrom(c => c.UsersToChallenges.Select(utc => utc.User)));
-
 
             CreateMap<ExerciseData, ExerciseDataResponse>();
             CreateMap<ExerciseData, ExerciseDataCompactResponse>();

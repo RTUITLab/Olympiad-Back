@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Design;
 using Models.Checking;
 using Models.Exercises;
 using Models.Lessons;
-using Models.Links;
 using Models.Solutions;
 using System;
 using System.Collections.Generic;
@@ -22,16 +21,6 @@ namespace Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Entity<UserToChallenge>()
-                .HasKey(utc => new { utc.ChallengeId, utc.UserId });
-            builder.Entity<UserToChallenge>()
-                .HasOne(utc => utc.Challenge)
-                .WithMany(c => c.UsersToChallenges)
-                .HasForeignKey(utc => utc.ChallengeId);
-            builder.Entity<UserToChallenge>()
-                .HasOne(utc => utc.User)
-                .WithMany(u => u.UsersToChallenges)
-                .HasForeignKey(utc => utc.UserId);
 
             builder.Entity<User>()
                 .HasIndex(u => u.StudentID)

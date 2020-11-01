@@ -1,5 +1,4 @@
-﻿using Models.Links;
-using Olympiad.Shared.Models;
+﻿using Olympiad.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +16,8 @@ namespace Models.Exercises
         public ChallengeViewMode ViewMode { get; set; }
         public ChallengeAccessType ChallengeAccessType { get; set; }
 
-        public List<UserToChallenge> UsersToChallenges { get; set; }
+        public Guid? GroupId { get; set; }
+        public Group Group { get; set; }
 
         public List<Exercise> Exercises { get; set; }
     }

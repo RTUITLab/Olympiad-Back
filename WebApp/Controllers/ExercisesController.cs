@@ -46,7 +46,7 @@ namespace WebApp.Controllers
                 .Exercises
                 .Where(e => e.ChallengeId == challengeId)
                 .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
-                           e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
+                           e.Challenge.Group.UserToGroups.Any(utg => utg.UserId == UserId))
                 .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
                 .OrderBy(e => e.ExerciseName)
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })

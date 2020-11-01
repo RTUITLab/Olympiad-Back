@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Exercises;
-using Models.Links;
 using Olympiad.Shared.Models;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses;
@@ -59,15 +58,23 @@ namespace WebApp.Controllers
             {
                 query = query
                     .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
-                           c.UsersToChallenges.Any(utc => utc.UserId == UserId));
+                           c.Group.UserToGroups.Any(utg => utg.UserId == UserId));
             }
             return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ChallengeResponse> PostAsync([FromBody]ChallengeCreateRequest request)
+        public async Task<ActionResult<ChallengeResponse>> PostAsync([FromBody] ChallengeCreateEditRequest request)
         {
+            if (request.ChallengeAccessType == ChallengeAccessType.Private && request.GroupId == null)
+            {
+                return BadRequest("You must specify group id for private challenge");
+            }
+            if (request.ChallengeAccessType == ChallengeAccessType.Public)
+            {
+                request.GroupId = null;
+            }
             var challenge = mapper.Map<Challenge>(request);
             challenge.CreationTime = DateTimeOffset.UtcNow;
             context.Challenges.Add(challenge);
@@ -78,34 +85,26 @@ namespace WebApp.Controllers
 
         [HttpPut("{id:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ChallengeExtendedResponse> PutAsync(Guid id, [FromBody]ChallengeEditRequest request)
+        public async Task<ActionResult<ChallengeResponse>> PutAsync(Guid id, [FromBody]ChallengeCreateEditRequest request)
         {
-            if (request.RemovePersons != null &&
-                request.AddPersons != null &&
-                request.RemovePersons.Intersect(request.AddPersons).Any())
-                throw StatusCodeException.BadRequest();
+            if (request.ChallengeAccessType == ChallengeAccessType.Private && request.GroupId == null)
+            {
+                return BadRequest("You must specify group id for private challenge");
+            }
+            if (request.ChallengeAccessType == ChallengeAccessType.Public)
+            {
+                request.GroupId = null;
+            }
 
             var targetChallenge = await context
                 .Challenges
-                .Include(c => c.UsersToChallenges)
-                .Where(c => c.Id == id)
-                .SingleOrDefaultAsync()
+                .SingleOrDefaultAsync(c => c.Id == id)
                 ?? throw StatusCodeException.NotFount;
+
             mapper.Map(request, targetChallenge);
-            if (request.RemovePersons?.Any() == true)
-                targetChallenge.UsersToChallenges.RemoveAll(u => request.RemovePersons.Contains(u.UserId));
-            if (request.AddPersons?.Any() == true)
-                targetChallenge.UsersToChallenges.AddRange(
-                    request
-                    .AddPersons
-                    .Where(uid => !targetChallenge.UsersToChallenges.Any(utc => utc.UserId == uid))
-                    .Select(uid => new UserToChallenge
-                    {
-                        UserId = uid,
-                        ChallengeId = id
-                    }));
+
             await context.SaveChangesAsync();
-            return mapper.Map<ChallengeExtendedResponse>(targetChallenge);
+            return mapper.Map<ChallengeResponse>(targetChallenge);
         }
 
         [HttpDelete("{id}")]
