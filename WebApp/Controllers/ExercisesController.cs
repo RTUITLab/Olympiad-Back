@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,7 +39,7 @@ namespace WebApp.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet("compacrResults/{exersiceId:guid}")]
+        [HttpGet("compacrResults/{exerciseId:guid}")]
         public async Task<List<CompactExerciseUserResult>> GetCompactResults(Guid exerciseId)
         {
             var simpleData = await context
