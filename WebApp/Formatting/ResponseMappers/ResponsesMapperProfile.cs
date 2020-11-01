@@ -81,6 +81,8 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(gcr => gcr.PersonsCount, map => map.MapFrom(g => g.UserToGroups.Count));
             CreateMap<Group, GroupResponse>()
                 .ForMember(gr => gr.Users, map => map.MapFrom(g => g.UserToGroups.Select(utg => utg.User)));
+
+            CreateMap<Comment, CommentResponse>();
         }
     }
 }

@@ -28,15 +28,18 @@ namespace WebApp.Controllers
             this.context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostComment(List<PostComment> comments)
+        [HttpPost("{solutionId:guid}")]
+        public async Task<IActionResult> PostComment(Guid solutionId, List<PostComment> comments)
         {
+            var oldComments = await context.Comments.Where(c => c.SolutionId == solutionId).ToListAsync();
+            context.Comments.RemoveRange(oldComments);
             var dbComments = comments.Select(c => new Comment
             {
                 AuthorId = UserId,
                 Raw = c.Raw,
+                RowNumber = c.RowNumber,
                 SendTime = DateTimeOffset.UtcNow,
-                SolutionId = c.SolutionId
+                SolutionId = solutionId
             }).ToList();
 
             context.Comments.AddRange(dbComments);

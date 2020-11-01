@@ -27,6 +27,9 @@ namespace WebApp.ViewModels.Mappings
 
             CreateMap<CourseCreateRequest, Course>();
             CreateMap<GroupCreateEditRequest, Group>();
+
+
+            CreateMap<PostComment, Comment>();
         }
     }
 }

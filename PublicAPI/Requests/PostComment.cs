@@ -6,7 +6,6 @@ namespace PublicAPI.Requests
 {
     public class PostComment
     {
-        public Guid SolutionId { get; set; }
         public string Raw { get; set; }
         public int RowNumber { get; set; }
     }
