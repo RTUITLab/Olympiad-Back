@@ -40,24 +40,30 @@ namespace WebApp.Controllers
         [HttpGet]
         public Task<List<ChallengeResponse>> GetAsync()
         {
-            return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
+            return AvailableChallenges()
+                .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .OrderBy(c => c.Name).ToListAsync();
         }
 
-        //[HttpGet("")]
-        //public Task<List<ChallengeResponse>> GetForGroup()
-        //{
-        //    return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
-        //}
+        [HttpGet("forGroup/{groupId:guid}")]
+        public async Task<List<ChallengeResponse>> GetForGroup(Guid groupId)
+        {
+            return await AvailableChallenges()
+                .Where(ch => ch.GroupId == groupId)
+                .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .OrderBy(c => c.Name).ToListAsync();
+        }
 
         [HttpGet("{id:guid}")]
         public async Task<ChallengeResponse> Get(Guid id)
         {
             return await AvailableChallenges()
                         .Where(c => c.Id == id)
+                        .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
                         .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
         }
 
-        private IQueryable<ChallengeResponse> AvailableChallenges()
+        private IQueryable<Challenge> AvailableChallenges()
         {
             IQueryable<Challenge> query = context.Challenges;
             if (!IsAdmin)
@@ -66,7 +72,7 @@ namespace WebApp.Controllers
                     .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
                            c.Group.UserToGroups.Any(utg => utg.UserId == UserId));
             }
-            return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
+            return query;
         }
 
         [HttpPost]
