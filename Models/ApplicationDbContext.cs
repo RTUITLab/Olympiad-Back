@@ -46,6 +46,16 @@ namespace Models
                     .WithMany(u => u.GroupToCourses)
                     .HasForeignKey(u => u.GroupId);
             });
+            builder.Entity<UserToExercise>(utg =>
+            {
+                utg.HasKey(u => new { u.UserId, u.ExerciseId });
+                utg.HasOne(u => u.User)
+                    .WithMany(u => u.UserToExercises)
+                    .HasForeignKey(u => u.UserId);
+                utg.HasOne(u => u.Exercise)
+                    .WithMany(u => u.UserToExercises)
+                    .HasForeignKey(u => u.ExerciseId);
+            });
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }

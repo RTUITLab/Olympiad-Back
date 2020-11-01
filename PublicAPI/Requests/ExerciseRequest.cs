@@ -11,5 +11,6 @@ namespace PublicAPI.Requests
         public string ExerciseName { get; set; }
         public string ExerciseTask { get; set; }
         public int Score { get; set; } = -1;
+        public List<Guid> SpecificUsers { get; set; }
     }
 }

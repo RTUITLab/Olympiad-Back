@@ -42,12 +42,8 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
         {
-            var exercises = await context
-                .Exercises
+            var exercises = await AvailableExercises()
                 .Where(e => e.ChallengeId == challengeId)
-                .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
-                           e.Challenge.Group.UserToGroups.Any(utg => utg.UserId == UserId))
-                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
                 .OrderBy(e => e.ExerciseName)
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
@@ -59,26 +55,21 @@ namespace WebApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExerciseRequest model)
         {
-            var exe = await context.Exercises.FindAsync(exerciseId);
+            var exe = await context.Exercises
+                .Include(e => e.UserToExercises)
+                .SingleOrDefaultAsync(e => e.ExerciseID == exerciseId);
 
             if (exe == null)
             {
-                return NotFound();
+                return NotFound("Exercise not found");
             }
+            mapper.Map(model, exe);
 
-            if (model.ExerciseName != null)
+            context.RemoveRange(exe.UserToExercises);
+            if (model.SpecificUsers != null)
             {
-                exe.ExerciseName = model.ExerciseName;
-            }
-
-            if (model.ExerciseTask != null)
-            {
-                exe.ExerciseTask = model.ExerciseTask;
-            }
-
-            if (model.Score != -1)
-            {
-                exe.Score = model.Score;
+                exe.UserToExercises
+                   = model.SpecificUsers.Select(u => new UserToExercise { UserId = u, ExerciseId = exerciseId }).ToList();
             }
 
             await context.SaveChangesAsync();
@@ -89,15 +80,9 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            var exerciseQuery = context
-                .Exercises
-                .Where(ex => ex.ExerciseID == exerciseId);
-
-            if (!IsInRole("Admin"))
-                exerciseQuery = exerciseQuery.Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now);
-
-            var exercise = await exerciseQuery.SingleOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
+            var exercise = await AvailableExercises()
+                .Where(ex => ex.ExerciseID == exerciseId)
+                .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
 
             var exView = mapper.Map<ExerciseInfo>(exercise);
             return exView;
@@ -105,12 +90,18 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ExerciseInfo> Post([FromBody] ExerciseRequest model)
+        public async Task<ActionResult<ExerciseInfo>> Post([FromBody] ExerciseRequest model)
         {
             if (!await context.Challenges.AnyAsync(c => c.Id == model.ChallengeId))
-                throw StatusCodeException.BadRequest();
-
+            {
+                return NotFound("Challenge not found");
+            }
             var exeIdentity = mapper.Map<Exercise>(model);
+            if (model.SpecificUsers != null)
+            {
+                exeIdentity.UserToExercises
+                    = model.SpecificUsers.Select(u => new UserToExercise { UserId = u, Exercise = exeIdentity }).ToList();
+            }
             context.Exercises.Add(exeIdentity);
             await context.SaveChangesAsync();
             return mapper.Map<ExerciseInfo>(exeIdentity);
@@ -118,7 +109,7 @@ namespace WebApp.Controllers
 
         [HttpPost("{id}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult Post(IFormFile markdown, Guid id) 
+        public IActionResult Post(IFormFile markdown, Guid id)
         {
             System.Console.WriteLine(markdown.Length);
             var target = context.Exercises.FirstOrDefault(e => e.ExerciseID == id);
@@ -129,6 +120,16 @@ namespace WebApp.Controllers
             }
             context.SaveChanges();
             return Ok();
+        }
+
+        private IQueryable<Exercise> AvailableExercises()
+        {
+            return context
+                .Exercises
+                .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
+                           e.Challenge.Group.UserToGroups.Any(utg => utg.UserId == UserId))
+                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .Where(e => e.UserToExercises.Count == 0 || e.UserToExercises.Any(ute => ute.UserId == UserId));
         }
     }
 }

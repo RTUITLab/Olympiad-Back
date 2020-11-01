@@ -14,6 +14,7 @@ namespace Models.Exercises
 
         public Guid ChallengeId { get; set; }
         public Challenge Challenge { get; set; }
+        public List<UserToExercise> UserToExercises { get; set; }
 
         public List<ExerciseData> ExerciseDatas { get; set; }
         public List<Solution> Solutions { get; set; }
