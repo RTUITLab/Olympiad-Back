@@ -281,6 +281,24 @@ namespace WebApp.Controllers
             return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
         }
 
+        [HttpGet("buildLogs/{solutionId:Guid}")]
+        public async Task<ActionResult<string>> GetBuildLogs(Guid solutionId)
+        {
+            if (!await context.Solutions.AnyAsync(s => s.Id == solutionId && s.UserId == UserId))
+            {
+                return Forbid($"You don't have access to that solution");
+            }
+            var buildLog = await context.SolutionBuildLogs
+                .OrderByDescending(l => l.BuildedTime)
+                .FirstOrDefaultAsync(bl => bl.SolutionId == solutionId);
+            if (buildLog == null)
+            {
+                return NotFound("No build logs for solution");
+            }
+            return buildLog.Log;
+        }
+
+
         [HttpGet("logs/{solutionId}")]
         [Authorize(Roles = "Admin,ResultsViewer")]
         public async Task<ActionResult<List<SolutionCheckResponse>>> GetLogs(Guid solutionId)
