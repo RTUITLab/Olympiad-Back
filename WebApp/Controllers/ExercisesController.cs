@@ -18,6 +18,7 @@ using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
+using PublicAPI.Responses.Users;
 
 namespace WebApp.Controllers
 {
@@ -38,6 +39,40 @@ namespace WebApp.Controllers
             this.mapper = mapper;
         }
 
+        [HttpGet("compacrResults/{exersiceId:guid}")]
+        public async Task<List<CompactExerciseUserResult>> GetCompactResults(Guid exerciseId)
+        {
+            var simpleData = await context
+                     .Solutions
+                     .Where(s => s.ExerciseId == exerciseId)
+                     .GroupBy(m => new { m.UserId })
+                     .Select(g => new
+                     {
+                         UserId = g.Key.UserId,
+                         Status = g.Max(s => s.Status)
+                     })
+                     .ToListAsync();
+            var userIds = simpleData.Select(s => s.UserId).ToArray();
+            var users = await context.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
+
+            List<CompactExerciseUserResult> list = new List<CompactExerciseUserResult>();
+            for (int i = 0; i < simpleData.Count; i++)
+            {
+                var data = simpleData[i];
+                list[i].Status = data.Status;
+                list[i].User = mapper.Map<UserInfoResponse>(users.Single(u => u.Id == data.UserId));
+                list[i].TotalSum = 100;
+                list[i].UserSum = 30;
+                list[i].SendedTime = DateTimeOffset.UtcNow;
+            }
+            //var solutions = context
+            //    .Solutions
+            //    .Where(s => s.ExerciseId == exerciseId)
+            //    .Where(s => userIds.Contains(s.UserId))
+            //    .Where(s => s.Status == )
+            return list;
+
+        }
 
         [HttpGet]
         public async Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
