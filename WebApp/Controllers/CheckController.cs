@@ -241,6 +241,30 @@ namespace WebApp.Controllers
             return mapper.Map<SolutionResponse>(solutionInternal);
         }
 
+        [HttpGet]
+        [Route("getForExercise/{exerciseId:guid}/{userId:guid}")]
+        public async Task<SolutionTeacherResponse> GetForExercise(Guid exerciseId, Guid userId)
+        {
+            var solutionInternal = await context
+                .Solutions
+                .Where(p => p.Id == exerciseId && p.UserId == userId)
+                .OrderByDescending(s => s.SendingTime)
+                .Select(s => new SolutionTeacherResponse
+                {
+                    ExerciseName = s.Exercise.ExerciseName,
+                    Raw = s.Raw,
+                    SolutionId = s.Id,
+                    TotalScore = 100,
+                    UserScore = 30
+                })
+                .FirstOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
+            solutionInternal.Solutions =  (await context.Solutions.Where(s => s.ExerciseId == exerciseId && s.UserId == userId)
+                .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
+                .ToListAsync()).Select(s => mapper.Map<SolutionResponse>(s)).ToList();
+            return solutionInternal;
+        }
+
         [Authorize(Roles = "Admin,Executor")]
         [HttpGet("statistic")]
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
