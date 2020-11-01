@@ -35,6 +35,11 @@ namespace WebApp.Services.Configure
         {
             if (options.CreateUser)
                 await CreateUser(options.Email, options.Name, options.StudentId, options.Password);
+            await CreateUser("user1@mycode.rtuitlab.dev", "Пользователь Первый", "ИдентификаторПервогоПользователя", "LongPassword");
+            await CreateUser("user2@mycode.rtuitlab.dev", "Пользователь Второй", "ИдентификаторВторогоПользователя", "LongPassword");
+            await CreateUser("user3@mycode.rtuitlab.dev", "Пользователь Третий", "ИдентификаторТретьегоПользователя", "LongPassword");
+            await CreateUser("user4@mycode.rtuitlab.dev", "Пользователь Четвертый", "ИдентификаторЧетвертогоПользователя", "LongPassword");
+            await CreateUser("user5@mycode.rtuitlab.dev", "Пользователь Пятый", "ИдентификаторПятогоПользователя", "LongPassword");
             await ApplyRoles();
         }
 
