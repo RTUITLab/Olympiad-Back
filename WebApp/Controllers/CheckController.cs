@@ -247,7 +247,7 @@ namespace WebApp.Controllers
         {
             var solutionInternal = await context
                 .Solutions
-                .Where(p => p.Id == exerciseId && p.UserId == userId)
+                .Where(p => p.ExerciseId == exerciseId && p.UserId == userId)
                 .OrderByDescending(s => s.SendingTime)
                 .Select(s => new SolutionTeacherResponse
                 {
