@@ -59,6 +59,7 @@ namespace WebApp.Controllers
             for (int i = 0; i < simpleData.Count; i++)
             {
                 var data = simpleData[i];
+                list.Add(new CompactExerciseUserResult());
                 list[i].Status = data.Status;
                 list[i].User = mapper.Map<UserInfoResponse>(users.Single(u => u.Id == data.UserId));
                 list[i].TotalSum = 100;
