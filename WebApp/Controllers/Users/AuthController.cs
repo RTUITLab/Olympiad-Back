@@ -43,7 +43,7 @@ namespace WebApp.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Post(
+        public async Task<ActionResult<LoginResponse>> Post(
             [FromBody] CredentialsRequest credentials,
             [FromServices] NotifyUsersService notifyUsersService,
             [FromServices] IOptions<DefaultUserSettings> defaultUserSettings)
