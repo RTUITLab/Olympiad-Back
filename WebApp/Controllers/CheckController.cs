@@ -50,19 +50,24 @@ namespace WebApp.Controllers
         [Route("{language}/{exerciseId}")]
         public async Task<ActionResult<SolutionResponse>> Post(IFormFile file, string language, Guid exerciseId)
         {
-            return await AddSolution(file, language, exerciseId, UserId);
-            }
+            return await AddSolutionFromFile(file, language, exerciseId, UserId);
+        }
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [Route("{language}/{exerciseId}/{authorId}")]
         public async Task<ActionResult<SolutionResponse>> AdminPost(IFormFile file, string language, Guid exerciseId, Guid authorId)
         {
-            return await AddSolution(file, language, exerciseId, authorId, true);
+            return await AddSolutionFromFile(file, language, exerciseId, authorId, true);
         }
-
-        private async Task<ActionResult<SolutionResponse>> AddSolution(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
+        [Authorize(Roles = "Admin")]
+        [HttpPost("rawstring/{language}/{exerciseId}/{authorId}")]
+        public async Task<ActionResult<SolutionResponse>> AdminPost(
+            [FromBody] string raw, string language, Guid exerciseId, Guid authorId)
         {
-            string fileBody;
+            return await AddSolutionFromStringRaw(raw, language, exerciseId, authorId, true);
+        }
+        private async Task<ActionResult<SolutionResponse>> AddSolutionFromFile(IFormFile file, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
+        {
             if (file == null)
             {
                 throw StatusCodeException.BadRequest("file not exists");
@@ -72,7 +77,19 @@ namespace WebApp.Controllers
             {
                 throw StatusCodeException.BadRequest("file size more than 5MB");
             }
-
+            string fileBody;
+            using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
+            {
+                fileBody = await streamReader.ReadToEndAsync();
+                if (!fileBody.IsLegalUnicode())
+                {
+                    return BadRequest($"The file contains invalid Unicode");
+                }
+            }
+            return await AddSolutionFromStringRaw(fileBody, language, exerciseId, authorId, isAdmin);
+        }
+        private async Task<ActionResult<SolutionResponse>> AddSolutionFromStringRaw(string fileBody, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
+        {
             if (!await context.Exercises.AnyAsync(
                 e => e.ExerciseID == exerciseId &&
                 (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now) &&
@@ -96,27 +113,17 @@ namespace WebApp.Controllers
                 {
                     throw StatusCodeException.TooManyRequests;
                 }
-            }
 
-            using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
-            {
-                fileBody = await streamReader.ReadToEndAsync();
-                if (!fileBody.IsLegalUnicode())
+                var oldSolution = await context
+                    .Solutions
+                    .Where(s => s.UserId == authorId)
+                    .Where(s => s.Raw == fileBody)
+                    .Where(s => s.ExerciseId == exerciseId)
+                    .FirstOrDefaultAsync();
+                if (oldSolution != null)
                 {
-                    return BadRequest($"The file contains invalid Unicode");
+                    return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(oldSolution));
                 }
-            }
-
-            var oldSolution = await context
-                .Solutions
-                .Where(s => s.UserId == authorId)
-                .Where(s => s.Raw == fileBody)
-                .Where(s => s.ExerciseId == exerciseId)
-                .FirstOrDefaultAsync();
-
-            if (!isAdmin && oldSolution != null)
-            {
-                return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(oldSolution));
             }
 
             Solution solution = new Solution()
