@@ -1,0 +1,28 @@
+﻿@page "/dangerzone"
+
+@using Microsoft.EntityFrameworkCore;
+@inject ApplicationDbContext dbContext;
+
+<h3>DangerZone</h3>
+
+
+<button class="btn btn-danger" @onclick="DeleteAllSolutions">Delete all solutions with build logs</button>
+
+<Logs @ref="logs"></Logs>
+
+@code {
+    private Logs logs;
+    private async Task DeleteAllSolutions()
+    {
+        await logs.Log($"preparing to delete");
+        var solutionIds = await dbContext.Solutions.Select(s => s.Id).ToListAsync();
+        await logs.Log($"find {solutionIds.Count} solutions");
+        var solutionEntitys = solutionIds.Select(id => new Models.Solutions.Solution
+        {
+            Id = id
+        }).ToList();
+        dbContext.Solutions.RemoveRange(solutionEntitys);
+        var edited = await dbContext.SaveChangesAsync();
+        await logs.Log($"deleted {edited} rows");
+    }
+}
