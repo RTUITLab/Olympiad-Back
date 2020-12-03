@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebApp.Services.Interfaces
+namespace Olympiad.Services
 {
     public interface IQueueChecker
     {

@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
+using Olympiad.Services;
 using Olympiad.Shared.Models;
 using Olympiad.Shared.Models.Settings;
 using PublicAPI.Responses;
@@ -142,69 +143,6 @@ namespace WebApp.Controllers
             queue.PutInQueue(solution.Id);
 
             return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
-        }
-
-        [HttpPost("recheck/{exerciseId:guid}/adminPanel")]
-        [AllowAnonymous]
-        public async Task<ActionResult<int>> RecheckSolutionsAdminPanel(
-            Guid exerciseId,
-            [FromServices] IOptions<AdminSettings> options
-)
-        {
-            if (HttpContext.Request.Headers["Authorization"].ToString() != options.Value.SecurityKey)
-                return NotFound();
-            return await RecheckSolutions(exerciseId);
-        }
-
-        [HttpPost("recheck/{exerciseId:guid}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<int>> RecheckSolutions(Guid exerciseId)
-        {
-            var solutions = await context
-                .Solutions
-                .Where(s => s.Status != SolutionStatus.CompileError)
-                .Where(s => s.ExerciseId == exerciseId)
-                .ToListAsync();
-
-            solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
-            await context.SaveChangesAsync();
-            solutions.ForEach(s => queue.PutInQueue(s.Id));
-            return solutions.Count;
-        }
-
-        [HttpPost("rechecksolution/{solutionId:guid}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<int>> RecheckSolution(Guid solutionId)
-        {
-            var solution = await context
-                .Solutions
-                .SingleAsync(s => s.Id == solutionId);
-
-            solution.Status = SolutionStatus.InQueue;
-            await context.SaveChangesAsync();
-            queue.PutInQueue(solution.Id);
-            return 1;
-        }
-
-        [HttpPost("recheckusersolution/{studentId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<int>> RecheckUserSolutions(string studentId)
-        {
-            var solutions = await context
-                .Solutions
-                .Include(s => s.SolutionChecks)
-                .Include(s => s.SolutionBuildLogs)
-                .Where(s => s.User.StudentID == studentId)
-                .ToListAsync();
-
-
-            context.SolutionChecks.RemoveRange(solutions.SelectMany(s => s.SolutionChecks));
-            context.SolutionBuildLogs.RemoveRange(solutions.SelectMany(s => s.SolutionBuildLogs));
-
-            solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
-            await context.SaveChangesAsync();
-            solutions.ForEach(s => queue.PutInQueue(s.Id));
-            return solutions.Count;
         }
 
         [HttpGet]

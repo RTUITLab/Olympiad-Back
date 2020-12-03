@@ -35,7 +35,7 @@
 }
 
 @code {
-    private List<string> messages = new List<string>();
+    private LinkedList<string> messages = new LinkedList<string>();
 
     private bool showSettings;
     private bool useTextArea;
@@ -43,14 +43,14 @@
     private int recordsCount = 20;
     public async Task Log(object obj)
     {
-        if (messages.Count == recordsCount)
-            messages.RemoveAt(messages.Count - 1);
+        while (messages.Count >= recordsCount)
+            messages.RemoveLast();
         string message;
         if (obj is string)
             message = obj.ToString();
         else
             message = System.Text.Json.JsonSerializer.Serialize(obj, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }).ConvertCyrillic();
-        messages.Insert(0, $"{DateTime.Now.ToString("hh:mm:ss")}: {message}");
+        messages.AddFirst($"{DateTime.Now.ToString("hh:mm:ss")}: {message}");
         StateHasChanged();
         await Task.Delay(2);
     }

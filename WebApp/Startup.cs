@@ -34,6 +34,7 @@ using RTUITLab.AspNetCore.Configure.Invokations;
 using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
 using WebApp.Formatting;
+using Olympiad.Services;
 
 namespace WebApp
 {
@@ -54,7 +55,6 @@ namespace WebApp
             services.Configure<RecaptchaSettings>(Configuration.GetSection(nameof(RecaptchaSettings)));
             services.Configure<AccountSettings>(Configuration.GetSection(nameof(AccountSettings)));
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
-            services.Configure<AdminSettings>(Configuration.GetSection(nameof(AdminSettings)));
             services.Configure<DefaultChallengeSettings>(Configuration.GetSection(nameof(DefaultChallengeSettings)));
             services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
 

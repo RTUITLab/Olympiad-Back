@@ -6,9 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApp.Services.Interfaces;
 
-namespace WebApp.Services
+namespace Olympiad.Services
 {
     public class RabbitMQQueue : IQueueChecker, IDisposable
     {
@@ -21,9 +20,16 @@ namespace WebApp.Services
             IOptions<RabbitMqQueueSettings> options,
             ILogger<RabbitMQQueue> logger)
         {
-            var factory = new ConnectionFactory() { HostName = options.Value.Host };
+            var factory = new ConnectionFactory() { 
+                HostName = options.Value.Host,
+                ClientProvidedName = options.Value.ClientProvidedName
+            };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
+            channel.QueueDeclare(options.Value.QueueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false);
             this.options = options.Value;
             this.logger = logger;
         }
@@ -49,6 +55,8 @@ namespace WebApp.Services
 
         public void Dispose()
         {
+            channel.Close();
+            connection.Close();
             channel.Dispose();
             connection.Dispose();
         }

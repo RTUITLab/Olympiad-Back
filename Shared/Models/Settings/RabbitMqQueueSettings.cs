@@ -7,6 +7,8 @@ namespace Olympiad.Shared.Models.Settings
         [Required]
         public string Host { get; set; }
         [Required]
+        public string ClientProvidedName { get; set; }
+        [Required]
         public string QueueName { get; set; }
     }
 }
