@@ -1,7 +1,10 @@
 ﻿@page "/challenges"
+
+@inherits OwningComponentBase<ApplicationDbContext>
+
+@using Microsoft.EntityFrameworkCore
+
 @inject NavigationManager navigationManager
-@inject ChallengesService challengesService
-@inject ApplicationDbContext dbContext
 <h3>Challenges</h3>
 
 <table class="table table-bordered">
@@ -45,7 +48,7 @@
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        challenges = await challengesService.GetChallenges();
+        challenges = await Service.Challenges.ToListAsync();
     }
 
     private async Task CreateChallenge()
@@ -56,8 +59,8 @@
             ChallengeAccessType = Olympiad.Shared.Models.ChallengeAccessType.Private,
             CreationTime = DateTime.UtcNow
         };
-        dbContext.Challenges.Add(newChallenge);
-        await dbContext.SaveChangesAsync();
+        Service.Challenges.Add(newChallenge);
+        await Service.SaveChangesAsync();
         navigationManager.NavigateTo($"challenges/{newChallenge.Id}");
     }
 }

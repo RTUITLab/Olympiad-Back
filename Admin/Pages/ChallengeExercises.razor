@@ -1,7 +1,9 @@
 ﻿@page "/challenges/{ChallengeId:guid}/exercises"
+
+@inherits OwningComponentBase<ApplicationDbContext>
+
 @using Microsoft.EntityFrameworkCore
 
-@inject ApplicationDbContext dbContext
 @inject NavigationManager navigationManager
 
 <h3>Challenge exercises</h3>
@@ -67,8 +69,8 @@ else
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        challengeTitle = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
-        exercises = await dbContext.Exercises
+        challengeTitle = await Service.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
+        exercises = await Service.Exercises
             .OrderBy(e => e.ExerciseName)
             .Where(ex => ex.ChallengeId == ChallengeId)
             .Select(ex => new ExerciseView
@@ -90,8 +92,8 @@ else
             ExerciseName = "NEW EXERCISE NAME",
             ExerciseTask = "NEW EXERCISE TASK",
         };
-        dbContext.Exercises.Add(newExercise);
-        await dbContext.SaveChangesAsync();
+        Service.Exercises.Add(newExercise);
+        await Service.SaveChangesAsync();
         navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises/{newExercise.ExerciseID}");
     }
 

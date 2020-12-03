@@ -1,8 +1,11 @@
 ﻿@page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}"
 @page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}/{DataPage:int}"
+
+@inherits OwningComponentBase<ApplicationDbContext>
+
 @using Microsoft.EntityFrameworkCore
 @using BlazorStrap
-@inject ApplicationDbContext dbContext
+
 @inject Microsoft.Extensions.Options.IOptions<Olympiad.Admin.Services.AdminServiceAdminSettings> adminServiceOptions
 @inject NavigationManager navigationManager
 
@@ -67,7 +70,7 @@ else
                             <td><textarea class="form-control" @bind="exerciseData.OutData" /></td>
                             <td><input class="form-check" type="checkbox" @bind="exerciseData.IsPublic" /></td>
                             <td><button class="btn btn-danger" @onclick="() => DelInOutData(exerciseData)">Del</button></td>
-                            <td><p>@dbContext.Entry(exerciseData).State</p></td>
+                            <td><p>@Service.Entry(exerciseData).State</p></td>
                         </tr>
                     }
                 }
@@ -110,9 +113,9 @@ else
     {
         await base.OnParametersSetAsync();
 
-        challengeName = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
-        exercise = await dbContext.Exercises.SingleOrDefaultAsync(ex => ex.ExerciseID == ExerciseId);
-        exercise.ExerciseDatas = await dbContext.TestData
+        challengeName = await Service.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
+        exercise = await Service.Exercises.SingleOrDefaultAsync(ex => ex.ExerciseID == ExerciseId);
+        exercise.ExerciseDatas = await Service.TestData
             .Where(td => td.ExerciseId == ExerciseId)
             .OrderByDescending(d => d.IsPublic ? 1 : 0)
             .ThenBy(d => d.InData)
@@ -123,7 +126,7 @@ else
 
     private async Task UpdateExercise()
     {
-        await dbContext.SaveChangesAsync();
+        await Service.SaveChangesAsync();
     }
 
     private void AddInOutData()
@@ -131,19 +134,19 @@ else
         var inOutData = new Models.Exercises.ExerciseData();
         inOutData.ExerciseId = exercise.ExerciseID;
         exercise.ExerciseDatas.Add(inOutData);
-        dbContext.TestData.Add(inOutData);
+        Service.TestData.Add(inOutData);
     }
 
     private void DelInOutData(Models.Exercises.ExerciseData data)
     {
         exercise.ExerciseDatas.Remove(data);
-        dbContext.TestData.Remove(data);
+        Service.TestData.Remove(data);
     }
 
     private async Task DeleteExercise()
     {
-        dbContext.Exercises.Remove(exercise);
-        await dbContext.SaveChangesAsync();
+        Service.Exercises.Remove(exercise);
+        await Service.SaveChangesAsync();
         navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
     }
     private async Task RecheckExercise()

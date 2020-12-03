@@ -1,8 +1,9 @@
 ﻿@page "/users/{UserId:guid}"
 
+@inherits OwningComponentBase<ApplicationDbContext>
+
 @using Microsoft.EntityFrameworkCore
 
-@inject ApplicationDbContext dbContext
 @inject NavigationManager navigationManager
 
 
@@ -27,12 +28,12 @@ else
     protected override async Task OnParametersSetAsync()
     {
         await base.OnInitializedAsync();
-        user = await dbContext.Users.SingleOrDefaultAsync(u => u.Id == UserId);
+        user = await Service.Users.SingleOrDefaultAsync(u => u.Id == UserId);
     }
     private async Task DeleteUser()
     {
-        dbContext.Users.Remove(user);
-        await dbContext.SaveChangesAsync();
+        Service.Users.Remove(user);
+        await Service.SaveChangesAsync();
         navigationManager.NavigateTo("users");
     }
 }

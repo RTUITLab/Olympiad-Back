@@ -1,5 +1,5 @@
 ﻿@page "/"
-
+@inherits OwningComponentBase<ApplicationDbContext>
 @using Microsoft.EntityFrameworkCore
 @using Olympiad.Shared.Models
 @using System.Text.RegularExpressions
@@ -10,7 +10,6 @@
 @using NPOI.XSSF.UserModel;
 @using CsvHelper;
 
-@inject ApplicationDbContext db
 @inject Olympiad.Admin.Services.OlympiadWebAppHttpRequester webAppRequester;
 
 <h2>Solutions count</h2>
@@ -67,12 +66,6 @@
         return solutionCountRecords.Where(r => r.Status == "InProcessing").Select(r => r.Count).SingleOrDefault() + solutionCountRecords.Where(r => r.Status == "InQueue").Select(r => r.Count).SingleOrDefault();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-    }
-
     private async Task UpdateCycle()
     {
         while (true)
@@ -93,9 +86,9 @@
     private async Task Update()
     {
         await Logs.Log($"Updating");
-        solutionCountRecords = await db.Solutions.GroupBy(s => s.Status).Select(g => new SolutionCountRecord { Status = g.Key.ToString(), Count = g.Count() }).ToListAsync();
+        solutionCountRecords = await Service.Solutions.GroupBy(s => s.Status).Select(g => new SolutionCountRecord { Status = g.Key.ToString(), Count = g.Count() }).ToListAsync();
         var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
-        doneInLast10Mins = await db.Solutions.Where(s => s.CheckedTime > oldTime).CountAsync();
+        doneInLast10Mins = await Service.Solutions.Where(s => s.CheckedTime > oldTime).CountAsync();
         await Logs.Log($"Updated");
         StateHasChanged();
     }

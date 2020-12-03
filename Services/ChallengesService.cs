@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Olympiad.Services
 {
+    /// <summary>
+    /// Deprecated
+    /// </summary>
     public class ChallengesService
     {
         private readonly ApplicationDbContext dbContext;

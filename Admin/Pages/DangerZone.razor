@@ -1,7 +1,9 @@
 ﻿@page "/dangerzone"
 
+@inherits OwningComponentBase<ApplicationDbContext>
+
+
 @using Microsoft.EntityFrameworkCore;
-@inject ApplicationDbContext dbContext;
 
 <h3>DangerZone</h3>
 
@@ -15,14 +17,14 @@
     private async Task DeleteAllSolutions()
     {
         await logs.Log($"preparing to delete");
-        var solutionIds = await dbContext.Solutions.Select(s => s.Id).ToListAsync();
+        var solutionIds = await Service.Solutions.Select(s => s.Id).ToListAsync();
         await logs.Log($"find {solutionIds.Count} solutions");
         var solutionEntitys = solutionIds.Select(id => new Models.Solutions.Solution
         {
             Id = id
         }).ToList();
-        dbContext.Solutions.RemoveRange(solutionEntitys);
-        var edited = await dbContext.SaveChangesAsync();
+        Service.Solutions.RemoveRange(solutionEntitys);
+        var edited = await Service.SaveChangesAsync();
         await logs.Log($"deleted {edited} rows");
     }
 }

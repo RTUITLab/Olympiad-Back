@@ -37,8 +37,7 @@ namespace Olympiad.Admin
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services
-                .AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
             
             services.AddScoped<ChallengesService>();

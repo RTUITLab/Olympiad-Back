@@ -1,7 +1,10 @@
 ﻿@page "/challenges/{challengeId:guid}"
+
+@inherits OwningComponentBase<ApplicationDbContext>
+
 @using Microsoft.EntityFrameworkCore
+
 @inject NavigationManager navigationManager
-@inject ApplicationDbContext dbContext
 
 <h3>ChallengeEdit</h3>
 <NavLink href="challenges">Go to challenges list</NavLink>
@@ -11,63 +14,63 @@
 }
 else
 {
-<EditForm Model="challenge" OnValidSubmit="UpdateChallenge">
-    <div class="form-group">
-        <label for="challenge-title">Title</label>
-        <InputText id="challenge-title" class="form-control" @bind-Value="challenge.Name" />
-    </div>
-    <div class="form-group">
-        <label for="challenge-description">Description</label>
-        <InputTextArea id="challenge-description" class="form-control" @bind-Value="challenge.Description" />
-    </div>
-    <div class="form-group">
-        <label for="challenge.start">Start</label>
-        @if (challenge.StartTime.HasValue)
-        {
-            <input type="datetime-local" class="form-control" id="challenge.start" @bind="challenge.StartTime" />
-            <button class="btn btn-warning" @onclick="@(() => challenge.StartTime = null)">Clear</button>
-        }
-        else
-        {
-            <p>Null</p>
-            <button class="btn btn-warning" @onclick="@(() => challenge.StartTime = DateTimeOffset.UtcNow)">Add</button>
-        }
-    </div>
-    <div class="form-group">
-        <label for="challenge.end">End</label>
-        @if (challenge.EndTime.HasValue)
-        {
-            <input type="datetime-local" class="form-control" id="challenge.end" @bind="challenge.EndTime" />
-            <button class="btn btn-warning" @onclick="@(() => challenge.EndTime = null)">Clear</button>
-        }
-        else
-        {
-            <p>Null</p>
-            <button class="btn btn-warning" @onclick="@(() => challenge.EndTime = DateTimeOffset.UtcNow)">Add</button>
-        }
-    </div>
+    <EditForm Model="challenge" OnValidSubmit="UpdateChallenge">
+        <div class="form-group">
+            <label for="challenge-title">Title</label>
+            <InputText id="challenge-title" class="form-control" @bind-Value="challenge.Name" />
+        </div>
+        <div class="form-group">
+            <label for="challenge-description">Description</label>
+            <InputTextArea id="challenge-description" class="form-control" @bind-Value="challenge.Description" />
+        </div>
+        <div class="form-group">
+            <label for="challenge.start">Start</label>
+            @if (challenge.StartTime.HasValue)
+            {
+                <input type="datetime-local" class="form-control" id="challenge.start" @bind="challenge.StartTime" />
+                <button class="btn btn-warning" @onclick="@(() => challenge.StartTime = null)">Clear</button>
+            }
+            else
+            {
+                <p>Null</p>
+                <button class="btn btn-warning" @onclick="@(() => challenge.StartTime = DateTimeOffset.UtcNow)">Add</button>
+            }
+        </div>
+        <div class="form-group">
+            <label for="challenge.end">End</label>
+            @if (challenge.EndTime.HasValue)
+            {
+                <input type="datetime-local" class="form-control" id="challenge.end" @bind="challenge.EndTime" />
+                <button class="btn btn-warning" @onclick="@(() => challenge.EndTime = null)">Clear</button>
+            }
+            else
+            {
+                <p>Null</p>
+                <button class="btn btn-warning" @onclick="@(() => challenge.EndTime = DateTimeOffset.UtcNow)">Add</button>
+            }
+        </div>
 
-    <div class="form-group">
-        <label for="challenge-view-mode">View mode</label>
-        <InputSelect class="form-control" id="challenge-view-mode" @bind-Value="challenge.ViewMode">
-            @foreach (var mode in Enum.GetValues(typeof(Models.Exercises.ChallengeViewMode)))
-                {
-                <option value="@mode">@mode</option>
-                }
-        </InputSelect>
-    </div>
+        <div class="form-group">
+            <label for="challenge-view-mode">View mode</label>
+            <InputSelect class="form-control" id="challenge-view-mode" @bind-Value="challenge.ViewMode">
+                @foreach (var mode in Enum.GetValues(typeof(Models.Exercises.ChallengeViewMode)))
+                    {
+                    <option value="@mode">@mode</option>
+                    }
+            </InputSelect>
+        </div>
 
-    <div class="form-group">
-        <label for="challenge-access-mode">Access mode</label>
-        <InputSelect class="form-control" id="challenge-access-mode" @bind-Value="challenge.ChallengeAccessType">
-            @foreach (var mode in Enum.GetValues(typeof(Olympiad.Shared.Models.ChallengeAccessType)))
-                {
-                <option value="@mode">@mode</option>
-                }
-        </InputSelect>
-    </div>
-    <button type="submit" class="btn btn-primary">Update</button>
-</EditForm>
+        <div class="form-group">
+            <label for="challenge-access-mode">Access mode</label>
+            <InputSelect class="form-control" id="challenge-access-mode" @bind-Value="challenge.ChallengeAccessType">
+                @foreach (var mode in Enum.GetValues(typeof(Olympiad.Shared.Models.ChallengeAccessType)))
+                    {
+                    <option value="@mode">@mode</option>
+                    }
+            </InputSelect>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </EditForm>
     <button class="btn btn-danger" @onclick="DeleteChallenge">Delete</button>
 
     <NavLink href=@($"challenges/{ChallengeId}/exercises")>Exercises</NavLink>
@@ -82,17 +85,17 @@ else
     {
         await base.OnParametersSetAsync();
 
-        challenge = await dbContext.Challenges.SingleOrDefaultAsync(ch => ch.Id == ChallengeId);
+        challenge = await Service.Challenges.SingleOrDefaultAsync(ch => ch.Id == ChallengeId);
     }
 
     private async Task UpdateChallenge()
     {
-        await dbContext.SaveChangesAsync();
+        await Service.SaveChangesAsync();
     }
     private async Task DeleteChallenge()
     {
-        dbContext.Remove(challenge);
-        await dbContext.SaveChangesAsync();
+        Service.Remove(challenge);
+        await Service.SaveChangesAsync();
         navigationManager.NavigateTo($"challenges");
     }
 }

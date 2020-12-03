@@ -1,8 +1,6 @@
 ﻿@page "/users/generate"
-@using Microsoft.EntityFrameworkCore
+@inherits OwningComponentBase<Microsoft.AspNetCore.Identity.UserManager<User>>
 
-@inject ApplicationDbContext dbContext
-@inject Microsoft.AspNetCore.Identity.UserManager<User> userManager
 @inject Microsoft.Extensions.Options.IOptions<Olympiad.Shared.Models.Settings.GenerateSettings> generateSettings
 <h3>GenerateUsers</h3>
 <NavLink href="users">Back to users</NavLink>
@@ -49,8 +47,8 @@ else
             };
             var password = new Random().Next(MIN, MAX).ToString();
 
-            var result = await userManager.CreateAsync(user, password);
-            result = await userManager.AddToRoleAsync(user, "User");
+            var result = await Service.CreateAsync(user, password);
+            result = await Service.AddToRoleAsync(user, "User");
             generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
         }
 

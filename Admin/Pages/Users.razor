@@ -1,8 +1,7 @@
 ﻿@page "/users"
-
+@inherits OwningComponentBase<ApplicationDbContext>
 @using Microsoft.EntityFrameworkCore
 
-@inject ApplicationDbContext dbContext
 
 <h3>Users</h3>
 
@@ -42,6 +41,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        users = await dbContext.Users.ToListAsync();
+        users = await Service.Users.ToListAsync();
     }
 }
