@@ -110,18 +110,14 @@ namespace Executor.Executers.Build
         {
             var archivePath = Path.Combine(buildContext, "context.tar.gz");
             await CreateTarGz(archivePath, buildContext);
-            using (var archStream = File.OpenRead(archivePath))
+            using var archStream = File.OpenRead(archivePath);
+            var outStream = await dockerClient.Images.BuildImageFromDockerfileAsync(archStream, new ImageBuildParameters
             {
-                var outStream = await dockerClient.Images.BuildImageFromDockerfileAsync(archStream, new ImageBuildParameters
-                {
-                    Dockerfile = "DockerFile",
-                    Tags = new[] { imageName }
-                });
-                using (var streamReader = new StreamReader(outStream))
-                {
-                    return await streamReader.ReadToEndAsync();
-                }
-            }
+                Dockerfile = "DockerFile",
+                Tags = new[] { imageName }
+            });
+            using var streamReader = new StreamReader(outStream);
+            return await streamReader.ReadToEndAsync();
         }
         private static async Task CreateTarGz(string tgzFilename, string sourceDirectory)
         {

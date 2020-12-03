@@ -139,7 +139,7 @@ namespace WebApp.Controllers
 
         [HttpPost("recheck/{exerciseId:guid}/adminPanel")]
         [AllowAnonymous]
-        public async Task<ActionResult> RecheckSolutionsAdminPanel(
+        public async Task<ActionResult<int>> RecheckSolutionsAdminPanel(
             Guid exerciseId,
             [FromServices] IOptions<AdminSettings> options
 )
@@ -151,7 +151,7 @@ namespace WebApp.Controllers
 
         [HttpPost("recheck/{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> RecheckSolutions(Guid exerciseId)
+        public async Task<ActionResult<int>> RecheckSolutions(Guid exerciseId)
         {
             var solutions = await context
                 .Solutions
@@ -162,12 +162,12 @@ namespace WebApp.Controllers
             solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
             await context.SaveChangesAsync();
             solutions.ForEach(s => queue.PutInQueue(s.Id));
-            return Json(solutions.Count);
+            return solutions.Count;
         }
 
         [HttpPost("rechecksolution/{solutionId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> RecheckSolution(Guid solutionId)
+        public async Task<ActionResult<int>> RecheckSolution(Guid solutionId)
         {
             var solution = await context
                 .Solutions
@@ -176,12 +176,12 @@ namespace WebApp.Controllers
             solution.Status = SolutionStatus.InQueue;
             await context.SaveChangesAsync();
             queue.PutInQueue(solution.Id);
-            return Json(1);
+            return 1;
         }
 
         [HttpPost("recheckusersolution/{studentId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> RecheckUserSolutions(string studentId)
+        public async Task<ActionResult<int>> RecheckUserSolutions(string studentId)
         {
             var solutions = await context
                 .Solutions
@@ -197,7 +197,7 @@ namespace WebApp.Controllers
             solutions.ForEach(s => s.Status = SolutionStatus.InQueue);
             await context.SaveChangesAsync();
             solutions.ForEach(s => queue.PutInQueue(s.Id));
-            return Json(solutions.Count);
+            return solutions.Count;
         }
 
         [HttpGet]

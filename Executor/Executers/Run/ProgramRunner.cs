@@ -77,7 +77,7 @@ namespace Executor.Executers.Run
                             source.Token))
                     .ToArray();
                 await Task.WhenAll(workTasks);
-                var result = statuses.Min();
+                var result = statuses.DefaultIfEmpty(SolutionStatus.Successful).Min();
                 logger.LogInformation($"{solutionId} TOTAL STATUS {result}");
                 await solutionsBase.SaveChanges(solutionId, result);
                 await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
@@ -19,23 +20,32 @@ namespace WebApp.Services.Configure
     {
         private readonly IQueueChecker queueChecker;
         private readonly ApplicationDbContext dbContext;
+        private readonly ILogger<FillQueue> logger;
 
         public FillQueue(
             IQueueChecker queueChecker,
-            ApplicationDbContext dbContext)
+            ApplicationDbContext dbContext,
+            ILogger<FillQueue> logger)
         {
             this.queueChecker = queueChecker;
             this.dbContext = dbContext;
+            this.logger = logger;
         }
 
         public async Task Configure(CancellationToken cancellationToken)
         {
-            (await dbContext
+            var solutionsToQueue = await dbContext
                 .Solutions
                 .Where(s => s.Status == SolutionStatus.InQueue)
                 .Select(s => s.Id)
-                .ToListAsync())
-                .ForEach(i => queueChecker.PutInQueue(i));
+                .ToListAsync();
+            logger.LogInformation($"Solutions to queue: {solutionsToQueue.Count}");
+            for (int i = 0; i < solutionsToQueue.Count; i++)
+            {
+                logger.LogInformation($"{i,10} / {solutionsToQueue.Count,-10}");
+                Guid solutionId = solutionsToQueue[i];
+                queueChecker.PutInQueue(solutionId);
+            }
         }
     }
 }

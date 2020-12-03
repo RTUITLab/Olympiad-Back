@@ -92,18 +92,18 @@ namespace WebApp.Controllers.Users
 
         [HttpDelete("deleteUser/{studentId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteUser(string studentId)
+        public async Task<ActionResult<int>> DeleteUser(string studentId)
         {
             var targetIUser = await UserManager.Users.Where(u => u.StudentID == studentId).SingleAsync();
             await UserManager.DeleteAsync(targetIUser);
-            return Json(1);
+            return 1;
         }
 
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Post([FromBody] RegistrationRequest model)
         {
-            if (!ModelState.IsValid || !options.Value.IsRegisterAvailable)
+            if (!options.Value.IsRegisterAvailable)
             {
                 return BadRequest(ModelState);
             }

@@ -51,9 +51,9 @@ namespace WebApp.Controllers
         [HttpGet]
         [Route("{pageNum}")]
         [Authorize(Roles = "Admin")]
-        public IActionResult GetComments(int pageNum)
+        public ActionResult<IEnumerable<CommentResponce>> GetComments(int pageNum)
         {
-            return Json(context
+            return context
                 .Comments
                 .Skip((pageNum - 1) * 10)
                 .Take(10)
@@ -63,7 +63,8 @@ namespace WebApp.Controllers
                     UserName = context.Users.FirstOrDefault(P => P.Id == C.UserId).FirstName,
                     Raw = C.Raw,
                     Time = C.Time
-                }));
+                })
+                .ToList();
         }
     }
 }

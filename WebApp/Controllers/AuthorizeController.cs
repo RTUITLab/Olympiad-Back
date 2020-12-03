@@ -12,8 +12,9 @@ using System.Threading.Tasks;
 
 namespace WebApp.Controllers
 {
+    [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class AuthorizeController : Controller
+    public class AuthorizeController : ControllerBase
     {
         protected readonly UserManager<User> UserManager;
 
