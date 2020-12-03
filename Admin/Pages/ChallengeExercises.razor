@@ -18,6 +18,7 @@ else
         <thead>
             <tr>
                 <th>Title</th>
+                <th>TestData</th>
                 <th>Score</th>
                 <th>.</th>
             </tr>
@@ -26,9 +27,27 @@ else
             @foreach (var exercise in exercises)
             {
                 <tr>
-                    <td>@exercise.ExerciseName</td>
+                    <td>@exercise.Title</td>
+                    <td>
+                        @if (exercise.TestDataCount == 0)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @exercise.TestDataCount
+                            </div>
+                        }
+                        else if (exercise.TestDataCount < 3)
+                        {
+                            <div class="alert alert-warning" role="alert">
+                                @exercise.TestDataCount
+                            </div>
+                        }
+                        else
+                        {
+                            @exercise.TestDataCount
+                        }
+                    </td>
                     <td>@exercise.Score</td>
-                    <td><NavLink href=@($"challenges/{exercise.ChallengeId}/exercises/{exercise.ExerciseID}")>Edit</NavLink></td>
+                    <td><NavLink href=@($"challenges/{exercise.ChallengeId}/exercises/{exercise.Id}")>Edit</NavLink></td>
                 </tr>
             }
 
@@ -42,7 +61,7 @@ else
     public Guid ChallengeId { get; set; }
 
     private string challengeTitle = "Loading...";
-    private List<Models.Exercises.Exercise> exercises;
+    private List<ExerciseView> exercises;
 
 
     protected override async Task OnParametersSetAsync()
@@ -51,7 +70,16 @@ else
         challengeTitle = await dbContext.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
         exercises = await dbContext.Exercises
             .OrderBy(e => e.ExerciseName)
-            .Where(ex => ex.ChallengeId == ChallengeId).ToListAsync();
+            .Where(ex => ex.ChallengeId == ChallengeId)
+            .Select(ex => new ExerciseView
+            {
+                Id = ex.ExerciseID,
+                ChallengeId = ex.ChallengeId,
+                Title = ex.ExerciseName,
+                Score = ex.Score,
+                TestDataCount = ex.ExerciseDatas.Count
+            })
+            .ToListAsync();
     }
 
     private async Task AddExercise()
@@ -65,5 +93,14 @@ else
         dbContext.Exercises.Add(newExercise);
         await dbContext.SaveChangesAsync();
         navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises/{newExercise.ExerciseID}");
+    }
+
+    private class ExerciseView
+    {
+        public Guid Id { get; set; }
+        public Guid ChallengeId { get; set; }
+        public string Title { get; set; }
+        public int Score { get; set; }
+        public int TestDataCount { get; set; }
     }
 }
