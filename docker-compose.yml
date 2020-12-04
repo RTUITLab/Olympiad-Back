@@ -17,6 +17,8 @@ services:
                 max-file: "10"
     admin:
         image: rtuitlab/olympiad-admin
+        environment:
+            - RabbitMqQueueSettings__Host=rabbitmq
         deploy:
             resources:
                 limits:

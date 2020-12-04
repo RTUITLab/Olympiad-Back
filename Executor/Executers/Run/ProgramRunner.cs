@@ -123,7 +123,7 @@ namespace Executor.Executers.Run
                 var data = testData[index];
 
                 var exampleIn = data.InData + '\n';
-                var exampleOut = data.OutData.Trim();
+                var exampleOut = data.OutData?.Trim() ?? "";
                 try
                 {
                     var (stdout, stderr, duration) = await Run(imageName, exampleIn);
