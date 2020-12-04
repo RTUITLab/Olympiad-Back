@@ -7,6 +7,7 @@
 @using BlazorStrap
 
 @inject NavigationManager navigationManager
+@inject IQueueChecker QueueChecker
 
 <h3>Exercise edit</h3>
 <h4>@challengeName</h4>
@@ -114,13 +115,19 @@ else
 
         challengeName = await Service.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
         exercise = await Service.Exercises.SingleOrDefaultAsync(ex => ex.ExerciseID == ExerciseId);
+        if (exercise == null)
+        {
+            navigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
+            return;
+        }
+
         exercise.ExerciseDatas = await Service.TestData
-            .Where(td => td.ExerciseId == ExerciseId)
-            .OrderByDescending(d => d.IsPublic ? 1 : 0)
-            .ThenBy(d => d.InData)
-            .Skip(DataPage * 10)
-            .Take(10)
-            .ToListAsync();
+        .Where(td => td.ExerciseId == ExerciseId)
+        .OrderByDescending(d => d.IsPublic ? 1 : 0)
+        .ThenBy(d => d.InData)
+        .Skip(DataPage * 10)
+        .Take(10)
+        .ToListAsync();
     }
 
     private async Task UpdateExercise()
@@ -150,6 +157,11 @@ else
     }
     private async Task RecheckExercise()
     {
-        await logs.Log($"Not implement exercise rechecking");
+        await ReCheckService.ReCheckSolutions(
+            Service,
+            QueueChecker,
+            db => db.Solutions.Where(s => s.ExerciseId == ExerciseId),
+            logs.Log);
+        await logs.Log("Done rechecking");
     }
 }
