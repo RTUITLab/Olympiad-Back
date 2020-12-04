@@ -4,14 +4,6 @@
 
 @inject IQueueChecker QueueChecker
 
-<label>
-    Auto update
-    <input type="checkbox" @bind="autoUpdate" />
-</label>
-@if (!autoUpdate)
-{
-    <button class="btn btn-primary" @onclick="@Update">Update</button>
-}
 <p>Done in last 2 minutes: @doneInLast10Mins</p>
 <p>Left: @Left() --- @(doneInLast10Mins == 0 ? "~" : TimeSpan.FromMinutes((Left() / (doneInLast10Mins == 0 ? 1 : doneInLast10Mins)) * 2).ToString())</p>
 <table class="table table-bordered">
@@ -46,7 +38,6 @@
             .ToDictionary(s => s, _ => 0);
 
     int doneInLast10Mins = 0;
-    bool autoUpdate = false;
     Olympiad.Admin.Components.Logs Logs;
 
     System.Threading.CancellationTokenSource source = new System.Threading.CancellationTokenSource();
@@ -76,10 +67,9 @@
         {
             try
             {
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
-                if (autoUpdate)
-                    await Update();
+                await Update();
             }
             catch (OperationCanceledException)
             {
@@ -121,23 +111,38 @@
     private async Task ReCheckAllSolutions()
     {
         await Logs.Log($"Start rechecking all solutions");
+        await RecheckSolutions(Service.Solutions);
+        await Logs.Log($"Done recheck all solutions");
+    }
+
+    private async Task RecheckAllSolutions(Olympiad.Shared.Models.SolutionStatus solutionStatus)
+    {
+        await Logs.Log($"Start rechecking {solutionStatus}");
+        await RecheckSolutions(Service.Solutions.Where(s => s.Status == solutionStatus));
+        await Logs.Log($"Done recheck work");
+    }
+
+    private async Task RecheckSolutions(IQueryable<Models.Solutions.Solution> solutionsQuery)
+    {
         await DoInSync(async () =>
         {
-            var solutionIds = await Service.Solutions
-                .Select(s => s.Id)
+            var solutionViews = await solutionsQuery
+                .Select(s => new { s.Id, checks = s.SolutionChecks.Select(ch => ch.Id), logs = s.SolutionBuildLogs.Select(bl => bl.Id) })
                 .ToListAsync();
-            await Logs.Log($"Loaded {solutionIds.Count} ids");
+            await Logs.Log($"Loaded {solutionViews.Count} ids");
             var solutions = new List<Models.Solutions.Solution>();
-            foreach (var solutionId in solutionIds)
+            foreach (var solutionView in solutionViews)
             {
                 var solution = new Models.Solutions.Solution
                 {
-                    Id = solutionId,
+                    Id = solutionView.Id,
                     Status = Olympiad.Shared.Models.SolutionStatus.InQueue
                 };
                 solutions.Add(solution);
                 Service.Solutions.Attach(solution);
                 Service.Entry(solution).Property(s => s.Status).IsModified = true;
+                Service.SolutionBuildLogs.RemoveRange(solutionView.logs.Select(l => new Models.Checking.SolutionBuildLog { Id = l }));
+                Service.SolutionChecks.RemoveRange(solutionView.checks.Select(c => new Models.Checking.SolutionCheck { Id = c }));
             }
             await Service.SaveChangesAsync();
             foreach (var solution in solutions)
@@ -146,35 +151,12 @@
                 QueueChecker.PutInQueue(solution.Id);
             }
         });
-        await Logs.Log($"Done recheck all solutions");
-    }
-
-    private async Task RecheckAllSolutions(Olympiad.Shared.Models.SolutionStatus solutionStatus)
-    {
-        await Logs.Log($"Start rechecking {solutionStatus}");
-        await DoInSync(async () =>
-        {
-            var solutions = await Service.Solutions
-                .Where(s => s.Status == solutionStatus)
-                .ToListAsync();
-            await Logs.Log($"Loaded {solutions.Count} ids");
-            foreach (var solution in solutions)
-            {
-                solution.Status = Olympiad.Shared.Models.SolutionStatus.InQueue;
-            }
-            await Service.SaveChangesAsync();
-            foreach (var solution in solutions)
-            {
-                QueueChecker.PutInQueue(solution.Id);
-            }
-        });
-        await Logs.Log($"Done recheck work");
+        await Update();
     }
 
     private System.Threading.SemaphoreSlim dbContextSemaphore = new System.Threading.SemaphoreSlim(1, 1);
-
-    private async Task DoInSync(Func<Task>
-    action)
+    // Use it for ANY interaction with DbContext
+    private async Task DoInSync(Func<Task> action)
     {
         try
         {
