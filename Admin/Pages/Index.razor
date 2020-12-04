@@ -49,13 +49,16 @@
     bool autoUpdate = false;
     Olympiad.Admin.Components.Logs Logs;
 
+    System.Threading.CancellationTokenSource source = new System.Threading.CancellationTokenSource();
+    Task updateTask;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
             await Update();
-            UpdateCycle();
+            updateTask = UpdateCycle(source.Token);
         }
     }
 
@@ -64,13 +67,20 @@
         return solutionCountRecords.Where(r => r.Status == "InProcessing").Select(r => r.Count).SingleOrDefault() + solutionCountRecords.Where(r => r.Status == "InQueue").Select(r => r.Count).SingleOrDefault();
     }
 
-    private async Task UpdateCycle()
+    private async Task UpdateCycle(System.Threading.CancellationToken cancellationToken)
     {
         while (true)
         {
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            if (autoUpdate)
-                await Update();
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (autoUpdate)
+                    await Update();
+            } catch (OperationCanceledException)
+            {
+                break;
+            }
         }
     }
 
@@ -82,6 +92,16 @@
         doneInLast10Mins = await Service.Solutions.Where(s => s.CheckedTime > oldTime).CountAsync();
         await Logs.Log($"Updated");
         StateHasChanged();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing)
+        {
+            source.Cancel();
+            updateTask?.Wait(); // TODO update to .net 5, use asyncdispose
+        }
     }
 
     class SolutionCountRecord

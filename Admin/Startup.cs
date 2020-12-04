@@ -33,6 +33,7 @@ namespace Olympiad.Admin
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
+            services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -51,6 +52,8 @@ namespace Olympiad.Admin
                  .AddDefaultTokenProviders();
 
             services.AddBootstrapCss();
+
+            services.AddSingleton<IQueueChecker, RabbitMQQueue>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
