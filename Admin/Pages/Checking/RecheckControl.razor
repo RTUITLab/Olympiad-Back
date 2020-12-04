@@ -1,0 +1,21 @@
+﻿@page "/checking/recheck"
+
+@inherits OwningComponentBase<ApplicationDbContext>
+
+@using Olympiad.Shared.Models
+
+<h3>RecheckControl</h3>
+<NavLink href="checking">Go back to checking</NavLink>
+<h4>In progress</h4>
+<p>Select solution status</p>
+
+<select @bind="selectedStatus">
+    @foreach (var option in Enum.GetValues(typeof(SolutionStatus)).Cast<SolutionStatus>())
+    {
+        <option value="@option">@option</option>
+    }
+</select>
+
+@code {
+    private SolutionStatus selectedStatus = SolutionStatus.InQueue;
+}

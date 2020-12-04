@@ -2,7 +2,7 @@
 
 @inherits OwningComponentBase<ApplicationDbContext>
 
-@using Microsoft.EntityFrameworkCore
+@inject IQueueChecker QueueChecker
 
 <label>
     Auto update
@@ -19,6 +19,7 @@
         <tr>
             <th>Type</th>
             <th>Count</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -27,10 +28,12 @@
             <tr>
                 <td>@i.Key</td>
                 <td>@i.Value</td>
+                <td><button class="btn btn-warning" @onclick="() => RecheckAllSolutions(i.Key)">Recheck all solutions</button></td>
             </tr>
         }
     </tbody>
 </table>
+<NavLink href="checking/recheck">Recheck</NavLink>
 <Olympiad.Admin.Components.Logs @ref="Logs" />
 
 @code {
@@ -85,23 +88,70 @@
     private async Task Update()
     {
         await Logs.Log($"Updating");
-        var dbRecords = (await Service
+        await DoInSync(async () =>
+        {
+            var dbRecords = (await Service
                 .Solutions
                 .GroupBy(s => s.Status)
                 .Select(s => new { Status = s.Key, Count = s.Count() })
                 .ToListAsync())
             .ToDictionary(s => s.Status, v => v.Count);
-        foreach (var dbRecord in dbRecords)
-        {
-            solutionCountRecords[dbRecord.Key] = dbRecord.Value;
-        }
-        var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
-        doneInLast10Mins = await Service
-            .Solutions
-            .Where(s => s.CheckedTime > oldTime)
-            .CountAsync();
+            foreach (var key in Enum.GetValues(typeof(Olympiad.Shared.Models.SolutionStatus))
+            .Cast<Olympiad.Shared.Models.SolutionStatus>())
+            {
+                solutionCountRecords[key] = 0;
+            }
+            foreach (var dbRecord in dbRecords)
+            {
+                solutionCountRecords[dbRecord.Key] = dbRecord.Value;
+            }
+            var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
+            doneInLast10Mins = await Service
+                .Solutions
+                .Where(s => s.CheckedTime > oldTime)
+                .CountAsync();
+        });
         await Logs.Log($"Updated");
         StateHasChanged();
+    }
+
+    private async Task RecheckAllSolutions(Olympiad.Shared.Models.SolutionStatus solutionStatus)
+    {
+        await Logs.Log($"Start rechecking {solutionStatus}");
+        await DoInSync(async () =>
+        {
+
+            var solutions = await Service.Solutions
+                .Where(s => s.Status == solutionStatus)
+                .ToListAsync();
+            await Logs.Log($"Loaded {solutions.Count} ids");
+            foreach (var solution in solutions)
+            {
+                solution.Status = Olympiad.Shared.Models.SolutionStatus.InQueue;
+            }
+            await Service.SaveChangesAsync();
+            foreach (var solution in solutions)
+            {
+                QueueChecker.PutInQueue(solution.Id);
+            }
+        });
+        await Logs.Log($"Done recheck work");
+    }
+
+    private System.Threading.SemaphoreSlim dbContextSemaphore = new System.Threading.SemaphoreSlim(1, 1);
+
+    private async Task DoInSync(Func<Task>
+    action)
+    {
+        try
+        {
+            await dbContextSemaphore.WaitAsync();
+            await action();
+        }
+        finally
+        {
+            dbContextSemaphore.Release();
+        }
     }
 
     protected override void Dispose(bool disposing)
