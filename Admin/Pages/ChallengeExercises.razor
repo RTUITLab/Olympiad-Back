@@ -71,7 +71,6 @@ else
         await base.OnParametersSetAsync();
         challengeTitle = await Service.Challenges.Where(c => c.Id == ChallengeId).Select(c => c.Name).SingleOrDefaultAsync();
         exercises = await Service.Exercises
-            .OrderBy(e => e.ExerciseName)
             .Where(ex => ex.ChallengeId == ChallengeId)
             .Select(ex => new ExerciseView
             {
@@ -82,6 +81,10 @@ else
                 TestDataCount = ex.ExerciseDatas.Count
             })
             .ToListAsync();
+        exercises = exercises
+            .OrderBy(v => v.TestDataCount)
+            .ThenBy(v => v.Title)
+            .ToList();
     }
 
     private async Task AddExercise()
