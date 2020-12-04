@@ -3,10 +3,15 @@ version: "3.8"
 services:
     api:
         environment:
-            - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key!}
-            - AdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key}
+            - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
+            - AdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key SECRET_ADMIN_KEY}
     admin:
         environment:
-            - AdminServiceAdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key}
-            - AdminServiceAdminSettings__OlympiadBaseAddress=${OLYMPIAD_URI?pass olympiad uri}
-            - GenerateSettings__Domain=${OLYMPIAD_DOMAIN?pass olympiad domain}
+            - AdminServiceAdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key SECRET_ADMIN_KEY}
+            - AdminServiceAdminSettings__OlympiadBaseAddress=${OLYMPIAD_URI?pass olympiad uri OLYMPIAD_URI}
+            - GenerateSettings__Domain=${OLYMPIAD_DOMAIN?pass olympiad domain OLYMPIAD_DOMAIN}
+    executor:
+        environment:
+            - StartSettings__PrivateDockerRegistry__Address=${OLYMPIAD_PRIVATE_REGISTRY_ADDRESS?pass olympiad private registry address OLYMPIAD_PRIVATE_REGISTRY_ADDRESS}
+            - StartSettings__PrivateDockerRegistry__Login=${OLYMPIAD_PRIVATE_REGISTRY_LOGIN?pass olympiad private registry login OLYMPIAD_PRIVATE_REGISTRY_LOGIN}
+            - StartSettings__PrivateDockerRegistry__Password=${OLYMPIAD_PRIVATE_REGISTRY_PASSWORD?pass olympiad private registry password OLYMPIAD_PRIVATE_REGISTRY_PASSWORD}

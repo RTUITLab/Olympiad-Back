@@ -29,10 +29,11 @@ services:
                 max-file: "10"
     executor:
         image: rtuitlab/olympiad-executor
-        env_file:
-            - ${BACK_CONTEXT:-.}/executor.env
         environment:
             - StartSettings__DockerEndPoint=unix:///var/run/docker.sock
+            - RabbitMqQueueSettings__Host=rabbitmq
+            - StartSettings__Address=http://api:5501
+            - CONSOLE_MODE=Logs
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
         deploy:
