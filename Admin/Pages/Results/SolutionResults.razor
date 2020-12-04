@@ -9,7 +9,18 @@
 
 <h4>Challenge: @(challenge?.Name ?? "Loading...")</h4>
 <h4>User student id: @(user?.StudentID ?? "Loading...")</h4>
-<h4>Exercise: @(solution?.Exercise?.ExerciseName ?? "Loading...")</h4>
+@if (solution == null)
+{
+    <h4>Exercise: Loading...</h4>
+}
+else
+{
+    <h4>
+        Exercise: <NavLink href="@($"/challenges/{ChallengeId}/exercises/{solution?.Exercise?.ExerciseID}" )">
+            @solution?.Exercise?.ExerciseName
+        </NavLink>
+    </h4>
+}
 <h4>Sended: @solution?.SendingTime</h4>
 <h4>Lang: @solution?.Language</h4>
 
