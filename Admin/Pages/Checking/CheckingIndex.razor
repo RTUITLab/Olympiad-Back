@@ -111,46 +111,26 @@
     private async Task ReCheckAllSolutions()
     {
         await Logs.Log($"Start rechecking all solutions");
-        await RecheckSolutions(Service.Solutions);
+        await RecheckSolutions(db => db.Solutions.Where(s => s.Status != Olympiad.Shared.Models.SolutionStatus.CompileError));
         await Logs.Log($"Done recheck all solutions");
     }
 
     private async Task RecheckAllSolutions(Olympiad.Shared.Models.SolutionStatus solutionStatus)
     {
         await Logs.Log($"Start rechecking {solutionStatus}");
-        await RecheckSolutions(Service.Solutions.Where(s => s.Status == solutionStatus));
+        await RecheckSolutions(db => db.Solutions.Where(s => s.Status == solutionStatus));
         await Logs.Log($"Done recheck work");
     }
 
-    private async Task RecheckSolutions(IQueryable<Models.Solutions.Solution> solutionsQuery)
+    private async Task RecheckSolutions(Func<ApplicationDbContext, IQueryable<Models.Solutions.Solution>> solutionsSelector)
     {
-        await DoInSync(async () =>
-        {
-            var solutionViews = await solutionsQuery
-                .Select(s => new { s.Id, checks = s.SolutionChecks.Select(ch => ch.Id), logs = s.SolutionBuildLogs.Select(bl => bl.Id) })
-                .ToListAsync();
-            await Logs.Log($"Loaded {solutionViews.Count} ids");
-            var solutions = new List<Models.Solutions.Solution>();
-            foreach (var solutionView in solutionViews)
-            {
-                var solution = new Models.Solutions.Solution
-                {
-                    Id = solutionView.Id,
-                    Status = Olympiad.Shared.Models.SolutionStatus.InQueue
-                };
-                solutions.Add(solution);
-                Service.Solutions.Attach(solution);
-                Service.Entry(solution).Property(s => s.Status).IsModified = true;
-                Service.SolutionBuildLogs.RemoveRange(solutionView.logs.Select(l => new Models.Checking.SolutionBuildLog { Id = l }));
-                Service.SolutionChecks.RemoveRange(solutionView.checks.Select(c => new Models.Checking.SolutionCheck { Id = c }));
-            }
-            await Service.SaveChangesAsync();
-            foreach (var solution in solutions)
-            {
-                Service.Entry(solution).State = EntityState.Detached;
-                QueueChecker.PutInQueue(solution.Id);
-            }
-        });
+        await DoInSync(() =>
+            ReCheckService.ReCheckSolutions(
+                Service,
+                QueueChecker,
+                solutionsSelector,
+                Logs.Log
+                ));
         await Update();
     }
 
