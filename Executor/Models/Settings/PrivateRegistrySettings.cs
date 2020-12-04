@@ -4,10 +4,10 @@ using System.Text;
 
 namespace Executor.Models.Settings
 {
-    public class StartSettings
+    public class PrivateRegistrySettings
     {
         public string Address { get; set; }
-        public string DockerEndPoint { get; set; }
-        public PrivateRegistrySettings PrivateDockerRegistry { get; set; }
+        public string Login { get; set; }
+        public string Password { get; set; }
     }
 }

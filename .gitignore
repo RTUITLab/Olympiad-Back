@@ -279,3 +279,4 @@ tools
 deploy/api/api-build
 deploy/executor/executor-build
 deploy/admin/admin-build/
+/Executor/appsettings.Local.json
