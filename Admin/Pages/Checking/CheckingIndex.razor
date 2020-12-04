@@ -33,6 +33,9 @@
         }
     </tbody>
 </table>
+
+<button class="btn btn-danger" @onclick="ReCheckAllSolutions">Recheck all solutions</button>
+
 <NavLink href="checking/recheck">Recheck</NavLink>
 <Olympiad.Admin.Components.Logs @ref="Logs" />
 
@@ -115,12 +118,42 @@
         StateHasChanged();
     }
 
+    private async Task ReCheckAllSolutions()
+    {
+        await Logs.Log($"Start rechecking all solutions");
+        await DoInSync(async () =>
+        {
+            var solutionIds = await Service.Solutions
+                .Select(s => s.Id)
+                .ToListAsync();
+            await Logs.Log($"Loaded {solutionIds.Count} ids");
+            var solutions = new List<Models.Solutions.Solution>();
+            foreach (var solutionId in solutionIds)
+            {
+                var solution = new Models.Solutions.Solution
+                {
+                    Id = solutionId,
+                    Status = Olympiad.Shared.Models.SolutionStatus.InQueue
+                };
+                solutions.Add(solution);
+                Service.Solutions.Attach(solution);
+                Service.Entry(solution).Property(s => s.Status).IsModified = true;
+            }
+            await Service.SaveChangesAsync();
+            foreach (var solution in solutions)
+            {
+                Service.Entry(solution).State = EntityState.Detached;
+                QueueChecker.PutInQueue(solution.Id);
+            }
+        });
+        await Logs.Log($"Done recheck all solutions");
+    }
+
     private async Task RecheckAllSolutions(Olympiad.Shared.Models.SolutionStatus solutionStatus)
     {
         await Logs.Log($"Start rechecking {solutionStatus}");
         await DoInSync(async () =>
         {
-
             var solutions = await Service.Solutions
                 .Where(s => s.Status == solutionStatus)
                 .ToListAsync();
