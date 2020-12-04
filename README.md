@@ -76,7 +76,7 @@ Application connected to WebApp, which is executing received solutions and check
 You must have **Docker** installed on the system you want to run Executor on. Actually **Docker** executes received programs.
 
 
-1. Create _./Executor/appsettings.Secret.json_
+1. Create _./Executor/appsettings.Local.json_
 
 2. Fill it with the following:
 
@@ -84,7 +84,12 @@ You must have **Docker** installed on the system you want to run Executor on. Ac
 {
     "StartSettings": {
         "Address":"http://localhost:5000", // Address of olympiad webapp
-        "DockerEndPoint":"http://localhost:2375" // Address of docker endpoint
+        "DockerEndPoint":"http://localhost:2375", // Address of docker endpoint
+        "PrivateDockerRegistry": { // OPTIONAL, use when you reach rate limit od dockerhub pulls (100 per 6 hours)
+            "Address": "host of your private registry",
+            "Login": "login of registry",
+            "Password": "password of registry"
+        }
     },
     "UserInfo": {
         "UserName":"Username having Executor rights",
@@ -93,7 +98,12 @@ You must have **Docker** installed on the system you want to run Executor on. Ac
     "RunningSettings": {
         "WorkersPerCheckCount": 5 // Every solution will be checked with that count of parallel workers (valid values - [1..100]), select value according to your machine configuration (for surface book 2 - optimal is 5-10). Too large value can break your docker.
     },
-    "CONSOLE_MODE": "Logs" | "StatusReporting"// Logs - just write logs, StatusReporting - updatable status and 10 last logs with possible artifacts 
+    "CONSOLE_MODE": "Logs" | "StatusReporting",// Logs - just write logs, StatusReporting - updatable status and 10 last logs with possible artifacts =
+    "RabbitMqQueueSettings" :{
+        "Host": "RABBIT MQ HOST",
+        "QueueName": "QUEUE NAME FOR SOLUTION TASKS",
+        "ClientProvidedName": "name for executor service"
+    }
 }
 ```
 

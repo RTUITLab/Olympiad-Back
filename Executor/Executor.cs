@@ -35,6 +35,7 @@ namespace Executor
             ILoggerFactory loggerFactory,
             IOptions<RunningSettings> runningOptions,
             IOptions<RabbitMqQueueSettings> rabbitMQOptinos,
+            IOptions<StartSettings> startOptions,
             ILogger<Executor> logger)
         {
             executeWorkers = Enumerable.Repeat(0, runningOptions.Value.WorkersCount)
@@ -46,6 +47,7 @@ namespace Executor
                                     solutionBase,
                                     dockerClient,
                                     runningOptions.Value,
+                                    startOptions.Value,
                                     loggerFactory)
                         )
                 .ToList();

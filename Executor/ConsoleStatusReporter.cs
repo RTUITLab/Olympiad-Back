@@ -128,7 +128,7 @@ namespace Executor
 
             foreach (var logMessage in ConsoleStatusReporterLoggerProvider.messages.OrderBy(m => m.Item1).ToArray())
             {
-                Console.WriteLine($"{logMessage.Item1:hh:mm:ss} {logMessage.Item2,-100}");
+                Console.WriteLine($"{logMessage.Item1:hh:mm:ss} {logMessage.Item2,-150}");
             }
         }
         private async Task PingStatisticTask(CancellationToken token)

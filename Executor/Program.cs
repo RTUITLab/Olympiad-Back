@@ -17,7 +17,6 @@ namespace Executor
 {
     class Program
     {
-        private const string SettingsFileName = "appsettings.Secret.json";
         private static IConfiguration configuration;
 
         static async Task Main(string[] args)
@@ -42,10 +41,8 @@ namespace Executor
                     :
                     Task.CompletedTask;
 
-                await DownloadBaseImages(
-                    servicesProvider.GetRequiredService<IDockerClient>(),
-                    servicesProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DockerImagesDownloader"));
-
+                var dockerImagesDownloader = servicesProvider.GetRequiredService<DockerImagesDownloader>();
+                await dockerImagesDownloader.DownloadBaseImages();
 
                 await Task.WhenAll(
                     executor.Start(CancellationToken.None),
@@ -59,38 +56,6 @@ namespace Executor
                 Console.Error.WriteLine($"Exited {DateTime.UtcNow}");
                 Environment.Exit(1);
             }
-        }
-
-
-        private static async Task DownloadBaseImages(
-            IDockerClient dockerClient,
-            ILogger logger)
-        {
-            var dockerFileInfos = Directory
-                .GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles"))
-                .Select(f => (imageName: File.ReadAllLines(f)[0].Substring("FROM ".Length), lang: Path.GetFileName(f).Substring("Dockerfile-".Length)))
-                .ToList();
-            var imageRegex = new Regex("([^:]+):([^:]+)");
-            foreach (var (imageName, lang) in dockerFileInfos)
-            {
-                var parsed = imageRegex.Match(imageName);
-                var name = parsed.Groups[1].Value;
-                var tag = parsed.Groups[2].Value;
-
-                var progress = new Progress<JSONMessage>();
-                logger.LogInformation($"Creating image for {lang}");
-                progress.ProgressChanged += (s, m) =>
-                {
-                    logger.LogInformation($"{name}:{tag} {m.ID} {m.Status} {m.ProgressMessage}");
-                };
-                await dockerClient.Images.CreateImageAsync(new ImagesCreateParameters
-                {
-                    FromImage = name,
-                    Tag = tag
-                }, null, progress);
-
-            }
-
         }
 
         private static async Task<bool> IsDockerAvailable(IDockerClient dockerClient)
@@ -135,12 +100,13 @@ namespace Executor
                     var options = sp.GetRequiredService<IOptions<StartSettings>>();
                     return new DockerClientConfiguration(new Uri(options.Value.DockerEndPoint)).CreateClient();
                 })
+                .AddSingleton<DockerImagesDownloader>()
                 .BuildServiceProvider();
 
         private static IConfiguration SetupConfigs(string[] args)
             => new ConfigurationBuilder()
                 .AddJsonFile("appsettings.Development.json", optional: true)
-                .AddJsonFile(SettingsFileName, optional: true)
+                .AddJsonFile("appsettings.Local.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
     }

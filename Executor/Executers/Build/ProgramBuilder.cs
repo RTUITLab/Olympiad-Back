@@ -12,6 +12,8 @@ using ICSharpCode.SharpZipLib.Tar;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using Executor.Models.Settings;
 
 namespace Executor.Executers.Build
 {
@@ -31,6 +33,7 @@ namespace Executor.Executers.Build
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
         private readonly Func<Guid, string, Task> saveBuildLogs;
         private readonly IDockerClient dockerClient;
+        private readonly StartSettings startOptions;
         private readonly ILogger<ProgramBuilder> logger;
 
 
@@ -43,11 +46,13 @@ namespace Executor.Executers.Build
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, string, Task> saveBuildLogs,
             IDockerClient dockerClient,
+            StartSettings startOptions,
             ILogger<ProgramBuilder> logger)
         {
             this.processSolution = processSolution;
             this.saveBuildLogs = saveBuildLogs;
             this.dockerClient = dockerClient;
+            this.startOptions = startOptions;
             this.logger = logger;
         }
 
@@ -96,9 +101,7 @@ namespace Executor.Executers.Build
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
 
-            File.WriteAllText(Path.Combine(sourceDir.FullName, buildProperty.ProgramFileName), raw, new UTF8Encoding(false));
-            var dockerFile = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles", $"DockerFile-{lang}"));
-            File.WriteAllText(Path.Combine(sourceDir.FullName, "DockerFile"), dockerFile, new UTF8Encoding(false));
+            await PrepareBuildFiles(lang, raw, buildProperty, sourceDir);
 
             var buildLogs = await BuildImageAsync($"solution:{solutionId}", sourceDir.FullName);
             sourceDir.Delete(true);
@@ -106,20 +109,48 @@ namespace Executor.Executers.Build
             return (!buildProperty.IsCompilationFailed(buildLogs), buildLogs);
         }
 
+        private async Task PrepareBuildFiles(string lang, string raw, BuildProperty buildProperty, DirectoryInfo sourceDir)
+        {
+            await File.WriteAllTextAsync(Path.Combine(sourceDir.FullName, buildProperty.ProgramFileName), raw, new UTF8Encoding(false));
+            var dockerFile = await File.ReadAllLinesAsync(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles", $"DockerFile-{lang}"));
+            if (startOptions.PrivateDockerRegistry != null)
+            {
+                var image = dockerFile[0].Split(' ')[1];
+                dockerFile[0] = $"FROM {startOptions.PrivateDockerRegistry.Address}/{image}";
+            }
+            await File.WriteAllLinesAsync(Path.Combine(sourceDir.FullName, "DockerFile"), dockerFile, new UTF8Encoding(false));
+        }
+
         private async Task<string> BuildImageAsync(string imageName, string buildContext)
         {
             var archivePath = Path.Combine(buildContext, "context.tar.gz");
             await CreateTarGz(archivePath, buildContext);
             using var archStream = File.OpenRead(archivePath);
-            var outStream = await dockerClient.Images.BuildImageFromDockerfileAsync(archStream, new ImageBuildParameters
+            var buildParameters = new ImageBuildParameters
             {
                 Dockerfile = "DockerFile",
                 Tags = new[] { imageName }
-            });
+            };
+            if (startOptions.PrivateDockerRegistry != null) {
+                buildParameters.AuthConfigs = new Dictionary<string, AuthConfig>
+                {
+                    { startOptions.PrivateDockerRegistry.Address,
+                        new AuthConfig
+                        {
+                            Username = startOptions.PrivateDockerRegistry.Login,
+                            Password = startOptions.PrivateDockerRegistry.Password,
+                        }
+                    }
+                };
+            }
+
+            var outStream = await dockerClient.Images.BuildImageFromDockerfileAsync(archStream, buildParameters);
             using var streamReader = new StreamReader(outStream);
             return await streamReader.ReadToEndAsync();
         }
-        private static async Task CreateTarGz(string tgzFilename, string sourceDirectory)
+        private static async Task CreateTarGz(
+            string tgzFilename, 
+            string sourceDirectory)
         {
             var outStream = File.Create(tgzFilename);
             var tarOutputStream = new TarOutputStream(outStream);
