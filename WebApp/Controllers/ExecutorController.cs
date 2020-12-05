@@ -94,7 +94,7 @@ namespace WebApp.Controllers
         public async Task<IActionResult> CheckLog(
             [FromRoute] Guid solutionId,
             [FromBody] SolutionCheckRequest request)
-        {            
+        {
             var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
             if (solution == null)
                 return NotFound();
