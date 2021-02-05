@@ -1,0 +1,3 @@
+﻿FROM node:14.15.4
+COPY ./Program.js /src/Program.js
+CMD node /src/Program.js

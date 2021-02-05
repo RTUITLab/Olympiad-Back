@@ -59,6 +59,9 @@
     <None Update="Executers\Build\DockerFiles\DockerFile-python">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Executers\Build\DockerFiles\DockerFile-js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

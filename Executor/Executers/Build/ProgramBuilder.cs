@@ -27,6 +27,7 @@ namespace Executor.Executers.Build
             { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
             { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
             { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
+            { "js", new ContainsInLogsProperty { ProgramFileName = "Program.js", BuildFailedCondition = "error" } },
             { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
         };
 

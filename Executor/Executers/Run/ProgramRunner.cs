@@ -203,6 +203,7 @@ namespace Executor.Executers.Run
             var inStream = new MemoryStream(Encoding.UTF8.GetBytes(input));
             var startTime = DateTime.UtcNow;
             await stream.CopyFromAsync(inStream, CancellationToken.None);
+            stream.CloseWrite();
             var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
 
             if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
