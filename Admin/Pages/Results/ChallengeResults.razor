@@ -20,8 +20,9 @@ else
             <BSDropdown>
                 <BSDropdownToggle Color="Color.Primary">Mode</BSDropdownToggle>
                 <BSDropdownMenu>
-                    <BSDropdownItem OnClick="() => showZeroAndOne = false">Status</BSDropdownItem>
-                    <BSDropdownItem OnClick="() => showZeroAndOne = true">0 or 1</BSDropdownItem>
+                    <BSDropdownItem OnClick="() => showMode = ShowMode.Status">Status</BSDropdownItem>
+                    <BSDropdownItem OnClick="() => showMode = ShowMode.ZeroOrOne">0 or 1</BSDropdownItem>
+                    <BSDropdownItem OnClick="() => showMode = ShowMode.Score">Scores</BSDropdownItem>
                 </BSDropdownMenu>
             </BSDropdown>
         </div>
@@ -52,13 +53,20 @@ else
                         {
                             if (userSolution.Results.ContainsKey(exercise.ExerciseID))
                             {
-                                if (showZeroAndOne)
+                                switch (showMode)
                                 {
-                                    <th>@(userSolution.Results[exercise.ExerciseID] == Olympiad.Shared.Models.SolutionStatus.Successful ? 1 : 0)</th>
-                                }
-                                else
-                                {
-                                    <th>@userSolution.Results[exercise.ExerciseID]</th>
+                                    case ShowMode.Status:
+                                        <td>@userSolution.Results[exercise.ExerciseID]</td>
+                                        break;
+                                    case ShowMode.ZeroOrOne:
+                                        <td>@(userSolution.Results[exercise.ExerciseID] == Olympiad.Shared.Models.SolutionStatus.Successful ? 1 : 0)</td>
+                                        break;
+                                    case ShowMode.Score:
+                                        <td>@(userSolution.Results[exercise.ExerciseID] == Olympiad.Shared.Models.SolutionStatus.Successful ? exercise.Score : 0)</td>
+                                        break;
+                                    default:
+                                        <td>Incorrect mode</td>
+                                        break;
                                 }
                             }
                             else
@@ -82,7 +90,7 @@ else
     private List<Models.Exercises.Exercise> exercises;
     private List<UserSolutions> userSolutions;
 
-    private bool showZeroAndOne = false;
+    private ShowMode showMode = ShowMode.Status;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -125,6 +133,13 @@ else
         public Guid UserId { get; set; }
         public string StudentId { get; set; }
         public Dictionary<Guid, Olympiad.Shared.Models.SolutionStatus> Results { get; set; }
+    }
+
+    enum ShowMode
+    {
+        Status,
+        ZeroOrOne,
+        Score
     }
 
 }

@@ -27,6 +27,10 @@ else
             <InputText id="exercise-title" class="form-control" @bind-Value="exercise.ExerciseName" />
         </div>
         <div class="form-group">
+            <label for="exercise-score">Score</label>
+            <InputNumber id="exercise-score" class="form-control" @bind-Value="exercise.Score" />
+        </div>
+        <div class="form-group">
             <button class="btn btn-primary" @onclick="() => isShowPreview = !isShowPreview">@(isShowPreview ? "Show field" : "Show preview")</button>
             <label for="exercise-description">Task text</label>
             @if (isShowPreview)
