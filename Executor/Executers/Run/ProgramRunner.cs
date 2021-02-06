@@ -80,7 +80,7 @@ namespace Executor.Executers.Run
                 var result = statuses.DefaultIfEmpty(SolutionStatus.Successful).Min();
                 logger.LogInformation($"{solutionId} TOTAL STATUS {result}");
                 await solutionsBase.SaveChanges(solutionId, result);
-                await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, PruneChildren = true });
+                await dockerClient.Images.DeleteImageAsync(imageName, new ImageDeleteParameters { Force = true, NoPrune = false });
             }
             catch (Exception ex)
             {
@@ -170,7 +170,8 @@ namespace Executor.Executers.Run
             {
                 Image = imageName,
                 OpenStdin = true,
-                NetworkDisabled = true
+                NetworkDisabled = true,
+                StdinOnce = true
             });
             var result = ("", "", TimeSpan.Zero);
             Exception exception = null;
@@ -198,13 +199,14 @@ namespace Executor.Executers.Run
             if (!started)
                 throw new Exception($"Cant start container {containerId}");
 
-            var stream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = true, Stdout = true });
+            var readStream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = false, Stderr = true, Stdout = true });
+            var writeStream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = false, Stdout = false });
 
             var inStream = new MemoryStream(Encoding.UTF8.GetBytes(input));
             var startTime = DateTime.UtcNow;
-            await stream.CopyFromAsync(inStream, CancellationToken.None);
-            stream.CloseWrite();
-            var readTask = stream.ReadOutputToEndAsync(CancellationToken.None);
+            await writeStream.CopyFromAsync(inStream, CancellationToken.None);
+            writeStream.CloseWrite();
+            var readTask = readStream.ReadOutputToEndAsync(CancellationToken.None);
 
             if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
             {

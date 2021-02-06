@@ -48,7 +48,8 @@ namespace Executor
                     var authConfig = new AuthConfig
                     {
                         Username = options.Value.PrivateDockerRegistry.Login,
-                        Password = options.Value.PrivateDockerRegistry.Password
+                        Password = options.Value.PrivateDockerRegistry.Password,
+                        ServerAddress = options.Value.PrivateDockerRegistry.Address
                     };
                     try
                     {
