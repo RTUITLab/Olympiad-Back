@@ -2,6 +2,7 @@
 
 @using Microsoft.EntityFrameworkCore
 @using BlazorStrap
+@using BlazorTextDiff
 @inject ApplicationDbContext dbContext
 
 <h3><NavLink href=@($"challenges/{ChallengeId}/results/{UserStudentId}")>Back to user results</NavLink></h3>
@@ -69,13 +70,24 @@ else
                                             </div>
                                             <div class="row">
                                                 <div class="col-6">
-                                                    <textarea rows="20" class="form-control">@check.ExampleIn</textarea>
+                                                    <textarea rows="@Math.Min(check.ExampleIn.Split("\n").Length, 20)" class="form-control">@check.ExampleIn</textarea>
                                                 </div>
                                                 <div class="col-6">
-                                                    <textarea rows="20" class="form-control">@check.ProgramErr</textarea>
+                                                    <textarea rows="@Math.Min(check.ProgramErr.Split("\n").Length, 20)" class="form-control">@check.ProgramErr</textarea>
                                                 </div>
                                             </div>
 
+                                            <div class="row">
+                                                <div class="col">
+                                                    <BSDropdown>
+                                                        <BSDropdownToggle Color="Color.Primary">Mode</BSDropdownToggle>
+                                                        <BSDropdownMenu>
+                                                            <BSDropdownItem OnClick="() => showDif = false">Separate views</BSDropdownItem>
+                                                            <BSDropdownItem OnClick="() => showDif = true">Difference</BSDropdownItem>
+                                                        </BSDropdownMenu>
+                                                    </BSDropdown>
+                                                </div>
+                                            </div>
                                             <div class="row">
                                                 <div class="col-6">
                                                     Example Out
@@ -85,13 +97,28 @@ else
                                                 </div>
                                             </div>
                                             <div class="row">
+                                                @if (!showDif)
+                                                {
+                                                    <div class="col-6">
+                                                        <textarea rows="@Math.Min(check.ExampleOut.Split("\n").Length, 20)" class="form-control">@check.ExampleOut</textarea>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <textarea rows="@Math.Min(check.ProgramOut.Split("\n").Length, 20)" class="form-control">@check.ProgramOut</textarea>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="col">
+                                                        <TextDiff OldText="@check.ExampleOut"
+                                                                  NewText="@check.ProgramOut"
+                                                                  CollapseContent="false"
+                                                                  ShowWhiteSpace="true">
+                                                            <Header></Header>
+                                                        </TextDiff>
+                                                    </div>
 
-                                                <div class="col-6">
-                                                    <textarea rows="20" class="form-control">@check.ExampleOut</textarea>
-                                                </div>
-                                                <div class="col-6">
-                                                    <textarea rows="20" class="form-control">@check.ProgramOut</textarea>
-                                                </div>
+                                                }
+
                                             </div>
                                         </BSCard>
                                     </BSCollapse>
@@ -140,6 +167,8 @@ else
     private User user;
     private Models.Exercises.Challenge challenge;
     private Models.Solutions.Solution solution;
+
+    private bool showDif = false;
 
     protected override async Task OnParametersSetAsync()
     {

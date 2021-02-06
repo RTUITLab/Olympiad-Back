@@ -96,6 +96,7 @@ else
                 StudentId = g.Key.StudentId,
                 Results = g.ToDictionary(g => g.ExerciseId, g => g.Status)
             })
+            .OrderBy(g => g.StudentId)
             .ToList();
     }
 

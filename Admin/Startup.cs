@@ -16,6 +16,8 @@ using OpenQA.Selenium;
 using Microsoft.Extensions.Options;
 using Olympiad.Services;
 using BlazorStrap;
+using DiffPlex.DiffBuilder;
+using DiffPlex;
 
 namespace Olympiad.Admin
 {
@@ -52,6 +54,8 @@ namespace Olympiad.Admin
                  .AddDefaultTokenProviders();
 
             services.AddBootstrapCss();
+            services.AddScoped<ISideBySideDiffBuilder, SideBySideDiffBuilder>();
+            services.AddScoped<IDiffer, Differ>();
 
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
         }
