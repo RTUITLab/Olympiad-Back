@@ -1,6 +1,7 @@
 ﻿@page "/challenges/{ChallengeId:guid}/results"
 
 @using Microsoft.EntityFrameworkCore
+@using BlazorStrap
 
 @inject ApplicationDbContext dbContext
 
@@ -14,6 +15,17 @@
 }
 else
 {
+    <div class="row">
+        <div class="col">
+            <BSDropdown>
+                <BSDropdownToggle Color="Color.Primary">Mode</BSDropdownToggle>
+                <BSDropdownMenu>
+                    <BSDropdownItem OnClick="() => showZeroAndOne = false">Status</BSDropdownItem>
+                    <BSDropdownItem OnClick="() => showZeroAndOne = true">0 or 1</BSDropdownItem>
+                </BSDropdownMenu>
+            </BSDropdown>
+        </div>
+    </div>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -40,7 +52,14 @@ else
                         {
                             if (userSolution.Results.ContainsKey(exercise.ExerciseID))
                             {
-                                <th>@userSolution.Results[exercise.ExerciseID]</th>
+                                if (showZeroAndOne)
+                                {
+                                    <th>@(userSolution.Results[exercise.ExerciseID] == Olympiad.Shared.Models.SolutionStatus.Successful ? 1 : 0)</th>
+                                }
+                                else
+                                {
+                                    <th>@userSolution.Results[exercise.ExerciseID]</th>
+                                }
                             }
                             else
                             {
@@ -63,6 +82,7 @@ else
     private List<Models.Exercises.Exercise> exercises;
     private List<UserSolutions> userSolutions;
 
+    private bool showZeroAndOne = false;
 
     protected override async Task OnParametersSetAsync()
     {
