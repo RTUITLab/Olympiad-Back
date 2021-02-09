@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
@@ -35,16 +36,19 @@ namespace WebApp.Controllers
         private readonly ApplicationDbContext context;
         private readonly IQueueChecker queue;
         private readonly IMapper mapper;
+        private readonly ILogger<CheckController> logger;
 
         public CheckController(
             ApplicationDbContext context,
             IQueueChecker queue,
             UserManager<User> userManager,
-            IMapper mapper) : base(userManager)
+            IMapper mapper,
+            ILogger<CheckController> logger) : base(userManager)
         {
             this.context = context;
             this.queue = queue;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -71,11 +75,13 @@ namespace WebApp.Controllers
         {
             if (file == null)
             {
+                logger.LogInformation("File is null");
                 throw StatusCodeException.BadRequest("file not exists");
             }
 
-            if (file.Length > 5120)
+            if (file.Length > 10000)
             {
+                logger.LogInformation($"File size too big {file.Length}");
                 throw StatusCodeException.BadRequest("file size more than 5MB");
             }
             string fileBody;
@@ -84,6 +90,7 @@ namespace WebApp.Controllers
                 fileBody = await streamReader.ReadToEndAsync();
                 if (!fileBody.IsLegalUnicode())
                 {
+                    logger.LogInformation($"File contains invalid Unicode");
                     return BadRequest($"The file contains invalid Unicode");
                 }
             }
