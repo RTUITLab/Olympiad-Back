@@ -1,8 +1,8 @@
 ﻿@page "/users/{UserId:guid}"
 
-@inherits OwningComponentBase<ApplicationDbContext>
+@inherits OwningComponentBase<Microsoft.AspNetCore.Identity.UserManager<User>>
 
-@using Microsoft.EntityFrameworkCore
+@inject Olympiad.Admin.Services.UserPasswordGenerator userPasswordGenerator
 
 @inject NavigationManager navigationManager
 
@@ -16,7 +16,21 @@
 }
 else
 {
-    <button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
+    <BlazorStrap.BSRow>
+        <BlazorStrap.BSCol>
+            <h4>Student id</h4>
+            <p>@user.StudentID</p>
+            <h4>Password</h4>
+            @if (!string.IsNullOrEmpty(generatedPassword))
+            {
+                <p>@generatedPassword</p>
+            }
+            <button class="btn btn-warning" @onclick="RengeneratePassword">Regenerate password</button>
+        </BlazorStrap.BSCol>
+        <BlazorStrap.BSCol>
+            <button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
+        </BlazorStrap.BSCol>
+    </BlazorStrap.BSRow>
 }
 
 @code {
@@ -24,16 +38,23 @@ else
     [Parameter]
     public Guid UserId { get; set; }
     User user;
-
+    private string generatedPassword;
     protected override async Task OnParametersSetAsync()
     {
         await base.OnInitializedAsync();
-        user = await Service.Users.SingleOrDefaultAsync(u => u.Id == UserId);
+        user = null;
+        user = await Service.FindByIdAsync(UserId.ToString());
     }
     private async Task DeleteUser()
     {
-        Service.Users.Remove(user);
-        await Service.SaveChangesAsync();
+        await Service.DeleteAsync(user);
         navigationManager.NavigateTo("users");
+    }
+    private async Task RengeneratePassword()
+    {
+        await Service.RemovePasswordAsync(user);
+        var password = userPasswordGenerator.GeneratePassword();
+        await Service.AddPasswordAsync(user, password);
+        generatedPassword = password;
     }
 }

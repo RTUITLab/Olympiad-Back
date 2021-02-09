@@ -18,6 +18,7 @@ using Olympiad.Services;
 using BlazorStrap;
 using DiffPlex.DiffBuilder;
 using DiffPlex;
+using Olympiad.Admin.Services;
 
 namespace Olympiad.Admin
 {
@@ -53,10 +54,15 @@ namespace Olympiad.Admin
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
 
+            //Services
+            services.AddTransient<UserPasswordGenerator>();
+
+            // Libraries
             services.AddBootstrapCss();
             services.AddScoped<ISideBySideDiffBuilder, SideBySideDiffBuilder>();
             services.AddScoped<IDiffer, Differ>();
 
+            //Queue
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
         }
 

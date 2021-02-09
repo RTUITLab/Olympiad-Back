@@ -2,6 +2,9 @@
 @inherits OwningComponentBase<Microsoft.AspNetCore.Identity.UserManager<User>>
 
 @inject Microsoft.Extensions.Options.IOptions<Olympiad.Shared.Models.Settings.GenerateSettings> generateSettings
+@inject Olympiad.Admin.Services.UserPasswordGenerator userPasswordGenerator
+
+
 <h3>GenerateUsers</h3>
 <NavLink href="users">Back to users</NavLink>
 
@@ -29,8 +32,7 @@ else
     private async Task Generate()
     {
         var userIds = rows.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        const int MIN = 11111111;
-        const int MAX = 99999999;
+        
 
 
         List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
@@ -45,8 +47,7 @@ else
                 EmailConfirmed = true,
                 StudentID = studentId
             };
-            var password = new Random().Next(MIN, MAX).ToString();
-
+            var password = userPasswordGenerator.GeneratePassword();
             var result = await Service.CreateAsync(user, password);
             result = await Service.AddToRoleAsync(user, "User");
             generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
