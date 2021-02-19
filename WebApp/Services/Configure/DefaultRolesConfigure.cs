@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
+using Olympiad.Shared;
 using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using WebApp.Models.Settings;
 
@@ -53,10 +54,9 @@ namespace WebApp.Services.Configure
 
         private async Task ApplyRoles()
         {
-            string[] roles = { "Admin", "User", "Executor", "ResultsViewer" };
             IdentityResult roleResult;
 
-            foreach (var role in roles)
+            foreach (var role in RoleNames.AllRoles)
             {
                 var roleExist = await roleManager.RoleExistsAsync(role);
                 if (roleExist) continue;

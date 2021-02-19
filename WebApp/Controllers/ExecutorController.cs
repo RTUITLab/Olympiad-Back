@@ -23,7 +23,7 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Executor")]
-    [Authorize(Roles = "Executor")]
+    [Authorize(Policy = "Executor")]
     public class ExecutorController : AuthorizeController
     {
         private readonly ApplicationDbContext dbContext;

@@ -193,7 +193,8 @@ namespace WebApp.Controllers
             return mapper.Map<SolutionResponse>(solutionInternal);
         }
 
-        [Authorize(Roles = "Admin,Executor")]
+        [Authorize(Policy = "Executor")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("statistic")]
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
         {

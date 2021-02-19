@@ -35,6 +35,8 @@ using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
 using WebApp.Formatting;
 using Olympiad.Services;
+using Olympiad.Shared;
+using System.Security.Claims;
 
 namespace WebApp
 {
@@ -57,6 +59,7 @@ namespace WebApp
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
             services.Configure<DefaultChallengeSettings>(Configuration.GetSection(nameof(DefaultChallengeSettings)));
             services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
+            services.Configure<ExecutorSettings>(Configuration.GetSection(nameof(ExecutorSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services
@@ -122,15 +125,31 @@ namespace WebApp
                             // Read the token out of the query string
                             context.Token = accessToken;
                         }
+
+                       
+
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        // If is executor
+                        if (context.HttpContext.Request.Headers.TryGetValue("Executor-Version", out var executorVersion))
+                        {
+                            context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("ExecutorVersion", executorVersion) }));
+                        }
                         return Task.CompletedTask;
                     }
                 };
             });
 
-            // api user claim policy
+            var executorOptions = Configuration.GetSection(nameof(ExecutorSettings)).Get<ExecutorSettings>();
+
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ApiUser", policy => policy.RequireClaim(Constants.Strings.JwtClaimIdentifiers.Rol, Constants.Strings.JwtClaims.ApiAccess));
+                options.AddPolicy("Executor", policy => policy
+                    .RequireRole(RoleNames.EXECUTOR)
+                    .RequireClaim("ExecutorVersion", executorOptions.Version.ToString())
+                    .RequireAuthenticatedUser());
             });
 
 
