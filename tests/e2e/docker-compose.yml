@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  api:
+    build: api
+    environment:
+    - ASPNETCORE_ENVIRONMENT=Development
+    - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=db;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
+  db:
+    image: postgres:13-alpine
+    environment:
+    - POSTGRES_PASSWORD=password
+  tests:
+    build: olympiad-tests
+    volumes:
+      - ./out:/project/target/surefire-reports
+    depends_on:
+    - api
