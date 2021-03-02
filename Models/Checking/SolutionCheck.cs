@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Models.Exercises;
 using Models.Solutions;
 using Olympiad.Shared.Models;
 
@@ -20,5 +21,8 @@ namespace Models.Checking
 
         public Guid SolutionId { get; set; }
         public Solution Solution { get; set; }
+
+        public Guid TestDataId { get; set; }
+        public ExerciseData TestData { get; set; }
     }
 }

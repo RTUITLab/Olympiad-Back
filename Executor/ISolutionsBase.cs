@@ -15,7 +15,7 @@ namespace Executor
         Task<List<Solution>> GetInQueueSolutions(string lang, int count);
         Task<List<SolutionsStatisticResponse>> GetStatistic();
         Task SaveChanges(Guid solutionId, SolutionStatus status);
-        Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck);
+        Task SaveLog(Guid solutionId, Guid testDataId, SolutionCheckRequest solutionCheck);
         Task SaveBuildLog(Guid solutionId, string log);
         Task<Solution> GetSolutionInfo(Guid solutionId);
     }
