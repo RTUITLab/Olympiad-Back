@@ -8,32 +8,29 @@ stages:
   displayName: BuildServices
   jobs:
   - job: buildApi
+    strategy:
+      matrix:
+        api:
+          cakeTarget: 'PublishApi'
+          publishPath: deploy/api
+          artifactName: api-build
+        executor:
+          cakeTarget: 'PublishExecutor'
+          publishPath: deploy/executor
+          artifactName: executor-build
+        admin:
+          cakeTarget: 'PublishAdmin'
+          publishPath: deploy/admin
+          artifactName: admin-build
     steps:
     - task: Cake@2
       inputs:
         script: 'build.cake'
-        target: 'PublishApi'
+        target: $(cakeTarget)
         verbosity: 'Verbose'
-    - publish: deploy/api
-      artifact: api-build
-  - job: buildAdmin
-    steps:
-    - task: Cake@2
-      inputs:
-        script: 'build.cake'
-        target: 'PublishAdmin'
-        verbosity: 'Verbose'
-    - publish: deploy/admin
-      artifact: admin-build
-  - job: buildExecutor
-    steps:
-    - task: Cake@2
-      inputs:
-        script: 'build.cake'
-        target: 'PublishExecutor'
-        verbosity: 'Verbose'
-    - publish: deploy/executor
-      artifact: executor-build
+    - publish: $(publishPath)
+      artifact: $(artifactName)
+
 - stage: test
   jobs:
     - job: e2e
