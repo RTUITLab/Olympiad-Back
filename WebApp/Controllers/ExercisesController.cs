@@ -54,37 +54,6 @@ namespace WebApp.Controllers
             return exercises.Select(e => mapper.Map<ExerciseCompactResponse>(e)).ToList();
         }
 
-        [HttpPut]
-        [Route("{exerciseId:guid}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Put(Guid exerciseId, [FromBody] ExerciseRequest model)
-        {
-            var exe = await context.Exercises.FindAsync(exerciseId);
-
-            if (exe == null)
-            {
-                return NotFound();
-            }
-
-            if (model.ExerciseName != null)
-            {
-                exe.ExerciseName = model.ExerciseName;
-            }
-
-            if (model.ExerciseTask != null)
-            {
-                exe.ExerciseTask = model.ExerciseTask;
-            }
-
-            if (model.Score != -1)
-            {
-                exe.Score = model.Score;
-            }
-
-            await context.SaveChangesAsync();
-            return Ok();
-        }
-
         [HttpGet]
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
@@ -101,34 +70,6 @@ namespace WebApp.Controllers
 
             var exView = mapper.Map<ExerciseInfo>(exercise);
             return exView;
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<ExerciseInfo> Post([FromBody] ExerciseRequest model)
-        {
-            if (!await context.Challenges.AnyAsync(c => c.Id == model.ChallengeId))
-                throw StatusCodeException.BadRequest();
-
-            var exeIdentity = mapper.Map<Exercise>(model);
-            context.Exercises.Add(exeIdentity);
-            await context.SaveChangesAsync();
-            return mapper.Map<ExerciseInfo>(exeIdentity);
-        }
-
-        [HttpPost("{id}")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Post(IFormFile markdown, Guid id) 
-        {
-            System.Console.WriteLine(markdown.Length);
-            var target = context.Exercises.FirstOrDefault(e => e.ExerciseID == id);
-            if (target == null) return NotFound();
-            using (var reader = new StreamReader(markdown.OpenReadStream()))
-            {
-                target.ExerciseTask = reader.ReadToEnd();
-            }
-            context.SaveChanges();
-            return Ok();
         }
     }
 }

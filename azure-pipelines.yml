@@ -5,9 +5,9 @@ pool:
 
 stages:
 - stage: build
-  displayName: BuildServices
+  displayName: build services
   jobs:
-  - job: buildApi
+  - job: build
     strategy:
       matrix:
         api:

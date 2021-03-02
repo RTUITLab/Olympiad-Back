@@ -18,9 +18,6 @@ using Models;
 using Models.Solutions;
 using Olympiad.Services;
 using Olympiad.Shared.Models;
-using Olympiad.Shared.Models.Settings;
-using PublicAPI.Responses;
-using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
 using WebApp.Extensions;
 using WebApp.Models;
@@ -205,19 +202,6 @@ namespace WebApp.Controllers
                 .ToListAsync();
         }
 
-        [HttpGet]
-        [Route("solutionList/{exerciseId:guid}/{studentId}")]
-        [Authorize(Roles = "Admin,ResultsViewer")]
-        public async Task<List<SolutionDumpView>> Get(Guid exerciseId, string studentId)
-        {
-            return await context
-                       .Solutions
-                       .Where(p => p.ExerciseId == exerciseId && p.User.StudentID == studentId)
-                       .ProjectTo<SolutionDumpView>(mapper.ConfigurationProvider)
-                       .ToListAsync()
-                   ?? throw StatusCodeException.NotFount;
-        }
-
         [HttpGet("download/{solutionId}")]
         public async Task<IActionResult> Download(Guid solutionId)
         {
@@ -232,21 +216,6 @@ namespace WebApp.Controllers
                 ?? throw StatusCodeException.NotFount;
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
             return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
-        }
-
-        [HttpGet("logs/{solutionId}")]
-        [Authorize(Roles = "Admin,ResultsViewer")]
-        public async Task<ActionResult<List<SolutionCheckResponse>>> GetLogs(Guid solutionId)
-        {
-            var rawData = await context
-                .SolutionChecks
-                .Where(sc => sc.SolutionId == solutionId)
-                .ProjectTo<SolutionCheckResponse>(mapper.ConfigurationProvider)
-                .ToListAsync();
-            return rawData
-                .GroupBy(sch => sch.ExampleIn)
-                .Select(g => g.OrderBy(sch => sch.CheckedTime).Last())
-                .ToList();
         }
 
         private static string GetExtensionsForLanguage(string language)

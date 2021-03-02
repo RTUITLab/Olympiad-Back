@@ -36,85 +36,16 @@ namespace WebApp.Controllers
             this.mapper = mapper;
         }
 
-
-        [HttpPost]
-        [Route("{exerciseId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ExerciseDataResponse> Post(Guid exerciseId, [FromBody]ExerciseDataRequest exerciseDataIn)
-        {
-            if (exerciseDataIn == null || string.IsNullOrEmpty(exerciseDataIn.InData) || string.IsNullOrEmpty(exerciseDataIn.OutData))
-            {
-                throw StatusCodeException.BadRequest("No exercise data in request");
-            }
-
-            if (!context.Exercises.Any(e => e.ExerciseID == exerciseId))
-            {
-                throw StatusCodeException.BadRequest("No target exercise");
-            }
-
-            var exerciseData = new ExerciseData
-            {
-                ExerciseId = exerciseId,
-                InData = exerciseDataIn.InData,
-                OutData = exerciseDataIn.OutData,
-                IsPublic = exerciseDataIn.IsPublic
-            };
-            context.TestData.Add(exerciseData);
-            await context.SaveChangesAsync();
-
-            return mapper.Map<ExerciseDataResponse>(exerciseData);
-        }
-
         [HttpGet]
         [Route("{exerciseId}")]
         public Task<List<ExerciseDataCompactResponse>> Get(Guid exerciseId)
         {
             return context
                 .TestData
-                .Where(p => p.ExerciseId == exerciseId)
-                .Where(p => p.IsPublic)
+                .Where(p => p.ExerciseDataGroup.ExerciseId == exerciseId)
+                .Where(p => p.ExerciseDataGroup.IsPublic)
                 .ProjectTo<ExerciseDataCompactResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
-
-
-        [HttpGet]
-        [Route("all/{exerciseId}")]
-        [Authorize(Roles = "Admin, Executor")]
-        public Task<List<ExerciseDataResponse>> GetAll(Guid exerciseId)
-        {
-            return context
-                .TestData
-                .Where(p => p.ExerciseId == exerciseId)
-                .ProjectTo<ExerciseDataResponse>(mapper.ConfigurationProvider)
-                .ToListAsync();
-        }
-
-
-
-        [HttpPut]
-        [Route("{exerciseDataId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ExerciseDataResponse> Put(Guid exerciseDataId, [FromBody]ExerciseDataRequest exerciseDataIn)
-        {
-            if (exerciseDataIn == null || string.IsNullOrEmpty(exerciseDataIn.InData) || string.IsNullOrEmpty(exerciseDataIn.OutData))
-            {
-                throw StatusCodeException.BadRequest("No exercise data in request");
-            }
-
-            var testData = await context.TestData.SingleOrDefaultAsync(e => e.Id == exerciseDataId);
-            if (testData == null)
-            {
-                throw StatusCodeException.BadRequest("No target exercise");
-            }
-            testData.InData = exerciseDataIn.InData;
-            testData.OutData = exerciseDataIn.OutData;
-            testData.IsPublic = exerciseDataIn.IsPublic;
-
-            await context.SaveChangesAsync();
-
-            return mapper.Map<ExerciseDataResponse>(testData);
-        }
-
     }
 }

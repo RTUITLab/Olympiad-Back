@@ -48,13 +48,31 @@ namespace WebApp.Services.Configure
                 {
                     ExerciseName = ex.Title,
                     ExerciseTask = ex.Description,
-                    Score = 1,
-                    ExerciseDatas = ex.TestData.Select(td => new ExerciseData
+                    ExerciseDataGroups = new List<ExerciseDataGroup>
                     {
-                        InData = td.Input,
-                        OutData = td.Output,
-                        IsPublic = td.IsPublic
-                    }).ToList()
+                        new ExerciseDataGroup
+                        {
+                            Title = "public tests",
+                            IsPublic = true,
+                            Score = 0,
+                            ExerciseDatas = ex.PublicTests.Select(td => new ExerciseData
+                            {
+                                InData = td.Input,
+                                OutData = td.Output
+                            }).ToList()
+                        },
+                        new ExerciseDataGroup
+                        {
+                            Title = "private tests",
+                            IsPublic = false,
+                            Score = 1,
+                            ExerciseDatas = ex.PrivateTests.Select(td => new ExerciseData
+                            {
+                                InData = td.Input,
+                                OutData = td.Output
+                            }).ToList()
+                        }
+                    }
                 }).ToList()
             };
             dbContext.Challenges.Add(newChallenge);

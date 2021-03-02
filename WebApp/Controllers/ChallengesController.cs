@@ -12,8 +12,6 @@ using Models;
 using Models.Exercises;
 using Models.Links;
 using Olympiad.Shared.Models;
-using PublicAPI.Requests.Challenges;
-using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
 using WebApp.Models;
 
@@ -62,57 +60,6 @@ namespace WebApp.Controllers
                            c.UsersToChallenges.Any(utc => utc.UserId == UserId));
             }
             return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<ChallengeResponse> PostAsync([FromBody]ChallengeCreateRequest request)
-        {
-            var challenge = mapper.Map<Challenge>(request);
-            challenge.CreationTime = DateTimeOffset.UtcNow;
-            context.Challenges.Add(challenge);
-            await context.SaveChangesAsync();
-            return mapper.Map<ChallengeResponse>(challenge);
-        }
-
-
-        [HttpPut("{id:guid}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ChallengeExtendedResponse> PutAsync(Guid id, [FromBody]ChallengeEditRequest request)
-        {
-            if (request.RemovePersons != null &&
-                request.AddPersons != null &&
-                request.RemovePersons.Intersect(request.AddPersons).Any())
-                throw StatusCodeException.BadRequest();
-
-            var targetChallenge = await context
-                .Challenges
-                .Include(c => c.UsersToChallenges)
-                .Where(c => c.Id == id)
-                .SingleOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
-            mapper.Map(request, targetChallenge);
-            if (request.RemovePersons?.Any() == true)
-                targetChallenge.UsersToChallenges.RemoveAll(u => request.RemovePersons.Contains(u.UserId));
-            if (request.AddPersons?.Any() == true)
-                targetChallenge.UsersToChallenges.AddRange(
-                    request
-                    .AddPersons
-                    .Where(uid => !targetChallenge.UsersToChallenges.Any(utc => utc.UserId == uid))
-                    .Select(uid => new UserToChallenge
-                    {
-                        UserId = uid,
-                        ChallengeId = id
-                    }));
-            await context.SaveChangesAsync();
-            return mapper.Map<ChallengeExtendedResponse>(targetChallenge);
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public void Delete(int id)
-        {
-            throw new NotImplementedException();
         }
     }
 }
