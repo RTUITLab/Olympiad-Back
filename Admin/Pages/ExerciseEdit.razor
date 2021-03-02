@@ -5,6 +5,7 @@
 
 @using Microsoft.EntityFrameworkCore
 @using BlazorStrap
+@using Olympiad.Admin.Components.EditExercise
 
 @inject NavigationManager navigationManager
 @inject IQueueChecker QueueChecker
@@ -38,59 +39,13 @@ else
                 <InputTextArea id="exercise-description" class="form-control" @bind-Value="exercise.ExerciseTask" />
             }
         </div>
-
-        <BSPagination>
-            <BSPaginationItem IsDisabled=@(DataPage==0)>
-                <BSPaginationLink Href=@GetPageLink(DataPage - 1) PaginationLinkType="PaginationLinkType.PreviousText" />
-            </BSPaginationItem>
-            <BSPaginationItem IsActive="true">
-                <BSPaginationLink Href=@GetPageLink(DataPage)>@DataPage <span class="sr-only">(current)</span></BSPaginationLink>
-            </BSPaginationItem>
-            <BSPaginationItem>
-                <BSPaginationLink Href=@GetPageLink(DataPage + 1) PaginationLinkType="PaginationLinkType.NextText" />
-            </BSPaginationItem>
-        </BSPagination>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>In</th>
-                    <th>Out</th>
-                    <th>IsPublic</th>
-                    <th>.</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (exercise.ExerciseDataGroups != null)
-                {
-
-                    @foreach (var exerciseDataGroup in exercise.ExerciseDataGroups)
-                    {
-                        <tr>
-                            <td>
-                                <p>@exerciseDataGroup.Title</p>
-                            </td>
-                        </tr>
-                        @*<tr>
-                            <td><textarea class="form-control" @bind="exerciseData.InData" /></td>
-                            <td><textarea class="form-control" @bind="exerciseData.OutData" /></td>
-                            <td><input class="form-check" type="checkbox" @bind="exerciseData.IsPublic" /></td>
-                            <td><button class="btn btn-danger" @onclick="() => DelInOutData(exerciseData)">Del</button></td>
-                            <td><p>@Service.Entry(exerciseData).State</p></td>
-                        </tr>*@
-                    }
-                }
-                else
-                {
-                    <tr>Loading in out data</tr>
-                }
-
-            </tbody>
-        </table>
-        @*<button class="btn btn-primary" @onclick="AddInOutData">Add In/Out data</button>*@
         <button type="submit" class="btn btn-primary">Update</button>
         <button class="btn btn-danger" @onclick="DeleteExercise">Delete</button>
         <button class="btn btn-warning" @onclick="RecheckExercise">Recheck exercise</button>
     </EditForm>
+
+   <EditExerciseDataGroups ExerciseId="ExerciseId"/>
+
 }
 <Logs @ref="logs"></Logs>
 
@@ -135,19 +90,6 @@ else
         await Service.SaveChangesAsync();
     }
 
-    //private void AddInOutData()
-    //{
-    //    var inOutData = new Models.Exercises.ExerciseData();
-    //    inOutData.ExerciseId = exercise.ExerciseID;
-    //    exercise.ExerciseDatas.Add(inOutData);
-    //    Service.TestData.Add(inOutData);
-    //}
-
-    //private void DelInOutData(Models.Exercises.ExerciseData data)
-    //{
-    //    exercise.ExerciseDatas.Remove(data);
-    //    Service.TestData.Remove(data);
-    //}
 
     private async Task DeleteExercise()
     {

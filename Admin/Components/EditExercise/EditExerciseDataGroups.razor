@@ -1,0 +1,80 @@
+﻿@inherits OwningComponentBase<ApplicationDbContext>
+
+@using BlazorStrap
+
+@if (ExerciseDataGroupIds != null)
+{
+    <BSCollapseGroup>
+        <CascadingValue Value="this" Name="EditExerciseDataGroups">
+            @foreach (var exerciseDataGroupId in ExerciseDataGroupIds)
+            {
+                <BSCollapseItem @key="exerciseDataGroupId">
+                    <EditExerciseDataGroup DataGroupId="exerciseDataGroupId" />
+                </BSCollapseItem>
+            }
+        </CascadingValue>
+    </BSCollapseGroup>
+}
+else
+{
+    <tr>Loading in out data</tr>
+}
+<button class="btn btn-success" @onclick="AddTestsGroup">Add tests group</button>
+@code {
+
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+
+    private List<Guid> ExerciseDataGroupIds { get; set; }
+
+    private System.Threading.SemaphoreSlim dbOperation = new System.Threading.SemaphoreSlim(1, 1);
+
+    private async Task AddTestsGroup()
+    {
+        await dbOperation.WaitAsync();
+        try
+        {
+            var newGroup = new Models.Exercises.ExerciseDataGroup
+            {
+                ExerciseId = ExerciseId,
+                IsPublic = false,
+                Score = 0,
+                Title = "new group"
+            };
+            Service.Add(newGroup);
+            await Service.SaveChangesAsync();
+            ExerciseDataGroupIds.Add(newGroup.Id);
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadGroups();
+    }
+
+    internal async Task LoadGroups()
+    {
+        await dbOperation.WaitAsync();
+        try
+        {
+            ExerciseDataGroupIds = await Service
+                .TestDataGroups
+                .AsNoTracking()
+                .OrderByDescending(g => g.IsPublic)
+                .Where(g => g.ExerciseId == ExerciseId)
+                .Select(g => g.Id)
+                .ToListAsync();
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+        StateHasChanged();
+    }
+
+}
