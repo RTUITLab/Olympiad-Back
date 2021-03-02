@@ -47,5 +47,17 @@ namespace WebApp.Controllers
                 .ProjectTo<ExerciseDataCompactResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
+
+        [HttpGet]
+        [Route("all/{exerciseId}")]
+        [Authorize(Policy = "Executor")]
+        public Task<List<ExerciseDataResponse>> GetAll(Guid exerciseId)
+        {
+            return context
+                .TestData
+                .Where(p => p.ExerciseDataGroup.ExerciseId == exerciseId)
+                .ProjectTo<ExerciseDataResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
     }
 }
