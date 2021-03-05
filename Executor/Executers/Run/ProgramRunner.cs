@@ -138,7 +138,7 @@ namespace Executor.Executers.Run
                     if (duration > TimeSpan.FromSeconds(10))
                         localStatus = SolutionStatus.TooLongWork;
 
-                    await solutionsBase.SaveLog(solutionId, new SolutionCheckRequest
+                    await solutionsBase.SaveLog(solutionId, data.Id, new SolutionCheckRequest
                     {
                         ExampleIn = exampleIn,
                         ExampleOut = exampleOut,

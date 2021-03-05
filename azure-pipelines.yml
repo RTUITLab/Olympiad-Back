@@ -35,7 +35,7 @@ variables:
 
 stages:
 - stage: build
-  displayName: BuildServices
+  displayName: build services
   jobs:
   - job: build
     strategy:
@@ -62,6 +62,36 @@ stages:
     - publish: $(publishPath)
       artifact: $(artifactName)
       displayName: publish $(artifactName)
+
+- stage: test
+  jobs:
+    - job: e2e
+      steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: 'api-build'
+            buildType: 'current'
+            targetPath: './tests/e2e/api/'
+        - script: docker-compose build
+          workingDirectory: ./tests/e2e
+          displayName: build test images
+        - script: docker-compose up -d api
+          workingDirectory: ./tests/e2e
+          displayName: start api
+        - script: docker-compose up tests
+          workingDirectory: ./tests/e2e
+          displayName: run tests
+        - script: docker-compose logs api
+          workingDirectory: ./tests/e2e
+          displayName: show api logs
+        - publish: ./tests/e2e/out
+          artifact: olympiad-e2e-test-results
+        - task: PublishTestResults@2
+          inputs:
+            testResultsFormat: JUnit
+            testResultsFiles: '*.xml'
+            searchFolder: ./tests/e2e/out
+            failTaskOnFailedTests: true
 - stage: packInDocker
   condition: ${{variables.buildImage}}
   jobs:

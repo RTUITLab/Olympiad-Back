@@ -28,6 +28,9 @@ namespace Executor
                 configuration = SetupConfigs(args);
 
                 var servicesProvider = BuildServices();
+                var versionConfig = servicesProvider.GetRequiredService<IOptions<StartSettings>>();
+
+                Console.WriteLine($"Version: {versionConfig.Value.Version}");
 
                 if (!await IsDockerAvailable(servicesProvider.GetRequiredService<IDockerClient>()))
                 {
@@ -93,6 +96,7 @@ namespace Executor
                 {
                     var options = sp.GetRequiredService<IOptions<StartSettings>>();
                     client.BaseAddress = new Uri(options.Value.Address);
+                    client.DefaultRequestHeaders.Add("Executor-Version", options.Value.Version.ToString());
                 })
                 .Services
                 .AddSingleton<IDockerClient>(sp =>
@@ -105,6 +109,7 @@ namespace Executor
 
         private static IConfiguration SetupConfigs(string[] args)
             => new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile("appsettings.Development.json", optional: true)
                 .AddJsonFile("appsettings.Local.json", optional: true)
                 .AddEnvironmentVariables()

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
+using Olympiad.Shared;
 using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using WebApp.Models.Settings;
 
@@ -17,12 +19,12 @@ namespace WebApp.Services.Configure
         private readonly RoleManager<IdentityRole<Guid>> roleManager;
         private readonly UserManager<User> userManager;
         private readonly ILogger<DefaultRolesConfigure> logger;
-        private readonly DefaultUserSettings options;
+        private readonly DefaultUsersSettings options;
 
         public DefaultRolesConfigure(
             RoleManager<IdentityRole<Guid>> roleManager,
             UserManager<User> userManager,
-            IOptions<DefaultUserSettings> options,
+            IOptions<DefaultUsersSettings> options,
             ILogger<DefaultRolesConfigure> logger)
         {
             this.roleManager = roleManager;
@@ -33,48 +35,59 @@ namespace WebApp.Services.Configure
 
         public async Task Configure(CancellationToken cancellationToken)
         {
-            if (options.CreateUser)
-                await CreateUser(options.Email, options.Name, options.StudentId, options.Password);
-            await ApplyRoles();
+            await ApplyDefaultRoles();
+            if (options.Create)
+                foreach (var user in options.Users)
+                {
+                    await CreateUser(user);
+                }
         }
 
-        private async Task CreateUser(string email, string name, string studentId, string password)
-        {
-            logger.LogInformation($"Creating user {email}");
-            var createResult = await userManager.CreateAsync(new User
-            {
-                Email = email,
-                UserName = email,
-                FirstName = name,
-                StudentID = studentId
-            }, password);
-            logger.LogInformation($"creating {email} : {createResult.Succeeded}");
-        }
 
-        private async Task ApplyRoles()
+        private async Task ApplyDefaultRoles()
         {
-            string[] roles = { "Admin", "User", "Executor", "ResultsViewer" };
             IdentityResult roleResult;
 
-            foreach (var role in roles)
+            foreach (var role in RoleNames.AllRoles)
             {
                 var roleExist = await roleManager.RoleExistsAsync(role);
                 if (roleExist) continue;
                 var identityRole = new IdentityRole<Guid> { Name = role };
                 roleResult = await roleManager.CreateAsync(identityRole);
             }
+        }
 
-            if (options?.Roles == null || !options.Roles.Any())
-                return;
-
-            var powerUser = await userManager.FindByEmailAsync(options.Email);
-            if (powerUser == null)
-                return;
-
-            foreach (var role in options.Roles)
+        private async Task CreateUser(DefaultUser user)
+        {
+            logger.LogInformation($"Creating user {user.Email}");
+            var userToCreate = new User
             {
-                if (!await userManager.IsInRoleAsync(powerUser, role))
-                    await userManager.AddToRoleAsync(powerUser, role);
+                Email = user.Email,
+                UserName = user.Email,
+                FirstName = user.Name,
+                StudentID = user.StudentId
+            };
+            var createResult = await userManager.CreateAsync(userToCreate, user.Password);
+            logger.LogInformation($"creating {user.Email} : {createResult.Succeeded}");
+            if (createResult.Succeeded)
+            {
+                logger.LogInformation($"Add reset password claim to {user.Email}");
+                var addClaimResult = await userManager.AddClaimAsync(userToCreate, new Claim("reset_password", "need"));
+                logger.LogInformation($"Adding reset claim to {user.Email}: {addClaimResult.Succeeded}");
+            }
+            else
+            {
+                logger.LogInformation($"Can't create user {user.Email}, skip reset password claim");
+            }
+            if (createResult.Succeeded)
+            {
+                logger.LogInformation($"Apply roles to {user.Email}");
+                foreach (var role in user.Roles)
+                {
+                    logger.LogInformation($"Apply role {role} to {user.Email}");
+                    var addToRoleResult = await userManager.AddToRoleAsync(userToCreate, role);
+                    logger.LogInformation($"Adding {user.Email} to role {role}: {addToRoleResult.Succeeded}");
+                }
             }
         }
     }

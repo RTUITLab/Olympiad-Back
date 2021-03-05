@@ -23,7 +23,7 @@ namespace WebApp.Controllers
 {
     [Produces("application/json")]
     [Route("api/Executor")]
-    [Authorize(Roles = "Executor")]
+    [Authorize(Policy = "Executor")]
     public class ExecutorController : AuthorizeController
     {
         private readonly ApplicationDbContext dbContext;
@@ -56,7 +56,7 @@ namespace WebApp.Controllers
             SolutionStatus state,
             [FromServices] NotifyUsersService notifyUserService)
         {
-            var solution = dbContext.Solutions.FirstOrDefault(S => S.Id == solutionId);
+            var solution = await dbContext.Solutions.SingleOrDefaultAsync(S => S.Id == solutionId);
             if (solution == null)
                 return NotFound();
 
@@ -75,7 +75,7 @@ namespace WebApp.Controllers
             [FromRoute] Guid solutionId,
             [FromBody] string log)
         {
-            var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
+            var solution = await dbContext.Solutions.SingleOrDefaultAsync(s => s.Id == solutionId);
             if (solution == null)
                 return NotFound();
             var buildLogRecord = new SolutionBuildLog
@@ -90,17 +90,29 @@ namespace WebApp.Controllers
             return Ok();
         }
 
-        [HttpPost("checklog/{solutionId}")]
+        [HttpPost("checklog/{solutionId}/{testDataId}")]
         public async Task<IActionResult> CheckLog(
             [FromRoute] Guid solutionId,
+            [FromRoute] Guid testDataId,
             [FromBody] SolutionCheckRequest request)
         {
-            var solution = dbContext.Solutions.FirstOrDefault(s => s.Id == solutionId);
+            var solution = await dbContext.Solutions.SingleOrDefaultAsync(s => s.Id == solutionId);
             if (solution == null)
-                return NotFound();
+                return NotFound("solution not found");
+
+            var testData = await dbContext.TestData
+                .Where(td => td.Id == testDataId)
+                .Where(td => td.ExerciseDataGroup.ExerciseId == solution.ExerciseId)
+                .SingleOrDefaultAsync();
+            if (testData == null)
+                return NotFound("exercise data not found");
+
             var newCheck = mapper.Map<SolutionCheck>(request);
+
             newCheck.SolutionId = solution.Id;
+            newCheck.TestDataId = testData.Id;
             newCheck.CheckedTime = DateTimeOffset.UtcNow;
+
             dbContext.SolutionChecks.Add(newCheck);
             await dbContext.SaveChangesAsync();
             return Ok();

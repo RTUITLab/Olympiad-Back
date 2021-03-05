@@ -46,7 +46,7 @@ namespace WebApp.Controllers
         public async Task<ActionResult<LoginResponse>> Post(
             [FromBody] CredentialsRequest credentials,
             [FromServices] NotifyUsersService notifyUsersService,
-            [FromServices] IOptions<DefaultUserSettings> defaultUserSettings)
+            [FromServices] IOptions<DefaultUsersSettings> defaultUserSettings)
         {
             if (!ModelState.IsValid)
             {
@@ -62,7 +62,8 @@ namespace WebApp.Controllers
             }
             
             var loginInfo = await GenerateResponse(user);
-            if (defaultUserSettings.Value.StudentId == user.StudentID && credentials.Password == defaultUserSettings.Value.Password)
+            var claims = await _userManager.GetClaimsAsync(user);
+            if (claims.Any(c => c.Type == "reset_password"))
             {
                 _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
             }

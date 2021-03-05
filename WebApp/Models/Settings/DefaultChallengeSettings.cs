@@ -15,12 +15,12 @@ namespace WebApp.Models.Settings
     {
         public string Title { get; set; }
         public string Description { get; set; }
-        public List<DefaultChallengeExerciseTextData> TestData { get; set; }
+        public List<DefaultChallengeExerciseTextData> PublicTests { get; set; }
+        public List<DefaultChallengeExerciseTextData> PrivateTests { get; set; }
     }
     public class DefaultChallengeExerciseTextData
     {
         public string Input { get; set; }
         public string Output { get; set; }
-        public bool IsPublic { get; set; }
     }
 }

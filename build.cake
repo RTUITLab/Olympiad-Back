@@ -1,8 +1,11 @@
 var target = Argument("target", "PublishAll");
 var configuration = Argument("configuration", "Release");
 
-var apiPublishDir = "deploy/api/api-build";
+var apiDeployDir = "deploy/api";
+var apiPublishDir = apiDeployDir + "/api-build";
 var apiProject = "WebApp/WebApp.csproj";
+
+var apiTestsDir = "tests/e2e/api";
 
 var executorPublishDir = "deploy/executor/executor-build";
 var executorProject = "Executor/Executor.csproj";
@@ -45,6 +48,13 @@ Task("PublishApi")
    };
 
    DotNetCorePublish(apiProject, settings);
+});
+
+Task("PublishApiToTests")
+   .IsDependentOn("PublishApi")
+   .Does(() =>
+{
+   CopyDirectory(apiDeployDir, apiTestsDir);
 });
 
 Task("BuildExecutor")

@@ -77,8 +77,8 @@ else
                 Id = ex.ExerciseID,
                 ChallengeId = ex.ChallengeId,
                 Title = ex.ExerciseName,
-                Score = ex.Score,
-                TestDataCount = ex.ExerciseDatas.Count
+                Score = ex.ExerciseDataGroups.Sum(g => g.Score),
+                TestDataCount = ex.ExerciseDataGroups.Sum(g => g.ExerciseDatas.Count)
             })
             .ToListAsync();
         exercises = exercises

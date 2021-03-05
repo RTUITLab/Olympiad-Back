@@ -280,3 +280,5 @@ deploy/api/api-build
 deploy/executor/executor-build
 deploy/admin/admin-build/
 /Executor/appsettings.Local.json
+tests/e2e/api
+tests/e2e/out

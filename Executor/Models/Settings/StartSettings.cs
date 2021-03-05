@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Semver;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,5 +10,7 @@ namespace Executor.Models.Settings
         public string Address { get; set; }
         public string DockerEndPoint { get; set; }
         public PrivateRegistrySettings PrivateDockerRegistry { get; set; }
+        public string VersionString { get; set; }
+        public SemVersion Version => SemVersion.Parse(VersionString);
     }
 }
