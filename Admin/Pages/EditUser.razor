@@ -6,7 +6,7 @@
 
 @inject NavigationManager navigationManager
 
-
+@using BlazorStrap
 <h3>EditUser</h3>
 <NavLink href="users">Back to users</NavLink>
 
@@ -20,6 +20,32 @@ else
         <BlazorStrap.BSCol>
             <h4>Student id</h4>
             <p>@user.StudentID</p>
+            <h4>Claims</h4>
+            @if (Claims == null || !Claims.Any())
+            {
+                <p>No claims</p>
+            }
+            else
+            {
+
+                <BlazorStrap.BSTable IsBordered="true">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var claim in Claims)
+                        {
+                            <tr>
+                                <td>@claim.Type</td>
+                                <td>@claim.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </BlazorStrap.BSTable>
+            }
             <h4>Password</h4>
             @if (!string.IsNullOrEmpty(generatedPassword))
             {
@@ -38,12 +64,14 @@ else
     [Parameter]
     public Guid UserId { get; set; }
     User user;
+    IList<System.Security.Claims.Claim> Claims;
     private string generatedPassword;
     protected override async Task OnParametersSetAsync()
     {
         await base.OnInitializedAsync();
         user = null;
         user = await Service.FindByIdAsync(UserId.ToString());
+        Claims = await Service.GetClaimsAsync(user);
     }
     private async Task DeleteUser()
     {

@@ -3,16 +3,20 @@
 
 @inject Microsoft.Extensions.Options.IOptions<Olympiad.Shared.Models.Settings.GenerateSettings> generateSettings
 @inject Olympiad.Admin.Services.UserPasswordGenerator userPasswordGenerator
+@inject IJSRuntime JS
 
 
 <h3>GenerateUsers</h3>
 <NavLink href="users">Back to users</NavLink>
 
+<p>Insert list of StudentId</p>
+
 <textarea @bind="rows"></textarea>
-<button @onclick="Generate">Generate</button>
+<ClaimsListComponent @bind-Claims="Claims" />
+<BlazorStrap.BSButton Color="BlazorStrap.Color.Primary" @onclick="Generate">Generate</BlazorStrap.BSButton>
 
 
-@if (generatedUsers == null)
+@if (generatedUsers == null || !generatedUsers.Any())
 {
     <p>No generated users</p>
 }
@@ -25,19 +29,18 @@ else
         }
     </ul>
 }
-
 @code {
     string rows = "";
     List<PublicAPI.Responses.GenerateUsersRespponce> generatedUsers;
+
+    Dictionary<string, List<string>> Claims = new Dictionary<string, List<string>>();
+
     private async Task Generate()
     {
         var userIds = rows.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        
-
-
         List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
 
-
+        var targetClaims = Claims.SelectMany(g => g.Value.Select(c => new System.Security.Claims.Claim(g.Key, c))).ToList();
         foreach (var studentId in userIds)
         {
             User user = new User()
@@ -50,9 +53,14 @@ else
             var password = userPasswordGenerator.GeneratePassword();
             var result = await Service.CreateAsync(user, password);
             result = await Service.AddToRoleAsync(user, "User");
+            result = await Service.AddClaimsAsync(user, targetClaims);
             generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
         }
 
         generatedUsers = generates;
+        if (generatedUsers.Any())
+        {
+            await JS.DownloadFile("passwords.tsv", System.Text.Encoding.UTF8.GetBytes(string.Join('\n', generatedUsers.Select(u => $"{u.Login}\t{u.Password}"))));
+        }
     }
 }

@@ -1,0 +1,43 @@
+﻿@using BlazorStrap
+@foreach (var claimGroup in Claims ?? new Dictionary<string, List<string>>())
+{
+    <BSCard>
+        <BSCard CardType="CardType.Header">
+            @claimGroup.Key
+        </BSCard>
+        <BSCard CardType="CardType.Body">
+            <BSListGroup>
+                @foreach (var claimValue in claimGroup.Value)
+                {
+                    <BSListGroupItem>@claimValue <BSButton Color="Color.Danger" OnClick="() => claimGroup.Value.Remove(claimValue)">Remove</BSButton></BSListGroupItem>
+                }
+            </BSListGroup>
+            <BSForm Model="currentClaimValue" OnValidSubmit="() => claimGroup.Value.Add(currentClaimValue)">
+                <BSFormGroup>
+                    <BSInput Id="exampleInputEmail1" InputType="InputType.Text" PlaceHolder="Enter claim value" @bind-Value="currentClaimValue"></BSInput>
+                    <BSButton Color="Color.Success" ButtonType="ButtonType.Submit">Add claim value</BSButton>
+                </BSFormGroup>
+            </BSForm>
+            <BSButton Color="Color.Danger" @onclick="() => Claims.Remove(claimGroup.Key)">Remove claim group</BSButton>
+        </BSCard>
+    </BSCard>
+}
+<BSForm Model="currentClaimGroupName" OnValidSubmit="() => Claims.Add(currentClaimGroupName, new List<string>())">
+    <BSFormGroup>
+        <BSInput Id="exampleInputEmail1" InputType="InputType.Text" PlaceHolder="Enter claim group name" @bind-Value="currentClaimGroupName"></BSInput>
+        <BSButton Color="Color.Success" ButtonType="ButtonType.Submit">Add claim group</BSButton>
+    </BSFormGroup>
+</BSForm>
+
+
+@code {
+    [Parameter]
+    public Dictionary<string, List<string>> Claims { get; set; }
+    [Parameter]
+    public EventCallback<Dictionary<string, List<string>>> ClaimsChanged { get; set; }
+
+
+    private string currentClaimGroupName = "";
+    private string currentClaimValue = "";
+
+}
