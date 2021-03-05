@@ -5,30 +5,10 @@ services:
         image: rtuitlab/olympiad-api
         environment:
             - RabbitMqQueueSettings__Host=rabbitmq
-        deploy:
-            resources:
-                limits:
-                    cpus: '0.30'
-                    memory: 100M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
     admin:
         image: rtuitlab/olympiad-admin
         environment:
             - RabbitMqQueueSettings__Host=rabbitmq
-        deploy:
-            resources:
-                limits:
-                    cpus: '0.30'
-                    memory: 100M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
     executor:
         image: rtuitlab/olympiad-executor
         environment:
@@ -38,25 +18,5 @@ services:
             - CONSOLE_MODE=Logs
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-        deploy:
-            resources:
-                limits:
-                    cpus: '0.30'
-                    memory: 100M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
     rabbitmq:
         image: rabbitmq:3-management
-        deploy:
-            resources:
-                limits:
-                    cpus: '0.50'
-                    memory: 300M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"

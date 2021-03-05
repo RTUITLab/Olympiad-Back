@@ -5,13 +5,48 @@ services:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
             - AdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key SECRET_ADMIN_KEY}
+            - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 400M
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
     admin:
         environment:
             - AdminServiceAdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key SECRET_ADMIN_KEY}
             - AdminServiceAdminSettings__OlympiadBaseAddress=${OLYMPIAD_URI?pass olympiad uri OLYMPIAD_URI}
             - GenerateSettings__Domain=${OLYMPIAD_DOMAIN?pass olympiad domain OLYMPIAD_DOMAIN}
+            - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+        deploy:
+            replicas: 1
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 400M
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
     executor:
         environment:
             - StartSettings__PrivateDockerRegistry__Address=${OLYMPIAD_PRIVATE_REGISTRY_ADDRESS?pass olympiad private registry address OLYMPIAD_PRIVATE_REGISTRY_ADDRESS}
             - StartSettings__PrivateDockerRegistry__Login=${OLYMPIAD_PRIVATE_REGISTRY_LOGIN?pass olympiad private registry login OLYMPIAD_PRIVATE_REGISTRY_LOGIN}
             - StartSettings__PrivateDockerRegistry__Password=${OLYMPIAD_PRIVATE_REGISTRY_PASSWORD?pass olympiad private registry password OLYMPIAD_PRIVATE_REGISTRY_PASSWORD}
+        deploy:
+            placement:
+                max_replicas_per_node: 1
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 500M
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
