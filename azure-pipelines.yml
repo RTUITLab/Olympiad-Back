@@ -1,7 +1,7 @@
 name: $(BuildID)-$(Build.SourceBranchName)
 
 pool:
-  vmImage: 'ubuntu-18.04'
+  vmImage: 'ubuntu-latest'
 
 variables:
   ${{ if notIn(variables['Build.SourceBranchName'], 'master', 'develop') }}:
@@ -54,12 +54,14 @@ stages:
           artifactName: executor-build
     steps:
     - task: Cake@2
+      displayName: build service
       inputs:
         script: 'build.cake'
         target: $(cakeTarget)
         verbosity: 'Verbose'
     - publish: $(publishPath)
       artifact: $(artifactName)
+      displayName: publish $(artifactName)
 - stage: packInDocker
   condition: ${{variables.buildImage}}
   jobs:
