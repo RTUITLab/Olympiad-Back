@@ -3,90 +3,99 @@ name: $(BuildID)-$(Build.SourceBranchName)
 pool:
   vmImage: 'ubuntu-18.04'
 
+variables:
+  ${{ if notIn(variables['Build.SourceBranchName'], 'master', 'develop') }}:
+    buildImage: false
+    deployService: false
+    deployEnvironment: 'no'
+    imageTags: 'no'
+    apiServiceName: 'no'
+    adminServiceName: 'no'
+    executorServiceName: 'no'
+  ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
+    buildImage: true
+    deployService: true
+    deployEnvironment: development
+    imageTags: |
+      $(Build.BuildId)
+      develop
+    apiServiceName: olympiad-dev_api
+    adminServiceName: olympiad-dev_admin
+    executorServiceName: olympiad-dev_executor
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+    buildImage: true
+    deployService: true
+    deployEnvironment: production
+    imageTags: |
+      $(Build.BuildId)
+      latest
+    apiServiceName: olympiad_api
+    adminServiceName: olympiad_admin
+    executorServiceName: olympiad_executor
+
 stages:
 - stage: build
   displayName: BuildServices
   jobs:
-  - job: buildApi
+  - job: build
+    strategy:
+      matrix:
+        api:
+          cakeTarget: PublishApi
+          publishPath: deploy/api
+          artifactName: api-build
+        admin:
+          cakeTarget: PublishAdmin
+          publishPath: deploy/admin
+          artifactName: admin-build
+        executor:
+          cakeTarget: PublishExecutor
+          publishPath: deploy/executor
+          artifactName: executor-build
     steps:
     - task: Cake@2
       inputs:
         script: 'build.cake'
-        target: 'PublishApi'
+        target: $(cakeTarget)
         verbosity: 'Verbose'
-    - publish: deploy/api
-      artifact: api-build
-  - job: buildAdmin
-    steps:
-    - task: Cake@2
-      inputs:
-        script: 'build.cake'
-        target: 'PublishAdmin'
-        verbosity: 'Verbose'
-    - publish: deploy/admin
-      artifact: admin-build
-  - job: buildExecutor
-    steps:
-    - task: Cake@2
-      inputs:
-        script: 'build.cake'
-        target: 'PublishExecutor'
-        verbosity: 'Verbose'
-    - publish: deploy/executor
-      artifact: executor-build
+    - publish: $(publishPath)
+      artifact: $(artifactName)
 - stage: packInDocker
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: ${{variables.buildImage}}
   jobs:
-  - job: packApi
+  - job: pack
+    strategy:
+      matrix:
+        api:
+          imageName: rtuitlab/olympiad-api
+          artifactName: api-build
+        admin:
+          imageName: rtuitlab/olympiad-admin
+          artifactName: admin-build
+        executor:
+          imageName: rtuitlab/olympiad-executor
+          artifactName: executor-build
     steps:
       - download: current
-        artifact: api-build
+        artifact: $(artifactName)
+        displayName: download $(artifactName)
       - task: Docker@2
         inputs:
           containerRegistry: 'rtuitlab connection by admin'
-          repository: 'rtuitlab/olympiad-api'
+          repository: $(imageName)
           command: 'buildAndPush'
-          Dockerfile: '$(Pipeline.Workspace)/api-build/Dockerfile'
-          buildContext: '$(Pipeline.Workspace)/api-build'
-          tags: |
-            $(Build.BuildId)
-            latest
-  - job: packAdmin
-    steps:
-      - download: current
-        artifact: admin-build
-      - task: Docker@2
-        inputs:
-          containerRegistry: 'rtuitlab connection by admin'
-          repository: 'rtuitlab/olympiad-admin'
-          command: 'buildAndPush'
-          Dockerfile: '$(Pipeline.Workspace)/admin-build/Dockerfile'
-          buildContext: '$(Pipeline.Workspace)/admin-build'
-          tags: |
-            $(Build.BuildId)
-            latest
-  - job: packExecutor
-    steps:
-      - download: current
-        artifact: executor-build
-      - task: Docker@2
-        inputs:
-          containerRegistry: 'rtuitlab connection by admin'
-          repository: 'rtuitlab/olympiad-executor'
-          command: 'buildAndPush'
-          Dockerfile: '$(Pipeline.Workspace)/executor-build/Dockerfile'
-          buildContext: '$(Pipeline.Workspace)/executor-build'
-          tags: |
-            $(Build.BuildId)
-            latest
+          Dockerfile: '$(Pipeline.Workspace)/$(artifactName)/Dockerfile'
+          buildContext: '$(Pipeline.Workspace)/$(artifactName)'
+          tags: ${{variables.imageTags}}
+
 - stage: deploy
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: ${{variables.deployService}}
   jobs:
     - deployment: DeployApi
       displayName: Deploy api
       pool:
-        vmImage: 'Ubuntu-16.04'
-      environment: 'production'
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
           deploy:
@@ -96,13 +105,13 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) olympiad_api'
+                  commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) ${{variables.apiServiceName}}'
                   readyTimeout: '20000'
     - deployment: DeployAdmin
       displayName: Deploy admin
       pool:
-        vmImage: 'Ubuntu-16.04'
-      environment: 'production'
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
           deploy:
@@ -112,13 +121,13 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) olympiad_admin'
+                  commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) ${{variables.adminServiceName}}'
                   readyTimeout: '20000'
     - deployment: DeployExecutor
       displayName: Deploy executor
       pool:
-        vmImage: 'Ubuntu-16.04'
-      environment: 'production'
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
           deploy:
@@ -128,6 +137,6 @@ stages:
                 inputs:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) olympiad_executor'
+                  commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) ${{variables.executorServiceName}}'
                   readyTimeout: '20000'
 
