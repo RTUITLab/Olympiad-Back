@@ -77,7 +77,7 @@ namespace Executor.Executers.Build
                 .Where(d => !d.Contains("Removing intermediate container"))
                 .Select(d => Regex.Replace(d, @"^Step \d+/\d+ : ", ""))
                 .Where(d => !d.StartsWith("FROM"))
-                );
+                ).Trim();
         }
 
         public async Task<bool> BuildSolution(Solution solution)
