@@ -93,7 +93,7 @@ stages:
             searchFolder: ./tests/e2e/out
             failTaskOnFailedTests: true
 - stage: packInDocker
-  condition: ${{variables.buildImage}}
+  condition:  and(succeeded(), ${{variables.buildImage}}) 
   jobs:
   - job: pack
     strategy:
@@ -121,7 +121,7 @@ stages:
           tags: ${{variables.imageTags}}
 
 - stage: deploy
-  condition: ${{variables.deployService}}
+  condition: and(succeeded(), ${{variables.deployService}})
   jobs:
     - deployment: DeployApi
       displayName: Deploy api
