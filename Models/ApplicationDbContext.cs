@@ -39,8 +39,9 @@ namespace Models
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
-        public DbSet<Solution> Solutions { get; set; }
+        public DbSet<ExerciseDataGroup> TestDataGroups { get; set; }
         public DbSet<ExerciseData> TestData { get; set; }
+        public DbSet<Solution> Solutions { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<SolutionCheck> SolutionChecks { get; set; }
         public DbSet<SolutionBuildLog> SolutionBuildLogs { get; set; }

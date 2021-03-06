@@ -5,10 +5,8 @@ using Models.Solutions;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
 using PublicAPI.Responses.Users;
-using Olympiad.Shared.Models;
 using System;
 using System.Linq;
-using PublicAPI.Responses.Dump;
 using PublicAPI.Responses.Solutions;
 using WebApp.Models;
 using Models.Checking;
@@ -60,11 +58,6 @@ namespace WebApp.Formatting.ResponseMappers
 
             CreateMap<ExerciseData, ExerciseDataResponse>();
             CreateMap<ExerciseData, ExerciseDataCompactResponse>();
-
-            CreateMap<Solution, SolutionDumpView>()
-                .ForMember(d => d.ExerciseName, map => map.MapFrom(s => s.Exercise.ExerciseName))
-                .ForMember(d => d.UserId, map => map.MapFrom(s => s.User.StudentID))
-                .ForMember(d => d.ExerciseScore, map => map.MapFrom(s => s.Exercise.Score));
 
             CreateMap<SolutionCheck, SolutionCheckResponse>();
         }

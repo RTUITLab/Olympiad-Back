@@ -1,0 +1,83 @@
+﻿@inherits OwningComponentBase<ApplicationDbContext>
+
+@if (exerciseData != null)
+{
+    <tr>
+        <td><textarea class="form-control" onClick="this.setSelectionRange(0, this.value.length)" @bind="exerciseData.InData" /></td>
+        <td><textarea class="form-control" onClick="this.setSelectionRange(0, this.value.length)" @bind="exerciseData.OutData" /></td>
+        <td>
+            @if (Service.Entry(exerciseData).State == EntityState.Modified)
+            {
+                <button class="btn btn-success" @onclick="Save">Save</button>
+            }
+            else
+            {
+                <p>@Service.Entry(exerciseData).State</p>
+            }
+        </td>
+        <td><button class="btn btn-danger" @onclick="Delete">Delete</button></td>
+    </tr>
+}
+else
+{
+    <tr>
+        <td>loading</td>
+        <td>@ExerciseDataId</td>
+    </tr>
+}
+
+@code {
+    [Parameter]
+    public Guid ExerciseDataId { get; set; }
+    [CascadingParameter(Name = "EditExerciseDataGroup")]
+    EditExerciseDataGroup EditExerciseDataGroup { get; set; }
+
+    private Models.Exercises.ExerciseData exerciseData;
+
+    private System.Threading.SemaphoreSlim dbOperation = new System.Threading.SemaphoreSlim(1, 1);
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await dbOperation.WaitAsync();
+        try
+        {
+            if (exerciseData == null || exerciseData.Id != ExerciseDataId)
+            {
+                exerciseData = await Service.TestData.SingleOrDefaultAsync(d => d.Id == ExerciseDataId);
+            }
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+    }
+
+
+    private async Task Save()
+    {
+        await dbOperation.WaitAsync();
+        try
+        {
+            await Service.SaveChangesAsync();
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+    }
+
+    private async Task Delete()
+    {
+        await dbOperation.WaitAsync();
+        try
+        {
+            Service.Remove(exerciseData);
+            await Service.SaveChangesAsync();
+            await EditExerciseDataGroup.UpdateList();
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+    }
+}

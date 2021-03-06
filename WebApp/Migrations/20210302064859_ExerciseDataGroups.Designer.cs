@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -9,9 +10,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210302064859_ExerciseDataGroups")]
+    partial class ExerciseDataGroups
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -199,14 +201,9 @@ namespace WebApp.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TestDataId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("SolutionId");
-
-                    b.HasIndex("TestDataId");
 
                     b.ToTable("SolutionChecks");
                 });
@@ -525,12 +522,6 @@ namespace WebApp.Migrations
                     b.HasOne("Models.Solutions.Solution", "Solution")
                         .WithMany("SolutionChecks")
                         .HasForeignKey("SolutionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Models.Exercises.ExerciseData", "TestData")
-                        .WithMany()
-                        .HasForeignKey("TestDataId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

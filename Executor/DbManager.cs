@@ -61,11 +61,11 @@ namespace Executor
             return Invoke<List<SolutionsStatisticResponse>>("api/Check/statistic");
         }
 
-        public async Task SaveLog(Guid solutionId, SolutionCheckRequest solutionCheck)
+        public async Task SaveLog(Guid solutionId, Guid testDataId, SolutionCheckRequest solutionCheck)
         {
             var jsonString = JsonConvert.SerializeObject(solutionCheck);
             var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-            var result = await InvokePostInternal($"api/executor/checklog/{solutionId}", content);
+            var result = await InvokePostInternal($"api/executor/checklog/{solutionId}/{testDataId}", content);
             logger.LogDebug($"Sended logs, status code: {result.StatusCode}");
         }
 
