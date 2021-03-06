@@ -10,6 +10,7 @@ namespace Models.Checking
         public Guid Id { get; set; }
         public DateTimeOffset BuildedTime { get; set; }
         public string Log { get; set; }
+        public string PrettyLog { get; set; }
         public Guid SolutionId { get; set; }
         public Solution Solution { get; set; }
     }

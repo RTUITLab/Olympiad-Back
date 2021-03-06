@@ -38,6 +38,8 @@ services:
             - StartSettings__PrivateDockerRegistry__Address=${OLYMPIAD_PRIVATE_REGISTRY_ADDRESS?pass olympiad private registry address OLYMPIAD_PRIVATE_REGISTRY_ADDRESS}
             - StartSettings__PrivateDockerRegistry__Login=${OLYMPIAD_PRIVATE_REGISTRY_LOGIN?pass olympiad private registry login OLYMPIAD_PRIVATE_REGISTRY_LOGIN}
             - StartSettings__PrivateDockerRegistry__Password=${OLYMPIAD_PRIVATE_REGISTRY_PASSWORD?pass olympiad private registry password OLYMPIAD_PRIVATE_REGISTRY_PASSWORD}
+            - UserInfo__UserName=${EXECUTOR_USER_LOGIN?pass user login for executor service EXECUTOR_USER_LOGIN}
+            - UserInfo__Password=${EXECUTOR_USER_PASSWORD?pass user password for executor service EXECUTOR_USER_PASSWORD}
         deploy:
             placement:
                 max_replicas_per_node: 1

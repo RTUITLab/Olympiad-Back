@@ -14,6 +14,8 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Executor.Models.Settings;
+using PublicAPI.Requests;
+using System.Text.Json;
 
 namespace Executor.Executers.Build
 {
@@ -32,7 +34,7 @@ namespace Executor.Executers.Build
         };
 
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
-        private readonly Func<Guid, string, Task> saveBuildLogs;
+        private readonly Func<Guid, BuildLogRequest, Task> saveBuildLogs;
         private readonly IDockerClient dockerClient;
         private readonly StartSettings startOptions;
         private readonly ILogger<ProgramBuilder> logger;
@@ -45,7 +47,7 @@ namespace Executor.Executers.Build
 
         public ProgramBuilder(
             Func<Guid, SolutionStatus, Task> processSolution,
-            Func<Guid, string, Task> saveBuildLogs,
+            Func<Guid, BuildLogRequest, Task> saveBuildLogs,
             IDockerClient dockerClient,
             StartSettings startOptions,
             ILogger<ProgramBuilder> logger)
@@ -55,6 +57,27 @@ namespace Executor.Executers.Build
             this.dockerClient = dockerClient;
             this.startOptions = startOptions;
             this.logger = logger;
+        }
+        /// <summary>
+        /// Clean docker build logs
+        /// </summary>
+        /// <param name="rawLogs">raw logs from docker build</param>
+        /// <returns>Clean logs</returns>
+        private static string PrettyLogs(string rawLogs)
+        {
+            return string.Join("\n", rawLogs
+                .Split("\n")
+                .Select(row => { try { return JsonDocument.Parse(row).RootElement; } catch { return default; } })
+                .Where(e => e.ValueKind == JsonValueKind.Object)
+                .Where(d => d.TryGetProperty("stream", out _))
+                .Select(d => d.GetProperty("stream").GetString().Trim())
+                .Where(d => !d.StartsWith("--->"))
+                .Where(d => !d.Contains("Successfully built "))
+                .Where(d => !d.Contains("Successfully tagged "))
+                .Where(d => !d.Contains("Removing intermediate container"))
+                .Select(d => Regex.Replace(d, @"^Step \d+/\d+ : ", ""))
+                .Where(d => !d.StartsWith("FROM"))
+                );
         }
 
         public async Task<bool> BuildSolution(Solution solution)
@@ -67,7 +90,11 @@ namespace Executor.Executers.Build
             try
             {
                 var (buildSuccess, buildLogs) = await BuidSource(solution.Id, solution.Language, solution.Raw);
-                await saveBuildLogs(solution.Id, buildLogs);
+                await saveBuildLogs(solution.Id, new BuildLogRequest
+                {
+                    RawBuildLog = buildLogs,
+                    PrettyBuildLog = PrettyLogs(buildLogs)
+                });
 
                 if (!buildSuccess)
                 {
