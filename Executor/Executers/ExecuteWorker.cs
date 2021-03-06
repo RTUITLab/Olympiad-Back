@@ -9,6 +9,7 @@ using Models.Solutions;
 using Olympiad.Shared.Models;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Options;
+using PublicAPI.Requests;
 
 namespace Executor.Executers
 {
@@ -23,7 +24,7 @@ namespace Executor.Executers
         public ExecuteWorkerStatus Status { get; private set; }
         public ExecuteWorker(
             Func<Guid, SolutionStatus, Task> processSolution,
-            Func<Guid, string, Task> saveBuildLogs,
+            Func<Guid, BuildLogRequest, Task> saveBuildLogs,
             Func<Guid, Task<ExerciseData[]>> getTests,
             ISolutionsBase solutionsBase,
             IDockerClient dockerClient,

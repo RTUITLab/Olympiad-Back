@@ -73,7 +73,7 @@ namespace WebApp.Controllers
         [HttpPost("buildlog/{solutionId}")]
         public async Task<IActionResult> BuildLog(
             [FromRoute] Guid solutionId,
-            [FromBody] string log)
+            [FromBody] BuildLogRequest log)
         {
             var solution = await dbContext.Solutions.SingleOrDefaultAsync(s => s.Id == solutionId);
             if (solution == null)
@@ -81,7 +81,8 @@ namespace WebApp.Controllers
             var buildLogRecord = new SolutionBuildLog
             {
                 BuildedTime = DateTimeOffset.UtcNow,
-                Log = log,
+                Log = log.RawBuildLog,
+                PrettyLog = log.PrettyBuildLog,
                 SolutionId = solutionId,
                 Solution = solution
             };

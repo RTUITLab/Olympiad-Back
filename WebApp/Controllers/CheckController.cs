@@ -190,6 +190,21 @@ namespace WebApp.Controllers
             return mapper.Map<SolutionResponse>(solutionInternal);
         }
 
+        [HttpGet]
+        [Route("buildlogs/{solutionId:guid}")]
+        public async Task<List<string>> GetBuildLogs(Guid solutionId)
+        {
+            var buildLogs = await context
+                .SolutionBuildLogs
+                .Where(p => p.SolutionId == solutionId && p.Solution.UserId == UserId)
+                .Select(p => p.PrettyLog)
+                .ToListAsync()
+                ?? throw StatusCodeException.NotFount;
+
+            return buildLogs;
+        }
+
+
         [Authorize(Policy = "Executor")]
         [Authorize(Roles = "Admin")]
         [HttpGet("statistic")]

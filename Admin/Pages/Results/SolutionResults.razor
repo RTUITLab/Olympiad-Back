@@ -141,7 +141,11 @@ else
                                     </BSCard>
                                     <BSCollapse>
                                         <BSCard CardType="CardType.Body">
-                                            <pre><code>@build.Log</code></pre>
+                                            <BSButtonGroup>
+                                                <BSButton Color="Color.Secondary" OnClick="() => prettyBuildLog = true">Pretty</BSButton>
+                                                <BSButton Color="Color.Secondary" OnClick="() => prettyBuildLog = false">Raw</BSButton>
+                                            </BSButtonGroup>
+                                            <pre><code>@(prettyBuildLog ? build.PrettyLog : build.Log)</code></pre>
                                         </BSCard>
                                     </BSCollapse>
                                 </BSCard>
@@ -169,6 +173,7 @@ else
     private Models.Solutions.Solution solution;
 
     private bool showDif = false;
+    private bool prettyBuildLog = true;
 
     protected override async Task OnParametersSetAsync()
     {
