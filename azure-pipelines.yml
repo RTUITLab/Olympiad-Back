@@ -68,22 +68,51 @@ stages:
     - job: e2e
       steps:
         - task: DownloadPipelineArtifact@2
+          displayName: download api build
           inputs:
             artifactName: 'api-build'
             buildType: 'current'
-            targetPath: './tests/e2e/api/'
-        - script: docker-compose build
+            targetPath: 'deploy/api'
+        - task: DownloadPipelineArtifact@2
+          displayName: download executor build
+          inputs:
+            artifactName: 'executor-build'
+            buildType: 'current'
+            targetPath: 'deploy/executor'
+        - task: DownloadPipelineArtifact@2
+          displayName: download admin build
+          inputs:
+            artifactName: 'admin-build'
+            buildType: 'current'
+            targetPath: 'deploy/admin'
+
+        - powershell: ./generateTestStack.ps1
+          workingDirectory: ./tests/e2e
+          displayName: generate test env stack file
+          env:
+            OLYMPIAD_SERVICE_TAG: $(Build.BuildId)
+            OLYMPIAD_PRIVATE_REGISTRY_LOGIN: $(registryLogin)
+            OLYMPIAD_PRIVATE_REGISTRY_PASSWORD: $(registryPassword)
+
+        - script: docker-compose -f stack.yml build
           workingDirectory: ./tests/e2e
           displayName: build test images
-        - script: docker-compose up -d api
+
+        - script: docker-compose -f stack.yml up -d api
           workingDirectory: ./tests/e2e
           displayName: start api
-        - script: docker-compose up tests
+
+        - script: docker-compose -f stack.yml up tests
           workingDirectory: ./tests/e2e
           displayName: run tests
-        - script: docker-compose logs api
+
+        - script: docker-compose -f stack.yml logs api
           workingDirectory: ./tests/e2e
           displayName: show api logs
+        - script: docker-compose -f stack.yml logs executor
+          workingDirectory: ./tests/e2e
+          displayName: show api executor
+
         - publish: ./tests/e2e/out
           artifact: olympiad-e2e-test-results
         - task: PublishTestResults@2

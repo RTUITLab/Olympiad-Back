@@ -25,22 +25,9 @@ services:
         build: ${BACK_CONTEXT:-.}/deploy/executor
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
-           - StartSettings__DockerEndPoint=http://dind:2375
         restart: on-failure
         depends_on:
-            - api
-            - dind
             - rabbitmq
-    dind:
-        image: docker:stable-dind
-        privileged: true
-        command: dockerd --host=tcp://0.0.0.0:2375 -l=debug
-        restart: on-failure
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
     postgres:
         image: postgres:13-alpine
         environment:
