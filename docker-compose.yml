@@ -2,15 +2,18 @@ version: "3.8"
 
 services:
     api:
-        image: rtuitlab/olympiad-api
+        image: rtuitlab/olympiad-api:${OLYMPIAD_SERVICE_TAG-latest}
+        restart: on-failure
         environment:
             - RabbitMqQueueSettings__Host=rabbitmq
     admin:
-        image: rtuitlab/olympiad-admin
+        image: rtuitlab/olympiad-admin:${OLYMPIAD_SERVICE_TAG-latest}
+        restart: on-failure
         environment:
             - RabbitMqQueueSettings__Host=rabbitmq
     executor:
-        image: rtuitlab/olympiad-executor
+        image: rtuitlab/olympiad-executor:${OLYMPIAD_SERVICE_TAG-latest}
+        restart: on-failure
         environment:
             - StartSettings__DockerEndPoint=unix:///var/run/docker.sock
             - RabbitMqQueueSettings__Host=rabbitmq

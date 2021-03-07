@@ -4,7 +4,6 @@ services:
     api:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
-            - AdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key SECRET_ADMIN_KEY}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
         deploy:
             resources:
@@ -18,8 +17,6 @@ services:
                 max-file: "10"
     admin:
         environment:
-            - AdminServiceAdminSettings__SecurityKey=${SECRET_ADMIN_KEY?pass secret admin key SECRET_ADMIN_KEY}
-            - AdminServiceAdminSettings__OlympiadBaseAddress=${OLYMPIAD_URI?pass olympiad uri OLYMPIAD_URI}
             - GenerateSettings__Domain=${OLYMPIAD_DOMAIN?pass olympiad domain OLYMPIAD_DOMAIN}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
         deploy:
