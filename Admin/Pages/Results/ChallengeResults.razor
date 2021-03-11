@@ -26,11 +26,23 @@ else
                 </BSDropdownMenu>
             </BSDropdown>
         </div>
+        <div class="col">
+            <BSDropdown>
+                <BSDropdownToggle Color="Color.Primary">Columns</BSDropdownToggle>
+                <BSDropdownMenu>
+                    <BSDropdownItem OnClick="() => showMode = ShowMode.Status"><label>First name<input type="checkbox" @bind="showFirstName" /></label></BSDropdownItem>
+                </BSDropdownMenu>
+            </BSDropdown>
+        </div>
     </div>
     <table class="table table-bordered">
         <thead>
             <tr>
                 <th>Student Id</th>
+                @if (showFirstName)
+                {
+                    <th>First name</th>
+                }
                 @foreach (var exercise in exercises)
                 {
                     <th>@exercise.ExerciseName</th>
@@ -49,6 +61,10 @@ else
                 {
                     <tr>
                         <td><NavLink href=@($"challenges/{ChallengeId}/results/{userSolution.StudentId}")>@userSolution.StudentId</NavLink></td>
+                        @if (showFirstName)
+                        {
+                            <td>@userSolution.User?.FirstName</td>
+                        }
                         @foreach (var exercise in exercises)
                         {
                             if (userSolution.Results.ContainsKey(exercise.ExerciseID))
@@ -91,6 +107,7 @@ else
     private List<UserSolutions> userSolutions;
 
     private ShowMode showMode = ShowMode.Status;
+    private bool showFirstName = false;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -111,6 +128,7 @@ else
                 .Select(g => new
                 {
                     UserId = g.Key.UserId,
+
                     StudentId = g.Key.StudentID,
                     ExerciseId = g.Key.ExerciseId,
                     Status = g.Max(s => s.Status)
@@ -126,12 +144,19 @@ else
             })
             .OrderBy(g => g.StudentId)
             .ToList();
+        var targetIds = userSolutions.Select(u => u.UserId).ToArray();
+        var users = await dbContext.Users.Where(u => targetIds.Contains(u.Id)).ToListAsync();
+        foreach (var usersolution in userSolutions)
+        {
+            usersolution.User = users.Single(u => u.Id == usersolution.UserId);
+        }
     }
 
     class UserSolutions
     {
         public Guid UserId { get; set; }
         public string StudentId { get; set; }
+        public User User { get; set; }
         public Dictionary<Guid, Olympiad.Shared.Models.SolutionStatus> Results { get; set; }
     }
 
