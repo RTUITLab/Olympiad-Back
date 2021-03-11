@@ -52,13 +52,10 @@ namespace WebApp.Controllers
 
         private IQueryable<ChallengeResponse> AvailableChallenges()
         {
-            IQueryable<Challenge> query = context.Challenges;
-            if (!IsAdmin)
-            {
-                query = query
-                    .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
-                           c.UsersToChallenges.Any(utc => utc.UserId == UserId));
-            }
+            IQueryable<Challenge> query = context
+                .Challenges
+                .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
+                        c.UsersToChallenges.Any(utc => utc.UserId == UserId));
             return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
         }
     }
