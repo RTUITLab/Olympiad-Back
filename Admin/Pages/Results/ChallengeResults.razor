@@ -123,6 +123,7 @@ else
 
         var simpleData = await dbContext
                 .Solutions
+                .Where(s => s.Exercise.ChallengeId == ChallengeId)
                 .Include(s => s.User)
                 .GroupBy(m => new { m.UserId, m.User.StudentID, m.ExerciseId })
                 .Select(g => new
