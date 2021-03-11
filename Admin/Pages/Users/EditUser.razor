@@ -18,8 +18,23 @@ else
 {
     <BlazorStrap.BSRow>
         <BlazorStrap.BSCol>
-            <h4>Student id</h4>
-            <p>@user.StudentID</p>
+            <BSForm Model="user" OnValidSubmit="UpdateUser">
+                <BSFormGroup>
+                    <BSLabel>
+                        Student ID
+                        <BSInput InputType="InputType.Text" PlaceHolder="Enter student id" @bind-Value="user.StudentID"></BSInput>
+                    </BSLabel>
+                </BSFormGroup>
+                <BSFormGroup>
+                    <BSLabel>
+                        First name
+                        <BSInput InputType="InputType.Text" PlaceHolder="Enter student first name" @bind-Value="user.FirstName"></BSInput>
+                    </BSLabel>
+                </BSFormGroup>
+                <BSFormGroup>
+                    <BSButton Color="Color.Warning" ButtonType="ButtonType.Submit">Update user general info</BSButton>
+                </BSFormGroup>
+            </BSForm>
             <h4>Claims</h4>
             @if (Claims == null)
             {
@@ -87,6 +102,11 @@ else
         user = null;
         user = await Service.FindByIdAsync(UserId.ToString());
         await LoadClaims();
+    }
+
+    private async Task UpdateUser()
+    {
+        await Service.UpdateAsync(user);
     }
 
     private async Task AddClaim()
