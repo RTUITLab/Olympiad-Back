@@ -1,0 +1,226 @@
+﻿@using Microsoft.Extensions.DependencyInjection
+@using BlazorStrap
+@inherits OwningComponentBase<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>
+
+<h5>ChallengeInvitedUsers (@(acceptedUsers?.Count.ToString() ?? "~"))</h5>
+
+@if (acceptedUsers == null)
+{
+    <p>Loading users</p>
+}
+else
+{
+    <BSTable IsBordered="true">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>
+                    <BSButton Color="Color.Danger" OnClick="() => RemoveAllUsersFromChallenge()">Remove all</BSButton>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var user in acceptedUsers)
+            {
+                <tr>
+                    <td>@user.StudentID</td>
+                    <td>
+                        <BSButton Color="Color.Danger" OnClick="() => RemoveUserFromChallenge(user)">Remove from challenge</BSButton>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </BSTable>
+    <h6>Invite by Student ID</h6>
+    <BSForm Model="studentIdToInvite" OnValidSubmit="InviteByStudentId">
+        <BSLabel>
+            Student ID
+            <BSInput InputType="InputType.Text" @bind-Value="studentIdToInvite" />
+        </BSLabel>
+        <BSButton ButtonType="ButtonType.Submit">Invite by Student ID</BSButton>
+    </BSForm>
+
+    <h6>Invite by claim</h6>
+    <BSForm Model="ClaimToFind" OnValidSubmit="InviteByClaim">
+        <BSLabel>
+            Type
+            <BSInput InputType="InputType.Text" @bind-Value="ClaimToFind.Type" />
+        </BSLabel>
+        <BSLabel>
+            Value
+            <BSInput InputType="InputType.Text" @bind-Value="ClaimToFind.Value" />
+        </BSLabel>
+        <BSButton ButtonType="ButtonType.Submit">Invite by claim</BSButton>
+    </BSForm>
+    <Logs @ref="logs" />
+}
+
+@code {
+
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    private List<User> acceptedUsers;
+    private Logs logs;
+
+    private string studentIdToInvite = "";
+    private ClaimPair ClaimToFind = new ClaimPair();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await UpdateAccepted();
+    }
+
+    private async Task UpdateAccepted()
+    {
+        if (logs != null)
+        {
+            await logs.Log($"Updating list");
+        }
+        await DoOnContext(async c =>
+        {
+            acceptedUsers = await c.Challenges
+                .AsNoTracking()
+                .Where(c => c.Id == ChallengeId)
+                .SelectMany(c => c.UsersToChallenges)
+                .Select(utc => utc.User)
+                .ToListAsync();
+        });
+    }
+
+    private async Task InviteByStudentId()
+    {
+        await logs.Log($"Search user {studentIdToInvite }");
+        await DoOnContext(async c =>
+        {
+            var users = await c.Users.Where(u => u.StudentID == studentIdToInvite).ToListAsync();
+            if (users.Count != 1)
+            {
+                await logs.Log($"Found {users.Count} users, not 1, exit");
+                return;
+            }
+            c.Add(new Models.Links.UserToChallenge
+            {
+                ChallengeId = ChallengeId,
+                UserId = users.Single().Id
+            });
+            try
+            {
+
+                var saved = await c.SaveChangesAsync();
+                await logs.Log($"Saved {saved} entities");
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    await logs.Log($"Can't save changes, {ex.InnerException.Message}");
+                }
+                else
+                {
+                    await logs.Log($"Can't save changes, {ex.Message}");
+                }
+            }
+        });
+        await UpdateAccepted();
+    }
+
+    private async Task InviteByClaim()
+    {
+        await logs.Log($"Search user with claim {ClaimToFind}");
+        await DoOnContext(async c =>
+        {
+            var userIds = await c.UserClaims.Where(uc => uc.ClaimType == ClaimToFind.Type && uc.ClaimValue == ClaimToFind.Value)
+                .Select(uc => uc.UserId)
+                .ToListAsync();
+            await logs.Log($"find {userIds.Count} user ids");
+            var targetIds = userIds.Except(acceptedUsers.Select(u => u.Id)).ToList();
+            await logs.Log($"after excluding existings {targetIds.Count}");
+            foreach (var targetId in targetIds)
+            {
+                c.Add(new Models.Links.UserToChallenge
+                {
+                    ChallengeId = ChallengeId,
+                    UserId = targetId
+                });
+            }
+            try
+            {
+                var saved = await c.SaveChangesAsync();
+                await logs.Log($"Saved {saved} entities");
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    await logs.Log($"Can't save changes, {ex.InnerException.Message}");
+                }
+                else
+                {
+                    await logs.Log($"Can't save changes, {ex.Message}");
+                }
+            }
+        });
+        await UpdateAccepted();
+    }
+
+
+    private async Task RemoveAllUsersFromChallenge()
+    {
+
+        await DoOnContext(async c =>
+        {
+            await logs.Log($"Removing all {acceptedUsers.Count} users");
+            foreach (var user in acceptedUsers)
+            {
+                c.Remove(new Models.Links.UserToChallenge
+                {
+                    UserId = user.Id,
+                    ChallengeId = ChallengeId
+                });
+            }
+            var updated = await c.SaveChangesAsync();
+            await logs.Log($"Updated: {updated}");
+        });
+
+        await UpdateAccepted();
+    }
+
+    private async Task RemoveUserFromChallenge(User user)
+    {
+        await DoOnContext(async c =>
+        {
+            await logs.Log($"Removing user {user.Email}");
+            c.Remove(new Models.Links.UserToChallenge
+            {
+                UserId = user.Id,
+                ChallengeId = ChallengeId
+            });
+            var updated = await c.SaveChangesAsync();
+            await logs.Log($"Updated: {updated}");
+        });
+
+        await UpdateAccepted();
+    }
+
+
+    private async Task DoOnContext(Func<ApplicationDbContext, Task> action)
+    {
+        using var scope = Service.CreateScope();
+        var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
+        await action(db);
+    }
+
+    private class ClaimPair
+    {
+        public string Type { get; set; } = "";
+        public string Value { get; set; } = "";
+
+        public override string ToString()
+        {
+            return $"{Type}: {Value}";
+        }
+    }
+}

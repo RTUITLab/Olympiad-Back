@@ -19,6 +19,7 @@ using BlazorStrap;
 using DiffPlex.DiffBuilder;
 using DiffPlex;
 using Olympiad.Admin.Services;
+using Olympiad.Admin.Options;
 
 namespace Olympiad.Admin
 {
@@ -37,6 +38,7 @@ namespace Olympiad.Admin
         {
             services.Configure<GenerateSettings>(Configuration.GetSection(nameof(GenerateSettings)));
             services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
+            services.Configure<EnvironmentOptions>(Configuration.GetSection(nameof(EnvironmentOptions)));
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddDbContext<ApplicationDbContext>(options =>
