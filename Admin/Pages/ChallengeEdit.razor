@@ -1,6 +1,7 @@
 ﻿@page "/challenges/{challengeId:guid}"
 
 @inherits OwningComponentBase<ApplicationDbContext>
+@inject Microsoft.Extensions.Options.IOptions<Options.EnvironmentOptions> EnvironmentOptions
 
 @using Microsoft.EntityFrameworkCore
 
@@ -121,7 +122,7 @@ else
     private DateTimeOffset GetNow()
     {
         var now = DateTimeOffset.UtcNow;
-        now = now.ToOffset(TimeSpan.FromHours(3));
+        now = now.ToOffset(EnvironmentOptions.Value.EditingDateoffset);
         return now;
     }
 
@@ -133,11 +134,11 @@ else
             .SingleOrDefaultAsync(ch => ch.Id == ChallengeId);
         if (challenge.StartTime.HasValue)
         {
-            challenge.StartTime = challenge.StartTime.Value.ToOffset(TimeSpan.FromHours(3));
+            challenge.StartTime = challenge.StartTime.Value.ToOffset(EnvironmentOptions.Value.EditingDateoffset);
         }
         if (challenge.EndTime.HasValue)
         {
-            challenge.EndTime = challenge.EndTime.Value.ToOffset(TimeSpan.FromHours(3));
+            challenge.EndTime = challenge.EndTime.Value.ToOffset(EnvironmentOptions.Value.EditingDateoffset);
         }
     }
 
