@@ -30,7 +30,7 @@ variables:
     apiServiceName: olympiad-dev_api
     adminServiceName: olympiad-dev_admin
     executorServiceName: olympiad-dev_executor
-  ${{ if eq(variables['Build.SourceBranchName'], 'refs/heads/master') }}:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
     deployService: true
     deployEnvironment: production
