@@ -10,18 +10,36 @@
 }
 else
 {
-    @foreach (var user in acceptedUsers)
-    {
-        <p>@user.Email</p>
-    }
+    <BSTable IsBordered="true">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>
+                    <BSButton Color="Color.Danger" OnClick="() => RemoveAllUsersFromChallenge()">Remove all</BSButton>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
 
-    <h6>Invite by email</h6>
-    <BSForm Model="emailToInvite" OnValidSubmit="InviteByEmail">
+            @foreach (var user in acceptedUsers)
+            {
+                <tr>
+                    <td>@user.StudentID</td>
+                    <td>
+                        <BSButton Color="Color.Danger" OnClick="() => RemoveUserFromChallenge(user)">Remove from challenge</BSButton>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </BSTable>
+    <h6>Invite by Student ID</h6>
+    <BSForm Model="studentIdToInvite" OnValidSubmit="InviteByStudentId">
         <BSLabel>
-            Email
-            <BSInput InputType="InputType.Email" @bind-Value="emailToInvite" />
+            Student ID
+            <BSInput InputType="InputType.Text" @bind-Value="studentIdToInvite" />
         </BSLabel>
-        <BSButton ButtonType="ButtonType.Submit">Invite by email</BSButton>
+        <BSButton ButtonType="ButtonType.Submit">Invite by Student ID</BSButton>
     </BSForm>
 
     <h6>Invite by claim</h6>
@@ -46,7 +64,7 @@ else
     private List<User> acceptedUsers;
     private Logs logs;
 
-    private string emailToInvite = "";
+    private string studentIdToInvite = "";
     private ClaimPair ClaimToFind = new ClaimPair();
 
     protected override async Task OnParametersSetAsync()
@@ -57,7 +75,10 @@ else
 
     private async Task UpdateAccepted()
     {
-
+        if (logs != null)
+        {
+            await logs.Log($"Updating list");
+        }
         await DoOnContext(async c =>
         {
             acceptedUsers = await c.Challenges
@@ -69,12 +90,12 @@ else
         });
     }
 
-    private async Task InviteByEmail()
+    private async Task InviteByStudentId()
     {
-        await logs.Log($"Search user {emailToInvite}");
+        await logs.Log($"Search user {studentIdToInvite }");
         await DoOnContext(async c =>
         {
-            var users = await c.Users.Where(u => u.Email == emailToInvite).ToListAsync();
+            var users = await c.Users.Where(u => u.StudentID == studentIdToInvite).ToListAsync();
             if (users.Count != 1)
             {
                 await logs.Log($"Found {users.Count} users, not 1, exit");
@@ -103,7 +124,6 @@ else
                 }
             }
         });
-        await logs.Log($"Updating list");
         await UpdateAccepted();
     }
 
@@ -143,11 +163,47 @@ else
                 }
             }
         });
-        await logs.Log($"Updating list");
         await UpdateAccepted();
     }
 
 
+    private async Task RemoveAllUsersFromChallenge()
+    {
+
+        await DoOnContext(async c =>
+        {
+            await logs.Log($"Removing all {acceptedUsers.Count} users");
+            foreach (var user in acceptedUsers)
+            {
+                c.Remove(new Models.Links.UserToChallenge
+                {
+                    UserId = user.Id,
+                    ChallengeId = ChallengeId
+                });
+            }
+            var updated = await c.SaveChangesAsync();
+            await logs.Log($"Updated: {updated}");
+        });
+
+        await UpdateAccepted();
+    }
+
+    private async Task RemoveUserFromChallenge(User user)
+    {
+        await DoOnContext(async c =>
+        {
+            await logs.Log($"Removing user {user.Email}");
+            c.Remove(new Models.Links.UserToChallenge
+            {
+                UserId = user.Id,
+                ChallengeId = ChallengeId
+            });
+            var updated = await c.SaveChangesAsync();
+            await logs.Log($"Updated: {updated}");
+        });
+
+        await UpdateAccepted();
+    }
 
 
     private async Task DoOnContext(Func<ApplicationDbContext, Task> action)
