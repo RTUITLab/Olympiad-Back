@@ -143,8 +143,14 @@ namespace WebApp.Controllers
 
             await context.Solutions.AddAsync(solution);
             await context.SaveChangesAsync();
-
-            queue.PutInQueue(solution.Id);
+            if (await context.TestData.AnyAsync(td => td.ExerciseDataGroup.ExerciseId == exerciseId))
+            {
+                logger.LogInformation($"Put solution {solution.Id} to test queue");
+                queue.PutInQueue(solution.Id);
+            } else
+            {
+                logger.LogWarning($"No exercise data for {solution.Id}, no put to test queue");
+            }
 
             return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
         }
