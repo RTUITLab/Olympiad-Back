@@ -118,10 +118,10 @@ else
     public Guid ChallengeId { get; set; }
     private Models.Exercises.Challenge challenge;
 
-    private TimeZoneInfo MoscowTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
     private DateTimeOffset GetNow()
     {
-        var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, MoscowTimeZone);
+        var now = DateTimeOffset.UtcNow;
+        now = now.ToOffset(TimeSpan.FromHours(3));
         return now;
     }
 
@@ -131,6 +131,14 @@ else
 
         challenge = await Service.Challenges
             .SingleOrDefaultAsync(ch => ch.Id == ChallengeId);
+        if (challenge.StartTime.HasValue)
+        {
+            challenge.StartTime = challenge.StartTime.Value.ToOffset(TimeSpan.FromHours(3));
+        }
+        if (challenge.EndTime.HasValue)
+        {
+            challenge.EndTime = challenge.EndTime.Value.ToOffset(TimeSpan.FromHours(3));
+        }
     }
 
     private async Task UpdateChallenge()
