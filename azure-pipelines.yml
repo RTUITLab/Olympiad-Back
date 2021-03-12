@@ -1,10 +1,18 @@
+trigger:
+  branches:
+    include:
+    - '*'
+  tags:
+    include:
+    - '*'
+
 name: $(BuildID)-$(Build.SourceBranchName)
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  ${{ if notIn(variables['Build.SourceBranchName'], 'master', 'develop') }}:
+  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/tags/develop') }}:
     buildImage: false
     deployService: false
     deployEnvironment: 'no'
@@ -12,7 +20,7 @@ variables:
     apiServiceName: 'no'
     adminServiceName: 'no'
     executorServiceName: 'no'
-  ${{ if eq(variables['Build.SourceBranchName'], 'develop') }}:
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
     deployService: true
     deployEnvironment: development
@@ -22,7 +30,7 @@ variables:
     apiServiceName: olympiad-dev_api
     adminServiceName: olympiad-dev_admin
     executorServiceName: olympiad-dev_executor
-  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+  ${{ if eq(variables['Build.SourceBranchName'], 'refs/heads/master') }}:
     buildImage: true
     deployService: true
     deployEnvironment: production
