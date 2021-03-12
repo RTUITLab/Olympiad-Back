@@ -1,0 +1,170 @@
+﻿@using Microsoft.Extensions.DependencyInjection
+@using BlazorStrap
+@inherits OwningComponentBase<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>
+
+<h5>ChallengeInvitedUsers (@(acceptedUsers?.Count.ToString() ?? "~"))</h5>
+
+@if (acceptedUsers == null)
+{
+    <p>Loading users</p>
+}
+else
+{
+    @foreach (var user in acceptedUsers)
+    {
+        <p>@user.Email</p>
+    }
+
+    <h6>Invite by email</h6>
+    <BSForm Model="emailToInvite" OnValidSubmit="InviteByEmail">
+        <BSLabel>
+            Email
+            <BSInput InputType="InputType.Email" @bind-Value="emailToInvite" />
+        </BSLabel>
+        <BSButton ButtonType="ButtonType.Submit">Invite by email</BSButton>
+    </BSForm>
+
+    <h6>Invite by claim</h6>
+    <BSForm Model="ClaimToFind" OnValidSubmit="InviteByClaim">
+        <BSLabel>
+            Type
+            <BSInput InputType="InputType.Text" @bind-Value="ClaimToFind.Type" />
+        </BSLabel>
+        <BSLabel>
+            Value
+            <BSInput InputType="InputType.Text" @bind-Value="ClaimToFind.Value" />
+        </BSLabel>
+        <BSButton ButtonType="ButtonType.Submit">Invite by claim</BSButton>
+    </BSForm>
+    <Logs @ref="logs" />
+}
+
+@code {
+
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    private List<User> acceptedUsers;
+    private Logs logs;
+
+    private string emailToInvite = "";
+    private ClaimPair ClaimToFind = new ClaimPair();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await UpdateAccepted();
+    }
+
+    private async Task UpdateAccepted()
+    {
+
+        await DoOnContext(async c =>
+        {
+            acceptedUsers = await c.Challenges
+                .AsNoTracking()
+                .Where(c => c.Id == ChallengeId)
+                .SelectMany(c => c.UsersToChallenges)
+                .Select(utc => utc.User)
+                .ToListAsync();
+        });
+    }
+
+    private async Task InviteByEmail()
+    {
+        await logs.Log($"Search user {emailToInvite}");
+        await DoOnContext(async c =>
+        {
+            var users = await c.Users.Where(u => u.Email == emailToInvite).ToListAsync();
+            if (users.Count != 1)
+            {
+                await logs.Log($"Found {users.Count} users, not 1, exit");
+                return;
+            }
+            c.Add(new Models.Links.UserToChallenge
+            {
+                ChallengeId = ChallengeId,
+                UserId = users.Single().Id
+            });
+            try
+            {
+
+                var saved = await c.SaveChangesAsync();
+                await logs.Log($"Saved {saved} entities");
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    await logs.Log($"Can't save changes, {ex.InnerException.Message}");
+                }
+                else
+                {
+                    await logs.Log($"Can't save changes, {ex.Message}");
+                }
+            }
+        });
+        await logs.Log($"Updating list");
+        await UpdateAccepted();
+    }
+
+    private async Task InviteByClaim()
+    {
+        await logs.Log($"Search user with claim {ClaimToFind}");
+        await DoOnContext(async c =>
+        {
+            var userIds = await c.UserClaims.Where(uc => uc.ClaimType == ClaimToFind.Type && uc.ClaimValue == ClaimToFind.Value)
+                .Select(uc => uc.UserId)
+                .ToListAsync();
+            await logs.Log($"find {userIds.Count} user ids");
+            var targetIds = userIds.Except(acceptedUsers.Select(u => u.Id)).ToList();
+            await logs.Log($"after excluding existings {targetIds.Count}");
+            foreach (var targetId in targetIds)
+            {
+                c.Add(new Models.Links.UserToChallenge
+                {
+                    ChallengeId = ChallengeId,
+                    UserId = targetId
+                });
+            }
+            try
+            {
+                var saved = await c.SaveChangesAsync();
+                await logs.Log($"Saved {saved} entities");
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    await logs.Log($"Can't save changes, {ex.InnerException.Message}");
+                }
+                else
+                {
+                    await logs.Log($"Can't save changes, {ex.Message}");
+                }
+            }
+        });
+        await logs.Log($"Updating list");
+        await UpdateAccepted();
+    }
+
+
+
+
+    private async Task DoOnContext(Func<ApplicationDbContext, Task> action)
+    {
+        using var scope = Service.CreateScope();
+        var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
+        await action(db);
+    }
+
+    private class ClaimPair
+    {
+        public string Type { get; set; } = "";
+        public string Value { get; set; } = "";
+
+        public override string ToString()
+        {
+            return $"{Type}: {Value}";
+        }
+    }
+}
