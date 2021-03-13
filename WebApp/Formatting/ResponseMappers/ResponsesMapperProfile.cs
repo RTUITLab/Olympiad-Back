@@ -37,6 +37,7 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
                 .ForMember(r => r.Solutions, map => map.Ignore());
 
 
