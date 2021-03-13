@@ -58,18 +58,15 @@ namespace WebApp.Controllers
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            var exerciseQuery = context
+            var exercise = await context
                 .Exercises
-                .Where(ex => ex.ExerciseID == exerciseId);
-
-            if (!IsInRole("Admin"))
-                exerciseQuery = exerciseQuery.Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now);
-
-            var exercise = await exerciseQuery.SingleOrDefaultAsync()
+                .Where(ex => ex.ExerciseID == exerciseId)
+                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
 
-            var exView = mapper.Map<ExerciseInfo>(exercise);
-            return exView;
+            return exercise;
         }
     }
 }
