@@ -1,37 +1,45 @@
-﻿<Menu Mode="MenuMode.Inline"
-      DefaultSelectedKeys=@(new[] {"1"})
-      DefaultOpenKeys=@(new[] {"sub1"})
+﻿@inherits OwningComponentBase<Models.ApplicationDbContext>
+
+<Menu Mode="MenuMode.Inline"
       Style="height: 100%; border-right: 0;">
-    <MenuItem Key="0" RouterLink="" RouterMatch="NavLinkMatch.All">Main</MenuItem>
-    <MenuItem Key="123" RouterLink="counter" RouterMatch="NavLinkMatch.Prefix">Counter</MenuItem>
-    @{
-        RenderFragment sub1Title =
-        @<span>
-            <Icon Type="user" Theme="outline" />
-            subnav 1
-        </span>;
-    }
-    <SubMenu Key="sub1" Title=sub1Title>
-        <MenuItem Key="1">option1</MenuItem>
-        <MenuItem Key="2">option2</MenuItem>
-        <MenuItem Key="3">option3</MenuItem>
-        <MenuItem Key="4">option4</MenuItem>
-    </SubMenu>
-    @{
-        RenderFragment sub2Title =
-        @<span>
-            <Icon Type="laptop" Theme="outline" />
-            subnav 2
-        </span>;
-    }
-    <SubMenu Key="sub2" Title=sub2Title>
-        <MenuItem Key="5">option5</MenuItem>
-        <MenuItem Key="6">option6</MenuItem>
-        <MenuItem Key="7">option7</MenuItem>
-        <MenuItem Key="8">option8</MenuItem>
+    <MenuItem Key="index" RouterLink="" RouterMatch="NavLinkMatch.All">Main</MenuItem>
+    <MenuItem Key="router" RouterLink="counter" RouterMatch="NavLinkMatch.Prefix">Counter</MenuItem>
+    <SubMenu Key="challenges" Title="Challenges">
+        @if (challenges != null)
+        {
+            @foreach (var challenge in challenges)
+            {
+                <MenuItem Key="@challenge.Id.ToString()"
+                          RouterLink="@($"challenge/{challenge.Id}")"
+                          RouterMatch="NavLinkMatch.All">
+                    @challenge.Title
+                </MenuItem>
+            }
+        }
+        else
+        {
+            <MenuItem Key="loading">Loading...</MenuItem>
+        }
     </SubMenu>
 </Menu>
 
 @code {
 
+    private List<ChallengeCompact> challenges;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        challenges = await Service.Challenges
+            .Select(c => new ChallengeCompact { Id = c.Id, Title = c.Name })
+            .ToListAsync();
+    }
+
+    class ChallengeCompact
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+    }
 }

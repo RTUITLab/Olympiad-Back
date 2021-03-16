@@ -1,0 +1,39 @@
+﻿@page "/challenge/{ChallengeId:guid}"
+
+@inherits LockSafe<Olympiad.Services.ResultsService>
+<PageHeader Title="@(challengeResults?.ChallengeName ?? "Loading...")">
+</PageHeader>
+@if (challengeResults != null)
+{
+    <Table DataSource="challengeResults.UserSolutions">
+        <Column Title="Student ID" Field="context.StudentId" />
+        @foreach (var exercise in challengeResults.Exercises)
+        {
+            <Column Title="@exercise.ExerciseName" TData="string">
+                @if (context.Results.ContainsKey(exercise.ExerciseID))
+                {
+                    <p>@context.Results[exercise.ExerciseID]    </p>
+                }
+            </Column>
+        }
+    </Table>
+
+}
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private Olympiad.Services.ResultsService.ChallengeResults challengeResults;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        //challenge = await Service.DoSafe(await c => .Challenges.SingleOrDefaultAsync(c => c.Id == ChallengeId);
+        await DoSafe(async s =>
+        {
+            challengeResults = await s.GetChallengeResults(ChallengeId);
+        });
+    }
+
+
+}

@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Models;
+using Olympiad.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +30,11 @@ namespace ResultsViewer
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddAntDesign();
+
+            services.AddScoped<ResultsService>();
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
