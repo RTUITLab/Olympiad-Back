@@ -101,6 +101,12 @@ stages:
             artifactName: 'admin-build'
             buildType: 'current'
             targetPath: 'deploy/admin'
+        - task: DownloadPipelineArtifact@2
+          displayName: download results-viewer build
+          inputs:
+            artifactName: 'results-viewer-build'
+            buildType: 'current'
+            targetPath: 'deploy/results-viewer'
 
         - powershell: ./generateTestStack.ps1
           workingDirectory: ./tests/e2e
