@@ -81,12 +81,14 @@
                                 }
                                 @if (programOutMode == "diff" && alreadyRendered) // TestDiff use JS and can't be pre rendered
                                 {
-                                    <BlazorTextDiff.TextDiff OldText="@check.ExampleOut"
-                                                             NewText="@check.ProgramOut"
-                                                             CollapseContent="false"
-                                                             ShowWhiteSpace="true">
-                                        <Header></Header>
-                                    </BlazorTextDiff.TextDiff>
+                                    <AntDesign.Col Style="width: 100%">
+                                        <BlazorTextDiff.TextDiff OldText="@check.ExampleOut"
+                                                                 NewText="@check.ProgramOut"
+                                                                 CollapseContent="false"
+                                                                 ShowWhiteSpace="true">
+                                            <Header></Header>
+                                        </BlazorTextDiff.TextDiff>
+                                    </AntDesign.Col>
                                 }
                             </Row>
 
