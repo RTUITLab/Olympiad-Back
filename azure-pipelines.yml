@@ -20,6 +20,7 @@ variables:
     apiServiceName: 'no'
     adminServiceName: 'no'
     executorServiceName: 'no'
+    resultsViewerServiceName: 'no'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
     deployService: true
@@ -30,6 +31,7 @@ variables:
     apiServiceName: olympiad-dev_api
     adminServiceName: olympiad-dev_admin
     executorServiceName: olympiad-dev_executor
+    resultsViewerServiceName: olympiad-dev_results-viewer
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
     deployService: true
@@ -40,6 +42,7 @@ variables:
     apiServiceName: olympiad_api
     adminServiceName: olympiad_admin
     executorServiceName: olympiad_executor
+    resultsViewerServiceName: olympiad_results-viewer
 
 stages:
 - stage: build
@@ -60,6 +63,11 @@ stages:
           cakeTarget: PublishExecutor
           publishPath: deploy/executor
           artifactName: executor-build
+        results-viewer:
+          cakeTarget: PublishResultsViewer
+          publishPath: deploy/results-viewer
+          artifactName: results-viewer-build
+        
     steps:
     - task: Cake@2
       displayName: build service
@@ -93,6 +101,12 @@ stages:
             artifactName: 'admin-build'
             buildType: 'current'
             targetPath: 'deploy/admin'
+        - task: DownloadPipelineArtifact@2
+          displayName: download results-viewer build
+          inputs:
+            artifactName: 'results-viewer-build'
+            buildType: 'current'
+            targetPath: 'deploy/results-viewer'
 
         - powershell: ./generateTestStack.ps1
           workingDirectory: ./tests/e2e
@@ -144,6 +158,9 @@ stages:
         executor:
           imageName: rtuitlab/olympiad-executor
           artifactName: executor-build
+        results-viewer:
+          imageName: rtuitlab/olympiad-results-viewer
+          artifactName: results-viewer-build
     steps:
       - download: current
         artifact: $(artifactName)
@@ -208,4 +225,19 @@ stages:
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) ${{variables.executorServiceName}}'
                   readyTimeout: '20000'
-
+    - deployment: DeployResultsViewer
+      displayName: Deploy results viewer
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: none
+              - task: SSH@0
+                inputs:
+                  sshEndpoint: 'swarm manager'
+                  runOptions: 'commands'
+                  commands: 'docker service update --image rtuitlab/olympiad-results-viewer:$(Build.BuildId) ${{variables.resultsViewerServiceName}}'
+                  readyTimeout: '20000'

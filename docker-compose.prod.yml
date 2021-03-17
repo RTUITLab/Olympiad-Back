@@ -17,7 +17,20 @@ services:
                 max-file: "10"
     admin:
         environment:
-            - GenerateSettings__Domain=${OLYMPIAD_DOMAIN?pass olympiad domain OLYMPIAD_DOMAIN}
+            - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+        deploy:
+            replicas: 1
+            resources:
+                limits:
+                    cpus: "0.5"
+                    memory: 400M
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"
+    results-viewer:
+        environment:
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
         deploy:
             replicas: 1

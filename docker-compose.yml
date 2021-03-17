@@ -11,6 +11,9 @@ services:
         restart: on-failure
         environment:
             - RabbitMqQueueSettings__Host=rabbitmq
+    results-viewer:
+        image: rtuitlab/olympiad-results-viewer:${OLYMPIAD_SERVICE_TAG-latest}
+        restart: on-failure
     executor:
         image: rtuitlab/olympiad-executor:${OLYMPIAD_SERVICE_TAG-latest}
         restart: on-failure

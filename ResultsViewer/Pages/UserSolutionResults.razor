@@ -1,0 +1,156 @@
+﻿@page "/challenge/{ChallengeId:guid}/user/{UserId:guid}/solution/{SolutionId:guid}"
+
+@inherits LockSafe<Models.ApplicationDbContext>
+
+@inject NavigationManager navManager
+
+<PageHeader Title="@(solution?.Exercise?.ExerciseName ?? "Loading...")"
+            OnBack="@(() => navManager.NavigateTo($"challenge/{ChallengeId}/user/{UserId}"))">
+    <PageHeaderContent>
+        @if (solution != null)
+        {
+            <Descriptions>
+                <DescriptionsItem Title="Challenge">
+                    <NavLink href="@($"/admin/challenges/{solution.Exercise.ChallengeId}")">@solution.Exercise.Challenge.Name</NavLink>
+                </DescriptionsItem>
+                <DescriptionsItem Title="Student ID">@solution.User.StudentID</DescriptionsItem>
+                <DescriptionsItem Title="Student name">@solution.User.FirstName</DescriptionsItem>
+                <DescriptionsItem Title="Sent time">@solution.SendingTime</DescriptionsItem>
+                <DescriptionsItem Title="Lang">@solution.Language</DescriptionsItem>
+                <DescriptionsItem Title="Exercise">
+                    <NavLink href="@($"/admin/challenges/{ChallengeId}/exercises/{solution.ExerciseId}")">@solution.Exercise.ExerciseName</NavLink>
+                </DescriptionsItem>
+            </Descriptions>
+        }
+        else
+        {
+            <Spin Size="large" />
+        }
+    </PageHeaderContent>
+</PageHeader>
+
+<Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
+    <TabPane Key="chacks">
+        <Tab>Checks</Tab>
+        <ChildContent>
+            @if (solution == null || !alreadyRendered)
+            {
+                <Spin></Spin>
+            }
+            else
+            {
+                <Collapse Accordion>
+                    @foreach (var check in solution?.SolutionChecks.OrderByDescending(s => s.Status))
+                    {
+                        <Panel Header="@($"{check.Status} | {check.CheckedTime}")" Key="@check.Id.ToString()">
+                            <Row>
+                                <AntDesign.Col Span="12">
+                                    <label Level="4">
+                                        Example IN
+                                        <TextArea Value="@check.ExampleIn"></TextArea>
+                                    </label>
+                                </AntDesign.Col>
+
+                                <AntDesign.Col Span="12">
+                                    <label>
+                                        Program ERR
+                                        <TextArea Value="@check.ProgramErr"></TextArea>
+                                    </label>
+                                </AntDesign.Col>
+                            </Row>
+                            <br />
+                            <Row>
+                                <RadioGroup @bind-Value="@programOutMode">
+                                    <Radio RadioButton Value="@("diff")">Difference</Radio>
+                                    <Radio RadioButton Value="@("separate")">Separate</Radio>
+                                </RadioGroup>
+                            </Row>
+                            <Row>
+                                <AntDesign.Col Span="12"><label>Example OUT</label></AntDesign.Col>
+                                <AntDesign.Col Span="12"><label>Program OUT</label></AntDesign.Col>
+                            </Row>
+                            <Row>
+                                @if (programOutMode == "separate")
+                                {
+                                    <AntDesign.Col Span="12">
+                                        <TextArea Value="@check.ExampleOut"></TextArea>
+                                    </AntDesign.Col>
+                                    <AntDesign.Col Span="12">
+                                        <TextArea Value="@check.ProgramOut"></TextArea>
+                                    </AntDesign.Col>
+                                }
+                                @if (programOutMode == "diff" && alreadyRendered) // TestDiff use JS and can't be pre rendered
+                                {
+                                    <BlazorTextDiff.TextDiff OldText="@check.ExampleOut"
+                                                             NewText="@check.ProgramOut"
+                                                             CollapseContent="false"
+                                                             ShowWhiteSpace="true">
+                                        <Header></Header>
+                                    </BlazorTextDiff.TextDiff>
+                                }
+                            </Row>
+
+                        </Panel>
+                    }
+                </Collapse>
+            }
+        </ChildContent>
+    </TabPane>
+    <TabPane Key="build_logs">
+        <Tab>Build logs</Tab>
+        <ChildContent>
+            <Collapse>
+                @foreach (var log in solution.SolutionBuildLogs)
+                {
+                    <Panel Header="@log.BuildedTime.ToString()" Key="@log.Id.ToString()">
+                        <RadioGroup @bind-Value="@buildLogMode">
+                            <Radio RadioButton Value="@("pretty")">Pretty</Radio>
+                            <Radio RadioButton Value="@("raw")">Raw</Radio>
+                        </RadioGroup>
+                        <br />
+                        <AntDesign.Text Style="white-space: pre-wrap">
+                            @(buildLogMode == "pretty" ? log.PrettyLog : log.Log)
+                        </AntDesign.Text>
+                    </Panel>
+                }
+            </Collapse>
+        </ChildContent>
+    </TabPane>
+</Tabs>
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private Models.Solutions.Solution solution;
+    private string tabs = "checks";
+    private string buildLogMode = "pretty";
+    private string programOutMode = "diff";
+    private bool alreadyRendered;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await DoSafe(async c =>
+        {
+            solution = await c
+                .Solutions
+                .Include(s => s.SolutionChecks)
+                .Include(s => s.SolutionBuildLogs)
+                .Include(s => s.Exercise)
+                    .ThenInclude(e => e.Challenge)
+                .Include(s => s.User)
+                .SingleOrDefaultAsync(s => s.Id == SolutionId);
+        });
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        alreadyRendered = true;
+        return base.OnAfterRenderAsync(firstRender);
+    }
+}

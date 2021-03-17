@@ -13,6 +13,8 @@ var executorProject = "Executor/Executor.csproj";
 var adminPublishDir = "deploy/admin/admin-build";
 var adminProject = "Admin/Admin.csproj";
 
+var resultsViewerPublishDir = "deploy/results-viewer/results-viewer-build";
+var resultsViewerProject = "ResultsViewer/ResultsViewer.csproj";
 
 Setup(ctx =>
 {
@@ -103,10 +105,34 @@ Task("PublishAdmin")
    DotNetCorePublish(adminProject, settings);
 });
 
+Task("BuildResultsViewer")
+   .IsDependentOn("RestoreSolution")
+   .Does(() =>
+{
+   var settings = new DotNetCoreBuildSettings {
+      Configuration = configuration
+   };
+   DotNetCoreBuild(resultsViewerProject, settings);
+});
+
+Task("PublishResultsViewer")
+   .IsDependentOn("BuildResultsViewer")
+   .Does(() =>
+{
+   var settings = new DotNetCorePublishSettings
+   {
+      Configuration = configuration,
+      OutputDirectory = resultsViewerPublishDir
+   };
+
+   DotNetCorePublish(resultsViewerProject, settings);
+});
+
 Task("PublishAll")
    .IsDependentOn("PublishApi")
    .IsDependentOn("PublishExecutor")
    .IsDependentOn("PublishAdmin")
+   .IsDependentOn("PublishResultsViewer")
    .Does(() =>
 {
    

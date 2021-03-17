@@ -1,0 +1,64 @@
+﻿@page "/challenge/{ChallengeId:guid}"
+
+@inherits LockSafe<Olympiad.Services.ResultsService>
+<PageHeader Title="@(challengeResults?.ChallengeName ?? "Loading...")">
+</PageHeader>
+@if (challengeResults != null)
+{
+    <Select Mode="multiple"
+            Placeholder="Select additional fields"
+            @bind-Values="@selectedAdditionalColumns"
+            TItemValue="string"
+            TItem="string"
+            Style="width: 100%; margin-bottom: 8px;"
+            EnableSearch
+            AllowClear>
+        <SelectOptions>
+            @foreach (var item in additionalColumns)
+            {
+                <SelectOption TItemValue="string" TItem="string" Value=@item Label=@item />
+            }
+        </SelectOptions>
+    </Select>
+    <Table DataSource="challengeResults.UserSolutions">
+        <Column Title="Student ID" Field="context.StudentId">
+            <NavLink href="@($"challenge/{ChallengeId}/user/{context.UserId}")">@context.StudentId</NavLink>
+        </Column>
+        @if (selectedAdditionalColumns?.Contains("Name") == true)
+        {
+            <Column Title="Name" Field="context.User?.FirstName" />
+        }
+        @foreach (var exercise in challengeResults.Exercises)
+        {
+            <Column Title="@exercise.ExerciseName" TData="string">
+                @if (context.Results.ContainsKey(exercise.ExerciseID))
+                {
+                    <p>@context.Results[exercise.ExerciseID]    </p>
+                }
+            </Column>
+        }
+    </Table>
+
+}
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private Olympiad.Services.ResultsService.ChallengeResults challengeResults;
+    private IEnumerable<string> selectedAdditionalColumns;
+    private List<string> additionalColumns = new List<string>
+{
+        "Name"
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await DoSafe(async s =>
+        {
+            challengeResults = await s.GetChallengeResults(ChallengeId);
+        });
+    }
+
+
+}

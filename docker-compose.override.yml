@@ -20,7 +20,13 @@ services:
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
-           - AdminServiceAdminSettings__OlympiadBaseAddress=http://api:5501
+    results-viewer:
+        build: ${BACK_CONTEXT:-.}/deploy/results-viewer
+        ports:
+            - 5504:5504
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor
         environment:
@@ -34,6 +40,8 @@ services:
             - POSTGRES_PASSWORD=password
         ports:
             - 5432:5432
+        volumes:
+            - ${BACK_CONTEXT:-.}/postgres-data/:/var/lib/postgresql/data
         restart: on-failure
         logging:
             driver: "json-file"

@@ -1,0 +1,125 @@
+﻿@page "/challenge/{ChallengeId:guid}/user/{UserId:guid}"
+
+@inherits LockSafe<Models.ApplicationDbContext>
+
+@inject NavigationManager navManager
+<PageHeader Title="@(user?.FirstName ?? $"Locading...")"
+            OnBack="@(() => navManager.NavigateTo($"challenge/{ChallengeId}"))">
+    <PageHeaderContent>
+        <Descriptions>
+            <DescriptionsItem Title="Challenge">
+                @if (string.IsNullOrEmpty(challengeName))
+                {
+                    <p>Loading...</p>
+                }
+                else
+                {
+                    <NavLink href="@($"/admin/challenges/{ChallengeId}")">@challengeName</NavLink>
+                }
+            </DescriptionsItem>
+        </Descriptions>
+    </PageHeaderContent>
+</PageHeader>
+
+@if (exercises != null)
+{
+
+    <Collapse OnChange="(k) => { }">
+        @foreach (var exercise in exercises)
+        {
+            <Panel Header="@exercise.Title" Key="@exercise.Id.ToString()">
+                @if (exerciseCache.ContainsKey(exercise.Id))
+                {
+                    <AntList Bordered DataSource="@exerciseCache[exercise.Id]">
+                        <ListItem>
+                            <NavLink href="@($"challenge/{ChallengeId}/user/{UserId}/solution/{context.Id}")">
+                                <Text>@context.Result | @context.Lang | @context.Sent</Text>
+                            </NavLink>
+                        </ListItem>
+
+                    </AntList> }
+                else
+                {
+                    <Button Type="@ButtonType.Primary" OnClick="() => LoadSolutionsForExercise(exercise.Id)">Load</Button>
+                }
+            </Panel>
+        }
+    </Collapse>
+}
+else
+{
+    <Spin Size="large"></Spin>
+}
+
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private string challengeName;
+    private List<ExerciseCompact> exercises;
+    private Models.User user;
+
+    private Dictionary<Guid, List<SolutionCompact>> exerciseCache = new Dictionary<Guid, List<SolutionCompact>>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await DoSafe(async c =>
+        {
+            challengeName = await c.Challenges
+                .Where(ch => ch.Id == ChallengeId)
+                .Select(ch => ch.Name)
+                .SingleOrDefaultAsync();
+            exercises = await c.Exercises
+                .Where(e => e.ChallengeId == ChallengeId)
+                .Where(e => e.Solutions.Any(s => s.UserId == UserId))
+                .OrderBy(e => e.ExerciseName)
+                .Select(e => new ExerciseCompact
+                {
+                    Id = e.ExerciseID,
+                    Title = e.ExerciseName
+                })
+                .ToListAsync();
+            user = await c.Users.SingleOrDefaultAsync(u => u.Id == UserId);
+        });
+    }
+
+    private async Task LoadSolutionsForExercise(Guid exerciseId)
+    {
+        await DoSafe(async c =>
+        {
+            var solutions = await c.Solutions
+                .Where(s => s.UserId == UserId)
+                .Where(s => s.ExerciseId == exerciseId)
+                .OrderByDescending(s => s.Status)
+                .ThenByDescending(s => s.SendingTime)
+                .Select(s => new SolutionCompact
+                {
+                    Id = s.Id,
+                    Lang = s.Language,
+                    Sent = s.SendingTime,
+                    Result = s.Status
+                })
+                .ToListAsync();
+            exerciseCache[exerciseId] = solutions;
+        });
+
+    }
+
+    class SolutionCompact
+    {
+        public Guid Id { get; set; }
+        public string Lang { get; set; }
+        public DateTimeOffset Sent { get; set; }
+        public Olympiad.Shared.Models.SolutionStatus Result { get; set; }
+    }
+
+    class ExerciseCompact
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+    }
+}

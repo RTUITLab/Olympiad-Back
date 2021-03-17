@@ -16,6 +16,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Admin", "Admin\Admin.csproj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A7E9C86-04AD-42F2-B104-37EC0779FEBE}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		azure-pipelines.yml = azure-pipelines.yml
 		docker-compose.override.yml = docker-compose.override.yml
 		docker-compose.prod.yml = docker-compose.prod.yml
 		docker-compose.yml = docker-compose.yml
@@ -23,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Services", "Services\Services.csproj", "{CEDF7483-FA5D-4D05-B004-9B1ADE8329E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResultsViewer", "ResultsViewer\ResultsViewer.csproj", "{6A239811-3753-49BC-89D6-B61678C57EF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,6 +62,10 @@ Global
 		{CEDF7483-FA5D-4D05-B004-9B1ADE8329E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEDF7483-FA5D-4D05-B004-9B1ADE8329E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEDF7483-FA5D-4D05-B004-9B1ADE8329E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A239811-3753-49BC-89D6-B61678C57EF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A239811-3753-49BC-89D6-B61678C57EF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A239811-3753-49BC-89D6-B61678C57EF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A239811-3753-49BC-89D6-B61678C57EF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
