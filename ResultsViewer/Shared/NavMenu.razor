@@ -11,7 +11,7 @@
             {
                 <MenuItem Key="@challenge.Id.ToString()"
                           RouterLink="@($"challenge/{challenge.Id}")"
-                          RouterMatch="NavLinkMatch.All">
+                          RouterMatch="NavLinkMatch.Prefix">
                     @challenge.Title
                 </MenuItem>
             }

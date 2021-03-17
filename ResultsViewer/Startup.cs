@@ -1,3 +1,5 @@
+using DiffPlex;
+using DiffPlex.DiffBuilder;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -30,7 +32,10 @@ namespace ResultsViewer
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            
             services.AddAntDesign();
+            services.AddScoped<ISideBySideDiffBuilder, SideBySideDiffBuilder>();
+            services.AddScoped<IDiffer, Differ>();
 
             services.AddScoped<ResultsService>();
 
