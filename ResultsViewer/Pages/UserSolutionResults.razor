@@ -18,7 +18,7 @@
                 <DescriptionsItem Title="Sent time">@solution.SendingTime</DescriptionsItem>
                 <DescriptionsItem Title="Lang">@solution.Language</DescriptionsItem>
                 <DescriptionsItem Title="Exercise">
-                    <NavLink href="@($"admin/challenges/{ChallengeId}/exercises/{solution.ExerciseId}")">@solution.Exercise.ExerciseName</NavLink>
+                    <NavLink href="@($"/admin/challenges/{ChallengeId}/exercises/{solution.ExerciseId}")">@solution.Exercise.ExerciseName</NavLink>
                 </DescriptionsItem>
             </Descriptions>
         }
@@ -47,14 +47,14 @@
                                 <AntDesign.Col Span="12">
                                     <label Level="4">
                                         Example IN
-                                        <TextArea Value="@check.ExampleIn" AutoSize="true" MaxRows="20"></TextArea>
+                                        <TextArea Value="@check.ExampleIn"></TextArea>
                                     </label>
                                 </AntDesign.Col>
 
                                 <AntDesign.Col Span="12">
                                     <label>
                                         Program ERR
-                                        <TextArea @bind-Value="@check.ProgramErr" AutoSize="true" MaxRows="20" class="hello-class" ></TextArea>
+                                        <TextArea Value="@check.ProgramErr"></TextArea>
                                     </label>
                                 </AntDesign.Col>
                             </Row>
@@ -73,10 +73,10 @@
                                 @if (programOutMode == "separate")
                                 {
                                     <AntDesign.Col Span="12">
-                                        <TextArea Value="@check.ExampleOut" AutoSize="true" MaxRows="20"></TextArea>
+                                        <TextArea Value="@check.ExampleOut"></TextArea>
                                     </AntDesign.Col>
                                     <AntDesign.Col Span="12">
-                                        <TextArea Value="@check.ProgramOut" AutoSize="true" MaxRows="20"></TextArea>
+                                        <TextArea Value="@check.ProgramOut"></TextArea>
                                     </AntDesign.Col>
                                 }
                                 @if (programOutMode == "diff" && alreadyRendered) // TestDiff use JS and can't be pre rendered
