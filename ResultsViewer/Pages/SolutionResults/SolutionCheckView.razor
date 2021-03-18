@@ -9,60 +9,77 @@ else
     <Collapse Accordion>
         @foreach (var group in CheckGroups.OrderBy(g => g.IsSuccess))
         {
-            <Panel Header="@($"{group.Group.Title} | {(group.IsSuccess ? group.Score.Value.ToString() : "No Score")}")">
-                @foreach (var check in group.Checks)
-                {
-                    <Card Title="@($"{check.Status} | {check.CheckedTime}")">
-                        <Row>
-                            <AntDesign.Col Span="12">
-                                <label Level="4">
-                                    Example IN
-                                    <TextArea Value="@check.ExampleIn"></TextArea>
-                                </label>
-                            </AntDesign.Col>
+            <Panel Key="@group.Group.Id.ToString()">
+                <HeaderTemplate>
+                    <Text>
+                        @group.Group.Title
+                        |
+                        @if (group.Group.IsPublic)
+                        {
+                            <Icon Type="eye" Theme="outline" />
+                        }
+                        else
+                        {
+                            <Icon Type="eye-invisible" Theme="outline" />
+                        }
+                        | score: @($"{(group.IsSuccess ? group.Score.Value.ToString() : "No Score")}")
+                    </Text>
+                </HeaderTemplate>
+                <ChildContent>
+                    @foreach (var check in group.Checks)
+                    {
+                        <Card Title="@($"{check.Status} | {check.CheckedTime}")">
+                            <Row>
+                                <AntDesign.Col Span="12">
+                                    <label Level="4">
+                                        Example IN
+                                        <TextArea Value="@check.ExampleIn"></TextArea>
+                                    </label>
+                                </AntDesign.Col>
 
-                            <AntDesign.Col Span="12">
-                                <label>
-                                    Program ERR
-                                    <TextArea Value="@check.ProgramErr"></TextArea>
-                                </label>
-                            </AntDesign.Col>
-                        </Row>
-                        <br />
-                        <Row>
-                            <RadioGroup @bind-Value="@programOutMode">
-                                <Radio RadioButton Value="@("diff")">Difference</Radio>
-                                <Radio RadioButton Value="@("separate")">Separate</Radio>
-                            </RadioGroup>
-                        </Row>
-                        <Row>
-                            <AntDesign.Col Span="12"><label>Example OUT</label></AntDesign.Col>
-                            <AntDesign.Col Span="12"><label>Program OUT</label></AntDesign.Col>
-                        </Row>
-                        <Row>
-                            @if (programOutMode == "separate")
-                            {
                                 <AntDesign.Col Span="12">
-                                    <TextArea Value="@check.ExampleOut"></TextArea>
+                                    <label>
+                                        Program ERR
+                                        <TextArea Value="@check.ProgramErr"></TextArea>
+                                    </label>
                                 </AntDesign.Col>
-                                <AntDesign.Col Span="12">
-                                    <TextArea Value="@check.ProgramOut"></TextArea>
-                                </AntDesign.Col>
-                            }
-                            @if (programOutMode == "diff" && alreadyRendered) // TextDiff uses JS and can't be pre rendered
-                            {
-                                <AntDesign.Col Style="width: 100%">
-                                    <BlazorTextDiff.TextDiff OldText="@check.ExampleOut"
-                                                             NewText="@check.ProgramOut"
-                                                             CollapseContent="false"
-                                                             ShowWhiteSpace="true">
-                                        <Header></Header>
-                                    </BlazorTextDiff.TextDiff>
-                                </AntDesign.Col>
-                            }
-                        </Row>
-                    </Card>
-                }
+                            </Row>
+                            <br />
+                            <Row>
+                                <RadioGroup @bind-Value="@programOutMode">
+                                    <Radio RadioButton Value="@("diff")">Difference</Radio>
+                                    <Radio RadioButton Value="@("separate")">Separate</Radio>
+                                </RadioGroup>
+                            </Row>
+                            <Row>
+                                <AntDesign.Col Span="12"><label>Example OUT</label></AntDesign.Col>
+                                <AntDesign.Col Span="12"><label>Program OUT</label></AntDesign.Col>
+                            </Row>
+                            <Row>
+                                @if (programOutMode == "separate")
+                                {
+                                    <AntDesign.Col Span="12">
+                                        <TextArea Value="@check.ExampleOut"></TextArea>
+                                    </AntDesign.Col>
+                                    <AntDesign.Col Span="12">
+                                        <TextArea Value="@check.ProgramOut"></TextArea>
+                                    </AntDesign.Col>
+                                }
+                                @if (programOutMode == "diff" && alreadyRendered) // TextDiff uses JS and can't be pre rendered
+                                {
+                                    <AntDesign.Col Style="width: 100%">
+                                        <BlazorTextDiff.TextDiff OldText="@check.ExampleOut"
+                                                                 NewText="@check.ProgramOut"
+                                                                 CollapseContent="false"
+                                                                 ShowWhiteSpace="true">
+                                            <Header></Header>
+                                        </BlazorTextDiff.TextDiff>
+                                    </AntDesign.Col>
+                                }
+                            </Row>
+                        </Card>
+                    }
+                </ChildContent>
             </Panel>
         }
     </Collapse>
@@ -77,25 +94,26 @@ else
     private string programOutMode = "diff";
     private bool alreadyRendered;
 
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         await DoSafe(async c =>
         {
             var allChecks = await c
-                .SolutionChecks
-                .Include(s => s.TestData)
-                .ThenInclude(td => td.ExerciseDataGroup)
-                .Where(s => s.SolutionId == SolutionId)
-                .ToListAsync();
+       .SolutionChecks
+       .Include(s => s.TestData)
+       .ThenInclude(td => td.ExerciseDataGroup)
+       .Where(s => s.SolutionId == SolutionId)
+       .ToListAsync();
             CheckGroups = allChecks
-                .GroupBy(ch => ch.TestData.ExerciseDataGroup)
-                .Select(g => new TestDataGroupChecks
-                {
-                    Group = g.Key,
-                    Checks = g.OrderByDescending(s => s.Status).ToList()
-                })
-                .ToList();
+       .GroupBy(ch => ch.TestData.ExerciseDataGroup)
+       .Select(g => new TestDataGroupChecks
+       {
+           Group = g.Key,
+           Checks = g.OrderByDescending(s => s.Status).ToList()
+       })
+       .ToList();
         });
     }
 

@@ -5,38 +5,31 @@
 </PageHeader>
 @if (challengeResults != null)
 {
-    <Select Mode="multiple"
-            Placeholder="Select additional fields"
-            @bind-Values="@selectedAdditionalColumns"
-            TItemValue="string"
-            TItem="string"
-            Style="width: 100%; margin-bottom: 8px;"
-            EnableSearch
-            AllowClear>
-        <SelectOptions>
-            @foreach (var item in additionalColumns)
-            {
-                <SelectOption TItemValue="string" TItem="string" Value=@item Label=@item />
-            }
-        </SelectOptions>
-    </Select>
-    <Table DataSource="challengeResults.UserSolutions">
-        <Column Title="Student ID" Field="context.StudentId">
+    <Table DataSource="challengeResults.UserSolutions"
+           PageSize="challengeResults.UserSolutions.Count"
+           ScrollX="@tableScrollX"
+           ScrollY="70vh">
+
+
+        <Column Title="Student ID" Field="context.StudentId" Fixed="left" Width="100px">
             <NavLink href="@($"challenge/{ChallengeId}/user/{context.UserId}")">@context.StudentId</NavLink>
         </Column>
-        @if (selectedAdditionalColumns?.Contains("Name") == true)
-        {
-            <Column Title="Name" Field="context.User?.FirstName" />
-        }
         @foreach (var exercise in challengeResults.Exercises)
         {
-            <Column Title="@exercise.ExerciseName" TData="string">
-                @if (context.Results.ContainsKey(exercise.ExerciseID))
-                {
-                    <p>@context.Results[exercise.ExerciseID]    </p>
-                }
+            <Column TData="string">
+                <TitleTemplate>
+                    <p Style="text-align: center">@exercise.ExerciseName</p>
+                </TitleTemplate>
+                <ChildContent>
+                    @if (context.Scores.ContainsKey(exercise.ExerciseID))
+                    {
+                        <p style="text-align:center;">@context.Scores[exercise.ExerciseID]</p>
+                    }
+                </ChildContent>
             </Column>
         }
+        <Column Title="Name" Field="context.User?.FirstName" Width="120px" Fixed="right" />
+        <Column Title="Score" Field="context.Scores?.Sum(s => s.Value)" Width="70px" Fixed="right"></Column>
     </Table>
 
 }
@@ -45,11 +38,8 @@
     public Guid ChallengeId { get; set; }
 
     private Olympiad.Services.ResultsService.ChallengeResults challengeResults;
-    private IEnumerable<string> selectedAdditionalColumns;
-    private List<string> additionalColumns = new List<string>
-{
-        "Name"
-    };
+
+    private string tableScrollX;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -57,8 +47,17 @@
         await DoSafe(async s =>
         {
             challengeResults = await s.GetChallengeResults(ChallengeId);
+            challengeResults.UserSolutions = Enumerable.Repeat(challengeResults.UserSolutions, 100).SelectMany(r => r).ToList();
         });
     }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (challengeResults?.UserSolutions?.Count != null)
+        {
+            tableScrollX = $"{challengeResults.UserSolutions.Count * 100}px";
+        }
+    }
 
 }

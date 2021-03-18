@@ -38,10 +38,9 @@ namespace Olympiad.Services
                     .Select(g => new
                     {
                         UserId = g.Key.UserId,
-
                         StudentId = g.Key.StudentID,
                         ExerciseId = g.Key.ExerciseId,
-                        Status = g.Max(s => s.Status)
+                        Score = g.Max(s => s.TotalScore)
                     })
                     .ToListAsync();
             var userSolutions = simpleData
@@ -50,7 +49,7 @@ namespace Olympiad.Services
                 {
                     UserId = g.Key.UserId,
                     StudentId = g.Key.StudentId,
-                    Results = g.ToDictionary(g => g.ExerciseId, g => g.Status)
+                    Scores = g.ToDictionary(g => g.ExerciseId, g => g.Score)
                 })
                 .OrderBy(g => g.StudentId)
                 .ToList();
@@ -80,7 +79,7 @@ namespace Olympiad.Services
             public Guid UserId { get; set; }
             public string StudentId { get; set; }
             public User User { get; set; }
-            public Dictionary<Guid, Olympiad.Shared.Models.SolutionStatus> Results { get; set; }
+            public Dictionary<Guid, int?> Scores { get; set; }
         }
     }
 }

@@ -28,11 +28,13 @@ namespace Olympiad.Services
                 var solution = new Models.Solutions.Solution
                 {
                     Id = solutionView.Id,
-                    Status = Olympiad.Shared.Models.SolutionStatus.InQueue
+                    Status = Olympiad.Shared.Models.SolutionStatus.InQueue,
+                    TotalScore = null
                 };
                 solutions.Add(solution);
                 dbContext.Solutions.Attach(solution);
                 dbContext.Entry(solution).Property(s => s.Status).IsModified = true;
+                dbContext.Entry(solution).Property(s => s.TotalScore).IsModified = true;
                 dbContext.SolutionBuildLogs.RemoveRange(solutionView.logs.Select(l => new Models.Checking.SolutionBuildLog { Id = l }));
                 dbContext.SolutionChecks.RemoveRange(solutionView.checks.Select(c => new Models.Checking.SolutionCheck { Id = c }));
             }

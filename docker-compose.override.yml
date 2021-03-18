@@ -30,7 +30,9 @@ services:
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor
         environment:
-           - ASPNETCORE_ENVIRONMENT=Development
+            - ASPNETCORE_ENVIRONMENT=Development
+            - UserInfo__UserName=executor@localhost.ru
+            - UserInfo__Password=ExecutorVeryStrongPass1
         restart: on-failure
         depends_on:
             - rabbitmq

@@ -20,6 +20,7 @@ namespace Models.Solutions
         public DateTimeOffset SendingTime { get; set; }
         public DateTimeOffset? StartCheckingTime { get; set; }
         public DateTimeOffset? CheckedTime { get; set; }
+        public int? TotalScore { get; set; }
 
         public List<SolutionCheck> SolutionChecks { get; set; }
         public List<SolutionBuildLog> SolutionBuildLogs { get; set; }

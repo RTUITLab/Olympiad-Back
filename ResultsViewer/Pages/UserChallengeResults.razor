@@ -30,14 +30,14 @@
             <Panel Header="@exercise.Title" Key="@exercise.Id.ToString()">
                 @if (exerciseCache.ContainsKey(exercise.Id))
                 {
-                    <AntList Bordered DataSource="@exerciseCache[exercise.Id]">
+                    <AntList Bordered DataSource="@exerciseCache[exercise.Id].OrderByDescending(s => s.Score)">
                         <ListItem>
                             <NavLink href="@($"challenge/{ChallengeId}/user/{UserId}/solution/{context.Id}")">
-                                <Text>@context.Result | @context.Lang | @context.Sent</Text>
+                                <Text>@(context.Score?.ToString() ?? "No score") | @context.Result | @context.Lang | @context.Sent</Text>
                             </NavLink>
                         </ListItem>
-
-                    </AntList> }
+                    </AntList>
+                }
                 else
                 {
                     <Skeleton Active></Skeleton>
@@ -114,7 +114,8 @@ else
                     Id = s.Id,
                     Lang = s.Language,
                     Sent = s.SendingTime,
-                    Result = s.Status
+                    Result = s.Status,
+                    Score = s.TotalScore
                 })
                 .ToListAsync();
             exerciseCache[exerciseId] = solutions;
@@ -128,6 +129,7 @@ else
         public string Lang { get; set; }
         public DateTimeOffset Sent { get; set; }
         public Olympiad.Shared.Models.SolutionStatus Result { get; set; }
+        public int? Score { get; set; }
     }
 
     class ExerciseCompact

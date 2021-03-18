@@ -63,11 +63,29 @@ namespace WebApp.Controllers
             solution.Status = state;
             if (state == SolutionStatus.InProcessing)
                 solution.StartCheckingTime = DateTimeOffset.UtcNow;
-            else
+            else //Some end state
+            {
+                solution.TotalScore = await CalculateScore(solution.Id);
                 solution.CheckedTime = DateTimeOffset.UtcNow;
+            }
             await dbContext.SaveChangesAsync();
             await notifyUserService.NewSolutionAdded(solution);
             return Ok();
+        }
+
+        private async Task<int> CalculateScore(Guid solutionId)
+        {
+            var allChecks = await dbContext.SolutionChecks
+                .Include(s => s.TestData)
+                    .ThenInclude(td => td.ExerciseDataGroup)
+                .Where(ch => ch.SolutionId == solutionId)
+                .ToListAsync();
+            var totalScore = allChecks
+                .GroupBy(ch => ch.TestData.ExerciseDataGroup)
+                .Select(g => g.All(ch => ch.Status == SolutionStatus.Successful) ? g.Key.Score : 0)
+                .DefaultIfEmpty(0)
+                .Sum();
+            return totalScore;
         }
 
         [HttpPost("buildlog/{solutionId}")]

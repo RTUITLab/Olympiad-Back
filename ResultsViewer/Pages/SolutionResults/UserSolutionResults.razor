@@ -20,6 +20,16 @@
                 <DescriptionsItem Title="Exercise">
                     <NavLink href="@($"/admin/challenges/{ChallengeId}/exercises/{solution.ExerciseId}")">@solution.Exercise.ExerciseName</NavLink>
                 </DescriptionsItem>
+                <DescriptionsItem Title="Score">
+                    @if (solution.TotalScore.HasValue)
+                    {
+                        <p>@solution.TotalScore.Value</p>
+                    }
+                    else
+                    {
+                        <p>No score</p>
+                    }
+                </DescriptionsItem>
             </Descriptions>
         }
         else
@@ -81,7 +91,7 @@
                 .Include(s => s.SolutionBuildLogs)
                 .Include(s => s.Exercise)
                     .ThenInclude(e => e.Challenge)
-                .Include(s => s.User)   
+                .Include(s => s.User)
                 .SingleOrDefaultAsync(s => s.Id == SolutionId);
         });
     }
