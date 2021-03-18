@@ -57,9 +57,10 @@
 
     private void OnSearch()
     {
-        Console.WriteLine("on search");
         bySearch = challengeResults.UserSolutions
-                  .Where(us => us.StudentId.Contains(searchPattern ?? "") || us.User.FirstName.Contains(searchPattern ?? ""))
+                  .Where(us => 
+                    us.StudentId.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase) || 
+                    us.User.FirstName.Contains(searchPattern ?? "",StringComparison.OrdinalIgnoreCase))
                   .ToList();
     }
 
