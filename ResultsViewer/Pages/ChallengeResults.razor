@@ -3,13 +3,14 @@
 @inherits LockSafe<Olympiad.Services.ResultsService>
 <PageHeader Title="@(challengeResults?.ChallengeName ?? "Loading...")">
 </PageHeader>
+
+<Search Placeholder="Student id or name" Size="@InputSize.Small" @bind-Value="@searchPattern" OnPressEnter="OnSearch" />
+
 @if (challengeResults != null)
 {
-    <Table DataSource="challengeResults.UserSolutions"
-           PageSize="challengeResults.UserSolutions.Count"
-           ScrollX="@tableScrollX"
-           ScrollY="70vh">
-
+    <Table DataSource="bySearch"
+           PageSize="10"
+           ScrollX="@tableScrollX">
 
         <Column Title="Student ID" Field="context.StudentId" Fixed="left" Width="100px">
             <NavLink href="@($"challenge/{ChallengeId}/user/{context.UserId}")">@context.StudentId</NavLink>
@@ -38,8 +39,11 @@
     public Guid ChallengeId { get; set; }
 
     private Olympiad.Services.ResultsService.ChallengeResults challengeResults;
+    private List<Olympiad.Services.ResultsService.UserSolution> bySearch;
+
 
     private string tableScrollX;
+    private string searchPattern;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -47,16 +51,29 @@
         await DoSafe(async s =>
         {
             challengeResults = await s.GetChallengeResults(ChallengeId);
-            challengeResults.UserSolutions = Enumerable.Repeat(challengeResults.UserSolutions, 100).SelectMany(r => r).ToList();
+            bySearch = challengeResults.UserSolutions;
         });
+    }
+
+    private void OnSearch()
+    {
+        Console.WriteLine("on search");
+        bySearch = challengeResults.UserSolutions
+                  .Where(us => us.StudentId.Contains(searchPattern) || us.User.FirstName.Contains(searchPattern))
+                  .ToList();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        if (challengeResults?.UserSolutions?.Count != null)
+        if (challengeResults?.Exercises?.Count != null)
         {
-            tableScrollX = $"{challengeResults.UserSolutions.Count * 100}px";
+            var newValue = $"{challengeResults.Exercises.Count * 100}px";
+            if (newValue != tableScrollX)
+            {
+                tableScrollX = newValue;
+                StateHasChanged();
+            }
         }
     }
 
