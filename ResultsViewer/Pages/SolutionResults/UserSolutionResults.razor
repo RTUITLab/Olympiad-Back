@@ -30,6 +30,8 @@
                         <p>No score</p>
                     }
                 </DescriptionsItem>
+                <DescriptionsItem Title="Status">@solution.Status</DescriptionsItem>
+                <DescriptionsItem Title="Source"><Button Type="@ButtonType.Primary" OnClick="() => showSourceCode = true">Show</Button></DescriptionsItem>
             </Descriptions>
         }
         else
@@ -68,6 +70,22 @@
     </TabPane>
 </Tabs>
 
+<Drawer Width="800"
+        Closable="true"
+        Visible="showSourceCode"
+        Placement="right"
+        Title='("Source code")'
+        OnClose="() => showSourceCode = false">
+    @if (solution == null)
+    {
+        <Skeleton Active></Skeleton>
+    }
+    else
+    {
+        <AntDesign.Text Copyable CopyConfig="new TypographyCopyableConfig { Text=solution.Raw }" style="overflow:auto; white-space:pre">@solution.Raw</AntDesign.Text>
+    }
+</Drawer>
+
 @code {
     [Parameter]
     public Guid ChallengeId { get; set; }
@@ -79,7 +97,7 @@
     private Models.Solutions.Solution solution;
     private string tabs = "checks";
     private string buildLogMode = "pretty";
-
+    private bool showSourceCode = false;
 
     protected override async Task OnParametersSetAsync()
     {
