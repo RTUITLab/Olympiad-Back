@@ -24,7 +24,7 @@
 @if (exercises != null)
 {
 
-    <Collapse OnChange="(k) => { }">
+    <Collapse OnChange="ReaectOnChange">
         @foreach (var exercise in exercises)
         {
             <Panel Header="@exercise.Title" Key="@exercise.Id.ToString()">
@@ -40,7 +40,7 @@
                     </AntList> }
                 else
                 {
-                    <Button Type="@ButtonType.Primary" OnClick="() => LoadSolutionsForExercise(exercise.Id)">Load</Button>
+                    <Skeleton Active></Skeleton>
                 }
             </Panel>
         }
@@ -85,6 +85,19 @@ else
                 .ToListAsync();
             user = await c.Users.SingleOrDefaultAsync(u => u.Id == UserId);
         });
+    }
+
+    private async Task ReaectOnChange(string[] keys)
+    {
+        var ids = keys.Select(Guid.Parse).ToArray();
+        foreach (var id in ids)
+        {
+            if (exerciseCache.ContainsKey(id))
+            {
+                continue;
+            }
+            await LoadSolutionsForExercise(id);
+        }
     }
 
     private async Task LoadSolutionsForExercise(Guid exerciseId)
