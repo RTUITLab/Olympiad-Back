@@ -14,9 +14,14 @@
     <base href="/results-viewer/" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="ResultsViewer.styles.css" rel="stylesheet" />
+
+    <link href="_content/AntDesign/css/ant-design-blazor.css" rel="stylesheet" />
+    <script src="_content/AntDesign/js/ant-design-blazor.js"></script>
+    <link href="_content/BlazorTextDiff/css/BlazorDiff.css" rel="stylesheet" />
+    <script src="_content/BlazorTextDiff/js/BlazorTextDiff.js"></script>
 </head>
 <body>
-    <component type="typeof(App)" render-mode="ServerPrerendered" />
+    <component type="typeof(App)" render-mode="Server" />
 
     <div id="blazor-error-ui">
         <environment include="Staging,Production">
@@ -30,9 +35,5 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
-    <link href="_content/AntDesign/css/ant-design-blazor.css" rel="stylesheet" />
-    <script src="_content/AntDesign/js/ant-design-blazor.js"></script>
-    <link href="_content/BlazorTextDiff/css/BlazorDiff.css" rel="stylesheet" />
-    <script src="_content/BlazorTextDiff/js/BlazorTextDiff.js"></script>
 </body>
 </html>
