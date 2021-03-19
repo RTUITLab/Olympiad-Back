@@ -1,4 +1,6 @@
 ﻿@page "/users/generate"
+@using BlazorStrap
+@using System.Text.RegularExpressions
 @inherits OwningComponentBase<Microsoft.AspNetCore.Identity.UserManager<User>>
 
 @inject Microsoft.Extensions.Options.IOptions<Olympiad.Shared.Models.Settings.GenerateSettings> generateSettings
@@ -10,10 +12,43 @@
 <NavLink href="users">Back to users</NavLink>
 
 <p>Insert list of StudentId</p>
-
-<textarea @bind="rows"></textarea>
-<ClaimsListComponent @bind-ClaimsList="Claims" />
-<BlazorStrap.BSButton Color="BlazorStrap.Color.Primary" @onclick="Generate">Generate</BlazorStrap.BSButton>
+<BSLabel For="exampleFormControlFile1">Example file input</BSLabel>
+<InputFile OnChange="HandleSelection" />
+@if (!usersGenerateModel.IsValid().isValid)
+{
+    <BSAlert Color="Color.Danger">
+        @usersGenerateModel.IsValid().errorMessage
+    </BSAlert>
+}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            @foreach (var columnName in usersGenerateModel.ColumnNames)
+            {
+                <th>@columnName</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var userRecord in usersGenerateModel.UserGenerateRows)
+        {
+            <tr>
+                <td>@userRecord.StudentID</td>
+                <td>@userRecord.FirstName</td>
+                @foreach (var claimPair in userRecord.Claims)
+                {
+                    <td>@claimPair.Value</td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+@*<ClaimsListComponent @bind-ClaimsList="Claims" />*@
+@if (usersGenerateModel.IsValid().isValid)
+{
+    <BlazorStrap.BSButton Color="BlazorStrap.Color.Primary" @onclick="Generate">Generate</BlazorStrap.BSButton>
+}
 
 
 @if (generatedUsers == null || !generatedUsers.Any())
@@ -30,30 +65,50 @@ else
     </ul>
 }
 @code {
-    string rows = "";
     List<PublicAPI.Responses.GenerateUsersRespponce> generatedUsers;
 
+    private UsersGenerateModel usersGenerateModel = new UsersGenerateModel();
     List<System.Security.Claims.Claim> Claims = new List<System.Security.Claims.Claim>();
+    private string status;
+    async Task HandleSelection(InputFileChangeEventArgs files)
+    {
+        using (var reader = new System.IO.StreamReader(files.File.OpenReadStream()))
+        using (var csv = new CsvHelper.CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture))
+        {
+            await csv.ReadAsync();
+            csv.ReadHeader();
+            usersGenerateModel = new UsersGenerateModel
+            {
+                ColumnNames = csv.Parser.Record
+            };
+            if (usersGenerateModel.IsValid().isValid)
+            {
+                while (await csv.ReadAsync())
+                {
+                    usersGenerateModel.AddUserRow(csv.Parser.Record);
+                }
+            }
+        }
+    }
 
     private async Task Generate()
     {
-        var userIds = rows.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
 
-        var targetClaims = Claims;
-        foreach (var studentId in userIds)
+        foreach (var userToGenerate in usersGenerateModel.UserGenerateRows)
         {
             User user = new User()
             {
-                Email = $"{studentId}{generateSettings.Value.Domain}",
-                UserName = studentId,
+                Email = $"{userToGenerate.StudentID}{generateSettings.Value.Domain}",
+                UserName = userToGenerate.StudentID,
                 EmailConfirmed = true,
-                StudentID = studentId
+                StudentID = userToGenerate.StudentID,
+                FirstName = userToGenerate.FirstName
             };
             var password = userPasswordGenerator.GeneratePassword();
             var result = await Service.CreateAsync(user, password);
             result = await Service.AddToRoleAsync(user, "User");
-            result = await Service.AddClaimsAsync(user, targetClaims);
+            result = await Service.AddClaimsAsync(user, userToGenerate.Claims);
             generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
         }
 
@@ -61,6 +116,64 @@ else
         if (generatedUsers.Any())
         {
             await JS.DownloadFile("passwords.tsv", System.Text.Encoding.UTF8.GetBytes(string.Join('\n', generatedUsers.Select(u => $"{u.Login}\t{u.Password}"))));
+        }
+    }
+
+    private class UserGenerateRow
+    {
+        public string StudentID { get; set; }
+        public string FirstName { get; set; }
+        public List<System.Security.Claims.Claim> Claims { get; set; }
+    }
+
+    private class UsersGenerateModel
+    {
+        public string[] ColumnNames { get; set; } = new string[0];
+        public IReadOnlyCollection<UserGenerateRow> UserGenerateRows => userGenerateRows;
+
+        private List<UserGenerateRow> userGenerateRows = new List<UserGenerateRow>();
+
+        public void AddUserRow(string[] row)
+        {
+            if (row.Length != ColumnNames.Length)
+            {
+                throw new Exception("Incorrect row length");
+            }
+            var valid = IsValid();
+            if (!valid.isValid)
+            {
+                throw new Exception(valid.errorMessage);
+            }
+            userGenerateRows.Add(new UserGenerateRow
+            {
+                StudentID = row[0],
+                FirstName = row[1],
+                Claims = row.Skip(2).Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i], r)).ToList()
+            });
+        }
+
+        public (bool isValid, string errorMessage) IsValid()
+        {
+            if (ColumnNames.Length < 2)
+            {
+                return (false, "You must provide two columns 'ID' and 'Name'");
+            }
+            if (ColumnNames[0] != "ID")
+            {
+                return (false, "First column must be called 'ID'");
+            }
+            if (ColumnNames[1] != "Name")
+            {
+                return (false, "Second column must be called 'Name'");
+            }
+            for (int i = 2; i < ColumnNames.Length; i++)
+            {
+                if (!Regex.IsMatch(ColumnNames[i], @"^([a-z]|[A-Z]|_)+$"))
+                {
+                    return (false, $"Error on {ColumnNames[i]}: all claims columns must contains only 'a-z', 'A-Z', '_'");
+                }
+            }
+            return (true, "");
         }
     }
 }

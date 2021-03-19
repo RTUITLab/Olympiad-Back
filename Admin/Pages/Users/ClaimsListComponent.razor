@@ -12,9 +12,9 @@
                     <BSListGroupItem>@claimValue <BSButton Color="Color.Danger" OnClick="() => RemoveClaimFromGroup(claimGroup.Key, claimValue)">Remove</BSButton></BSListGroupItem>
                 }
             </BSListGroup>
-            <BSForm Model="currentClaimValue" OnValidSubmit="() => AddClaimToGroup(claimGroup.Key)">
+            <BSForm Model="currentClaimParams" OnValidSubmit="() => AddClaimToGroup(claimGroup.Key)">
                 <BSFormGroup>
-                    <BSInput Id="exampleInputEmail1" InputType="InputType.Text" PlaceHolder="Enter claim value" @bind-Value="currentClaimValue"></BSInput>
+                    <BSInput Id="exampleInputEmail1" InputType="InputType.Text" PlaceHolder="Enter claim value" @bind-Value="currentClaimParams.CurrentClaimValue"></BSInput>
                     <BSButton Color="Color.Success" ButtonType="ButtonType.Submit">Add claim value</BSButton>
                 </BSFormGroup>
             </BSForm>
@@ -22,9 +22,9 @@
         </BSCard>
     </BSCard>
 }
-<BSForm Model="currentClaimGroupName" OnValidSubmit="AddClaimsGroup">
+<BSForm Model="currentClaimParams" OnValidSubmit="AddClaimsGroup">
     <BSFormGroup>
-        <BSInput Id="exampleInputEmail1" InputType="InputType.Text" PlaceHolder="Enter claim group name" @bind-Value="currentClaimGroupName"></BSInput>
+        <BSInput Id="exampleInputEmail1" InputType="InputType.Text" PlaceHolder="Enter claim group name" @bind-Value="currentClaimParams.CurrentClaimGroupName"></BSInput>
         <BSButton Color="Color.Success" ButtonType="ButtonType.Submit">Add claim group</BSButton>
     </BSFormGroup>
 </BSForm>
@@ -55,7 +55,8 @@
                 {
                     Claims[claimGroup.Key].Add(claim.Value);
                 }
-            } else
+            }
+            else
             {
                 Claims.Add(claimGroup.Key, claimGroup.Select(c => c.Value).ToHashSet());
             }
@@ -75,10 +76,10 @@
     {
         if (Claims.ContainsKey(groupName))
         {
-            Claims[groupName].Add(currentClaimValue);
+            Claims[groupName].Add(currentClaimParams.CurrentClaimValue);
         }
         await ClaimsListChanged.InvokeAsync(GenerateList());
-        currentClaimValue = "";
+        currentClaimParams.CurrentClaimValue = "";
     }
 
     private async Task RemoveClaimGroup(string groupName)
@@ -89,9 +90,9 @@
 
     private async Task AddClaimsGroup()
     {
-        Claims.Add(currentClaimGroupName, new HashSet<string>());
+        Claims.Add(currentClaimParams.CurrentClaimGroupName, new HashSet<string>());
         await ClaimsListChanged.InvokeAsync(GenerateList());
-        currentClaimValue = "";
+        currentClaimParams.CurrentClaimGroupName = "";
     }
 
     private List<System.Security.Claims.Claim> GenerateList()
@@ -99,7 +100,10 @@
         return Claims.SelectMany(p => p.Value.Select(c => new System.Security.Claims.Claim(p.Key, c))).ToList();
     }
 
-    private string currentClaimGroupName = "";
-    private string currentClaimValue = "";
-
+    private ClaimParams currentClaimParams = new ClaimParams();
+    private class ClaimParams
+    {
+        public string CurrentClaimGroupName { get; set; }
+        public string CurrentClaimValue { get; set; }
+    }
 }
