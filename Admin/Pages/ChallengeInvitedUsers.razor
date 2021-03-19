@@ -34,26 +34,64 @@ else
         </tbody>
     </BSTable>
     <h6>Invite by Student ID</h6>
-    <BSForm Model="studentIdToInvite" OnValidSubmit="InviteByStudentId">
+    <EditForm Model="studentIdToInvite" OnValidSubmit="InviteByStudentId">
         <BSLabel>
             Student ID
             <BSInput InputType="InputType.Text" @bind-Value="studentIdToInvite" />
         </BSLabel>
         <BSButton ButtonType="ButtonType.Submit">Invite by Student ID</BSButton>
-    </BSForm>
+    </EditForm>
 
     <h6>Invite by claim</h6>
-    <BSForm Model="ClaimToFind" OnValidSubmit="InviteByClaim">
-        <BSLabel>
-            Type
-            <BSInput InputType="InputType.Text" @bind-Value="ClaimToFind.Type" />
-        </BSLabel>
-        <BSLabel>
-            Value
-            <BSInput InputType="InputType.Text" @bind-Value="ClaimToFind.Value" />
-        </BSLabel>
-        <BSButton ButtonType="ButtonType.Submit">Invite by claim</BSButton>
-    </BSForm>
+    <EditForm Model="ClaimsToFind">
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ClaimsToFind)
+                {
+                    <tr>
+                        <td>
+                            <BSBasicInput InputType="InputType.Select" @bind-Value="item.Type">
+                                @foreach (var claimType in AvailableClaims.Keys)
+                                        {
+                                    <option value="@claimType">@claimType</option>
+                                        }
+                            </BSBasicInput>
+                        </td>
+                        <td>
+                            @if (AvailableClaims.ContainsKey(item.Type))
+                            {
+                                <BSBasicInput InputType="InputType.Select" @bind-Value="item.Value">
+                                    @foreach (var claimValue in AvailableClaims[item.Type])
+                                                {
+                                        <option value="@claimValue">@claimValue</option>
+                                                }
+                                </BSBasicInput>
+                            }
+                            else
+                            {
+                                <p>Select type</p>
+                            }
+                        </td>
+                        <td><button class="btn btn-danger" @onclick="() => ClaimsToFind.Remove(item)">Del</button></td>
+                    </tr>
+                }
+                <tr>
+                    <td colspan="2"><button class="btn btn-secondary" @onclick="() => ClaimsToFind.Add(new ClaimPair())">Add claim rule</button></td>
+                </tr>
+            </tbody>
+        </table>
+        @if (ClaimsToFind.Any() && ClaimsToFind.All(c => !string.IsNullOrEmpty(c.Type) && !string.IsNullOrEmpty(c.Value)))
+        {
+            <BSButton OnClick="InviteByClaim">Invite by claim</BSButton>
+        }
+    </EditForm>
     <Logs @ref="logs" />
 }
 
@@ -65,8 +103,8 @@ else
     private Logs logs;
 
     private string studentIdToInvite = "";
-    private ClaimPair ClaimToFind = new ClaimPair();
-
+    private List<ClaimPair> ClaimsToFind = new List<ClaimPair>();
+    private Dictionary<string, List<string>> AvailableClaims = new Dictionary<string, List<string>>();
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -87,6 +125,10 @@ else
                 .SelectMany(c => c.UsersToChallenges)
                 .Select(utc => utc.User)
                 .ToListAsync();
+            var allClaims = await c.UserClaims.Select(c => new { Type = c.ClaimType, Value = c.ClaimValue })
+                .Distinct()
+                .ToListAsync();
+            AvailableClaims = allClaims.GroupBy(c => c.Type).ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
         });
     }
 
@@ -129,13 +171,26 @@ else
 
     private async Task InviteByClaim()
     {
-        await logs.Log($"Search user with claim {ClaimToFind}");
+        await logs.Log($"Search users by claims");
         await DoOnContext(async c =>
         {
-            var userIds = await c.UserClaims.Where(uc => uc.ClaimType == ClaimToFind.Type && uc.ClaimValue == ClaimToFind.Value)
-                .Select(uc => uc.UserId)
-                .ToListAsync();
-            await logs.Log($"find {userIds.Count} user ids");
+            List<Guid> userIds = null;
+            foreach (var targetClaim in ClaimsToFind)
+            {
+                var loadedIds = await c.UserClaims
+                    .Where(uc => targetClaim.Type == uc.ClaimType && targetClaim.Value == uc.ClaimValue)
+                    .Select(uc => uc.UserId)
+                    .ToListAsync();
+                if (userIds == null)
+                {
+                    userIds = loadedIds;
+                }
+                else
+                {
+                    userIds = userIds.Intersect(loadedIds).ToList();
+                }
+                await logs.Log($"Search by {targetClaim.Type}:{targetClaim.Value} found {loadedIds.Count} left {userIds.Count}");
+            }
             var targetIds = userIds.Except(acceptedUsers.Select(u => u.Id)).ToList();
             await logs.Log($"after excluding existings {targetIds.Count}");
             foreach (var targetId in targetIds)
@@ -206,12 +261,21 @@ else
     }
 
 
-    private async Task DoOnContext(Func<ApplicationDbContext, Task> action)
+    private Task DoOnContext(Func<ApplicationDbContext, Task>
+    action)
+    => DoOnType<ApplicationDbContext>
+        (action);
+
+    private async Task DoOnType<T>
+        (Func<T, Task>
+            action)
     {
         using var scope = Service.CreateScope();
-        var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
-        await action(db);
+        var type = scope.ServiceProvider.GetService<T>
+            ();
+        await action(type);
     }
+
 
     private class ClaimPair
     {

@@ -44,32 +44,18 @@
     </tbody>
 </table>
 <br />
-@*<ClaimsListComponent @bind-ClaimsList="Claims" />*@
 @if (usersGenerateModel.IsValid().isValid)
 {
     <BlazorStrap.BSButton Color="BlazorStrap.Color.Primary" @onclick="Generate">Generate</BlazorStrap.BSButton>
 }
 
 
-@if (generatedUsers == null || !generatedUsers.Any())
-{
-    <p>No generated users</p>
-}
-else
-{
-    <ul>
-        @foreach (var generatedUser in generatedUsers)
-        {
-            <li>@($"{generatedUser.Login} {generatedUser.Password}")</li>
-        }
-    </ul>
-}
+<Logs @ref="logs"></Logs>
 @code {
     List<PublicAPI.Responses.GenerateUsersRespponce> generatedUsers;
 
     private UsersGenerateModel usersGenerateModel = new UsersGenerateModel();
-    List<System.Security.Claims.Claim> Claims = new List<System.Security.Claims.Claim>();
-    private string status;
+    private Logs logs;
     async Task HandleSelection(InputFileChangeEventArgs files)
     {
         using (var reader = new System.IO.StreamReader(files.File.OpenReadStream()))
@@ -95,7 +81,7 @@ else
     {
         List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
 
-        foreach (var userToGenerate in usersGenerateModel.UserGenerateRows)
+        foreach (var (userToGenerate, i) in usersGenerateModel.UserGenerateRows.Select((u, i) => (u, i)))
         {
             User user = new User()
             {
@@ -110,6 +96,7 @@ else
             result = await Service.AddToRoleAsync(user, "User");
             result = await Service.AddClaimsAsync(user, userToGenerate.Claims);
             generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
+            await logs.Log($"Generate user: {i + 1}/{usersGenerateModel.UserGenerateRows.Count} | {userToGenerate.StudentID}");
         }
 
         generatedUsers = generates;
@@ -148,7 +135,7 @@ else
             {
                 StudentID = row[0],
                 FirstName = row[1],
-                Claims = row.Skip(2).Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i], r)).ToList()
+                Claims = row.Skip(2).Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i + 2], r)).ToList()
             });
         }
 
