@@ -33,9 +33,15 @@ else
                     <input class="form-control" id="challenge.start" @bind="challenge.StartTime" @bind:format="yyyy-MM-dd HH:mm" placeholder="yyyy-MM-dd HH:mm" />
                     @if (!challenge.StartTime.HasValue)
                     {
-                        <p>Start is null </p>
-                        <BlazorStrap.BSButton @onclick="@(() => challenge.StartTime = GetNow())"
-                                              ButtonType="BlazorStrap.ButtonType.Link">Fill now time</BlazorStrap.BSButton>
+                        <BlazorStrap.BSRow>
+                            <BlazorStrap.BSCol>
+                                <p>Start is null </p>
+                            </BlazorStrap.BSCol>
+                            <BlazorStrap.BSCol>
+                                <BlazorStrap.BSButton @onclick="@(() => challenge.StartTime = GetNow())"
+                                                      Color="BlazorStrap.Color.Primary">Fill now time</BlazorStrap.BSButton>
+                            </BlazorStrap.BSCol>
+                        </BlazorStrap.BSRow>
                     }
                     else
                     {
@@ -50,9 +56,15 @@ else
                     <input class="form-control" id="challenge.end" @bind="challenge.EndTime" @bind:format="yyyy-MM-dd HH:mm" placeholder="yyyy-MM-dd HH:mm" />
                     @if (!challenge.EndTime.HasValue)
                     {
-                        <p>End is null </p>
-                        <BlazorStrap.BSButton @onclick="@(() => challenge.EndTime = GetNow())"
-                                              ButtonType="BlazorStrap.ButtonType.Link">Fill now time</BlazorStrap.BSButton>
+                        <BlazorStrap.BSRow>
+                            <BlazorStrap.BSCol>
+                                <p>End is null </p>
+                            </BlazorStrap.BSCol>
+                            <BlazorStrap.BSCol>
+                                <BlazorStrap.BSButton @onclick="@(() => challenge.EndTime = GetNow())"
+                                                      Color="BlazorStrap.Color.Primary">Fill now time</BlazorStrap.BSButton>
+                            </BlazorStrap.BSCol>
+                        </BlazorStrap.BSRow>
                     }
                     else
                     {

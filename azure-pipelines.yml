@@ -184,6 +184,16 @@ stages:
       environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
+          on:
+            failure:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service rollback ${{variables.apiServiceName}}'
+                    readyTimeout: '20000'
           deploy:
             steps:
               - download: none
@@ -200,6 +210,16 @@ stages:
       environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
+          on:
+            failure:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service rollback ${{variables.adminServiceName}}'
+                    readyTimeout: '20000'
           deploy:
             steps:
               - download: none
@@ -216,6 +236,16 @@ stages:
       environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
+          on:
+            failure:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service rollback ${{variables.executorServiceName}}'
+                    readyTimeout: '20000'
           deploy:
             steps:
               - download: none
@@ -232,6 +262,16 @@ stages:
       environment: ${{variables.deployEnvironment}}
       strategy:
         runOnce:
+          on:
+            failure:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service rollback ${{variables.resultsViewerServiceName}}'
+                    readyTimeout: '20000'
           deploy:
             steps:
               - download: none
