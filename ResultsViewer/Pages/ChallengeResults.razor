@@ -5,7 +5,7 @@
 </PageHeader>
 
 <Search Placeholder="Student id or name" Size="@InputSize.Small" @bind-Value="@searchPattern" OnPressEnter="OnSearch" />
-
+<br />
 @if (challengeResults != null)
 {
     <Table DataSource="bySearch"

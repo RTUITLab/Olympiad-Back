@@ -20,6 +20,7 @@ using DiffPlex.DiffBuilder;
 using DiffPlex;
 using Olympiad.Admin.Services;
 using Olympiad.Admin.Options;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace Olympiad.Admin
 {
@@ -79,14 +80,18 @@ namespace Olympiad.Admin
             {
                 app.UseExceptionHandler("/Error");
             }
-
+            app.UseRewriter(new RewriteOptions()
+                 .AddRedirect("^(?!admin)", "admin"));
             app.UsePathBase("/admin");
             app.UseStaticFiles();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options =>
+                {
+                    //options.ApplicationMaxBufferSize = 500_000_000; //500KB
+                });
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
