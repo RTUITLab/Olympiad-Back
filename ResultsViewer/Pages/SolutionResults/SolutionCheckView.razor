@@ -47,8 +47,8 @@ else
                             <br />
                             <Row>
                                 <RadioGroup @bind-Value="@programOutMode">
-                                    <Radio RadioButton Value="@("diff")">Difference</Radio>
                                     <Radio RadioButton Value="@("separate")">Separate</Radio>
+                                    <Radio RadioButton Value="@("diff")">Difference</Radio>
                                 </RadioGroup>
                             </Row>
                             <Row>
@@ -92,7 +92,7 @@ else
 
     private List<TestDataGroupChecks> CheckGroups { get; set; }
 
-    private string programOutMode = "diff";
+    private string programOutMode = "separate";
     private bool alreadyRendered;
 
 

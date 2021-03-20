@@ -2,18 +2,32 @@
 
 @using BlazorStrap
 
-@if (ExerciseDataGroupIds != null)
+@if (ExerciseDataGroups != null)
 {
-    <BSCollapseGroup>
-        <CascadingValue Value="this" Name="EditExerciseDataGroups">
-            @foreach (var exerciseDataGroupId in ExerciseDataGroupIds)
-            {
-                <BSCollapseItem @key="exerciseDataGroupId">
-                    <EditExerciseDataGroup DataGroupId="exerciseDataGroupId" />
-                </BSCollapseItem>
-            }
-        </CascadingValue>
-    </BSCollapseGroup>
+    @foreach (var exerciseDataGroup in ExerciseDataGroups)
+    {
+        <BSListGroup>
+            <BSListGroupItem>
+                @exerciseDataGroup.Title
+                <button class="btn btn-danger" @onclick="() => DeleteGroup(exerciseDataGroup.Id)">Delete group</button>
+            </BSListGroupItem>
+        </BSListGroup>
+        @*<BSCollapseItem @key="exerciseDataGroupId">
+            <EditExerciseDataGroup DataGroupId="exerciseDataGroupId" />
+        </BSCollapseItem>*@
+    }
+    
+    
+    @*<BSCollapseGroup>
+            <CascadingValue Value="this" Name="EditExerciseDataGroups">
+                @foreach (var exerciseDataGroupId in ExerciseDataGroupIds)
+                {
+                    <BSCollapseItem @key="exerciseDataGroupId">
+                        <EditExerciseDataGroup DataGroupId="exerciseDataGroupId" />
+                    </BSCollapseItem>
+                }
+            </CascadingValue>
+        </BSCollapseGroup>*@
 }
 else
 {
@@ -23,40 +37,55 @@ else
     Add group from JSON file
     <InputFile OnChange="HandleFile" accept=".json" />
 </label>
-<button class="btn btn-success" @onclick="AddTestsGroup">Add tests group</button>
+@*<button class="btn btn-success" @onclick="AddTestsGroup">Add tests group</button>*@
 @code {
 
     [Parameter]
     public Guid ExerciseId { get; set; }
 
-    private List<Guid> ExerciseDataGroupIds { get; set; }
+    private List<Models.Exercises.ExerciseDataGroup> ExerciseDataGroups { get; set; }
 
     private System.Threading.SemaphoreSlim dbOperation = new System.Threading.SemaphoreSlim(1, 1);
 
     [CascadingParameter(Name = "ExerciseEditLogs")]
     public Logs Logs { get; set; }
 
-    private async Task AddTestsGroup()
+    private async Task DeleteGroup(Guid dataGroupId)
     {
         await dbOperation.WaitAsync();
         try
         {
-            var newGroup = new Models.Exercises.ExerciseDataGroup
-            {
-                ExerciseId = ExerciseId,
-                IsPublic = false,
-                Score = 0,
-                Title = "new group"
-            };
-            Service.Add(newGroup);
+            Service.TestDataGroups.Remove(new Models.Exercises.ExerciseDataGroup { Id = dataGroupId });
             await Service.SaveChangesAsync();
-            ExerciseDataGroupIds.Add(newGroup.Id);
         }
         finally
         {
             dbOperation.Release();
         }
+        await LoadGroups();
     }
+
+    //private async Task AddTestsGroup()
+    //{
+    //    await dbOperation.WaitAsync();
+    //    try
+    //    {
+    //        var newGroup = new Models.Exercises.ExerciseDataGroup
+    //        {
+    //            ExerciseId = ExerciseId,
+    //            IsPublic = false,
+    //            Score = 0,
+    //            Title = "new group"
+    //        };
+    //        Service.Add(newGroup);
+    //        await Service.SaveChangesAsync();
+    //        ExerciseDataGroupIds.Add(newGroup.Id);
+    //    }
+    //    finally
+    //    {
+    //        dbOperation.Release();
+    //    }
+    //}
 
     protected override async Task OnParametersSetAsync()
     {
@@ -69,12 +98,11 @@ else
         await dbOperation.WaitAsync();
         try
         {
-            ExerciseDataGroupIds = await Service
+            ExerciseDataGroups = await Service
                 .TestDataGroups
                 .AsNoTracking()
                 .OrderByDescending(g => g.IsPublic)
                 .Where(g => g.ExerciseId == ExerciseId)
-                .Select(g => g.Id)
                 .ToListAsync();
         }
         finally
@@ -129,7 +157,7 @@ else
                 Service.TestDataGroups.Add(newDataGroup);
             }
             var saved = await Service.SaveChangesAsync();
-            await Logs.Log($"saved {saved} groups");
+            await Logs.Log($"saved {saved} data items");
         }
         catch (Exception ex)
         {
@@ -139,6 +167,7 @@ else
         {
             dbOperation.Release();
         }
+        await LoadGroups();
     }
 
     private class JsonGroupModel

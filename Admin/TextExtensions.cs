@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Olympiad.Admin
 {
-    public static class Extensions
+    public static class TextExtensions
     {
         private static readonly Regex reg = new Regex(@"(?i)\\[uU]([0-9a-f]{4})");
         public static string ConvertCyrillic(this string value)
