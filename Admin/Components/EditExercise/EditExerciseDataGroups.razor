@@ -19,6 +19,10 @@ else
 {
     <tr>Loading in out data</tr>
 }
+<label style="margin-left: 20px">
+    Add group from JSON file
+    <InputFile OnChange="HandleFile" accept=".json" />
+</label>
 <button class="btn btn-success" @onclick="AddTestsGroup">Add tests group</button>
 @code {
 
@@ -28,6 +32,9 @@ else
     private List<Guid> ExerciseDataGroupIds { get; set; }
 
     private System.Threading.SemaphoreSlim dbOperation = new System.Threading.SemaphoreSlim(1, 1);
+
+    [CascadingParameter(Name = "ExerciseEditLogs")]
+    public Logs Logs { get; set; }
 
     private async Task AddTestsGroup()
     {
@@ -75,6 +82,70 @@ else
             dbOperation.Release();
         }
         StateHasChanged();
+    }
+
+    private async Task HandleFile(InputFileChangeEventArgs files)
+    {
+        List<JsonGroupModel> result = null;
+        try
+        {
+            result = await System.Text.Json.JsonSerializer.DeserializeAsync<List<JsonGroupModel>>(files.File.OpenReadStream(1024000 * 20));
+            await Logs.Log($"readed {result.Count} rows");
+        }
+        catch (Exception ex)
+        {
+            await Logs.Log("Can't read file");
+            await Logs.Log(ex.Message);
+            return;
+        }
+        if (result.Select(g => g.Title).Distinct().Count() != result.Count)
+        {
+            await Logs.Log("All group titles must be unique");
+            return;
+        }
+        if (result.Any(l => l.Cases.Any(c => c.Count != 2)))
+        {
+            await Logs.Log("every cases list must contains 2 elements, ends adding");
+            return;
+        }
+        await dbOperation.WaitAsync();
+
+        try
+        {
+            foreach (var testGroup in result)
+            {
+                var newDataGroup = new Models.Exercises.ExerciseDataGroup
+                {
+                    ExerciseId = ExerciseId,
+                    IsPublic = false,
+                    Score = testGroup.Score,
+                    Title = testGroup.Title,
+                    ExerciseDatas = testGroup.Cases.Select(inOut => new Models.Exercises.ExerciseData
+                    {
+                        InData = inOut[0],
+                        OutData = inOut[1],
+                    }).ToList()
+                };
+                Service.TestDataGroups.Add(newDataGroup);
+            }
+            var saved = await Service.SaveChangesAsync();
+            await Logs.Log($"saved {saved} groups");
+        }
+        catch (Exception ex)
+        {
+            await Logs.Log(ex.Message);
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+    }
+
+    private class JsonGroupModel
+    {
+        public string Title { get; set; }
+        public int Score { get; set; }
+        public List<List<string>> Cases { get; set; }
     }
 
 }
