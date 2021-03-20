@@ -33,14 +33,14 @@ else
                                 <AntDesign.Col Span="12">
                                     <label Level="4">
                                         Example IN
-                                        <TextArea Value="@check.ExampleIn"></TextArea>
+                                        <LongTextArea Value="@check.ExampleIn" />
                                     </label>
                                 </AntDesign.Col>
 
                                 <AntDesign.Col Span="12">
                                     <label>
                                         Program ERR
-                                        <TextArea Value="@check.ProgramErr"></TextArea>
+                                        <LongTextArea Value="@check.ProgramErr" />
                                     </label>
                                 </AntDesign.Col>
                             </Row>
@@ -52,6 +52,7 @@ else
                                 </RadioGroup>
                             </Row>
                             <Row>
+
                                 <AntDesign.Col Span="12"><label>Example OUT</label></AntDesign.Col>
                                 <AntDesign.Col Span="12"><label>Program OUT</label></AntDesign.Col>
                             </Row>
@@ -59,10 +60,10 @@ else
                                 @if (programOutMode == "separate")
                                 {
                                     <AntDesign.Col Span="12">
-                                        <TextArea Value="@check.ExampleOut"></TextArea>
+                                        <LongTextArea Value="@check.ExampleOut"></LongTextArea>
                                     </AntDesign.Col>
                                     <AntDesign.Col Span="12">
-                                        <TextArea Value="@check.ProgramOut"></TextArea>
+                                        <LongTextArea Value="@check.ProgramOut"></LongTextArea>
                                     </AntDesign.Col>
                                 }
                                 @if (programOutMode == "diff" && alreadyRendered) // TextDiff uses JS and can't be pre rendered

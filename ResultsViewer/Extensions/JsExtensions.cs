@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Olympiad.Admin.JsWrappers
+namespace ResultsViewer.Extensions
 {
-    public static class DownloadFileWrapper
+    public static class JsExtensions
     {
         public static async Task DownloadFile(this IJSRuntime jSRuntime, string fileName, string content)
         {

@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime JS
+@if (Value?.Length > 400)
+{
+    <TextArea Value="@Value.Substring(0, 400)"></TextArea>
+    <Row>
+        <AntDesign.Col Span="12">
+            <Text>Too long for show</Text>
+
+        </AntDesign.Col>
+        <AntDesign.Col Span="12">
+            <Button Type="@ButtonType.Default" @onclick="@(() => JS.DownloadFile("file.txt", Value))">Download</Button>
+        </AntDesign.Col>
+
+    </Row>
+}
+else
+{
+    <TextArea Value="@Value"></TextArea>
+}
+@code {
+    [Parameter]
+    public string Value { get; set; }
+}

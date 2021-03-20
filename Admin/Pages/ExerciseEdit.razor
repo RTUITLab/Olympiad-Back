@@ -43,8 +43,9 @@ else
         <button class="btn btn-danger" @onclick="DeleteExercise">Delete</button>
         <button class="btn btn-warning" @onclick="RecheckExercise">Recheck exercise</button>
     </EditForm>
-
-   <EditExerciseDataGroups ExerciseId="ExerciseId"/>
+    <CascadingValue Value="logs" Name="ExerciseEditLogs">
+        <EditExerciseDataGroups ExerciseId="ExerciseId" />
+    </CascadingValue>
 
 }
 <Logs @ref="logs"></Logs>

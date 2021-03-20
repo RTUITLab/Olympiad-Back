@@ -43,7 +43,10 @@ else
                         <button type="submit" class="btn btn-success mb-2" @onclick="SaveChanges">Update</button>
                     }
                     <button class="btn btn-danger mb-2" @onclick="Delete">Delete group</button>
-
+                    <label style="margin-left: 20px">
+                        Add from JSON file
+                        <InputFile OnChange="HandleFile" accept=".json" />
+                    </label>
                 </EditForm>
 
                 @if (DataIds == null)
@@ -84,7 +87,8 @@ else
 
     [CascadingParameter(Name = "EditExerciseDataGroups")]
     public EditExerciseDataGroups EditExerciseDataGroups { get; set; }
-
+    [CascadingParameter(Name = "ExerciseEditLogs")]
+    public Logs Logs { get; set; }
     private Models.Exercises.ExerciseDataGroup DataGroup { get; set; }
 
     private List<Guid> DataIds;
@@ -157,6 +161,52 @@ else
             Service.TestData.Add(newData);
             await Service.SaveChangesAsync();
             DataIds.Add(newData.Id);
+        }
+        finally
+        {
+            dbOperation.Release();
+        }
+    }
+
+    private async Task HandleFile(InputFileChangeEventArgs files)
+    {
+        List<List<string>> result = null;
+        try
+        {
+            result = await System.Text.Json.JsonSerializer.DeserializeAsync<List<List<string>>>(files.File.OpenReadStream(1024000 * 20));
+            await Logs.Log($"readed {result.Count} rows");
+        }
+        catch (Exception ex)
+        {
+            await Logs.Log("Can't read file");
+            await Logs.Log(ex.Message);
+            return;
+        }
+        if (result.Any(l => l.Count != 2))
+        {
+            await Logs.Log("every sub list must contains 2 elements, ends adding");
+            return;
+        }
+        await dbOperation.WaitAsync();
+
+        try
+        {
+            foreach (var inOut in result)
+            {
+                var newData = new Models.Exercises.ExerciseData
+                {
+                    ExerciseDataGroupId = DataGroupId,
+                    InData = inOut[0],
+                    OutData = inOut[1]
+                };
+                Service.TestData.Add(newData);
+            }
+            var saved = await Service.SaveChangesAsync();
+            await Logs.Log($"saved {saved} rows");
+        }
+        catch (Exception ex)
+        {
+            await Logs.Log(ex.Message);
         }
         finally
         {
