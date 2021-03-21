@@ -1,36 +1,50 @@
 ﻿@page "/challenge/{ChallengeId:guid}"
-
+@inject IJSRuntime JS
 @inherits LockSafe<Olympiad.Services.ResultsService>
 <PageHeader Title="@(challengeResults?.ChallengeName ?? "Loading...")">
+    <PageHeaderContent>
+        @if (challengeResults != null)
+        {
+            <Button Type="@ButtonType.Primary" OnClick="CreateReport">Create report by all<Icon Type="file-excel" Theme="outline" /></Button>
+        }
+    </PageHeaderContent>
 </PageHeader>
 
-<Search Placeholder="Student id or name" Size="@InputSize.Small" @bind-Value="@searchPattern" OnPressEnter="OnSearch" />
+<Search Style="margin-bottom: 20px"
+        Placeholder="Student id or name"
+        Size="@InputSize.Small"
+        @bind-Value="@searchPattern"
+        OnPressEnter="OnSearch" />
 <br />
 @if (challengeResults != null)
 {
     <Table DataSource="bySearch"
            PageSize="10"
            ScrollX="@tableScrollX">
+        <ChildContent>
 
-        <Column Title="Student ID" Field="context.StudentId" Fixed="left" Width="100px">
-            <NavLink href="@($"challenge/{ChallengeId}/user/{context.UserId}")">@context.StudentId</NavLink>
-        </Column>
-        @foreach (var exercise in challengeResults.Exercises)
-        {
-            <Column TData="string">
-                <TitleTemplate>
-                    <p Style="text-align: center">@exercise.ExerciseName</p>
-                </TitleTemplate>
-                <ChildContent>
-                    @if (context.Scores.ContainsKey(exercise.ExerciseID))
-                    {
-                        <p style="text-align:center;">@context.Scores[exercise.ExerciseID]</p>
-                    }
-                </ChildContent>
+            <Column Title="Student ID" Field="context.StudentId" Fixed="left" Width="100px">
+                <NavLink href="@($"challenge/{ChallengeId}/user/{context.UserId}")">@context.StudentId</NavLink>
             </Column>
-        }
-        <Column Title="Name" Field="context.User?.FirstName" Width="120px" Fixed="right" />
-        <Column Title="Score" Field="context.Scores?.Sum(s => s.Value)" Width="70px" Fixed="right"></Column>
+            @foreach (var exercise in challengeResults.Exercises)
+            {
+                <Column TData="string">
+                    <TitleTemplate>
+                        <p Style="text-align: center">@exercise.ExerciseName</p>
+                    </TitleTemplate>
+                    <ChildContent>
+                        @if (context.Scores.ContainsKey(exercise.ExerciseID))
+                        {
+                            <p style="text-align:center;">@context.Scores[exercise.ExerciseID]</p>
+                        }
+                    </ChildContent>
+                </Column>
+            }
+            <Column Title="Name" Field="context.User?.FirstName" Width="120px" Fixed="right" />
+            <Column Title="Score" Field="context.Scores?.Sum(s => s.Value)" Width="70px" Fixed="right"></Column>
+        </ChildContent>
+        <FooterTemplate>
+        </FooterTemplate>
     </Table>
 
 }
@@ -58,9 +72,9 @@
     private void OnSearch()
     {
         bySearch = challengeResults.UserSolutions
-                  .Where(us => 
-                    us.StudentId.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase) || 
-                    us.User.FirstName.Contains(searchPattern ?? "",StringComparison.OrdinalIgnoreCase))
+                  .Where(us =>
+                    us.StudentId.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase) ||
+                    us.User.FirstName.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase))
                   .ToList();
     }
 
@@ -74,6 +88,47 @@
             {
                 tableScrollX = newValue;
                 StateHasChanged();
+            }
+        }
+    }
+
+    private async Task CreateReport()
+    {
+        using var workBook = new ClosedXML.Excel.XLWorkbook();
+        var workSheet = workBook.Worksheets.Add("Report");
+        var currentRow = 1;
+        var currentColumn = 1;
+        workSheet.Cell(currentRow, currentColumn++).SetValue("ID");
+        foreach (var ex in challengeResults.Exercises)
+        {
+            workSheet.Cell(currentRow, currentColumn++).Value = ex.ExerciseName;
+        }
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Name");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Score");
+        foreach (var row in challengeResults.UserSolutions)
+        {
+            currentRow++;
+            currentColumn = 1;
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.StudentId);
+            foreach (var ex in challengeResults.Exercises)
+            {
+                if (row.Scores.ContainsKey(ex.ExerciseID))
+                {
+                    workSheet.Cell(currentRow, currentColumn++).SetValue(row.Scores[ex.ExerciseID]);
+                }
+                else
+                {
+                    currentColumn++;
+                }
+            }
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.User.FirstName);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.Scores.Sum(kvp => kvp.Value));
+            using (var stream = new System.IO.MemoryStream())
+            {
+                workBook.SaveAs(stream);
+                var content = stream.ToArray();
+
+                await JS.DownloadFile($"{challengeResults.ChallengeName}.xlsx", content);
             }
         }
     }
