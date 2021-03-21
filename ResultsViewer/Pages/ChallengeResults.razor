@@ -123,13 +123,13 @@
             }
             workSheet.Cell(currentRow, currentColumn++).SetValue(row.User.FirstName);
             workSheet.Cell(currentRow, currentColumn++).SetValue(row.Scores.Sum(kvp => kvp.Value));
-            using (var stream = new System.IO.MemoryStream())
-            {
-                workBook.SaveAs(stream);
-                var content = stream.ToArray();
+        }
+        using (var stream = new System.IO.MemoryStream())
+        {
+            workBook.SaveAs(stream);
+            var content = stream.ToArray();
 
-                await JS.DownloadFile($"{challengeResults.ChallengeName}.xlsx", content);
-            }
+            await JS.DownloadFile($"{challengeResults.ChallengeName}.xlsx", content);
         }
     }
 
