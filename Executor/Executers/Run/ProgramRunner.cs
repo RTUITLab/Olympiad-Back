@@ -184,7 +184,7 @@ namespace Executor.Executers.Run
             }
             catch (Exception ex)
             {
-                logger.LogWarning("error while checking solution", ex);
+                logger.LogWarning(ex, "error while checking solution");
                 exception = ex;
             }
             await dockerClient.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters { Force = true });
