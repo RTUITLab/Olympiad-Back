@@ -67,6 +67,8 @@ namespace Olympiad.Admin
 
             //Queue
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
+
+            services.AddScoped<UserSolutionsReportCreator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

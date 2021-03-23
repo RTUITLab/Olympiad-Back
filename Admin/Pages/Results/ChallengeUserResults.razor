@@ -2,14 +2,31 @@
 @using Microsoft.EntityFrameworkCore
 @using BlazorStrap
 @inject ApplicationDbContext dbContext
+@inject IJSRuntime JS
+@inject Services.UserSolutionsReportCreator reportsCreator
 
 <h3><NavLink href=@($"challenges/{ChallengeId}/results")>Back to challenge results</NavLink></h3>
 <h3>ChallengeUserResults</h3>
 
 <h4>Challenge: @(challenge?.Name ?? "Loading...")</h4>
 <h4>User student id: @(user?.StudentID ?? "Loading...")</h4>
+@if (user != null && challenge != null)
+{
 
-
+    <button class="btn btn-primary" @onclick="async () =>  testReport = await reportsCreator.CreateMarkdownReport(user.Id, challenge.Id)">Create report</button>
+    <div class="row">
+        <div class="col">
+            <p style="white-space: pre-line">@testReport</p>
+        </div>
+        <div class="col">
+            @if (testReport?.Length > 1)
+            {
+                <button class="btn btn-primary" @onclick="@(() => JS.DownloadFile("report.md", System.Text.Encoding.UTF8.GetBytes(testReport)))">Download</button>
+                <ExerciseTextMarkdown Markdown="@testReport"></ExerciseTextMarkdown>
+            }
+        </div>
+    </div>
+}
 @if (exercises == null)
 {
     <p>Loading exercises</p>
@@ -63,6 +80,8 @@ else
 
     private System.Collections.Concurrent.ConcurrentDictionary<Guid, List<Models.Solutions.Solution>> solutionsDict
         = new System.Collections.Concurrent.ConcurrentDictionary<Guid, List<Models.Solutions.Solution>>();
+
+    private string testReport;
 
     protected override async Task OnParametersSetAsync()
     {
