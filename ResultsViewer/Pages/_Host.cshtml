@@ -34,15 +34,25 @@
         <a class="dismiss">🗙</a>
     </div>
     <script>
-        window.saveAsFile = (filename, bytesBase64) => {
+        
+        window.saveUrlAsFile = (filename, url) => {
+            console.log(url)
             var link = document.createElement('a');
             link.download = filename;
-            link.href = "data:application/octet-stream;base64," + bytesBase64;
+            link.href = url;
             document.body.appendChild(link); // Needed for Firefox
             link.click();
             document.body.removeChild(link);
         }
+        window.saveBlobAsFile = (filename, blob) => {
+            saveUrlAsFile(filename, URL.createObjectURL(blob));
+        }
+        window.saveAsFile = (filename, bytesBase64) => {
+            saveUrlAsFile(filename, "data:application/octet-stream;base64," + bytesBase64);
+        }
     </script>
+    <script src="~/lib/jszip/jszip.min.js"></script>
+    <script src="~/js/ZipModule.js"></script>
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>

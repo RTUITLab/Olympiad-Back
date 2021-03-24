@@ -17,6 +17,9 @@
                     <NavLink href="@($"/admin/challenges/{ChallengeId}")">@challengeName</NavLink>
                 }
             </DescriptionsItem>
+            <DescriptionsItem Title="Report">
+                <ResultsViewer.Components.UserSolutionsReportCaller ChallengeId="ChallengeId" UserIds="new List<Guid> { UserId}" />
+            </DescriptionsItem>
         </Descriptions>
     </PageHeaderContent>
 </PageHeader>
@@ -52,6 +55,7 @@ else
 }
 
 
+
 @code {
     [Parameter]
     public Guid ChallengeId { get; set; }
@@ -63,6 +67,8 @@ else
     private Models.User user;
 
     private Dictionary<Guid, List<SolutionCompact>> exerciseCache = new Dictionary<Guid, List<SolutionCompact>>();
+
+
 
     protected override async Task OnParametersSetAsync()
     {

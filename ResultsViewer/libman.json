@@ -8,14 +8,6 @@
       "files": [
         "jszip.min.js"
       ]
-    },
-    {
-      "library": "pdfmake@0.1.70",
-      "destination": "wwwroot/lib/pdfmake/",
-      "files": [
-        "pdfmake.min.js",
-        "vfs_fonts.min.js"
-      ]
     }
   ]
 }

@@ -32,6 +32,7 @@ services:
     results-viewer:
         environment:
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+            - GeneratePdfOptions__PrintUrl=/results-viewer/pdfprint
         deploy:
             replicas: 1
             resources:

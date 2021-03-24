@@ -1,0 +1,68 @@
+﻿@implements IAsyncDisposable
+
+@inject Olympiad.Services.UserSolutionsReport.UserSolutionsReportCreator creator
+@inject Microsoft.Extensions.Options.IOptions<ResultsViewer.Options.GeneratePdfOptions> PdfGenerateOptions
+@inject IJSRuntime JS
+@using Markdig
+
+<CreatePDFReportOptions @bind-ReportOptions="userSolutionsReportOptions" Disabled="loading" />
+<Button OnClick="CreateRepots">Click</Button>
+<p style="white-space: pre-wrap">
+    @markup
+</p>
+@code {
+
+        [Parameter]
+        public Guid ChallengeId { get; set; }
+
+        [Parameter]
+        public List<Guid> UserIds { get; set; }
+
+    private bool loading = false;
+
+    private Olympiad.Services.UserSolutionsReport.UserSolutionsReportOptions userSolutionsReportOptions = new Olympiad.Services.UserSolutionsReport.UserSolutionsReportOptions();
+
+    private MarkupString markup;
+
+    private static readonly Markdig.MarkdownPipeline pipeline = new Markdig.MarkdownPipelineBuilder()
+            .UseEmojiAndSmiley()
+            .UseAdvancedExtensions()
+            .UsePipeTables()
+            .Build();
+
+    private IJSObjectReference zipPacker;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            zipPacker = await JS.InvokeAsync<IJSObjectReference>("createZipPacker", PdfGenerateOptions.Value.PrintUrl);
+        }
+    }
+
+    private async Task CreateRepots()
+    {
+        loading = true;
+        try
+        {
+            var markdown = await creator.CreateMarkdownReport(UserIds[0], ChallengeId, userSolutionsReportOptions);
+            var html = Markdig.Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UsePipeTables().Build());
+            html = $"<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>{html}</body></html>"; // Encoding problem
+            await zipPacker.InvokeAsync<string>("addHtmlToPdfFile", $"{UserIds[0]}.pdf", html);
+            await zipPacker.InvokeAsync<string>("saveArchive");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (zipPacker != null)
+        {
+            await zipPacker.DisposeAsync();
+        }
+    }
+}

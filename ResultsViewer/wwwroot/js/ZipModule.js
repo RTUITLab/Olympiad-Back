@@ -1,30 +1,33 @@
 ﻿
 class ZipPacker {
-    #zip;
-    constructor() {
-        this.#zip = new JSZip();
+    zip;
+    printAddress;
+    constructor(printAddress) {
+        this.zip = new JSZip();
+        this.printAddress = printAddress;
     }
-    addFile(fileName, htmlContent) {
-        return new Promise((resolve, reject) => {
-            console.log(JSON.parse(htmlContent))
-            pdfMake.createPdf(JSON.parse(htmlContent)).open();
+    addStringFile(fileName, stringContent) {
+        this.zip.file(fileName, stringContent);
 
-            resolve();
-            //pdfMake.createPdf(JSON.parse(htmlContent)).getBlob(blob => {
-            //    this.#zip.file(`${fileName}.pdf`, blob);
-            //    resolve();
-            //});
-        })
-        
+    }
+    async addHtmlToPdfFile(fileName, htmlContent) {
+        const formData = new FormData();
+        formData.append('html', htmlContent);
+        const response = await fetch(this.printAddress, {
+            method: 'POST',
+            body: formData
+        });
+        const blob = await response.blob();
+        this.zip.file(fileName, blob);
     }
     saveArchive() {
-        this.#zip.generateAsync({ type: "blob" })
+        this.zip.generateAsync({ type: "blob" })
             .then(function (content) {
                 saveBlobAsFile("example.zip", content);
             });
     }
 }
 
-function createZipPacker() {
-    return new ZipPacker();
+function createZipPacker(printAddress) {
+    return new ZipPacker(printAddress);
 }

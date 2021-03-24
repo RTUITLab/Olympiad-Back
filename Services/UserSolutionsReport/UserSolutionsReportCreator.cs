@@ -33,9 +33,9 @@ namespace Olympiad.Services.UserSolutionsReport
             options = options ?? defaultOptions;
 
             var builder = new StringBuilder();
-            builder.AppendLine($"# Report about **{challenge.Name}** for **{(options.ShowName ? user.FirstName : user.StudentID)}**");
+            builder.AppendLine($"## Report about **{challenge.Name}** for **{(options.ShowName ? user.FirstName : user.StudentID)}**");
 
-            builder.AppendLine($"## Additional info");
+            builder.AppendLine($"### Additional info");
             builder.AppendLine($"Field | Value");
             builder.AppendLine($"- | -");
             builder.AppendLine($"Student ID | {user.StudentID}");
@@ -55,16 +55,14 @@ namespace Olympiad.Services.UserSolutionsReport
                 builder.AppendLine(await BuildExercise(user, exercise, options));
             }
 
-
             return builder.ToString();
         }
 
         private async Task<string> BuildExercise(User user, Models.Exercises.Exercise exercise, UserSolutionsReportOptions options)
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"# {exercise.ExerciseName}");
+            builder.AppendLine($"## {exercise.ExerciseName}");
             builder.AppendLine(exercise.ExerciseTask);
-            builder.AppendLine("![](https://files.rtuitlab.ru/olympiad/ppo2021/8/1/Picture1.png)");// TODO remove
             builder.AppendLine();
 
             var solutionsForExercise = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
@@ -73,12 +71,12 @@ namespace Olympiad.Services.UserSolutionsReport
                 case ShowSolutionsMode.AllByDescendingStatus:
                     foreach (var (solution, i) in solutionsForExercise.Select((s, i) => (s, i + 1)))
                     {
-                        builder.AppendLine($"## Solution #{i}");
+                        builder.AppendLine($"### Solution #{i}");
                         RenderSolution(builder, solution, options.ShowChecks);
                     }
                     break;
                 case ShowSolutionsMode.OnlyBest:
-                    builder.AppendLine($"## Best solution");
+                    builder.AppendLine($"### Best solution");
                     RenderSolution(builder, solutionsForExercise[0], options.ShowChecks);
                     break;
             };
@@ -106,26 +104,26 @@ namespace Olympiad.Services.UserSolutionsReport
                     .Where(ch => ch.Status != SolutionStatus.Successful)
                     .Select((c, i) => (c, i)))
                 {
-                    builder.AppendLine($"### Check {num + 1}");
+                    builder.AppendLine($"#### Check {num + 1}");
 
-                    builder.AppendLine($"### Example IN");
+                    builder.AppendLine($"#### Example IN");
                     builder.AppendLine($"```");
                     builder.AppendLine(check.ExampleIn);
                     builder.AppendLine($"```");
 
-                    builder.AppendLine($"### Example OUT");
+                    builder.AppendLine($"#### Example OUT");
                     builder.AppendLine($"```");
                     builder.AppendLine(check.ExampleOut);
                     builder.AppendLine($"```");
 
-                    builder.AppendLine($"### Program OUT");
+                    builder.AppendLine($"#### Program OUT");
                     builder.AppendLine($"```");
                     builder.AppendLine(check.ProgramOut);
                     builder.AppendLine($"```");
 
                     if (!string.IsNullOrEmpty(check.ProgramErr))
                     {
-                        builder.AppendLine($"### Program ERR");
+                        builder.AppendLine($"#### Program ERR");
                         builder.AppendLine($"```");
                         builder.AppendLine(check.ProgramErr);
                         builder.AppendLine($"```");

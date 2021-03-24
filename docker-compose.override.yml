@@ -36,6 +36,9 @@ services:
         restart: on-failure
         depends_on:
             - rabbitmq
+    pdf-printer:
+        ports:
+            - 5505:80
     postgres:
         image: postgres:13-alpine
         environment:
