@@ -13,7 +13,7 @@
 @if (user != null && challenge != null)
 {
 
-    <button class="btn btn-primary" @onclick="async () =>  testReport = await reportsCreator.CreateMarkdownReport(user.Id, challenge.Id)">Create report</button>
+    <button class="btn btn-primary" @onclick="async () =>  testReport = await reportsCreator.CreateMarkdownReport(user.StudentID, challenge.Id)">Create report</button>
     <div class="row">
         <div class="col">
             <p style="white-space: pre-line">@testReport</p>
