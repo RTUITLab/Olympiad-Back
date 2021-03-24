@@ -25,7 +25,7 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
     pdf-printer:
-        image: zephyrhq/wkhtmltopdf-saas
+        image: rtuitlab/olympiad-wkhtmltopdf-saas
         environment:
             - APP_ENV=dev
     rabbitmq:

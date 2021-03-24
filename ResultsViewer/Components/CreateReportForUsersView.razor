@@ -1,4 +1,6 @@
-﻿@inject Olympiad.Services.UserSolutionsReport.UserSolutionsReportCreator creator
+﻿@using Markdig.Prism
+
+@inject Olympiad.Services.UserSolutionsReport.UserSolutionsReportCreator creator
 @inject Microsoft.Extensions.Options.IOptions<ResultsViewer.Options.GeneratePdfOptions> PdfGenerateOptions
 @inject IJSRuntime JS
 @using Markdig
@@ -31,6 +33,9 @@
     [Parameter]
     public List<string> UserStudentIds { get; set; }
 
+    [Parameter]
+    public string FileName { get; set; }
+
     private bool loading = false;
     private bool success = false;
     private string currentAction;
@@ -59,15 +64,16 @@
             foreach (var (userStudentId, i) in UserStudentIds.Select((u, i) => (u, i)))
             {
                 currentAction = $"{userStudentId}: creating template"; StateHasChanged();
-                var markdown = await creator.CreateMarkdownReport(UserStudentIds[0], ChallengeId, userSolutionsReportOptions);
-                var html = Markdig.Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UsePipeTables().UseAdvancedExtensions().Build());
-                html = $"<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>{html}</body></html>"; // Encoding problem
+                var markdown = await creator.CreateMarkdownReport(userStudentId, ChallengeId, userSolutionsReportOptions);
+                var html = Markdig.Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UsePipeTables().UsePreciseSourceLocation().UseAdvancedExtensions().UsePrism().Build());
                 currentAction = $"{userStudentId}: creating report"; StateHasChanged();
+
+                await zipPacker.InvokeAsync<string>("addStringFile", $"{userStudentId}.md", markdown);
                 await zipPacker.InvokeAsync<string>("addHtmlToPdfFile", $"{userStudentId}.pdf", html);
                 done = (int)((double)i / UserStudentIds.Count * 100); StateHasChanged();
             }
             currentAction = $"downloading archive"; StateHasChanged();
-            await zipPacker.InvokeAsync<string>("saveArchive");
+            await zipPacker.InvokeAsync<string>("saveArchive", FileName);
             success = true;
         }
         catch (Exception ex)

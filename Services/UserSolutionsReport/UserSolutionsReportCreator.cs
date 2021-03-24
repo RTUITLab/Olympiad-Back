@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Olympiad.Services.UserSolutionsReport
 {
@@ -96,7 +97,7 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine($"Sent|{solution.SendingTime}");
 
             builder.AppendLine($"```{solution.Language}");
-            builder.AppendLine(solution.Raw);
+            builder.AppendLine(HttpUtility.HtmlEncode(solution.Raw));
             builder.AppendLine($"```");
             if (solution.Status != SolutionStatus.Successful && showChecks)
             {

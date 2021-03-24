@@ -20,6 +20,7 @@
             <DescriptionsItem Title="Report">
                 <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create report about user"
                                                                     ChallengeId="ChallengeId"
+                                                                    FileName="@user?.StudentID"
                                                                     UserStudentIds="@(new List<string> { user?.StudentID })" />
             </DescriptionsItem>
         </Descriptions>

@@ -8,6 +8,7 @@
             <Button Type="@ButtonType.Primary" OnClick="CreateReport">Create summary report by all</Button>
             <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create personal report about each user"
                                                                 ChallengeId="ChallengeId"
+                                                                FileName="@challengeResults.ChallengeName"
                                                                 UserStudentIds="@challengeResults.UserSolutions.Select(us => us.StudentId).ToList()" />
         }
     </PageHeaderContent>

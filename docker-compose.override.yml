@@ -37,6 +37,7 @@ services:
         depends_on:
             - rabbitmq
     pdf-printer:
+        build: ${BACK_CONTEXT:-.}/wkhtmltopdf
         ports:
             - 5505:80
     postgres:

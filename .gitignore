@@ -288,3 +288,4 @@ tests/e2e/stack.yml
 tests/e2e/environment.ps1
 postgres-data
 deploy/results-viewer/results-viewer-build/
+/ResultsViewer/appsettings.Local.json
