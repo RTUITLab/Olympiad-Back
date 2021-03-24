@@ -104,32 +104,46 @@ namespace Olympiad.Services.UserSolutionsReport
                     .Where(ch => ch.Status != SolutionStatus.Successful)
                     .Select((c, i) => (c, i)))
                 {
-                    builder.AppendLine($"#### Check {num + 1}");
+                    builder.AppendLine($"#### Check {num + 1} ({check.Status})");
 
                     builder.AppendLine($"#### Example IN");
                     builder.AppendLine($"```");
-                    builder.AppendLine(check.ExampleIn.Replace(' ', '·'));
+                    builder.AppendLine(TrimProgramInOut(check.ExampleIn.Replace(' ', '·')));
                     builder.AppendLine($"```");
 
                     builder.AppendLine($"#### Example OUT");
                     builder.AppendLine($"```");
-                    builder.AppendLine(check.ExampleOut.Replace(' ', '·'));
+                    builder.AppendLine(TrimProgramInOut(check.ExampleOut.Replace(' ', '·')));
                     builder.AppendLine($"```");
 
                     builder.AppendLine($"#### Program OUT");
                     builder.AppendLine($"```");
-                    builder.AppendLine(check.ProgramOut.Replace(' ', '·'));
+                    builder.AppendLine(TrimProgramInOut(check.ProgramOut));
                     builder.AppendLine($"```");
 
                     if (!string.IsNullOrEmpty(check.ProgramErr))
                     {
                         builder.AppendLine($"#### Program ERR");
                         builder.AppendLine($"```");
-                        builder.AppendLine(check.ProgramErr);
+                        builder.AppendLine(TrimProgramInOut(check.ProgramErr));
                         builder.AppendLine($"```");
                     }
                 }
             }
+        }
+
+        private static string TrimProgramInOut(string data)
+        {
+            if (data == null)
+            {
+                return data;
+            }
+            if (data.Length > 250)
+            {
+                data = data.Substring(0, 250);
+                data += "\n !!Trimmed, too big for report!!";
+            }
+            return data.Replace(' ', '·');
         }
 
         private async Task<List<Models.Solutions.Solution>> LoadSolutionsForExercise(Guid exerciseId, Guid userId)

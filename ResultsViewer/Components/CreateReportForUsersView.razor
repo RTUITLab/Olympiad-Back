@@ -60,7 +60,7 @@
             {
                 currentAction = $"{userStudentId}: creating template"; StateHasChanged();
                 var markdown = await creator.CreateMarkdownReport(UserStudentIds[0], ChallengeId, userSolutionsReportOptions);
-                var html = Markdig.Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UsePipeTables().Build());
+                var html = Markdig.Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UsePipeTables().UseAdvancedExtensions().Build());
                 html = $"<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>{html}</body></html>"; // Encoding problem
                 currentAction = $"{userStudentId}: creating report"; StateHasChanged();
                 await zipPacker.InvokeAsync<string>("addHtmlToPdfFile", $"{userStudentId}.pdf", html);
