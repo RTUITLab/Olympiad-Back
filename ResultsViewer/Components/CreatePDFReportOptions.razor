@@ -1,0 +1,46 @@
+﻿@using Olympiad.Services.UserSolutionsReport
+
+<Form Model="ReportOptions"
+      LabelColSpan="4"
+      WrapperColSpan="24">
+    <FormItem Label="Name">
+        <RadioGroup @bind-Value="@context.ShowName" Disabled="Disabled">
+            <Radio RadioButton Value="@true" Disabled="Disabled">Show user name</Radio>
+            <Radio RadioButton Value="@false" Disabled="Disabled">Show only ID</Radio>
+        </RadioGroup>
+    </FormItem>
+    <FormItem Label="Checks">
+        <RadioGroup @bind-Value="@context.ShowChecks" Disabled="Disabled">
+            <Radio RadioButton Value="@false" Disabled="Disabled">Show only solution source</Radio>
+            <Radio RadioButton Value="@true" Disabled="Disabled">Show checks on each tests</Radio>
+        </RadioGroup>
+    </FormItem>
+    <FormItem Label="Solutions">
+        <Select @bind-Value="context.SolutionsMode"
+                DefaultValue="ShowSolutionsMode.OnlyBest"
+                TItemValue="ShowSolutionsMode"
+                TItem="ShowSolutionsMode"
+                Disabled="Disabled">
+            <SelectOptions>
+                <SelectOption Label="Show one best solution"
+                              TItemValue="ShowSolutionsMode"
+                              TItem="ShowSolutionsMode"
+                              Value="ShowSolutionsMode.OnlyBest"></SelectOption>
+                <SelectOption Label="Show all solutions descending by status"
+                              TItemValue="ShowSolutionsMode"
+                              TItem="ShowSolutionsMode"
+                              Value="ShowSolutionsMode.AllByDescendingStatus"></SelectOption>
+            </SelectOptions>
+
+        </Select>
+    </FormItem>
+</Form>
+
+@code {
+    [Parameter]
+    public UserSolutionsReportOptions ReportOptions { get; set; }
+    [Parameter]
+    public EventCallback<UserSolutionsReportOptions> ReportOptionsChanged { get; set; }
+    [Parameter]
+    public bool Disabled { get; set; }
+}

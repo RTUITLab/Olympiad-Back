@@ -3,7 +3,7 @@
 @using BlazorStrap
 @inject ApplicationDbContext dbContext
 @inject IJSRuntime JS
-@inject Services.UserSolutionsReportCreator reportsCreator
+@inject Olympiad.Services.UserSolutionsReport.UserSolutionsReportCreator reportsCreator
 
 <h3><NavLink href=@($"challenges/{ChallengeId}/results")>Back to challenge results</NavLink></h3>
 <h3>ChallengeUserResults</h3>

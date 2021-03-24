@@ -1,0 +1,23 @@
+﻿@inject IJSRuntime JS
+
+<Button Type="@ButtonType.Primary" OnClick="() => { showReportOptions = true; }">Create report about user<Icon Type="file-pdf" Theme="outline" /></Button>
+
+
+<Drawer Closable="true"
+        Visible="showReportOptions"
+        Placement="right"
+        Title='("Reports options")'
+        OnClose="_=> { showReportOptions = false; }"
+        Width="750">
+    <CreateReportForUsersView ChallengeId="ChallengeId" UserIds="UserIds" />
+</Drawer>
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    [Parameter]
+    public List<Guid> UserIds { get; set; }
+
+    private bool showReportOptions = false;
+
+}

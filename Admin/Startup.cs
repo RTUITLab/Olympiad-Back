@@ -21,6 +21,7 @@ using DiffPlex;
 using Olympiad.Admin.Services;
 using Olympiad.Admin.Options;
 using Microsoft.AspNetCore.Rewrite;
+using Olympiad.Services.UserSolutionsReport;
 
 namespace Olympiad.Admin
 {
