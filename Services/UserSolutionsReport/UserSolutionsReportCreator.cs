@@ -24,13 +24,13 @@ namespace Olympiad.Services.UserSolutionsReport
             this.dbContext = dbContext;
         }
 
-        public async Task<string> CreateMarkdownReport(Guid userId, Guid challengeId, UserSolutionsReportOptions options = null)
+        public async Task<string> CreateMarkdownReport(string userStudentId, Guid challengeId, UserSolutionsReportOptions options = null)
         {
-            var user = await dbContext.Users.SingleOrDefaultAsync(u => u.Id == userId)
-                ?? throw new ArgumentException($"Not found user {userId}");
+            var user = await dbContext.Users.SingleOrDefaultAsync(u => u.StudentID == userStudentId)
+                ?? throw new ArgumentException($"Not found user {userStudentId}");
             var challenge = await dbContext.Challenges.SingleOrDefaultAsync(c => c.Id == challengeId)
                 ?? throw new ArgumentException($"Not found challeng {challengeId}");
-            options = options ?? defaultOptions;
+            options ??= defaultOptions;
 
             var builder = new StringBuilder();
             builder.AppendLine($"## Report about **{challenge.Name}** for **{(options.ShowName ? user.FirstName : user.StudentID)}**");
@@ -108,17 +108,17 @@ namespace Olympiad.Services.UserSolutionsReport
 
                     builder.AppendLine($"#### Example IN");
                     builder.AppendLine($"```");
-                    builder.AppendLine(check.ExampleIn);
+                    builder.AppendLine(check.ExampleIn.Replace(' ', '·'));
                     builder.AppendLine($"```");
 
                     builder.AppendLine($"#### Example OUT");
                     builder.AppendLine($"```");
-                    builder.AppendLine(check.ExampleOut);
+                    builder.AppendLine(check.ExampleOut.Replace(' ', '·'));
                     builder.AppendLine($"```");
 
                     builder.AppendLine($"#### Program OUT");
                     builder.AppendLine($"```");
-                    builder.AppendLine(check.ProgramOut);
+                    builder.AppendLine(check.ProgramOut.Replace(' ', '·'));
                     builder.AppendLine($"```");
 
                     if (!string.IsNullOrEmpty(check.ProgramErr))

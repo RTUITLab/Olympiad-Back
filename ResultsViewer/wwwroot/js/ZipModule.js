@@ -8,7 +8,6 @@ class ZipPacker {
     }
     addStringFile(fileName, stringContent) {
         this.zip.file(fileName, stringContent);
-
     }
     async addHtmlToPdfFile(fileName, htmlContent) {
         const formData = new FormData();

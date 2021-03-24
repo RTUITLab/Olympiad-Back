@@ -1,6 +1,6 @@
 ﻿@inject IJSRuntime JS
 
-<Button Type="@ButtonType.Primary" OnClick="() => { showReportOptions = true; }">Create report about user<Icon Type="file-pdf" Theme="outline" /></Button>
+<Button Type="@ButtonType.Primary" OnClick="() => { showReportOptions = true; }">@ButtonText</Button>
 
 
 <Drawer Closable="true"
@@ -9,14 +9,17 @@
         Title='("Reports options")'
         OnClose="_=> { showReportOptions = false; }"
         Width="750">
-    <CreateReportForUsersView ChallengeId="ChallengeId" UserIds="UserIds" />
+    <CreateReportForUsersView ChallengeId="ChallengeId" UserStudentIds="UserStudentIds" />
 </Drawer>
 @code {
     [Parameter]
     public Guid ChallengeId { get; set; }
 
     [Parameter]
-    public List<Guid> UserIds { get; set; }
+    public List<string> UserStudentIds { get; set; }
+
+    [Parameter]
+    public string ButtonText { get; set; }
 
     private bool showReportOptions = false;
 

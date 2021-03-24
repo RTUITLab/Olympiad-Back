@@ -18,7 +18,9 @@
                 }
             </DescriptionsItem>
             <DescriptionsItem Title="Report">
-                <ResultsViewer.Components.UserSolutionsReportCaller ChallengeId="ChallengeId" UserIds="new List<Guid> { UserId}" />
+                <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create report about user"
+                                                                    ChallengeId="ChallengeId"
+                                                                    UserStudentIds="@(new List<string> { user?.StudentID })" />
             </DescriptionsItem>
         </Descriptions>
     </PageHeaderContent>
