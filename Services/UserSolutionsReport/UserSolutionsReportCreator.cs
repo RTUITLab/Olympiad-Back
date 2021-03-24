@@ -7,10 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Olympiad.Admin.Services
+namespace Olympiad.Services.UserSolutionsReport
 {
     public class UserSolutionsReportCreator
     {
+        private readonly static UserSolutionsReportOptions defaultOptions = new UserSolutionsReportOptions
+        {
+            ShowChecks = true,
+            ShowName = true,
+            SolutionsMode = ShowSolutionsMode.OnlyBest
+        };
         private readonly ApplicationDbContext dbContext;
 
         public UserSolutionsReportCreator(ApplicationDbContext dbContext)
@@ -18,22 +24,23 @@ namespace Olympiad.Admin.Services
             this.dbContext = dbContext;
         }
 
-        public async Task<string> CreateMarkdownReport(Guid userId, Guid challengeId)
+        public async Task<string> CreateMarkdownReport(Guid userId, Guid challengeId, UserSolutionsReportOptions options = null)
         {
             var user = await dbContext.Users.SingleOrDefaultAsync(u => u.Id == userId)
                 ?? throw new ArgumentException($"Not found user {userId}");
             var challenge = await dbContext.Challenges.SingleOrDefaultAsync(c => c.Id == challengeId)
                 ?? throw new ArgumentException($"Not found challeng {challengeId}");
+            options = options ?? defaultOptions;
 
             var builder = new StringBuilder();
-            builder.AppendLine($"# Report about **{challenge.Name}** for **{user.FirstName}**");
+            builder.AppendLine($"# Report about **{challenge.Name}** for **{(options.ShowName ? user.FirstName : user.StudentID)}**");
 
             builder.AppendLine($"## Additional info");
-            builder.AppendLine($"Field|Value");
-            builder.AppendLine($"-|-");
-            builder.AppendLine($"Student ID|{user.StudentID}");
-            builder.AppendLine($"User ID|{user.Id}");
-            builder.AppendLine($"Challenge ID|{challenge.Id}");
+            builder.AppendLine($"Field | Value");
+            builder.AppendLine($"- | -");
+            builder.AppendLine($"Student ID | {user.StudentID}");
+            builder.AppendLine($"User ID | {user.Id}");
+            builder.AppendLine($"Challenge ID | {challenge.Id}");
 
             var exercises = await dbContext.Exercises
                 .Where(e => e.ChallengeId == challenge.Id)
@@ -45,41 +52,58 @@ namespace Olympiad.Admin.Services
 
             foreach (var exercise in exercises)
             {
-                exerciseBlocks.Add(await BuildExercise(user, exercise));
-            }
-
-            foreach (var (status, view) in exerciseBlocks.OrderBy(e => e.status))
-            {
-                builder.AppendLine(view);
+                builder.AppendLine(await BuildExercise(user, exercise, options));
             }
 
 
             return builder.ToString();
         }
 
-        private async Task<(SolutionStatus, string)> BuildExercise(User user, Models.Exercises.Exercise exercise)
+        private async Task<string> BuildExercise(User user, Models.Exercises.Exercise exercise, UserSolutionsReportOptions options)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"# {exercise.ExerciseName}");
             builder.AppendLine(exercise.ExerciseTask);
+            builder.AppendLine("![](https://files.rtuitlab.ru/olympiad/ppo2021/8/1/Picture1.png)");// TODO remove
             builder.AppendLine();
 
-            var bestSolution = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
-            builder.AppendLine($"## Best solution");
+            var solutionsForExercise = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
+            switch (options.SolutionsMode)
+            {
+                case ShowSolutionsMode.AllByDescendingStatus:
+                    foreach (var (solution, i) in solutionsForExercise.Select((s, i) => (s, i + 1)))
+                    {
+                        builder.AppendLine($"## Solution #{i}");
+                        RenderSolution(builder, solution, options.ShowChecks);
+                    }
+                    break;
+                case ShowSolutionsMode.OnlyBest:
+                    builder.AppendLine($"## Best solution");
+                    RenderSolution(builder, solutionsForExercise[0], options.ShowChecks);
+                    break;
+            };
+
+            builder.AppendLine("---");
+            builder.AppendLine();
+            return builder.ToString();
+        }
+
+        private static void RenderSolution(StringBuilder builder, Models.Solutions.Solution solution, bool showChecks)
+        {
             builder.AppendLine($"Field|Value");
             builder.AppendLine($"-|-");
-            builder.AppendLine($"Lang|{bestSolution.Language}");
-            builder.AppendLine($"Status|{bestSolution.Status}");
-            builder.AppendLine($"ID|{bestSolution.Id}");
+            builder.AppendLine($"Lang|{solution.Language}");
+            builder.AppendLine($"Status|{solution.Status}");
+            builder.AppendLine($"ID|{solution.Id}");
+            builder.AppendLine($"Sent|{solution.SendingTime}");
 
-            builder.AppendLine($"```{bestSolution.Language}");
-            builder.AppendLine(bestSolution.Raw);
+            builder.AppendLine($"```{solution.Language}");
+            builder.AppendLine(solution.Raw);
             builder.AppendLine($"```");
-            if (bestSolution.Status != Olympiad.Shared.Models.SolutionStatus.Successful)
+            if (solution.Status != SolutionStatus.Successful && showChecks)
             {
-
-                foreach (var (check, num) in bestSolution.SolutionChecks
-                    .Where(ch => ch.Status != Olympiad.Shared.Models.SolutionStatus.Successful)
+                foreach (var (check, num) in solution.SolutionChecks
+                    .Where(ch => ch.Status != SolutionStatus.Successful)
                     .Select((c, i) => (c, i)))
                 {
                     builder.AppendLine($"### Check {num + 1}");
@@ -108,14 +132,9 @@ namespace Olympiad.Admin.Services
                     }
                 }
             }
-
-
-            builder.AppendLine("---");
-            builder.AppendLine();
-            return (bestSolution.Status, builder.ToString());
         }
 
-        private async Task<Models.Solutions.Solution> LoadSolutionsForExercise(Guid exerciseId, Guid userId)
+        private async Task<List<Models.Solutions.Solution>> LoadSolutionsForExercise(Guid exerciseId, Guid userId)
         {
             return await dbContext
                 .Solutions
@@ -124,7 +143,7 @@ namespace Olympiad.Admin.Services
                 .OrderByDescending(s => s.Status)
                 .ThenByDescending(s => s.SendingTime)
                 .Where(s => s.UserId == userId && s.ExerciseId == exerciseId)
-                .FirstOrDefaultAsync();
+                .ToListAsync();
         }
     }
 
