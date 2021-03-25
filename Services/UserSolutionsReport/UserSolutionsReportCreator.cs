@@ -34,6 +34,7 @@ namespace Olympiad.Services.UserSolutionsReport
             options ??= defaultOptions;
 
             var builder = new StringBuilder();
+
             builder.AppendLine($"## Report about **{challenge.Name}** for **{(options.ShowName ? user.FirstName : user.StudentID)}**");
 
             builder.AppendLine($"### Additional info");
@@ -108,43 +109,37 @@ namespace Olympiad.Services.UserSolutionsReport
                     builder.AppendLine($"#### Check {num + 1} ({check.Status})");
 
                     builder.AppendLine($"#### Example IN");
-                    builder.AppendLine($"```");
-                    builder.AppendLine(TrimProgramInOut(check.ExampleIn.Replace(' ', '·')));
-                    builder.AppendLine($"```");
+                    TrimProgramInOut(builder, check.ExampleIn);
 
                     builder.AppendLine($"#### Example OUT");
-                    builder.AppendLine($"```");
-                    builder.AppendLine(TrimProgramInOut(check.ExampleOut.Replace(' ', '·')));
-                    builder.AppendLine($"```");
+                    TrimProgramInOut(builder, check.ExampleOut);
 
                     builder.AppendLine($"#### Program OUT");
-                    builder.AppendLine($"```");
-                    builder.AppendLine(TrimProgramInOut(check.ProgramOut));
-                    builder.AppendLine($"```");
+                    TrimProgramInOut(builder, check.ProgramOut);
 
                     if (!string.IsNullOrEmpty(check.ProgramErr))
                     {
                         builder.AppendLine($"#### Program ERR");
-                        builder.AppendLine($"```");
-                        builder.AppendLine(TrimProgramInOut(check.ProgramErr));
-                        builder.AppendLine($"```");
+                        TrimProgramInOut(builder, check.ProgramErr);
                     }
                 }
             }
         }
 
-        private static string TrimProgramInOut(string data)
+        private static void TrimProgramInOut(StringBuilder builder, string data)
         {
-            if (data == null)
+            string dataToShow = data;
+            if (dataToShow?.Length > 250)
             {
-                return data;
+                dataToShow = data.Substring(0, 250);
             }
-            if (data.Length > 250)
+            if (dataToShow != null)
             {
-                data = data.Substring(0, 250);
-                data += "\n !!Trimmed, too big for report!!";
+                dataToShow = dataToShow.Replace(' ', '·');
             }
-            return data.Replace(' ', '·');
+            builder.AppendLine("```");
+            builder.AppendLine(dataToShow);
+            builder.AppendLine("```");
         }
 
         private async Task<List<Models.Solutions.Solution>> LoadSolutionsForExercise(Guid exerciseId, Guid userId)
