@@ -289,3 +289,5 @@ tests/e2e/environment.ps1
 postgres-data
 deploy/results-viewer/results-viewer-build/
 /ResultsViewer/appsettings.Local.json
+/Admin/appsettings.Local.json
+/WebApp/appsettings.Local.json
