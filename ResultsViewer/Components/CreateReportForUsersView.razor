@@ -68,7 +68,6 @@
                 var html = Markdig.Markdown.ToHtml(markdown, new MarkdownPipelineBuilder().UsePipeTables().UsePreciseSourceLocation().UseAdvancedExtensions().UsePrism().Build());
                 currentAction = $"{userStudentId}: creating report"; StateHasChanged();
 
-                await zipPacker.InvokeAsync<string>("addStringFile", $"{userStudentId}.md", markdown);
                 await zipPacker.InvokeAsync<string>("addHtmlToPdfFile", $"{userStudentId}.pdf", html);
                 done = (int)((double)i / UserStudentIds.Count * 100); StateHasChanged();
             }

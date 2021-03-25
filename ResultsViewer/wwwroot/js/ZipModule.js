@@ -32,7 +32,6 @@ class ZipPacker {
     }
     async addHtmlToPdfFile(fileName, htmlContent) {
         htmlContent = `${header}${htmlContent}${footer}`;
-        this.addStringFile(`${fileName}.html`, htmlContent);
         const formData = new FormData();
         formData.append('html', htmlContent);
         const response = await fetch(this.printAddress, {
