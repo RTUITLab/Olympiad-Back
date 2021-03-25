@@ -21,6 +21,7 @@ using DiffPlex;
 using Olympiad.Admin.Services;
 using Olympiad.Admin.Options;
 using Microsoft.AspNetCore.Rewrite;
+using Olympiad.Services.UserSolutionsReport;
 
 namespace Olympiad.Admin
 {
@@ -67,6 +68,8 @@ namespace Olympiad.Admin
 
             //Queue
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
+
+            services.AddScoped<UserSolutionsReportCreator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

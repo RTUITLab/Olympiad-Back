@@ -36,6 +36,10 @@ services:
         restart: on-failure
         depends_on:
             - rabbitmq
+    pdf-printer:
+        build: ${BACK_CONTEXT:-.}/wkhtmltopdf
+        ports:
+            - 5505:80
     postgres:
         image: postgres:13-alpine
         environment:

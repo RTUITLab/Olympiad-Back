@@ -21,6 +21,7 @@ variables:
     adminServiceName: 'no'
     executorServiceName: 'no'
     resultsViewerServiceName: 'no'
+    pdfPrinterServiceName: 'no'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
     deployService: true
@@ -32,6 +33,7 @@ variables:
     adminServiceName: olympiad-dev_admin
     executorServiceName: olympiad-dev_executor
     resultsViewerServiceName: olympiad-dev_results-viewer
+    pdfPrinterServiceName: olympiad-dev_pdf-printer
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
     deployService: true
@@ -43,11 +45,18 @@ variables:
     adminServiceName: olympiad_admin
     executorServiceName: olympiad_executor
     resultsViewerServiceName: olympiad_results-viewer
+    pdfPrinterServiceName: olympiad_pdf-printer
+
 
 stages:
 - stage: build
   displayName: build services
   jobs:
+  - job: build_pdf_printer
+    steps:
+    - publish: wkhtmltopdf
+      artifact: pdf-printer-build
+      displayName: pdf-printer-build
   - job: build
     strategy:
       matrix:
@@ -161,6 +170,9 @@ stages:
         results-viewer:
           imageName: rtuitlab/olympiad-results-viewer
           artifactName: results-viewer-build
+        pdf-printer:
+          imageName: rtuitlab/olympiad-wkhtmltopdf-saas
+          artifactName: pdf-printer-build
     steps:
       - download: current
         artifact: $(artifactName)
@@ -280,4 +292,30 @@ stages:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-results-viewer:$(Build.BuildId) ${{variables.resultsViewerServiceName}}'
+                  readyTimeout: '20000'
+    - deployment: DeployPdfPrinter
+      displayName: Deploy pdf printer
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
+      strategy:
+        runOnce:
+          on:
+            failure:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service rollback ${{variables.pdfPrinterServiceName}}'
+                    readyTimeout: '20000'
+          deploy:
+            steps:
+              - download: none
+              - task: SSH@0
+                inputs:
+                  sshEndpoint: 'swarm manager'
+                  runOptions: 'commands'
+                  commands: 'docker service update --image rtuitlab/olympiad-wkhtmltopdf-saas:$(Build.BuildId) ${{variables.pdfPrinterServiceName}}'
                   readyTimeout: '20000'

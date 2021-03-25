@@ -8,13 +8,19 @@
     <PackageReference Include="AntDesign" Version="0.7.2" />
     <PackageReference Include="BlazorTextDiff" Version="0.0.1" />
     <PackageReference Include="ClosedXML" Version="0.95.4" />
+    <PackageReference Include="Markdig" Version="0.24.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.1.2" />
+    <PackageReference Include="WebStoating.Markdig.Prism" Version="1.0.0" />
 
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Models\Models.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\jszip\" />
   </ItemGroup>
 
 </Project>

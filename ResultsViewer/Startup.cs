@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Models;
 using Olympiad.Services;
+using Olympiad.Services.UserSolutionsReport;
+using ResultsViewer.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +32,7 @@ namespace ResultsViewer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<GeneratePdfOptions>(Configuration.GetSection(nameof(GeneratePdfOptions)));
             services.AddRazorPages();
             services.AddServerSideBlazor();
             
@@ -38,6 +41,8 @@ namespace ResultsViewer
             services.AddScoped<IDiffer, Differ>();
 
             services.AddScoped<ResultsService>();
+            services.AddScoped<UserSolutionsReportCreator>();
+
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase")));
