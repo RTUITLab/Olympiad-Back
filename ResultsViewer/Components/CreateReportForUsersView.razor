@@ -6,7 +6,7 @@
 @using Markdig
 
 <CreatePDFReportOptions @bind-ReportOptions="userSolutionsReportOptions" Disabled="loading" />
-<Button OnClick="CreateRepots">Create</Button>
+<Button OnClick="CreateRepots" Disabled="loading">Create</Button>
 
 @if (loading)
 {
@@ -54,6 +54,10 @@
 
     private async Task CreateRepots()
     {
+        if (loading)
+        {
+            return;
+        }
         done = 0;
         success = false;
         errorMessage = null;
