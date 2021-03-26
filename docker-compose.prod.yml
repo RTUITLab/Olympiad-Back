@@ -4,6 +4,7 @@ services:
     api:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
+            - JwtIssuerOptions__Issuer=${JWT_ISSUER?place jwt issuer! JWT_ISSUER}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
         deploy:
             resources:

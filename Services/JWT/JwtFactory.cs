@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace WebApp.Auth
+namespace Olympiad.Services.JWT
 {
     public class JwtFactory : IJwtFactory
     {

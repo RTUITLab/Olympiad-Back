@@ -1,26 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
-using Models.Solutions;
-using Newtonsoft.Json;
 using PublicAPI.Requests;
 using PublicAPI.Responses;
-using Olympiad.Shared.Models;
-using WebApp.Auth;
-using WebApp.Helpers;
-using WebApp.ViewModels;
 using WebApp.Services;
 using WebApp.Models.Settings;
+using Olympiad.Services.JWT;
 
 namespace WebApp.Controllers
 {

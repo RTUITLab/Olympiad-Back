@@ -14,11 +14,6 @@ namespace Models
         public string Issuer { get; set; }
 
         /// <summary>
-        /// 4.1.2.  "sub" (Subject) Claim - The "sub" (subject) claim identifies the principal that is the subject of the JWT.
-        /// </summary>
-        public string Subject { get; set; }
-
-        /// <summary>
         /// 4.1.3.  "aud" (Audience) Claim - The "aud" (audience) claim identifies the recipients that the JWT is intended for.
         /// </summary>
         public string Audience { get; set; }
@@ -56,6 +51,11 @@ namespace Models
 
         /// <summary>
         /// The signing key to use when generating tokens.
+        /// </summary>
+        public SymmetricSecurityKey SigningKey { get; set; }
+
+        /// <summary>
+        /// The signing credentials to use when generating tokens.
         /// </summary>
         public SigningCredentials SigningCredentials { get; set; }
     }

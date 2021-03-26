@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -12,22 +11,14 @@ using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using WebApp.Helpers;
 using Microsoft.AspNetCore.Identity;
-using WebApp.Auth;
-using Newtonsoft.Json.Serialization;
 using WebApp.Services;
-using System.Collections.Concurrent;
-using Newtonsoft.Json;
 using WebApp.Models.Settings;
 using WebApp.Services.Configure;
 using WebApp.Services.Interfaces;
 using WebApp.Middleware;
-using Swashbuckle.AspNetCore.Swagger;
 using WebApp.Services.ReCaptcha;
 using Microsoft.Extensions.Hosting;
-using WebApp.ViewModels.Mappings;
-using WebApp.Formatting.ResponseMappers;
 using Microsoft.OpenApi.Models;
 using RTUITLab.AspNetCore.Configure.Configure;
 using RTUITLab.AspNetCore.Configure.Invokations;
@@ -37,6 +28,7 @@ using WebApp.Formatting;
 using Olympiad.Services;
 using Olympiad.Shared;
 using System.Security.Claims;
+using Olympiad.Services.JWT;
 
 namespace WebApp
 {
@@ -71,19 +63,7 @@ namespace WebApp
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
 
-            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
-
-            services.AddSingleton<IJwtFactory, JwtFactory>();
-
-            SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(
-                jwtAppSettingOptions.SecretKey));
-
-            services.Configure<JwtIssuerOptions>(options =>
-            {
-                options.Issuer = jwtAppSettingOptions.Issuer;
-                options.Audience = jwtAppSettingOptions.Audience;
-                options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
-            });
+            services.AddJwtGenerator(Configuration, out var jwtAppSettingOptions);
 
 
             var tokenValidationParameters = new TokenValidationParameters
@@ -95,7 +75,7 @@ namespace WebApp
                 ValidAudience = jwtAppSettingOptions.Audience,
 
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
+                IssuerSigningKey = jwtAppSettingOptions.SigningKey,
 
                 RequireExpirationTime = false,
                 ValidateLifetime = true,
