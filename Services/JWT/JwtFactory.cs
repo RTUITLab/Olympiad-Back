@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace WebApp.Auth
+namespace Olympiad.Services.JWT
 {
     public class JwtFactory : IJwtFactory
     {
@@ -21,11 +21,18 @@ namespace WebApp.Auth
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public async Task<string> GenerateEncodedToken(string userName, ClaimsIdentity identity)
+
+        public string GenerateToken(User user, IList<string> roles)
+        {
+            var identity = GenerateClaimsIdentity(user.UserName, user.Id.ToString(), roles);
+            return GenerateEncodedToken(user.UserName, identity);
+        }
+
+        private string GenerateEncodedToken(string userName, ClaimsIdentity identity)
         {
             var claims = new[]
             {
-                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
+                 new Claim(JwtRegisteredClaimNames.Jti, _jwtOptions.JtiGenerator()),
                  new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64)
             }.Concat(identity.Claims).ToArray();
 
@@ -44,14 +51,14 @@ namespace WebApp.Auth
             return encodedJwt;
         }
 
-        public ClaimsIdentity GenerateClaimsIdentity(string userName, string id, string[] roles)
+        public ClaimsIdentity GenerateClaimsIdentity(string userName, string id, IList<string> roles)
         {
-            var claims = new Claim[roles.Length + 1];
-            for (var i = 0; i < roles.Length; i++)
+            var claims = new Claim[roles.Count + 1];
+            for (var i = 0; i < roles.Count; i++)
             {
                 claims[i] = new Claim(ClaimTypes.Role, roles[i]);
             }
-            claims[claims.Length - 1] = new Claim(ClaimTypes.NameIdentifier, id);
+            claims[^1] = new Claim(ClaimTypes.NameIdentifier, id);
             return new ClaimsIdentity(new GenericIdentity(userName, "Token"), claims);
         }
 

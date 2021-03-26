@@ -1,26 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Models;
-using Models.Solutions;
-using Newtonsoft.Json;
 using PublicAPI.Requests;
 using PublicAPI.Responses;
-using Olympiad.Shared.Models;
-using WebApp.Auth;
-using WebApp.Helpers;
-using WebApp.ViewModels;
 using WebApp.Services;
 using WebApp.Models.Settings;
+using Olympiad.Services.JWT;
 
 namespace WebApp.Controllers
 {
@@ -82,14 +74,11 @@ namespace WebApp.Controllers
             return Json(await GenerateResponse(user));
         }
 
-        private async Task<LoginResponse> GenerateResponse(User user, string token = "")
+        private async Task<LoginResponse> GenerateResponse(User user)
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
-            loginInfo.Token = token;
             var userRoles = await _userManager.GetRolesAsync(user);
-            var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), userRoles.ToArray());
-
-            loginInfo.Token = await Tokens.GenerateJwt(identity, _jwtFactory, user.UserName);
+            loginInfo.Token = _jwtFactory.GenerateToken(user, userRoles);
             return loginInfo;
         }
     }

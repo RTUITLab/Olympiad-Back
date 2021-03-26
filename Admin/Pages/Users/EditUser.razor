@@ -5,6 +5,7 @@
 @inject Olympiad.Admin.Services.UserPasswordGenerator userPasswordGenerator
 
 @inject NavigationManager navigationManager
+@inject Olympiad.Services.JWT.IJwtFactory jwtFctory
 
 @using BlazorStrap
 <h3>EditUser</h3>
@@ -17,7 +18,7 @@
 else
 {
     <BlazorStrap.BSRow>
-        <BlazorStrap.BSCol>
+        <div class="col-6">
             <BSForm Model="user" OnValidSubmit="UpdateUser">
                 <BSFormGroup>
                     <BSLabel>
@@ -80,10 +81,14 @@ else
                 <p>@generatedPassword</p>
             }
             <button class="btn btn-warning" @onclick="RengeneratePassword">Regenerate password</button>
-        </BlazorStrap.BSCol>
-        <BlazorStrap.BSCol>
+        </div>
+
+        <div class="col-4">
+            <button class="btn btn-secondary" @onclick="LoginAsUser">Login as @user.FirstName</button>
+        </div>
+        <div class="col-2">
             <button class="btn btn-danger" @onclick="DeleteUser">Delete</button>
-        </BlazorStrap.BSCol>
+        </div>
     </BlazorStrap.BSRow>
 }
 
@@ -132,12 +137,20 @@ else
         await Service.DeleteAsync(user);
         navigationManager.NavigateTo("users");
     }
+
     private async Task RengeneratePassword()
     {
         await Service.RemovePasswordAsync(user);
         var password = userPasswordGenerator.GeneratePassword();
         await Service.AddPasswordAsync(user, password);
         generatedPassword = password;
+    }
+
+    private async Task LoginAsUser()
+    {
+        var roles = await Service.GetRolesAsync(user);
+        var token = jwtFctory.GenerateToken(user, roles);
+        navigationManager.NavigateTo($"/#{token}", true);
     }
 
     private class ClaimToAddModel

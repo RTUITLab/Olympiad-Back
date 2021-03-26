@@ -20,6 +20,7 @@ services:
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
+        restart: on-failure
     results-viewer:
         build: ${BACK_CONTEXT:-.}/deploy/results-viewer
         ports:
@@ -27,6 +28,7 @@ services:
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
             - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
+        restart: on-failure
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor
         environment:
@@ -40,6 +42,7 @@ services:
         build: ${BACK_CONTEXT:-.}/wkhtmltopdf
         ports:
             - 5505:80
+        restart: on-failure
     postgres:
         image: postgres:13-alpine
         environment:
