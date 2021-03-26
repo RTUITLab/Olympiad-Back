@@ -11,9 +11,11 @@
 <h3>GenerateUsers</h3>
 <NavLink href="users">Back to users</NavLink>
 
-<p>Insert list of StudentId</p>
-<BSLabel For="exampleFormControlFile1">Example file input</BSLabel>
-<InputFile OnChange="HandleSelection" />
+<p>CSV Table <strong>must</strong> contains <code>ID</code> >> StudentId and <code>Name</code> >> FirstName</p>
+<p>CSV Table <strong>can</strong> contains <code>DefaultPassword</code> >> password</p>
+
+<BSLabel For="exampleFormControlFile1">Users table</BSLabel>
+<InputFile OnChange="HandleSelection" accept=".csv"/>
 @if (!usersGenerateModel.IsValid().isValid)
 {
     <BSAlert Color="Color.Danger">
@@ -59,7 +61,6 @@
 
 <Logs @ref="logs"></Logs>
 @code {
-    List<PublicAPI.Responses.GenerateUsersRespponce> generatedUsers;
 
     private UsersGenerateModel usersGenerateModel = new UsersGenerateModel();
     private Logs logs;
@@ -78,7 +79,7 @@
             {
                 while (await csv.ReadAsync())
                 {
-                    usersGenerateModel.AddUserRow(csv.Parser.Record);
+                    usersGenerateModel.AddUserRow(csv.Parser.Record, userPasswordGenerator.GeneratePassword);
                 }
             }
         }
@@ -86,7 +87,7 @@
 
     private async Task Generate()
     {
-        List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
+        List<UserGenerateRow> generates = new List<UserGenerateRow>();
         var defaultClaims = new List<System.Security.Claims.Claim> { new System.Security.Claims.Claim("reset_password", "need") };
         foreach (var (userToGenerate, i) in usersGenerateModel.UserGenerateRows.Select((u, i) => (u, i)))
         {
@@ -98,9 +99,8 @@
                 StudentID = userToGenerate.StudentID,
                 FirstName = userToGenerate.FirstName
             };
-            var password = string.IsNullOrEmpty(userToGenerate.Password) ?
-                userPasswordGenerator.GeneratePassword(): userToGenerate.Password;
-            var result = await Service.CreateAsync(user, password);
+
+            var result = await Service.CreateAsync(user, userToGenerate.Password);
             if (!result.Succeeded)
             {
                 await logs.Log(string.Join('\n', result.Errors.Select(ir => ir.Description)));
@@ -108,14 +108,48 @@
             }
             result = await Service.AddToRoleAsync(user, "User");
             result = await Service.AddClaimsAsync(user, userToGenerate.Claims.Concat(defaultClaims));
-            generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
+            generates.Add(userToGenerate);
             await logs.Log($"Generate user: {i + 1}/{usersGenerateModel.UserGenerateRows.Count} | {userToGenerate.StudentID}");
         }
 
-        generatedUsers = generates;
-        if (generatedUsers.Any())
+        if (generates.Any())
         {
-            await JS.DownloadFile("passwords.tsv", System.Text.Encoding.UTF8.GetBytes(string.Join('\n', generatedUsers.Select(u => $"{u.Login}\t{u.Password}"))));
+            await DownloadResults(generates);
+            //await JS.DownloadFile("passwords.tsv", System.Text.Encoding.UTF8.GetBytes(string.Join('\n', generates.Select(u => $"{u.Login}\t{u.Password}"))));
+        }
+    }
+
+    private async Task DownloadResults(List<UserGenerateRow> generated)
+    {
+        using var workBook = new ClosedXML.Excel.XLWorkbook();
+        var workSheet = workBook.Worksheets.Add("Users");
+        var currentRow = 1;
+        var currentColumn = 1;
+        workSheet.Cell(currentRow, currentColumn++).SetValue("ID (login)");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Password");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Name");
+        foreach (var claim in generated.First().Claims)
+        {
+            workSheet.Cell(currentRow, currentColumn++).Value = claim.Type;
+        }
+        foreach (var row in generated)
+        {
+            currentRow++;
+            currentColumn = 1;
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.StudentID);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.Password);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.FirstName);
+            foreach (var claim in row.Claims)
+            {
+                workSheet.Cell(currentRow, currentColumn++).SetValue(claim.Value);
+            }
+        }
+        using (var stream = new System.IO.MemoryStream())
+        {
+            workBook.SaveAs(stream);
+            var content = stream.ToArray();
+
+            await JS.DownloadFile($"users.xlsx", content);
         }
     }
 
@@ -136,7 +170,7 @@
         private List<UserGenerateRow> userGenerateRows = new List<UserGenerateRow>();
 
 
-        public void AddUserRow(string[] row)
+        public void AddUserRow(string[] row, Func<string> createPasswordFunc)
         {
             if (row.Length != ColumnNames.Length)
             {
@@ -151,7 +185,8 @@
             {
                 StudentID = row[0],
                 FirstName = row[1],
-                Password = IsContainsPasswordColumn(out var passworcColumnNameIndex) ? row[passworcColumnNameIndex] : null,
+                Password = IsContainsPasswordColumn(out var passworcColumnNameIndex) ?
+                    row[passworcColumnNameIndex] : createPasswordFunc(),
                 Claims = row
                     .Skip(2)
                     .Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i + 2], r))
