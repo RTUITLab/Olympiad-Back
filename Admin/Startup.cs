@@ -22,6 +22,7 @@ using Olympiad.Admin.Services;
 using Olympiad.Admin.Options;
 using Microsoft.AspNetCore.Rewrite;
 using Olympiad.Services.UserSolutionsReport;
+using Olympiad.Services.JWT;
 
 namespace Olympiad.Admin
 {
@@ -70,6 +71,8 @@ namespace Olympiad.Admin
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
 
             services.AddScoped<UserSolutionsReportCreator>();
+
+            services.AddJwtGenerator(Configuration, out _);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,6 +10,13 @@ namespace Olympiad.Services.JWT
 {
     public static class JwtServicesExtension
     {
+        /// <summary>
+        /// Adds <see cref="IJwtFactory"/> to DI, uses <see cref="JwtIssuerOptions"/> from "configuration" to configure
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration">Service base configuration</param>
+        /// <param name="options">Readed JWT options</param>
+        /// <returns></returns>
         public static IServiceCollection AddJwtGenerator(this IServiceCollection services, IConfiguration configuration, out JwtIssuerOptions options)
         {
             var jwtAppSettingOptions = configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
