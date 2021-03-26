@@ -249,7 +249,8 @@ namespace WebApp.Controllers
                 "c" => ".c",
                 "cpp" => ".cpp",
                 "python" => ".py",
-                _ => "",
+                "js" => ".js",
+                _ => ".txt",
             };
         }
     }
