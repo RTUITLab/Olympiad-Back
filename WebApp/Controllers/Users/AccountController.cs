@@ -141,6 +141,15 @@ namespace WebApp.Controllers.Users
             var result = await UserManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             if (result.Succeeded)
             {
+                var allClaims = await UserManager.GetClaimsAsync(user);
+                var resetPasswordClaims = allClaims
+                    .Where(c => c.Type == "reset_password" && c.Value == "need")
+                    .ToList();
+                if(resetPasswordClaims.Any())
+                {
+                    var removeClaimsResult = await UserManager.RemoveClaimsAsync(user, resetPasswordClaims);
+                    logger.LogInformation($"User changed default password");
+                }    
                 return Ok();
             }
             return BadRequest(result.Errors);

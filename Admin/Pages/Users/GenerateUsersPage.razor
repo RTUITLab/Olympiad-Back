@@ -25,7 +25,14 @@
         <tr>
             @foreach (var columnName in usersGenerateModel.ColumnNames)
             {
-                <th>@columnName</th>
+                if (columnName == UsersGenerateModel.DefaultPassworkColumnName)
+                {
+                    <th class="alert alert-warning">@columnName</th>
+                }
+                else
+                {
+                    <th>@columnName</th>
+                }
             }
         </tr>
     </thead>
@@ -80,7 +87,7 @@
     private async Task Generate()
     {
         List<PublicAPI.Responses.GenerateUsersRespponce> generates = new List<PublicAPI.Responses.GenerateUsersRespponce>();
-
+        var defaultClaims = new List<System.Security.Claims.Claim> { new System.Security.Claims.Claim("reset_password", "need") };
         foreach (var (userToGenerate, i) in usersGenerateModel.UserGenerateRows.Select((u, i) => (u, i)))
         {
             User user = new User()
@@ -91,10 +98,16 @@
                 StudentID = userToGenerate.StudentID,
                 FirstName = userToGenerate.FirstName
             };
-            var password = userPasswordGenerator.GeneratePassword();
+            var password = string.IsNullOrEmpty(userToGenerate.Password) ?
+                userPasswordGenerator.GeneratePassword(): userToGenerate.Password;
             var result = await Service.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                await logs.Log(string.Join('\n', result.Errors.Select(ir => ir.Description)));
+                continue;
+            }
             result = await Service.AddToRoleAsync(user, "User");
-            result = await Service.AddClaimsAsync(user, userToGenerate.Claims);
+            result = await Service.AddClaimsAsync(user, userToGenerate.Claims.Concat(defaultClaims));
             generates.Add(new PublicAPI.Responses.GenerateUsersRespponce { Login = user.UserName, Password = password });
             await logs.Log($"Generate user: {i + 1}/{usersGenerateModel.UserGenerateRows.Count} | {userToGenerate.StudentID}");
         }
@@ -110,15 +123,18 @@
     {
         public string StudentID { get; set; }
         public string FirstName { get; set; }
+        public string Password { get; set; }
         public List<System.Security.Claims.Claim> Claims { get; set; }
     }
 
     private class UsersGenerateModel
     {
-        public string[] ColumnNames { get; set; } = new string[0];
+        public string[] ColumnNames { get; init; } = new string[0];
+        public const string DefaultPassworkColumnName = "DefaultPassword";
         public IReadOnlyCollection<UserGenerateRow> UserGenerateRows => userGenerateRows;
 
         private List<UserGenerateRow> userGenerateRows = new List<UserGenerateRow>();
+
 
         public void AddUserRow(string[] row)
         {
@@ -135,8 +151,18 @@
             {
                 StudentID = row[0],
                 FirstName = row[1],
-                Claims = row.Skip(2).Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i + 2], r)).ToList()
+                Password = IsContainsPasswordColumn(out var passworcColumnNameIndex) ? row[passworcColumnNameIndex] : null,
+                Claims = row
+                    .Skip(2)
+                    .Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i + 2], r))
+                    .ToList()
             });
+        }
+
+        public bool IsContainsPasswordColumn(out int index)
+        {
+            index = Array.IndexOf(ColumnNames, DefaultPassworkColumnName);
+            return index != -1;
         }
 
         public (bool isValid, string errorMessage) IsValid()
