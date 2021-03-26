@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -8,7 +9,6 @@ namespace WebApp.Auth
 {
     public interface IJwtFactory
     {
-        Task<string> GenerateEncodedToken(string userName, ClaimsIdentity identity);
-        ClaimsIdentity GenerateClaimsIdentity(string userName, string id, string[] roles);
+        string GenerateToken(User user, IList<string> roles);
     }
 }

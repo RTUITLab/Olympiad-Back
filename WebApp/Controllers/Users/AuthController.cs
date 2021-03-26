@@ -82,14 +82,11 @@ namespace WebApp.Controllers
             return Json(await GenerateResponse(user));
         }
 
-        private async Task<LoginResponse> GenerateResponse(User user, string token = "")
+        private async Task<LoginResponse> GenerateResponse(User user)
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
-            loginInfo.Token = token;
             var userRoles = await _userManager.GetRolesAsync(user);
-            var identity = _jwtFactory.GenerateClaimsIdentity(user.UserName, user.Id.ToString(), userRoles.ToArray());
-
-            loginInfo.Token = await Tokens.GenerateJwt(identity, _jwtFactory, user.UserName);
+            loginInfo.Token = _jwtFactory.GenerateToken(user, userRoles);
             return loginInfo;
         }
     }

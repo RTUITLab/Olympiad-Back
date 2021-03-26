@@ -39,7 +39,7 @@ namespace Models
         public DateTime IssuedAt => DateTime.UtcNow;
 
         /// <summary>
-        /// Set the timespan the token will be valid for (default is 120 min)
+        /// Set the timespan the token will be valid for (default is 120 days)
         /// </summary>
         public TimeSpan ValidFor { get; set; } = TimeSpan.FromDays(120);
 
@@ -51,8 +51,8 @@ namespace Models
         /// <summary>
         /// "jti" (JWT ID) Claim (default ID is a GUID)
         /// </summary>
-        public Func<Task<string>> JtiGenerator =>
-          () => Task.FromResult(Guid.NewGuid().ToString());
+        public Func<string> JtiGenerator =>
+          () => Guid.NewGuid().ToString();
 
         /// <summary>
         /// The signing key to use when generating tokens.
