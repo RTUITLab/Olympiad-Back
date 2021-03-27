@@ -93,7 +93,7 @@
         {
             User user = new User()
             {
-                Email = $"{userToGenerate.StudentID}{generateSettings.Value.Domain}",
+                Email = $"{userToGenerate.StudentID}@{generateSettings.Value.Domain}",
                 UserName = userToGenerate.StudentID,
                 EmailConfirmed = true,
                 StudentID = userToGenerate.StudentID,
