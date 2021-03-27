@@ -19,7 +19,6 @@ namespace Olympiad.Admin.Components
         /// Gets the <see cref="MarkdownPipeline"/> to use.
         /// </summary>
         public virtual MarkdownPipeline Pipeline => new MarkdownPipelineBuilder()
-            .UseEmojiAndSmiley()
             .UseAdvancedExtensions()
             .Build();
 
