@@ -24,7 +24,7 @@ else
             @foreach (var user in acceptedUsers)
             {
                 <tr>
-                    <td>@user.StudentID</td>
+                    <td><NavLink href=@($"users/{user.Id}")>@user.StudentID</NavLink></td>
                     <td>
                         <BSButton Color="Color.Danger" OnClick="() => RemoveUserFromChallenge(user)">Remove from challenge</BSButton>
                     </td>
