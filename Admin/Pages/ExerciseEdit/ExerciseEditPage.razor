@@ -34,17 +34,17 @@ else
                 <button type="submit" class="btn btn-primary" @onclick="UpdateExercise">Update</button>
             }
         </EditForm>
+        <hr />
+        <div class="row">
+            <div class="col">
+            </div>
+            <div class="col">
+                <button class="btn btn-warning" @onclick="RecheckExercise">Recheck exercise</button>
+                <button class="btn btn-danger" @onclick="DeleteExercise">Delete</button>
+            </div>
+        </div>
+        <EditExerciseDataGroups ExerciseId="ExerciseId" />
     </CascadingValue>
-    <hr />
-    <div class="row">
-        <div class="col">
-        </div>
-        <div class="col">
-            <button class="btn btn-warning" @onclick="RecheckExercise">Recheck exercise</button>
-            <button class="btn btn-danger" @onclick="DeleteExercise">Delete</button>
-        </div>
-    </div>
-    <EditExerciseDataGroups ExerciseId="ExerciseId" />
 }
 <Logs @ref="logs"></Logs>
 
