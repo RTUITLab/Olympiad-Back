@@ -4,6 +4,7 @@ using Blazored.SessionStorage;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Olympiad.ControlPanel.Services;
+using Refit;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -12,7 +13,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddAntDesign();
 
-builder.Services.AddScoped<ControlPanelApiService>();
+builder.Services.AddScoped<IControlPanelApiService>(sp => RestService.For<IControlPanelApiService>(sp.GetRequiredService<HttpClient>()));
 builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 

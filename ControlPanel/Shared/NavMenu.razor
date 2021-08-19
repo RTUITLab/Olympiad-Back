@@ -39,28 +39,28 @@
 
 @code {
 
-	private List<ChallengeCompact> challenges = new List<ChallengeCompact>
-	{
-	new ChallengeCompact
-	{
-	Title = "Try",
-	Id = Guid.NewGuid()
-	}
-	};
+	//private List<ChallengeCompact> challenges = new List<ChallengeCompact>
+	//{
+	//new ChallengeCompact
+	//{
+	//Title = "Try",
+	//Id = Guid.NewGuid()
+	//}
+	//};
 
 
-	protected override async Task OnInitializedAsync()
-	{
-		await base.OnInitializedAsync();
+	//protected override async Task OnInitializedAsync()
+	//{
+	//	await base.OnInitializedAsync();
 
-		//challenges = await Service.Challenges
-		//    .Select(c => new ChallengeCompact { Id = c.Id, Title = c.Name })
-		//    .ToListAsync();
-	}
+	//	//challenges = await Service.Challenges
+	//	//    .Select(c => new ChallengeCompact { Id = c.Id, Title = c.Name })
+	//	//    .ToListAsync();
+	//}
 
-	class ChallengeCompact
-	{
-		public Guid Id { get; set; }
-		public string Title { get; set; }
-	}
+	//class ChallengeCompact
+	//{
+	//	public Guid Id { get; set; }
+	//	public string Title { get; set; }
+	//}
 }

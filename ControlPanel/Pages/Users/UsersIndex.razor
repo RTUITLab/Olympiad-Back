@@ -1,16 +1,132 @@
 ﻿@page "/users"
+
+@using AntDesign.TableModels
 @using Olympiad.Shared
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Users
+@using System.Text
 
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 @inject MessageService _message
+@inject IControlPanelApiService ControlPanelApiService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
 
-<PageHeader Title="Управление пользователями" >
+<PageHeader Title="Управление пользователями">
 	<PageHeaderExtra>
 		<Button Type="@ButtonType.Primary" OnClick="@(() => _message.Warning("В разработке"))">Генерация</Button>
 	</PageHeaderExtra>
 </PageHeader>
 
+
+<Space Direction="DirectionVHType.Vertical" Style="width: 100%">
+	<SpaceItem>
+		<Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
+	</SpaceItem>
+	<SpaceItem>
+		<Table DataSource="usersSource"
+			   Loading="loading"
+			   Total="loadedData?.Total ?? 0"
+			   @bind-PageIndex="PageIndex"
+			   @bind-PageSize="PageSize"
+			   TItem=UserInfoResponse
+			   OnChange=HandleChange>
+
+			<Column @bind-Field="context.FirstName" Title="Имя" Sortable SorterCompare="@((v1, v2) => string.CompareOrdinal(v1, v2))"></Column>
+			<Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable SorterCompare="@((v1, v2) => string.CompareOrdinal(v1, v2))"></Column>
+			<Column @bind-Field="context.Email" Sortable SorterCompare="@((v1, v2) => string.CompareOrdinal(v1, v2))"></Column>
+			<ActionColumn>
+				<Button OnClick="@(() => _message.Warning("В разработке"))">Редактировать</Button>
+			</ActionColumn>
+		</Table>
+	</SpaceItem>
+</Space>
+
+
+
 @code {
 
+	[SupplyParameterFromQuery]
+	[Parameter]
+	public string? Match { get; set; }
+
+	[SupplyParameterFromQuery]
+	[Parameter]
+	public int PageIndex { get; set; }
+
+	[SupplyParameterFromQuery]
+	[Parameter]
+	public int PageSize { get; set; }
+
+	private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
+	private ListResponse<UserInfoResponse>? loadedData;
+	private bool loading;
+	protected override async Task OnParametersSetAsync()
+	{
+		await base.OnParametersSetAsync();
+		var needChangeUrl = false;
+		if (PageIndex < 1)
+		{
+			PageIndex = 1;
+			needChangeUrl |= true;
+		}
+		if (PageSize == 0)
+		{
+			PageSize = 50;
+			needChangeUrl |= true;
+		}
+		if (Match?.Length > 100)
+		{
+			Match = Match[0..100];
+			needChangeUrl |= true;
+		}
+		if (needChangeUrl)
+		{
+			NavigationManager.NavigateTo(CalcCurrentUrl(), replace: true);
+		}
+		await LoadData();
+	}
+
+	private void HandleChange()
+	{
+		NavigationManager.NavigateTo(CalcCurrentUrl());
+	}
+
+	private async Task LoadData()
+	{
+		loading = true;
+		try
+		{
+			loadedData = await ControlPanelApiService.SearchUsers(Match, PageSize, (PageIndex - 1) * PageSize);
+		}
+		finally
+		{
+			loading = false;
+		}
+	}
+
+	private string CalcCurrentUrl()
+	{
+		var queryParams = new List<string>();
+		if (PageIndex != 1)
+		{
+			queryParams.Add($"pageIndex={PageIndex}");
+		}
+		if (PageSize != 50)
+		{
+			queryParams.Add($"pageSize={PageSize}");
+		}
+		if (!string.IsNullOrEmpty(Match))
+		{
+			queryParams.Add($"match={Match}");
+		}
+
+		var url = $"users";
+		if (queryParams.Any())
+		{
+			url += "?" + string.Join("&", queryParams);
+		}
+		return url;
+	}
 }
