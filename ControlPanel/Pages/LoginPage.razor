@@ -5,10 +5,12 @@
 @inject IJSRuntime JS
 @inject ILoginRefresh LoginRefresh
 
-<h1>Пожалуйста, войдите в аккаунт</h1>
-
-<input @bind-value=accessToken/>
-<button @onclick="@(() => LoginRefresh.SaveTokenAndRefreshAsync(accessToken))">Установить токен</button>
+<Result Status="403" Title="Необходимо войти в аккаунт для доступа">
+	<Extra>
+		<Input @bind-Value=accessToken Placeholder="Введите токен доступа. В дальнейшем будет производиться перенаправление на клиентский сайт, для ввода логина и пароля"/>
+		<Button Type="@ButtonType.Primary" OnClick=@(() => LoginRefresh.SaveTokenAndRefreshAsync(accessToken))>Войти</Button>
+	</Extra>
+</Result>
 @code {
 
 	[CascadingParameter]

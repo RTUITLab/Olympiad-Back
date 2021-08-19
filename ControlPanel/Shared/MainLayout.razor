@@ -1,17 +1,23 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-		<div class="sidebar">
+<Layout Style="min-height: 100vh;">
+	<Header Class="header">
+		<h1 style="color: white;">Панель управления</h1>
+	</Header>
+	<Layout>
+		<Sider Width="200" Class="site-layout-background">
 			<NavMenu />
-		</div>
-
-		<main>
-			<div class="top-row px-4">
-				<a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
-			</div>
-
-			<article class="content px-4">
+		</Sider>
+		<Layout Style=" padding: 0 24px 24px;">
+			<Content Class="site-layout-background" Style=" padding: 24px; margin: 24px 0 0 0; min-height: 280px;">
 				@Body
-			</article>
-		</main>
-	</div>
+			</Content>
+		</Layout>
+	</Layout>
+</Layout>
+
+<style>
+	.site-layout-background {
+		background: #fff;
+	}
+</style>

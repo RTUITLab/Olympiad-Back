@@ -3,12 +3,16 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Blazored.SessionStorage;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Olympiad.ControlPanel.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl")) });
 
+builder.Services.AddAntDesign();
+
+builder.Services.AddScoped<ControlPanelApiService>();
 builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 

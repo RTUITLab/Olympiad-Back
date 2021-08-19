@@ -1,32 +1,54 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">ControlPanel</a>
-    <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
+﻿@*@inherits OwningComponentBase<Models.ApplicationDbContext>*@
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-    </nav>
-</div>
+<Menu Mode="MenuMode.Inline"
+      Style="height: 100%; border-right: 0;">
+    <MenuItem Key="index" RouterLink="" RouterMatch="NavLinkMatch.All">Главная страница</MenuItem>
+    <SubMenu Key="challenges" Title="Соревнования">
+        @if (challenges != null)
+        {
+            @foreach (var challenge in challenges)
+            {
+                <MenuItem Key="@challenge.Id.ToString()"
+                          RouterLink="@($"challenge/{challenge.Id}")"
+                          RouterMatch="NavLinkMatch.Prefix">
+                    @challenge.Title
+                </MenuItem>
+            }
+        }
+        else
+        {
+            <MenuItem Key="loading">Loading...</MenuItem>
+        }
+    </SubMenu>
+    <MenuItem Key="admin" RouterLink="/admin" RouterMatch="NavLinkMatch.All">Панель администратора</MenuItem>
+    <MenuItem Key="main-site" RouterLink="/" RouterMatch="NavLinkMatch.All">Сайт пользователя</MenuItem>
+
+</Menu>
 
 @code {
-    private bool collapseNavMenu = true;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+    private List<ChallengeCompact> challenges = new List<ChallengeCompact>
     {
-        collapseNavMenu = !collapseNavMenu;
+    new ChallengeCompact
+    {
+        Title = "Try",
+        Id = Guid.NewGuid()
+    }
+    };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        //challenges = await Service.Challenges
+        //    .Select(c => new ChallengeCompact { Id = c.Id, Title = c.Name })
+        //    .ToListAsync();
+    }
+
+    class ChallengeCompact
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
     }
 }

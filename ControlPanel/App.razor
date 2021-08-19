@@ -1,4 +1,6 @@
-﻿<CascadingAuthenticationState>
+﻿@inject NavigationManager NavigationManager
+
+<CascadingAuthenticationState>
 	<Router AppAssembly="@typeof(App).Assembly">
 		<Found Context="routeData">
 			<AuthorizeRouteView RouteData=routeData DefaultLayout=typeof(MainLayout)>
@@ -6,16 +8,24 @@
 					<RedirectToLogin />
 				</NotAuthorized>
 				<Authorizing>
-					<h1>Ожидайте</h1>
-					<p>Попытка входа в аккаунт</p>
+					<Result Status="404" Title="Вход">
+						<Extra>
+							<Spin Size="large" />
+						</Extra>
+					</Result>
 				</Authorizing>
 			</AuthorizeRouteView>
 			<FocusOnNavigate RouteData="@routeData" Selector="h1" />
 		</Found>
 		<NotFound>
 			<LayoutView Layout="@typeof(MainLayout)">
-				<p role="alert">Sorry, there's nothing at this address.</p>
+				<Result Status="404" Title="Страница не найдена">
+					<Extra>
+						<Button Type="@ButtonType.Primary" OnClick="@(() => NavigationManager.NavigateTo(""))">Вернуться на главную</Button>
+					</Extra>
+				</Result>
 			</LayoutView>
 		</NotFound>
 	</Router>
 </CascadingAuthenticationState>
+<AntContainer />

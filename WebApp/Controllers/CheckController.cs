@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
 using Olympiad.Services;
+using Olympiad.Shared;
 using Olympiad.Shared.Models;
 using PublicAPI.Responses.Solutions;
 using WebApp.Extensions;
@@ -211,8 +212,7 @@ namespace WebApp.Controllers
         }
 
 
-        [Authorize(Policy = "Executor")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.EXECUTOR+","+ RoleNames.ADMIN)]
         [HttpGet("statistic")]
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
         {
