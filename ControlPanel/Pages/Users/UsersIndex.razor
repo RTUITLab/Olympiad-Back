@@ -1,0 +1,16 @@
+﻿@page "/users"
+@using Olympiad.Shared
+
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+@inject MessageService _message
+
+
+<PageHeader Title="Управление пользователями" >
+	<PageHeaderExtra>
+		<Button Type="@ButtonType.Primary" OnClick="@(() => _message.Warning("В разработке"))">Генерация</Button>
+	</PageHeaderExtra>
+</PageHeader>
+
+@code {
+
+}

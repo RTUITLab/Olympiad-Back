@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using WebApp.Models.Settings;
 using WebApp.Extensions;
+using PublicAPI.Responses;
+using System.ComponentModel.DataAnnotations;
 
 namespace WebApp.Controllers.Users
 {
@@ -52,7 +54,10 @@ namespace WebApp.Controllers.Users
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public Task<List<UserInfoResponse>> Get(string match)
+        public async Task<ListResponse<UserInfoResponse>> Get(
+            [MaxLength(100)] string match,
+            [Range(0, int.MaxValue)] int offset = 0,
+            [Range(1, 200)] int limit = 50)
         {
             var words = (match ?? "").ToUpper().Split(' ');
             var users = UserManager.Users;
@@ -61,9 +66,14 @@ namespace WebApp.Controllers.Users
                     u.FirstName.ToUpper().Contains(matcher) ||
                     u.Email.ToUpper().Contains(matcher) ||
                     u.StudentID.ToUpper().Contains(matcher)));
-            return users
+            var totalCount = await users.CountAsync();
+            var result = await users
+                .Skip(offset)
+                .Take(limit)
+                .OrderBy(u => u.FirstName)
                 .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
+            return new ListResponse<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = result };
         }
 
         [HttpGet("{id}/{*token}")]
@@ -145,11 +155,11 @@ namespace WebApp.Controllers.Users
                 var resetPasswordClaims = allClaims
                     .Where(c => c.Type == "reset_password" && c.Value == "need")
                     .ToList();
-                if(resetPasswordClaims.Any())
+                if (resetPasswordClaims.Any())
                 {
                     var removeClaimsResult = await UserManager.RemoveClaimsAsync(user, resetPasswordClaims);
                     logger.LogInformation($"User changed default password");
-                }    
+                }
                 return Ok();
             }
             return BadRequest(result.Errors);

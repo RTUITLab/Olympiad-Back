@@ -1,54 +1,66 @@
 ﻿@*@inherits OwningComponentBase<Models.ApplicationDbContext>*@
 
 <Menu Mode="MenuMode.Inline"
-      Style="height: 100%; border-right: 0;">
-    <MenuItem Key="index" RouterLink="" RouterMatch="NavLinkMatch.All">Главная страница</MenuItem>
-    <SubMenu Key="challenges" Title="Соревнования">
-        @if (challenges != null)
-        {
-            @foreach (var challenge in challenges)
-            {
-                <MenuItem Key="@challenge.Id.ToString()"
-                          RouterLink="@($"challenge/{challenge.Id}")"
-                          RouterMatch="NavLinkMatch.Prefix">
-                    @challenge.Title
-                </MenuItem>
-            }
-        }
-        else
-        {
-            <MenuItem Key="loading">Loading...</MenuItem>
-        }
-    </SubMenu>
-    <MenuItem Key="admin" RouterLink="/admin" RouterMatch="NavLinkMatch.All">Панель администратора</MenuItem>
-    <MenuItem Key="main-site" RouterLink="/" RouterMatch="NavLinkMatch.All">Сайт пользователя</MenuItem>
+	  Style="height: 100%; border-right: 0;">
+	<MenuItem Key="index" RouterLink="" RouterMatch="NavLinkMatch.All">Главная страница</MenuItem>
+	<AuthorizeView>
+		<Authorized>
+			@if (context.User.IsAdmin())
+			{
+				<MenuItem Key="users" RouterLink="users" RouterMatch="NavLinkMatch.Prefix">
+					<Icon Type="user-switch" Theme="outline" />
+					Пользователи
+				</MenuItem>
+			}
+		</Authorized>
+
+	</AuthorizeView>
+	@*<SubMenu Key="challenges" Title="Соревнования">
+		@if (challenges != null)
+		{
+		@foreach (var challenge in challenges)
+		{
+		<MenuItem Key="@challenge.Id.ToString()"
+		RouterLink="@($"challenge/{challenge.Id}")"
+		RouterMatch="NavLinkMatch.Prefix">
+		@challenge.Title
+		</MenuItem>
+		}
+		}
+		else
+		{
+		<MenuItem Key="loading">Loading...</MenuItem>
+		}
+		</SubMenu>
+		<MenuItem Key="admin" RouterLink="/admin" RouterMatch="NavLinkMatch.All">Панель администратора</MenuItem>*@
+	<MenuItem Key="main-site" RouterLink="/" RouterMatch="NavLinkMatch.All">Сайт пользователя</MenuItem>
 
 </Menu>
 
 @code {
 
-    private List<ChallengeCompact> challenges = new List<ChallengeCompact>
-    {
-    new ChallengeCompact
-    {
-        Title = "Try",
-        Id = Guid.NewGuid()
-    }
-    };
+	private List<ChallengeCompact> challenges = new List<ChallengeCompact>
+	{
+	new ChallengeCompact
+	{
+	Title = "Try",
+	Id = Guid.NewGuid()
+	}
+	};
 
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
 
-        //challenges = await Service.Challenges
-        //    .Select(c => new ChallengeCompact { Id = c.Id, Title = c.Name })
-        //    .ToListAsync();
-    }
+		//challenges = await Service.Challenges
+		//    .Select(c => new ChallengeCompact { Id = c.Id, Title = c.Name })
+		//    .ToListAsync();
+	}
 
-    class ChallengeCompact
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; }
-    }
+	class ChallengeCompact
+	{
+		public Guid Id { get; set; }
+		public string Title { get; set; }
+	}
 }
