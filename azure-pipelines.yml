@@ -128,6 +128,12 @@ stages:
             artifactName: 'results-viewer-build'
             buildType: 'current'
             targetPath: 'deploy/results-viewer'
+        - task: DownloadPipelineArtifact@2
+          displayName: download control-panel build
+          inputs:
+            artifactName: 'control-panel-build'
+            buildType: 'current'
+            targetPath: 'deploy/control-panel'
 
         - powershell: ./generateTestStack.ps1
           workingDirectory: ./tests/e2e
