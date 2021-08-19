@@ -13,6 +13,9 @@ using PublicAPI.Responses;
 using WebApp.Services;
 using WebApp.Models.Settings;
 using Olympiad.Services.JWT;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace WebApp.Controllers
 {
@@ -24,13 +27,15 @@ namespace WebApp.Controllers
         private readonly IJwtFactory _jwtFactory;
         private readonly IMapper mapper;
         private readonly ApplicationDbContext context;
+        private readonly ILogger<AuthController> logger;
 
-        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IMapper mapper, ApplicationDbContext context)
+        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IMapper mapper, ApplicationDbContext context, ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _jwtFactory = jwtFactory;
             this.mapper = mapper;
             this.context = context;
+            this.logger = logger;
         }
 
         // POST api/auth/login
@@ -50,7 +55,7 @@ namespace WebApp.Controllers
             {
                 return Unauthorized("invalid username or password");
             }
-            
+
             var loginInfo = await GenerateResponse(user);
             var claims = await _userManager.GetClaimsAsync(user);
             if (claims.Any(c => c.Type == "reset_password"))
@@ -64,12 +69,30 @@ namespace WebApp.Controllers
 
         [HttpGet("getme")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public async Task<IActionResult> Get()
-        {
+        public async Task<ActionResult<GetMeResult>> Get()
+        { 
             var user = await _userManager.FindByIdAsync(_userManager.GetUserId(User));
             if (user == null)
-                return StatusCode(403);
-            return Json(await GenerateResponse(user));
+            {
+                logger.LogWarning($"Correct JWT but user not found userId: {_userManager.GetUserId(User)}");
+                return Forbid("Bearer");
+            }
+            var plainResult = await GenerateResponse(user);
+            var claims = await _userManager.GetClaimsAsync(user);
+
+            var roles = await _userManager.GetRolesAsync(user);
+            claims = claims.Concat(roles.Select(r => new Claim(ClaimTypes.Role, r))).ToList();
+
+            var totalResult = new GetMeResult
+            {
+                Id = plainResult.Id,
+                FirstName = plainResult.FirstName,
+                Email= plainResult.Email,
+                Token =     plainResult.Token,
+                StudentId= plainResult.StudentId,   
+                Claims = claims.GroupBy(c => c.Type).ToDictionary(c => c.Key, g => g.Select(c => c.Value).ToArray())
+            };
+            return Json(totalResult);
         }
 
         private async Task<LoginResponse> GenerateResponse(User user)

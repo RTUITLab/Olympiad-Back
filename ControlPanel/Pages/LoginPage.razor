@@ -1,0 +1,33 @@
+﻿@layout EmptyLayout
+@page "/login"
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+@inject IJSRuntime JS
+@inject ILoginRefresh LoginRefresh
+
+<h1>Пожалуйста, войдите в аккаунт</h1>
+
+<input @bind-value=accessToken/>
+<button @onclick="@(() => LoginRefresh.SaveTokenAndRefreshAsync(accessToken))">Установить токен</button>
+@code {
+
+	[CascadingParameter]
+	private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+	[Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnTo { get; set; }
+
+	private string? accessToken;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+		var state = await authenticationStateTask;
+		if (state?.User?.Identity?.IsAuthenticated == true)
+		{
+			NavigationManager.NavigateTo(ReturnTo ?? "");
+		}
+	}
+
+}
