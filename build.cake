@@ -26,7 +26,10 @@ Setup(ctx =>
 Task("RestoreSolution")
    .Does(() =>
 {
-   DotNetCoreRestore();
+   DotNetCoreRestore(apiProject);
+   DotNetCoreRestore(executorProject);
+   DotNetCoreRestore(adminProject);
+   DotNetCoreRestore(resultsViewerProject);
 });
 
 Task("BuildApi")
