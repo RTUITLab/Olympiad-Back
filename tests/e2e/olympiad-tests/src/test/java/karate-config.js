@@ -8,13 +8,14 @@ function fn() {
         env: env,
         baseUrl: 'http://127.0.0.1:5501'
     }
-    if (env == 'dev') {
+    if (env === 'dev') {
         // customize
         // e.g. config.foo = 'bar';
-    } else if (env == 'e2e') {
+    } else if (env === 'e2e') {
         config.baseUrl = 'http://api:5501'
     }
     var result = karate.callSingle('classpath:olympiad/auth.feature', config);
     config.accessToken = 'Bearer ' + result.accessToken;
+    config.currentUser = result.user;
     return config;
 }

@@ -1,0 +1,44 @@
+﻿@page "/users/{UserId:guid}"
+
+@using Olympiad.Shared
+@using PublicAPI.Responses.Users
+
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+@inject MessageService _message
+@inject IControlPanelApiService ControlPanelApiService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<PageHeader Title="@(userInfo?.FirstName ?? "Загрузка")">
+	<PageHeaderExtra>
+		<Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
+	</PageHeaderExtra>
+</PageHeader>
+<DeleteUserConfirmationModal @ref=deleteModal />
+@code {
+	[Parameter]
+	public Guid UserId { get; set; }
+
+	private DeleteUserConfirmationModal deleteModal;
+
+	private UserInfoResponse? userInfo;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await base.OnParametersSetAsync();
+		var response = await ControlPanelApiService.GetUser(UserId);
+		if (response.IsSuccessStatusCode)
+		{
+			userInfo = response.Content;
+		}
+		else
+		{
+			NavigationManager.NavigateTo("users");
+		}
+	}
+
+	private void ShowDeleteModal()
+	{
+		deleteModal.Show(userInfo!);
+	}
+}

@@ -33,11 +33,11 @@
 			   TItem=UserInfoResponse
 			   OnChange=HandleChange>
 
-			<Column @bind-Field="context.FirstName" Title="Имя" Sortable SorterCompare="@((v1, v2) => string.CompareOrdinal(v1, v2))"></Column>
-			<Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable SorterCompare="@((v1, v2) => string.CompareOrdinal(v1, v2))"></Column>
-			<Column @bind-Field="context.Email" Sortable SorterCompare="@((v1, v2) => string.CompareOrdinal(v1, v2))"></Column>
+			<Column @bind-Field="context.FirstName" Title="Имя" Sortable ></Column>
+			<Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
+			<Column @bind-Field="context.Email" Sortable></Column>
 			<ActionColumn>
-				<Button OnClick="@(() => _message.Warning("В разработке"))">Редактировать</Button>
+				<NavLink href="@($"users/{context.Id}")"><Button>Редактировать</Button></NavLink>
 			</ActionColumn>
 		</Table>
 	</SpaceItem>

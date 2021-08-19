@@ -76,7 +76,20 @@ namespace WebApp.Controllers.Users
             return new ListResponse<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = result };
         }
 
-        [HttpGet("{id}/{*token}")]
+        [HttpGet("{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserInfoResponse>> Get(Guid userId)
+        {
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            return mapper.Map<UserInfoResponse>(user);
+        }
+
+        [HttpGet("confirmEmail/{id}/{*token}")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string id, string token)
         {
@@ -100,18 +113,27 @@ namespace WebApp.Controllers.Users
         }
 
 
-        [HttpDelete("deleteUser/{studentId}")]
+        [HttpDelete("{userId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<int>> DeleteUser(string studentId)
+        public async Task<ActionResult> DeleteUser(Guid userId)
         {
-            var targetIUser = await UserManager.Users.Where(u => u.StudentID == studentId).SingleAsync();
-            await UserManager.DeleteAsync(targetIUser);
-            return 1;
+            var targetIUser = await UserManager.FindByIdAsync(userId.ToString());
+            if (targetIUser == null)
+            {
+                return NotFound("User not found");
+            }
+            var deleteResult = await UserManager.DeleteAsync(targetIUser);
+            if (!deleteResult.Succeeded)
+			{
+                logger.LogError($"Can't delete user {deleteResult}");
+                return StatusCode(500);
+			}
+            return NoContent();
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Post([FromBody] RegistrationRequest model)
+        public async Task<ActionResult<UserInfoResponse>> Post([FromBody] RegistrationRequest model)
         {
             if (!options.Value.IsRegisterAvailable)
             {
@@ -138,7 +160,7 @@ namespace WebApp.Controllers.Users
             //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
             //await emailSender.SendEmailConfirm(model.Email, url);
 
-            return Ok();
+            return mapper.Map<UserInfoResponse>(userIdentity);
         }
 
         [HttpPost("changePassword")]

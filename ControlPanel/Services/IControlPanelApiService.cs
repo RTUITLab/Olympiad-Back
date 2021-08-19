@@ -12,4 +12,8 @@ public interface IControlPanelApiService
     public Task<List<SolutionsStatisticResponse>> GetSolutionsStatisticsAsync();
     [Get("/api/account")]
     public Task<ListResponse<UserInfoResponse>> SearchUsers(string? match, int limit, int offset);
+    [Get("/api/account/{userId}")]
+    public Task<ApiResponse<UserInfoResponse>> GetUser(Guid userId);
+    [Delete("/api/account/{userId}")]
+    public Task<HttpResponseMessage> DeleteUser(Guid userId);
 }

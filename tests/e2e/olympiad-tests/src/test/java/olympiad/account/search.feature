@@ -1,38 +1,8 @@
-Feature: account feature
+Feature: account search
 
 Background:
   * url baseUrl
   * configure headers = { Authorization: #(accessToken) }
-
-Scenario: change password
-  # change pass
-  Given path 'api/account/changePassword'
-  * def oldPassword = "VeryStrongPass1"
-  * def newPassword = "NewPassword1"
-  And request { "currentPassword": #(oldPassword), "newPassword": #(newPassword) }
-  When method post
-  Then status 200
-
-  # old pass can't be user
-  Given path '/api/auth/login'
-  * configure headers = null
-  And request { login: 'admin@localhost.ru', password: #(oldPassword) }
-  When method post
-  Then status 401
-
-  # new pass works
-  Given path '/api/auth/login'
-  * configure headers = null
-  And request { login: 'admin@localhost.ru', password: #(newPassword) }
-  When method post
-  Then status 200
-
-  # return old password
-  Given path 'api/account/changePassword'
-  * configure headers = { Authorization: #(accessToken) }
-  And request { "currentPassword": #(newPassword), "newPassword": #(oldPassword) }
-  When method post
-  Then status 200
 
 Scenario: search without parameters
   Given path 'api/account'
@@ -122,3 +92,25 @@ Scenario: search incorrect user
   When method get
   Then status 200
   And match response == {data: '#[0]', total: 0, offset: 0, limit: 50}
+
+Scenario: get one user
+  Given path 'api', 'account', currentUser.id
+  When method get
+  Then status 200
+  And match response == { id: '#uuid', studentId: '#string', firstName: '#notnull', email: '#notnull' }
+  And match response contains { id: '#(currentUser.id)'}
+
+Scenario: get non-existent user
+  Given path 'api', 'account', '00000000-0000-0000-0000-000000000000'
+  When method get
+  Then status 404
+  And match response == '#string'
+
+
+Scenario: get user with incorrect id
+  Given path 'api', 'account', 'some strange id'
+  When method get
+  Then status 400
+
+
+

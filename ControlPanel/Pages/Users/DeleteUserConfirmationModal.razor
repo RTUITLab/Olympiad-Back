@@ -1,0 +1,76 @@
+﻿@using PublicAPI.Responses.Users
+
+@inject MessageService _message
+@inject NavigationManager NavigationManager
+@inject IControlPanelApiService ControlPanelApiService
+
+@{
+	RenderFragment footer =
+	@<Space>
+		<SpaceItem><Button Danger Loading="loading" Disabled="error" OnClick="DeleteUser">Да</Button></SpaceItem>
+		<SpaceItem><Button Type="@ButtonType.Primary" OnClick=@(() => visible = false) Disabled="loading">@(error ? "Закрыть" : "Нет")</Button></SpaceItem>
+	</Space>
+	;
+}
+
+<Modal Visible="visible" Closable="!loading" MaskClosable="!loading" OnCancel=@(()=>visible = false) Footer="@footer">
+	<TitleTemplate>
+		<Alert Message="Удаление пользователя" Type="@AlertType.Error" style="width:90%" />
+	</TitleTemplate>
+	<ChildContent>
+		<Spin Spinning="loading">
+			@if (!error)
+			{
+				<Title Level=3>Вы уверены, что хотите удалить пользователя @userInfo?.FirstName ?</Title>
+			}
+			else
+			{
+				<Result Status="error" Title="Непредвиденная ошибка при удалении"></Result>
+			}
+		</Spin>
+	</ChildContent>
+</Modal>
+
+@code {
+	private bool visible;
+	private UserInfoResponse? userInfo;
+
+	private bool loading;
+	private bool error;
+
+
+	public void Show(UserInfoResponse userInfo)
+	{
+		error = false;
+		loading = false;
+		this.userInfo = userInfo;
+		visible = true;
+		StateHasChanged();
+	}
+
+	private async Task DeleteUser()
+	{
+		loading = true;
+		try
+		{
+			var result = await ControlPanelApiService.DeleteUser(userInfo!.Id);
+			if (result.IsSuccessStatusCode)
+			{
+				NavigationManager.NavigateTo("users");
+				await _message.Info("Пользователь удален");
+			}
+			else
+			{
+				error = true;
+			}
+		}
+		catch
+		{
+			error = true;
+		}
+		finally
+		{
+			loading = false;
+		}
+	}
+}

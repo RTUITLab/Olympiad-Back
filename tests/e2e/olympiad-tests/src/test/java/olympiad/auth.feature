@@ -10,3 +10,4 @@ Scenario:
   Then status 200
   * print response.token
   * def accessToken = response.token
+  * def user = response
