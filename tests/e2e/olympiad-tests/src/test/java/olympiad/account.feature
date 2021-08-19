@@ -72,7 +72,7 @@ Scenario: search with max limit
   And param limit = 200
   When method get
   Then status 200
-  And match response == {data: '#[3]', total: 3, offset: 0, limit: 3}
+  And match response == {data: '#[3]', total: 3, offset: 0, limit: 200}
 
 Scenario: search with one more than max limit
   Given path 'api/account'
