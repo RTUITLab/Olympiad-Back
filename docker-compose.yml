@@ -11,6 +11,8 @@ services:
             - RabbitMqQueueSettings__Host=rabbitmq
     results-viewer:
         image: rtuitlab/olympiad-results-viewer:${OLYMPIAD_SERVICE_TAG-latest}
+    control-panel:
+        image: rtuitlab/olympiad-control-panel:${OLYMPIAD_SERVICE_TAG-latest}
     executor:
         image: rtuitlab/olympiad-executor:${OLYMPIAD_SERVICE_TAG-latest}
         environment:

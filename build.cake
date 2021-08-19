@@ -16,10 +16,16 @@ var adminProject = "Admin/Admin.csproj";
 var resultsViewerPublishDir = "deploy/results-viewer/results-viewer-build";
 var resultsViewerProject = "ResultsViewer/ResultsViewer.csproj";
 
+var controlPanelPublishDir = "deploy/control-panel/control-panel-build";
+var controlPanelProject = "ControlPanel/ControlPanel.csproj";
+
 Setup(ctx =>
 {
    CleanDirectory(apiPublishDir);
    CleanDirectory(executorPublishDir);
+   CleanDirectory(adminPublishDir);
+   CleanDirectory(resultsViewerPublishDir);
+   CleanDirectory(controlPanelPublishDir);
 });
 
 
@@ -30,6 +36,7 @@ Task("RestoreSolution")
    DotNetCoreRestore(executorProject);
    DotNetCoreRestore(adminProject);
    DotNetCoreRestore(resultsViewerProject);
+   DotNetCoreRestore(controlPanelProject);
 });
 
 Task("BuildApi")
@@ -131,11 +138,35 @@ Task("PublishResultsViewer")
    DotNetCorePublish(resultsViewerProject, settings);
 });
 
+Task("BuildControlPanel")
+   .IsDependentOn("RestoreSolution")
+   .Does(() =>
+{
+   var settings = new DotNetCoreBuildSettings {
+      Configuration = configuration
+   };
+   DotNetCoreBuild(controlPanelProject, settings);
+});
+
+Task("PublishControlPanel")
+   .IsDependentOn("BuildControlPanel")
+   .Does(() =>
+{
+   var settings = new DotNetCorePublishSettings
+   {
+      Configuration = configuration,
+      OutputDirectory = controlPanelPublishDir
+   };
+
+   DotNetCorePublish(controlPanelProject, settings);
+});
+
 Task("PublishAll")
    .IsDependentOn("PublishApi")
    .IsDependentOn("PublishExecutor")
    .IsDependentOn("PublishAdmin")
    .IsDependentOn("PublishResultsViewer")
+   .IsDependentOn("PublishControlPanel")
    .Does(() =>
 {
    

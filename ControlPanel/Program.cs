@@ -9,7 +9,18 @@ using Refit;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl")) });
+Uri baseAddress;
+if (builder.HostEnvironment.IsDevelopment())
+{
+    baseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl"));
+} else
+{
+    var uriBuilder = new UriBuilder(builder.HostEnvironment.BaseAddress);
+    uriBuilder.Path = "";
+    baseAddress = uriBuilder.Uri;
+}
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseAddress });
 
 builder.Services.AddAntDesign();
 

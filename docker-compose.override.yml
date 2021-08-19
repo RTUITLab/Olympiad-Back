@@ -28,6 +28,10 @@ services:
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
             - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
+    control-panel:
+        build: ${BACK_CONTEXT:-.}/deploy/control-panel
+        ports:
+            - 5505:5505
         restart: on-failure
     executor:
         build: ${BACK_CONTEXT:-.}/deploy/executor

@@ -21,6 +21,7 @@ variables:
     adminServiceName: 'no'
     executorServiceName: 'no'
     resultsViewerServiceName: 'no'
+    controlPanelServiceName: 'no'
     pdfPrinterServiceName: 'no'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
@@ -33,6 +34,7 @@ variables:
     adminServiceName: olympiad-dev_admin
     executorServiceName: olympiad-dev_executor
     resultsViewerServiceName: olympiad-dev_results-viewer
+    controlPanelServiceName: 'olympiad-dev_control-panel'
     pdfPrinterServiceName: olympiad-dev_pdf-printer
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
@@ -45,6 +47,7 @@ variables:
     adminServiceName: olympiad_admin
     executorServiceName: olympiad_executor
     resultsViewerServiceName: olympiad_results-viewer
+    controlPanelServiceName: 'olympiad_control-panel'
     pdfPrinterServiceName: olympiad_pdf-printer
 
 
@@ -76,6 +79,10 @@ stages:
           cakeTarget: PublishResultsViewer
           publishPath: deploy/results-viewer
           artifactName: results-viewer-build
+        control-panel:
+          cakeTarget: PublishControlPanel
+          publishPath: deploy/control-panel
+          artifactName: control-panel-build
         
     steps:
     - task: Cake@2
@@ -170,6 +177,9 @@ stages:
         results-viewer:
           imageName: rtuitlab/olympiad-results-viewer
           artifactName: results-viewer-build
+        control-panel:
+          imageName: rtuitlab/olympiad-control-panel
+          artifactName: control-panel-build
         pdf-printer:
           imageName: rtuitlab/olympiad-wkhtmltopdf-saas
           artifactName: pdf-printer-build
@@ -292,6 +302,32 @@ stages:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-results-viewer:$(Build.BuildId) ${{variables.resultsViewerServiceName}}'
+                  readyTimeout: '20000'
+    - deployment: DeployControlPanel
+      displayName: Deploy control panel
+      pool:
+        vmImage: 'ubuntu-latest'
+      environment: ${{variables.deployEnvironment}}
+      strategy:
+        runOnce:
+          on:
+            failure:
+              steps:
+                - download: none
+                - task: SSH@0
+                  inputs:
+                    sshEndpoint: 'swarm manager'
+                    runOptions: 'commands'
+                    commands: 'docker service rollback ${{variables.controlPanelServiceName}}'
+                    readyTimeout: '20000'
+          deploy:
+            steps:
+              - download: none
+              - task: SSH@0
+                inputs:
+                  sshEndpoint: 'swarm manager'
+                  runOptions: 'commands'
+                  commands: 'docker service update --image rtuitlab/olympiad-control-panel:$(Build.BuildId) ${{variables.controlPanelServiceName}}'
                   readyTimeout: '20000'
     - deployment: DeployPdfPrinter
       displayName: Deploy pdf printer
