@@ -14,8 +14,12 @@ function fn() {
     } else if (env === 'e2e') {
         config.baseUrl = 'http://api:5501'
     }
-    var result = karate.callSingle('classpath:olympiad/auth.feature', config);
+    var result = karate.callSingle('classpath:olympiad/auth/prepareUsersInfo.feature', config);
     config.accessToken = 'Bearer ' + result.accessToken;
-    config.currentUser = result.user;
+    config.currentUser = result.admin;
+
+    config.admin = result.admin;
+    config.executor = result.executor;
+    config.plainUser = result.plainUser;
     return config;
 }

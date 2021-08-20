@@ -10,35 +10,42 @@
 @inject IJSRuntime JS
 
 <PageHeader Title="@(userInfo?.FirstName ?? "Загрузка")">
-	<PageHeaderExtra>
-		<Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
-	</PageHeaderExtra>
+    <PageHeaderExtra>
+        <Button OnClick=LoginAsUser>Войти под пользователем</Button>
+        <Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
+    </PageHeaderExtra>
 </PageHeader>
 <DeleteUserConfirmationModal @ref=deleteModal />
 @code {
-	[Parameter]
-	public Guid UserId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
 
-	private DeleteUserConfirmationModal deleteModal;
+    private DeleteUserConfirmationModal deleteModal;
 
-	private UserInfoResponse? userInfo;
+    private UserInfoResponse? userInfo;
 
-	protected override async Task OnParametersSetAsync()
-	{
-		await base.OnParametersSetAsync();
-		var response = await ControlPanelApiService.GetUser(UserId);
-		if (response.IsSuccessStatusCode)
-		{
-			userInfo = response.Content;
-		}
-		else
-		{
-			NavigationManager.NavigateTo("users");
-		}
-	}
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        var response = await ControlPanelApiService.GetUser(UserId);
+        if (response.IsSuccessStatusCode)
+        {
+            userInfo = response.Content;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("users");
+        }
+    }
 
-	private void ShowDeleteModal()
-	{
-		deleteModal.Show(userInfo!);
-	}
+    private async Task LoginAsUser()
+    {
+        var tokenInfo = await ControlPanelApiService.GetTokenForUser(UserId);
+        await JS.OpenLinkInNewTab($"/#{tokenInfo.Token}");
+    }
+
+    private void ShowDeleteModal()
+    {
+        deleteModal.Show(userInfo!);
+    }
 }

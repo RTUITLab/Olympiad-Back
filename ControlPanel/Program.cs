@@ -15,8 +15,10 @@ if (builder.HostEnvironment.IsDevelopment())
     baseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl"));
 } else
 {
-    var uriBuilder = new UriBuilder(builder.HostEnvironment.BaseAddress);
-    uriBuilder.Path = "";
+    var uriBuilder = new UriBuilder(builder.HostEnvironment.BaseAddress)
+    {
+        Path = ""
+    };
     baseAddress = uriBuilder.Uri;
 }
 

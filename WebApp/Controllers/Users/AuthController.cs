@@ -63,14 +63,14 @@ namespace WebApp.Controllers
                 _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
             }
 
-            return Ok(loginInfo);
+            return loginInfo;
         }
 
 
         [HttpGet("getme")]
         [Authorize(AuthenticationSchemes = "Bearer")]
         public async Task<ActionResult<GetMeResult>> Get()
-        { 
+        {
             var user = await _userManager.FindByIdAsync(_userManager.GetUserId(User));
             if (user == null)
             {
@@ -87,20 +87,41 @@ namespace WebApp.Controllers
             {
                 Id = plainResult.Id,
                 FirstName = plainResult.FirstName,
-                Email= plainResult.Email,
-                Token =     plainResult.Token,
-                StudentId= plainResult.StudentId,   
+                Email = plainResult.Email,
+                Token = plainResult.Token,
+                StudentId = plainResult.StudentId,
                 Claims = claims.GroupBy(c => c.Type).ToDictionary(c => c.Key, g => g.Select(c => c.Value).ToArray())
             };
-            return Json(totalResult);
+            return totalResult;
         }
+
+        [HttpGet("gettokenforuser/{userId:guid}")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult<TokenResponse>> GetTokenForUser(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            var token = await GenerateAccessToken(user);
+            return new TokenResponse { Token = token };
+
+        }
+
 
         private async Task<LoginResponse> GenerateResponse(User user)
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
-            var userRoles = await _userManager.GetRolesAsync(user);
-            loginInfo.Token = _jwtFactory.GenerateToken(user, userRoles);
+            loginInfo.Token = await GenerateAccessToken(user);
             return loginInfo;
         }
+
+        private async Task<string> GenerateAccessToken(User user)
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);
+            return _jwtFactory.GenerateToken(user, userRoles);
+        }
+
     }
 }
