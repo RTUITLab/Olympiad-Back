@@ -5,13 +5,13 @@
 
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 @inject MessageService _message
-@inject IControlPanelApiService ControlPanelApiService
 @inject NavigationManager NavigationManager
+@inject IControlPanelApiService ControlPanelApiService
 @inject IJSRuntime JS
 
 <PageHeader Title="@(userInfo?.FirstName ?? "Загрузка")">
     <PageHeaderExtra>
-        <Button OnClick=LoginAsUser>Войти под пользователем</Button>
+        <LoginAsUserButton UserId="UserId"/>
         <Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
     </PageHeaderExtra>
 </PageHeader>
@@ -36,12 +36,6 @@
         {
             NavigationManager.NavigateTo("users");
         }
-    }
-
-    private async Task LoginAsUser()
-    {
-        var tokenInfo = await ControlPanelApiService.GetTokenForUser(UserId);
-        await JS.OpenLinkInNewTab($"/#{tokenInfo.Token}");
     }
 
     private void ShowDeleteModal()
