@@ -2,31 +2,32 @@ Feature: change default user info
 
 Background:
   * url baseUrl
-  * def randomEmail =
+  * def getRandomUser =
   """
-  function(){ return 'change_default_user_info_' + java.util.UUID.randomUUID() + '@mail.com' }
+  function(){
+    var id = java.util.UUID.randomUUID();
+    return {
+      email: 'change_default_user_info_' + id + '@mail.com',
+      studentId: '_old_student_id_' + id,
+      firstName: '_old_first_name_' + id,
+    }
+  }
   """
 
 Scenario: edit created user by admin
-  * def createUserParams =
-  """
-  {
-      email: '#(randomEmail())',
-      studentId: 'old_student_id',
-      firstName: 'old_first_name',
-  }
-  """
+  * def createUserParams = getRandomUser()
   * def createdUserData = call read('classpath:olympiad/account/createUser.feature') createUserParams
   * configure headers = { Authorization: '#("Bearer " + admin.token)' }
   Given path 'api', 'account', createdUserData.user.id
-  Given request { studentId: 'new_student_id', firstName: 'new first name' }
+  * def newStudentId = 'new' + createdUserData.user.studentId
+  Given request { studentId: '#(newStudentId)', firstName: 'new first name' }
   When method put
 
   Then status 200
   And match response ==
   """
     { id: '#(createdUserData.user.id)',
-      studentId: 'new_student_id',
+      studentId: '#(newStudentId)',
       firstName: 'new first name',
       email: '#(createdUserData.user.email)' }
   """
@@ -36,14 +37,7 @@ Scenario: edit created user by admin
   Then status 204
 
 Scenario: studentId parameter is required
-  * def createUserParams =
-  """
-  {
-      email: '#(randomEmail())',
-      studentId: 'old_student_id',
-      firstName: 'old_first_name',
-  }
-  """
+  * def createUserParams = getRandomUser()
   * def createdUserData = call read('classpath:olympiad/account/createUser.feature') createUserParams
   * configure headers = { Authorization: '#("Bearer " + admin.token)' }
 
@@ -56,19 +50,13 @@ Scenario: studentId parameter is required
   When method delete
   Then status 204
 Scenario: firstname parameter is required
-  * def createUserParams =
-  """
-  {
-      email: '#(randomEmail())',
-      studentId: 'old_student_id',
-      firstName: 'old_first_name',
-  }
-  """
+  * def createUserParams = getRandomUser()
   * def createdUserData = call read('classpath:olympiad/account/createUser.feature') createUserParams
   * configure headers = { Authorization: '#("Bearer " + admin.token)' }
 
   Given path 'api', 'account', createdUserData.user.id
-  Given request { studentId: 'some_student_id', firstName: '' }
+  * def newStudentId = 'new' + createdUserData.user.studentId
+  Given request { studentId: '#(newStudentId)', firstName: '' }
   When method put
   Then status 400
 
@@ -77,14 +65,7 @@ Scenario: firstname parameter is required
   Then status 204
 
 Scenario: can't set already exists student id
-  * def createUserParams =
-  """
-  {
-      email: '#(randomEmail())',
-      studentId: 'old_student_id',
-      firstName: 'old_first_name',
-  }
-  """
+  * def createUserParams = getRandomUser()
   * def createdUserData = call read('classpath:olympiad/account/createUser.feature') createUserParams
   * configure headers = { Authorization: '#("Bearer " + admin.token)' }
 
