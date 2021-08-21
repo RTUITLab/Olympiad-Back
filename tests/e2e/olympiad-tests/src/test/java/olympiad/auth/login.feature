@@ -12,5 +12,4 @@ Scenario:
   And request { login: '#(login)', password: '#(password)' }
   When method post
   Then status 200
-  * print response.token
   * def user = response

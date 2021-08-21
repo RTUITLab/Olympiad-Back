@@ -35,7 +35,6 @@ builder.Services.AddAuthorizationCore();
 
 
 
-
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddBlazoredLocalStorage();
 

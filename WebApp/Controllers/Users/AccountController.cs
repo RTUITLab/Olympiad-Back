@@ -24,6 +24,8 @@ using WebApp.Extensions;
 using PublicAPI.Responses;
 using System.ComponentModel.DataAnnotations;
 using Npgsql;
+using WebApp.Services;
+using PublicAPI.Responses.Account;
 
 namespace WebApp.Controllers.Users
 {
@@ -230,6 +232,36 @@ namespace WebApp.Controllers.Users
                 return Ok();
             }
             return BadRequest(result.Errors);
+        }
+
+        [HttpPost("adminChangePassword/{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<NewPasswordGeneratedResponse>> AdminChangePassword(
+            Guid userId,
+            [FromServices] UserPasswordGenerator userPasswordGenerator)
+        {
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return NotFound("User nor found");
+            }
+            var removePasswordResult = await UserManager.RemovePasswordAsync(user);
+            if (!removePasswordResult.Succeeded)
+            {
+                logger.LogError($"Can't remove password");
+                return StatusCode(500, "Unhandled error");
+            }
+            var password = userPasswordGenerator.GeneratePassword();
+            var addPasswordResult = await UserManager.AddPasswordAsync(user, password);
+
+            if (!addPasswordResult.Succeeded)
+            {
+                logger.LogError($"Can't add new password");
+                return StatusCode(500, "Unhandled error");
+            }
+
+            return new NewPasswordGeneratedResponse { NewPassword = password };
         }
     }
 }

@@ -179,6 +179,7 @@ namespace WebApp
             }
 
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
+            services.AddTransient<UserPasswordGenerator>();
 
 
             services.AddWebAppConfigure()

@@ -1,6 +1,7 @@
 ﻿
 using PublicAPI.Requests;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Account;
 using PublicAPI.Responses.Solutions;
 using PublicAPI.Responses.Users;
 using Refit;
@@ -19,9 +20,13 @@ public interface IControlPanelApiService
     public Task<ApiResponse<UserInfoResponse>> GetUser(Guid userId);
     [Put("/api/account/{userId}")]
     public Task<UserInfoResponse> UpdateUserInfo(Guid userId, [Body] UpdateAccountInfoRequest body);
+    [Post("/api/account/adminChangePassword/{userId}")]
+    public Task<NewPasswordGeneratedResponse> GenerateNewPasswordForUser(Guid userId);
     [Delete("/api/account/{userId}")]
     public Task<HttpResponseMessage> DeleteUser(Guid userId);
 
+
     [Get("/api/auth/gettokenforuser/{userId}")]
     public Task<TokenResponse> GetTokenForUser(Guid userId);
+
 }
