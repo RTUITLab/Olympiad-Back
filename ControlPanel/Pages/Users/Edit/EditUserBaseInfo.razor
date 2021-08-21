@@ -1,0 +1,63 @@
+﻿@using PublicAPI.Requests
+@using PublicAPI.Responses.Users
+
+@inject IControlPanelApiService ControlPanelApiService
+@inject MessageService _message
+
+
+<Form Model="userModel"
+      LabelColSpan="8"
+      WrapperColSpan="16"
+      Loading="saving"
+      OnFinish="SaveBaseInfo">
+    <FormItem Label="Идентификатор" Required>
+        <Input @bind-Value="@context.StudentId" />
+    </FormItem>
+    <FormItem Label="Имя" Required>
+        <Input @bind-Value="@context.FirstName" />
+    </FormItem>
+    <FormItem WrapperColOffset="8" WrapperColSpan="16">
+        <Button Type="@ButtonType.Primary" HtmlType="submit">
+            Сохранить базовые параметры
+        </Button>
+    </FormItem>
+</Form>
+@code {
+
+    [Parameter, EditorRequired]
+    public UserInfoResponse User { get; set; }
+    [Parameter, EditorRequired]
+    public EventCallback<UserInfoResponse> UserChanged { get; set; }
+
+
+    private bool saving;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        userModel.StudentId = User.StudentId;
+        userModel.FirstName = User.FirstName;
+    }
+
+    private async Task SaveBaseInfo()
+    {
+        saving = true;
+        Task messageTask = Task.CompletedTask;
+        try
+        {
+            var result = await ControlPanelApiService.UpdateUserInfo(User.Id, userModel);
+            await UserChanged.InvokeAsync(result);
+            messageTask = _message.Success("Данные пользователя изменены");
+        }
+        finally
+        {
+            saving = false;
+        }
+        StateHasChanged();
+        await messageTask;
+    }
+
+
+    private UpdateAccountInfoRequest userModel = new UpdateAccountInfoRequest();
+
+}

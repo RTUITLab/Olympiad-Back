@@ -1,26 +1,37 @@
 ﻿@inherits LayoutComponentBase
 
 <Layout Style="min-height: 100vh;">
-	<Header Class="header">
-		<h1 style="color: white;">Панель управления</h1>
-	</Header>
-	<Layout>
-		<Sider Width="250"
-			   Class="site-layout-background"
-			   Breakpoint="@BreakpointType.Lg"
-			   CollapsedWidth="0">
-			<NavMenu />
-		</Sider>
-		<Layout Style=" padding: 0 24px 24px;">
-			<Content Class="site-layout-background" Style=" padding: 24px; margin: 24px 0 0 0; min-height: 280px;">
-				@Body
-			</Content>
-		</Layout>
-	</Layout>
+    <Header Class="header">
+        <Row Justify="space-between">
+            <Col Span="12">
+            <Title Level="3" style="color: white;">Панель управления</Title>
+            </Col>
+            <Col Span="12" Style="text-align: right">
+            <AuthorizeView>
+                <Authorized>
+                    <Text style="color: white;">@context.User.Identity.Name</Text>
+                </Authorized>
+            </AuthorizeView>
+            </Col>
+        </Row>
+    </Header>
+    <Layout>
+        <Sider Width="250"
+               Class="site-layout-background"
+               Breakpoint="@BreakpointType.Lg"
+               CollapsedWidth="0">
+            <NavMenu />
+        </Sider>
+        <Layout Style=" padding: 0 24px 24px;">
+            <Content Class="site-layout-background" Style=" padding: 24px; margin: 24px 0 0 0; min-height: 280px;">
+                @Body
+            </Content>
+        </Layout>
+    </Layout>
 </Layout>
 
 <style>
-	.site-layout-background {
-		background: #fff;
-	}
+    .site-layout-background {
+        background: #fff;
+    }
 </style>

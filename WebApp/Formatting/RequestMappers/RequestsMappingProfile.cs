@@ -13,6 +13,8 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<RegistrationRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
 
             CreateMap<SolutionCheckRequest, SolutionCheck>();
+
+            CreateMap<UpdateAccountInfoRequest, User>();
         }
     }
 }

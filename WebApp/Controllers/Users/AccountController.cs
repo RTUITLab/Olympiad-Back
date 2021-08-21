@@ -23,6 +23,7 @@ using WebApp.Models.Settings;
 using WebApp.Extensions;
 using PublicAPI.Responses;
 using System.ComponentModel.DataAnnotations;
+using Npgsql;
 
 namespace WebApp.Controllers.Users
 {
@@ -89,6 +90,39 @@ namespace WebApp.Controllers.Users
             return mapper.Map<UserInfoResponse>(user);
         }
 
+        [HttpPut("{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserInfoResponse>> UpdateAccountInfo(
+            Guid userId,
+            [FromBody] UpdateAccountInfoRequest model)
+        {
+            var targetUser = await UserManager.FindByIdAsync(userId.ToString());
+            if (targetUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            mapper.Map(model, targetUser);
+            try
+            {
+                var updateResul = await UserManager.UpdateAsync(targetUser);
+                if (!updateResul.Succeeded)
+                {
+                    logger.LogError($"Can't update user info {updateResul}");
+                    return StatusCode(500, "Unhandled error");
+                }
+                return mapper.Map<UserInfoResponse>(targetUser);
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is PostgresException psex &&
+                psex.SqlState == PostgresErrorCodes.UniqueViolation &&
+                psex.ConstraintName.Contains(nameof(targetUser.StudentID)))
+            {
+                ModelState.AddModelError(nameof(targetUser.StudentID), $"StudentID {targetUser.StudentID} already exists");
+                return BadRequest(ModelState);
+            }
+        }
+
         [HttpGet("confirmEmail/{id}/{*token}")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string id, string token)
@@ -124,10 +158,10 @@ namespace WebApp.Controllers.Users
             }
             var deleteResult = await UserManager.DeleteAsync(targetIUser);
             if (!deleteResult.Succeeded)
-			{
+            {
                 logger.LogError($"Can't delete user {deleteResult}");
                 return StatusCode(500);
-			}
+            }
             return NoContent();
         }
 
@@ -149,18 +183,29 @@ namespace WebApp.Controllers.Users
             }
 
             User userIdentity = mapper.Map<User>(model);
+            try
+            {
 
-            var result = await UserManager.CreateAsync(userIdentity, model.Password);
+                var result = await UserManager.CreateAsync(userIdentity, model.Password);
 
-            if (!result.Succeeded)
-                return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
+                if (!result.Succeeded)
+                    return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
 
-            result = await UserManager.AddToRoleAsync(userIdentity, "User");
-            //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
-            //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
-            //await emailSender.SendEmailConfirm(model.Email, url);
+                result = await UserManager.AddToRoleAsync(userIdentity, "User");
+                //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
+                //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
+                //await emailSender.SendEmailConfirm(model.Email, url);
 
-            return mapper.Map<UserInfoResponse>(userIdentity);
+                return mapper.Map<UserInfoResponse>(userIdentity);
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is PostgresException psex &&
+                psex.SqlState == PostgresErrorCodes.UniqueViolation &&
+                psex.ConstraintName.Contains(nameof(userIdentity.StudentID)))
+            {
+                ModelState.AddModelError(nameof(userIdentity.StudentID), $"StudentID {userIdentity.StudentID} already exists");
+                return BadRequest(ModelState);
+            }
         }
 
         [HttpPost("changePassword")]

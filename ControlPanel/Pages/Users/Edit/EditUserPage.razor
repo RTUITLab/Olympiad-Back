@@ -9,13 +9,34 @@
 @inject IControlPanelApiService ControlPanelApiService
 @inject IJSRuntime JS
 
-<PageHeader Title="@(userInfo?.FirstName ?? "Загрузка")">
+<PageHeader>
+    <TitleTemplate>
+        <Breadcrumb>
+            <BreadcrumbItem>
+                <NavLink href="users">Пользователи</NavLink>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                @(userInfo?.FirstName ?? "Загрузка")
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </TitleTemplate>
+
     <PageHeaderExtra>
         <LoginAsUserButton UserId="UserId"/>
         <Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
     </PageHeaderExtra>
 </PageHeader>
 <DeleteUserConfirmationModal @ref=deleteModal />
+
+@if(userInfo != null) {
+    <Row>
+        <AntDesign.Col Span="8">
+            <EditUserBaseInfo @bind-User=userInfo/>
+        </AntDesign.Col>
+    </Row>
+}
+
+
 @code {
     [Parameter]
     public Guid UserId { get; set; }
