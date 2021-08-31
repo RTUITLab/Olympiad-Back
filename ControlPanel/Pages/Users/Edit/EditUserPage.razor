@@ -9,18 +9,17 @@
 @inject IControlPanelApiService ControlPanelApiService
 @inject IJSRuntime JS
 
-<PageHeader>
-    <TitleTemplate>
+<PageHeader Title="@(userInfo?.FirstName ?? "Загрузка")">
+    <PageHeaderBreadcrumb>
         <Breadcrumb>
-            <BreadcrumbItem>
-                <NavLink href="users">Пользователи</NavLink>
+            <BreadcrumbItem Href="users">
+                Пользователи
             </BreadcrumbItem>
             <BreadcrumbItem>
                 @(userInfo?.FirstName ?? "Загрузка")
             </BreadcrumbItem>
         </Breadcrumb>
-    </TitleTemplate>
-
+    </PageHeaderBreadcrumb>
     <PageHeaderExtra>
         <LoginAsUserButton UserId="UserId" />
         <GenerateNewPasswordButton UserId="UserId" />
