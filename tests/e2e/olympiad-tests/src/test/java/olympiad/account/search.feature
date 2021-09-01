@@ -35,7 +35,6 @@ Scenario: search with max limit
   And param limit = 200
   When method get
   Then status 200
-  And assert response.data.length == response.total
 
 
 Scenario: search with one more than max limit
@@ -51,29 +50,13 @@ Scenario: search with incorrect offset
   When method get
   Then status 400
 
-Scenario: search with skip one user
-  Given path 'api/account'
-  And param offset = 1
-  When method get
-  Then status 200
-  And match response == {data: '#array', total: '#number', offset: 1, limit: 50}
-  And assert response.data.length == response.total - 1
-
-Scenario: search with skip two users
-  Given path 'api/account'
-  And param offset = 2
-  When method get
-  Then status 200
-  And match response == {data: '#array', total: '#number', offset: 2, limit: 50}
-  And assert response.data.length == response.total - 2
-
-Scenario: search with skip three users
+Scenario: search with skip users
   Given path 'api/account'
   And param offset = 3
   When method get
   Then status 200
   And match response == {data: '#array', total: '#number', offset: 3, limit: 50}
-  And assert response.data.length == response.total - 3
+  And assert response.data.length <= response.total
 
 
 Scenario: search match user
