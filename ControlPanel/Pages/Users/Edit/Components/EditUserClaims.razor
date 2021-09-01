@@ -15,6 +15,7 @@
         <Tooltip Title="@("Могут быть использованы для массового добавления к соревнованиям")">
             <Icon Type="@IconType.Outline.InfoCircle" />
         </Tooltip>
+        <Button Type="@ButtonType.Default" Icon="@IconType.Outline.Reload" OnClick="RefreshData"/>
     </TitleTemplate>
 
     <ChildContent>
@@ -26,7 +27,7 @@
                     @if (context.Type == DefaultClaims.NeedResetPassword.Type && context.Value == DefaultClaims.NeedResetPassword.Value)
                     {
                         <Tooltip Title="@("Пользователь еще не сменил сгенерированный пароль")">
-                                <Icon Type="@IconType.Outline.InfoCircle" Style="margin-right: 1em;"/>
+                            <Icon Type="@IconType.Outline.InfoCircle" Style="margin-right: 1em;" />
                         </Tooltip>
                     }
                     @context.Type
@@ -68,9 +69,8 @@
 
     private Input<string> typeInput;
 
-    protected override async Task OnParametersSetAsync()
+    public async Task RefreshData()
     {
-        await base.OnParametersSetAsync();
         loading = true;
         try
         {
@@ -80,6 +80,12 @@
         {
             loading = false;
         }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await RefreshData();
     }
 
     private async Task AddClaim()

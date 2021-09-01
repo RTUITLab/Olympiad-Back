@@ -23,7 +23,7 @@
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
         <LoginAsUserButton UserId="UserId" />
-        <GenerateNewPasswordButton UserId="UserId" />
+        <GenerateNewPasswordButton UserId="UserId" PasswordChanged="@(() => editUserClaims.RefreshData())"/>
         <Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
     </PageHeaderExtra>
 </PageHeader>
@@ -38,7 +38,7 @@
     </Row>
     <Row>
         <AntDesign.Col Xs=24 Md=16 >
-            <EditUserClaims User="userInfo" />
+            <EditUserClaims User="userInfo" @ref="editUserClaims"/>
         </AntDesign.Col>
     </Row>
 }
@@ -49,7 +49,7 @@
     public Guid UserId { get; set; }
 
     private DeleteUserConfirmationModal deleteModal;
-
+    private EditUserClaims editUserClaims;
     private UserInfoResponse? userInfo;
 
     protected override async Task OnParametersSetAsync()

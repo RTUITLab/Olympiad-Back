@@ -237,7 +237,7 @@ namespace WebApp.Controllers.Users
             {
                 var allClaims = await UserManager.GetClaimsAsync(user);
                 var resetPasswordClaims = allClaims
-                    .Where(c => c.Type == "reset_password" && c.Value == "need")
+                    .Where(c => c.Type == DefaultClaims.NeedResetPassword.Type && c.Value == DefaultClaims.NeedResetPassword.Value)
                     .ToList();
                 if (resetPasswordClaims.Any())
                 {
@@ -274,6 +274,21 @@ namespace WebApp.Controllers.Users
             {
                 logger.LogError($"Can't add new password");
                 return StatusCode(500, "Unhandled error");
+            }
+
+
+
+            var allClaims = await UserManager.GetClaimsAsync(user);
+            var resetPasswordClaims = allClaims
+                .Where(c => c.Type == DefaultClaims.NeedResetPassword.Type && c.Value == DefaultClaims.NeedResetPassword.Value)
+                .ToList();
+            if (!resetPasswordClaims.Any())
+            {
+                var addNeedChangePasswordResult = await UserManager.AddClaimAsync(user, DefaultClaims.NeedResetPassword.Claim);
+                if (!addNeedChangePasswordResult.Succeeded)
+                {
+                    logger.LogWarning($"Can't add claim about changing password {addNeedChangePasswordResult}");
+                }
             }
 
             return new NewPasswordGeneratedResponse { NewPassword = password };
