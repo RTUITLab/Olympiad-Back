@@ -1,5 +1,6 @@
 ﻿@page "/users/{UserId:guid}"
 
+@using Olympiad.ControlPanel.Pages.Users.Edit.Components
 @using Olympiad.Shared
 @using PublicAPI.Responses.Users
 
@@ -31,8 +32,13 @@
 @if (userInfo != null)
 {
     <Row>
-        <AntDesign.Col Span="8">
+        <AntDesign.Col Xs=24 Md=16 >
             <EditUserBaseInfo @bind-User=userInfo />
+        </AntDesign.Col>
+    </Row>
+    <Row>
+        <AntDesign.Col Xs=24 Md=16 >
+            <EditUserClaims User="userInfo" />
         </AntDesign.Col>
     </Row>
 }
@@ -64,4 +70,4 @@
     {
         deleteModal.Show(userInfo!);
     }
-}
+    }

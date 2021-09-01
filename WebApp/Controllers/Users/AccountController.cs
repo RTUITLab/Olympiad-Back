@@ -26,6 +26,8 @@ using System.ComponentModel.DataAnnotations;
 using Npgsql;
 using WebApp.Services;
 using PublicAPI.Responses.Account;
+using System.Security.Claims;
+using Olympiad.Shared;
 
 namespace WebApp.Controllers.Users
 {
@@ -191,9 +193,22 @@ namespace WebApp.Controllers.Users
                 var result = await UserManager.CreateAsync(userIdentity, model.Password);
 
                 if (!result.Succeeded)
-                    return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
+                    return BadRequest(Errors.AddErrorsToModelState(result, ModelState));
 
-                result = await UserManager.AddToRoleAsync(userIdentity, "User");
+                result = await UserManager.AddToRoleAsync(userIdentity, RoleNames.USER);
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"Can't add user to role {result}");
+                    return StatusCode(500, "Unexpected error");
+                }
+                
+                result = await UserManager.AddClaimAsync(userIdentity, DefaultClaims.NeedResetPassword.Claim);
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"Can't add default claim {result}");
+                    return StatusCode(500, "Unexpected error");
+                }
+
                 //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
                 //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
                 //await emailSender.SendEmailConfirm(model.Email, url);

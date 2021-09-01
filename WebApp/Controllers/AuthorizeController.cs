@@ -27,7 +27,7 @@ namespace WebApp.Controllers
         }
 
         protected Guid UserId => Guid.Parse(UserManager.GetUserId(User));
-        protected Task<User> CurrentUser() => UserManager.GetUserAsync(User);
+        protected Task<User> GetCurrentUser() => UserManager.GetUserAsync(User);
         protected bool IsInRole(string roleName) => User.HasClaim(ClaimTypes.Role, roleName);
         protected bool IsAdmin => IsInRole("Admin");
     }

@@ -16,6 +16,7 @@ using Olympiad.Services.JWT;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using Olympiad.Shared;
 
 namespace WebApp.Controllers
 {
@@ -58,7 +59,7 @@ namespace WebApp.Controllers
 
             var loginInfo = await GenerateResponse(user);
             var claims = await _userManager.GetClaimsAsync(user);
-            if (claims.Any(c => c.Type == "reset_password"))
+            if (claims.Any(c => c.Type == DefaultClaims.NeedResetPassword.Type))
             {
                 _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
             }

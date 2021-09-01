@@ -1,5 +1,6 @@
 ﻿
 using PublicAPI.Requests;
+using PublicAPI.Requests.Account;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Account;
 using PublicAPI.Responses.Solutions;
@@ -24,6 +25,14 @@ public interface IControlPanelApiService
     public Task<NewPasswordGeneratedResponse> GenerateNewPasswordForUser(Guid userId);
     [Delete("/api/account/{userId}")]
     public Task<HttpResponseMessage> DeleteUser(Guid userId);
+
+    [Get("/api/account/{userId}/claims")]
+    public Task<List<ClaimResponseObject>> GetClaims(Guid userId);
+
+    [Post("/api/account/{userId}/claims")]
+    public Task<List<ClaimResponseObject>> AddClaim(Guid userId, [Body] ClaimRequest request);
+    [Delete("/api/account/{userId}/claims")]
+    public Task<List<ClaimResponseObject>> RemoveClaim(Guid userId, string type, string value);
 
 
     [Get("/api/auth/gettokenforuser/{userId}")]

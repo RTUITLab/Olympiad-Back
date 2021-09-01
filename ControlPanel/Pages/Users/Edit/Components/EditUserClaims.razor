@@ -1,0 +1,124 @@
+﻿@using Olympiad.Shared
+@using PublicAPI.Requests
+@using PublicAPI.Requests.Account
+@using PublicAPI.Responses.Account
+@using PublicAPI.Responses.Users
+
+@inject IControlPanelApiService ControlPanelApiService
+@inject IJSRuntime JS
+@inject MessageService _message
+
+<Card>
+
+    <TitleTemplate>
+        Свойства пользователя
+        <Tooltip Title="@("Могут быть использованы для массового добавления к соревнованиям")">
+            <Icon Type="@IconType.Outline.InfoCircle" />
+        </Tooltip>
+    </TitleTemplate>
+
+    <ChildContent>
+        <Table DataSource="claims"
+               Loading="loading"
+               HidePagination="@(claims?.Count <= 10)">
+            <ChildContent>
+                <Column @bind-Field="@context.Type" Title="Тип">
+                    @if (context.Type == DefaultClaims.NeedResetPassword.Type && context.Value == DefaultClaims.NeedResetPassword.Value)
+                    {
+                        <Tooltip Title="@("Пользователь еще не сменил сгенерированный пароль")">
+                                <Icon Type="@IconType.Outline.InfoCircle" Style="margin-right: 1em;"/>
+                        </Tooltip>
+                    }
+                    @context.Type
+                </Column>
+                <Column @bind-Field="context.Value" Title="Значение" />
+                <ActionColumn>
+                    <Button Danger OnClick="()=>RemoveClaim(context)" Icon="@IconType.Outline.Delete" />
+                </ActionColumn>
+            </ChildContent>
+            <FooterTemplate>
+                <Form Model="newClaim"
+                      Layout="inline"
+                      OnFinish="@AddClaim">
+                    <FormItem Label="Тип">
+                        <Input @bind-Value="@context.Type" @ref="typeInput" />
+                    </FormItem>
+                    <FormItem Label="Значение">
+                        <Input @bind-Value="@context.Value" />
+                    </FormItem>
+                    <FormItem>
+                        <Button Type="@ButtonType.Default" HtmlType="submit" Icon="@IconType.Outline.Plus" />
+                    </FormItem>
+                </Form>
+
+            </FooterTemplate>
+        </Table>
+    </ChildContent>
+</Card>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public UserInfoResponse User { get; set; }
+
+    private bool loading = true;
+    private List<ClaimResponseObject> claims;
+
+    private ClaimRequest newClaim = new ClaimRequest();
+
+    private Input<string> typeInput;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        loading = true;
+        try
+        {
+            claims = await ControlPanelApiService.GetClaims(User.Id);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task AddClaim()
+    {
+        loading = true;
+        try
+        {
+            claims = await ControlPanelApiService.AddClaim(User.Id, newClaim);
+            newClaim = new ClaimRequest();
+            needFocus = true; // Send signal to OnAfterRenderAsync for change focus
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+    private bool needFocus;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (needFocus)
+        {
+            needFocus = false;
+            await typeInput.Focus();
+        }
+    }
+
+    private async Task RemoveClaim(ClaimResponseObject claim)
+    {
+        loading = true;
+        try
+        {
+            await JS.InvokeVoidAsync("console.log", claim);
+            claims = await ControlPanelApiService.RemoveClaim(User.Id, claim.Type, claim.Value);
+            newClaim = new ClaimRequest();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}
