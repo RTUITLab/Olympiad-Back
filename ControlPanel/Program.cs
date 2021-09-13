@@ -5,6 +5,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Olympiad.ControlPanel.Services;
 using Refit;
+using System.Globalization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -37,5 +38,10 @@ builder.Services.AddAuthorizationCore();
 
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddBlazoredLocalStorage();
+var ruCulture = new CultureInfo("ru-RU", false);
+CultureInfo.CurrentCulture = ruCulture;
+CultureInfo.CurrentUICulture = ruCulture;
+CultureInfo.DefaultThreadCurrentCulture = ruCulture;
+CultureInfo.DefaultThreadCurrentUICulture = ruCulture;
 
 await builder.Build().RunAsync();

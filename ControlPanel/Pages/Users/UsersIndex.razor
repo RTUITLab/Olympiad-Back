@@ -22,7 +22,10 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
 	<PageHeaderExtra>
-		<Button Type="@ButtonType.Primary" OnClick="@(() => _message.Warning("В разработке"))">Генерация</Button>
+		<NavLink href="users/generate">
+			<Button Type="@ButtonType.Primary">Генерация</Button>
+        </NavLink>
+			
 	</PageHeaderExtra>
 </PageHeader>
 

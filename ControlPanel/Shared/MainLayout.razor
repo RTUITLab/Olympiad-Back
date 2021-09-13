@@ -9,7 +9,7 @@
             <Col Span="12" Style="text-align: right">
             <AuthorizeView>
                 <Authorized>
-                    <Text style="color: white;">@context.User.Identity.Name</Text>
+                    <Text style="color: white;">@context.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="logs.Show"></Icon></Text>
                 </Authorized>
             </AuthorizeView>
             </Col>
@@ -24,14 +24,21 @@
         </Sider>
         <Layout Style=" padding: 0 24px 24px;">
             <Content Class="site-layout-background" Style=" padding: 24px; margin: 24px 0 0 0; min-height: 280px;">
-                @Body
+                <CascadingValue Value="@(logs as ILogsService)">
+                    @Body
+                </CascadingValue>
             </Content>
         </Layout>
     </Layout>
 </Layout>
-
+<LogsComponent @ref="logs" />
 <style>
     .site-layout-background {
         background: #fff;
     }
 </style>
+
+
+@code {
+    LogsComponent logs;
+}

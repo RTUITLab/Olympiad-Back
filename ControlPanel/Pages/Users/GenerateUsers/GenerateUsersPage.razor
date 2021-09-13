@@ -1,0 +1,40 @@
+﻿@page "/users/generate"
+@using Olympiad.Shared
+
+
+
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+@inject MessageService _message
+@inject IControlPanelApiService ControlPanelApiService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+
+<PageHeader Title="Генерирование пользователей">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem Href="/users">
+                Пользователи
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                Геренация
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+</PageHeader>
+
+<Button OnClick="Log">Create Log</Button>
+<Button OnClick="@(() => Logs.Show())">Show logs</Button>
+
+@code {
+
+    private int count = 1;
+
+    [CascadingParameter]
+    public ILogsService Logs { get; set; }
+
+    private void Log()
+    {
+        Logs.LogInfo(string.Join("|", Enumerable.Repeat("Hop hey!", count++)));
+    }
+}
