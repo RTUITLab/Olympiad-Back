@@ -22,7 +22,7 @@ using Olympiad.Admin.Services;
 using Olympiad.Admin.Options;
 using Microsoft.AspNetCore.Rewrite;
 using Olympiad.Services.UserSolutionsReport;
-using Olympiad.Services.JWT;
+using Olympiad.Services.Authorization;
 
 namespace Olympiad.Admin
 {

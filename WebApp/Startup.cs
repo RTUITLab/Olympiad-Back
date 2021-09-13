@@ -28,7 +28,7 @@ using WebApp.Formatting;
 using Olympiad.Services;
 using Olympiad.Shared;
 using System.Security.Claims;
-using Olympiad.Services.JWT;
+using Olympiad.Services.Authorization;
 
 namespace WebApp
 {
@@ -64,7 +64,7 @@ namespace WebApp
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
 
             services.AddJwtGenerator(Configuration, out var jwtAppSettingOptions);
-
+            services.AddScoped<IUserAuthorizationService, UserAuthorizationService>();
 
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -186,7 +186,8 @@ namespace WebApp
                 .AddTransientConfigure<AutoMigrate>(0)
                 .AddTransientConfigure<DefaultRolesConfigure>(1)
                 // .AddTransientConfigure<FillQueue>(1) // TODO send events table
-                .AddTransientConfigure<DefaultChallengeCreator>(2);
+                .AddTransientConfigure<DefaultChallengeCreator>(2)
+                .AddTransientConfigure<DefaultUsersTokensPrinter>(Configuration.GetValue<bool>("SHOW_DEFAULT_USER_TOKENS"), 3);
 
             if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
                 services.AddHostedService<RestartCheckingService>();

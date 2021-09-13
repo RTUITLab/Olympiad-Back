@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Olympiad.Services.JWT
+namespace Olympiad.Services.Authorization
 {
     public interface IJwtFactory
     {
