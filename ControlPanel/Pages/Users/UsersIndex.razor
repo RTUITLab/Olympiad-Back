@@ -14,129 +14,128 @@
 
 
 <PageHeader Title="Управление пользователями">
-	<PageHeaderBreadcrumb>
+    <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem>
                 Пользователи
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
-	<PageHeaderExtra>
-		<NavLink href="users/generate">
-			<Button Type="@ButtonType.Primary">Генерация</Button>
+    <PageHeaderExtra>
+        <NavLink href="users/generate">
+            <Button Type="@ButtonType.Primary">Генерация</Button>
         </NavLink>
-			
-	</PageHeaderExtra>
+    </PageHeaderExtra>
 </PageHeader>
 
 
 <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
-	<SpaceItem>
-		<Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
-	</SpaceItem>
-	<SpaceItem>
-		<Table DataSource="usersSource"
-			   Loading="loading"
-			   Total="loadedData?.Total ?? 0"
-			   @bind-PageIndex="PageIndex"
-			   @bind-PageSize="PageSize"
-			   TItem=UserInfoResponse
-			   OnChange=HandleChange>
+    <SpaceItem>
+        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
+    </SpaceItem>
+    <SpaceItem>
+        <Table DataSource="usersSource"
+               Loading="loading"
+               Total="loadedData?.Total ?? 0"
+               @bind-PageIndex="PageIndex"
+               @bind-PageSize="PageSize"
+               TItem=UserInfoResponse
+               OnChange=HandleChange>
 
-			<Column @bind-Field="context.FirstName" Title="Имя" Sortable ></Column>
-			<Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
-			<Column @bind-Field="context.Email" Sortable></Column>
-			<ActionColumn>
-				<NavLink href="@($"users/{context.Id}")"><Button>Редактировать</Button></NavLink>
-			</ActionColumn>
-		</Table>
-	</SpaceItem>
+            <Column @bind-Field="context.FirstName" Title="Имя" Sortable></Column>
+            <Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
+            <Column @bind-Field="context.Email" Sortable></Column>
+            <ActionColumn>
+                <NavLink href="@($"users/{context.Id}")"><Button>Редактировать</Button></NavLink>
+            </ActionColumn>
+        </Table>
+    </SpaceItem>
 </Space>
 
 
 
 @code {
 
-	[SupplyParameterFromQuery]
-	[Parameter]
-	public string? Match { get; set; }
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? Match { get; set; }
 
-	[SupplyParameterFromQuery]
-	[Parameter]
-	public int PageIndex { get; set; }
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int PageIndex { get; set; }
 
-	[SupplyParameterFromQuery]
-	[Parameter]
-	public int PageSize { get; set; }
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int PageSize { get; set; }
 
-	private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
-	private ListResponse<UserInfoResponse>? loadedData;
-	private bool loading;
-	protected override async Task OnParametersSetAsync()
-	{
-		await base.OnParametersSetAsync();
-		var needChangeUrl = false;
-		if (PageIndex < 1)
-		{
-			PageIndex = 1;
-			needChangeUrl |= true;
-		}
-		if (PageSize == 0)
-		{
-			PageSize = 50;
-			needChangeUrl |= true;
-		}
-		if (Match?.Length > 100)
-		{
-			Match = Match[0..100];
-			needChangeUrl |= true;
-		}
-		if (needChangeUrl)
-		{
-			NavigationManager.NavigateTo(CalcCurrentUrl(), replace: true);
-		}
-		await LoadData();
-	}
+    private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
+    private ListResponse<UserInfoResponse>? loadedData;
+    private bool loading;
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        var needChangeUrl = false;
+        if (PageIndex < 1)
+        {
+            PageIndex = 1;
+            needChangeUrl |= true;
+        }
+        if (PageSize == 0)
+        {
+            PageSize = 50;
+            needChangeUrl |= true;
+        }
+        if (Match?.Length > 100)
+        {
+            Match = Match[0..100];
+            needChangeUrl |= true;
+        }
+        if (needChangeUrl)
+        {
+            NavigationManager.NavigateTo(CalcCurrentUrl(), replace: true);
+        }
+        await LoadData();
+    }
 
-	private void HandleChange()
-	{
-		NavigationManager.NavigateTo(CalcCurrentUrl());
-	}
+    private void HandleChange()
+    {
+        NavigationManager.NavigateTo(CalcCurrentUrl());
+    }
 
-	private async Task LoadData()
-	{
-		loading = true;
-		try
-		{
-			loadedData = await ControlPanelApiService.SearchUsers(Match, PageSize, (PageIndex - 1) * PageSize);
-		}
-		finally
-		{
-			loading = false;
-		}
-	}
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            loadedData = await ControlPanelApiService.SearchUsers(Match, PageSize, (PageIndex - 1) * PageSize);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
 
-	private string CalcCurrentUrl()
-	{
-		var queryParams = new List<string>();
-		if (PageIndex != 1)
-		{
-			queryParams.Add($"pageIndex={PageIndex}");
-		}
-		if (PageSize != 50)
-		{
-			queryParams.Add($"pageSize={PageSize}");
-		}
-		if (!string.IsNullOrEmpty(Match))
-		{
-			queryParams.Add($"match={Match}");
-		}
+    private string CalcCurrentUrl()
+    {
+        var queryParams = new List<string>();
+        if (PageIndex != 1)
+        {
+            queryParams.Add($"pageIndex={PageIndex}");
+        }
+        if (PageSize != 50)
+        {
+            queryParams.Add($"pageSize={PageSize}");
+        }
+        if (!string.IsNullOrEmpty(Match))
+        {
+            queryParams.Add($"match={Match}");
+        }
 
-		var url = $"users";
-		if (queryParams.Any())
-		{
-			url += "?" + string.Join("&", queryParams);
-		}
-		return url;
-	}
+        var url = $"users";
+        if (queryParams.Any())
+        {
+            url += "?" + string.Join("&", queryParams);
+        }
+        return url;
+    }
 }

@@ -1,19 +1,23 @@
 ﻿@page "/users/generate"
+@using CsvHelper.Configuration
 @using Olympiad.Shared
+@using System.Text.RegularExpressions
 
 
 
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 @inject MessageService _message
+@inject NotificationService _notice
+
 @inject IControlPanelApiService ControlPanelApiService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
 
-<PageHeader Title="Генерирование пользователей">
+<PageHeader Title="Генерирование пользователей" OnBack="@(() => NavigationManager.NavigateTo("users"))">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
-            <BreadcrumbItem Href="/users">
+            <BreadcrumbItem Href="users">
                 Пользователи
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -23,18 +27,295 @@
     </PageHeaderBreadcrumb>
 </PageHeader>
 
-<Button OnClick="Log">Create Log</Button>
-<Button OnClick="@(() => Logs.Show())">Show logs</Button>
+<Title Level="2">Правила составления CSV файла</Title>
+<Text>
+    CSV файл <Text Strong>должен</Text> Содержать колонки <Text Keyboard>ID</Text>, и <Text Keyboard>Name</Text>.
+    Если есть необходимость - можно использовать колонку <Text Keyboard>DefaultPassword</Text> для предварительной генерации пароля
+</Text>
+<Title Level="3">Дополнительные свойства</Title>
+<Text>
+    Для последующей идентификации и поиска пользователей можно добавить генерируемым пользователям свойства.
+    Например, добавить колонку <Text Keyboard>Класс</Text>, и у каждого пользователя вписать класс, в котором он учится.
+    Это может быть удобно для последующего предоставления доступа пользователям к конкретным соревнованиям.
+</Text>
+
+
+
+@if (usersGenerateModel == null)
+{
+    <Alert Type="@AlertType.Info"
+       Message="Выберете CSV файл"
+       Description="Выберите CSV файл для предпросмотра создаваемых пользователей"
+       ShowIcon="true" />
+}
+<Table Bordered
+       HidePagination
+       PageSize="@(usersGenerateModel?.UserGenerateRows?.Count ?? 0)"
+       DataSource="usersGenerateModel?.UserGenerateRows">
+    <TitleTemplate>
+        <Button Icon="@IconType.Outline.FileExcel" OnClick="@(() => JS.InvokeVoidAsync("clickElement", inputFileRef.Element))">Выбрать CSV файл</Button>
+        <InputFile @ref="inputFileRef" style="display: none" OnChange="HandleSelection" accept=".csv" />
+        <AntDesign.Text>Записей: @(usersGenerateModel?.UserGenerateRows.Count ?? 0)</AntDesign.Text>
+    </TitleTemplate>
+    <ChildContent>
+        <Column @bind-Field="context.StudentID">
+            <TitleTemplate>ID<HelpTooltip Text="Индентификатор студента, будет использоваться для входа" /></TitleTemplate>
+        </Column>
+        <Column @bind-Field="context.FirstName">
+            <TitleTemplate>Name<HelpTooltip Text="Имя студента, для обращения" /></TitleTemplate>
+        </Column>
+        @foreach (var (columnName, index) in usersGenerateModel?.ColumnNames.Select((name, i) => (name, i)).Skip(2) ?? Enumerable.Empty<(string, int)>())
+        {
+            <Column TData="string">
+                <TitleTemplate>
+                    @columnName
+                    @switch (columnName)
+                    {
+                        case "DefaultPassword":
+                            <HelpTooltip Text="Пароль, который будет установленный для данного пользователя" />
+                            ; break;
+                        default:; break;
+                    }
+                </TitleTemplate>
+                <ChildContent>
+                    @context.Claims[index-2].Value
+                </ChildContent>
+            </Column>
+        }
+    </ChildContent>
+</Table>
+
+
+
+@*@if (usersGenerateModel?.IsValid().isValid == true)
+    {
+    <BlazorStrap.BSButton Color="BlazorStrap.Color.Primary" @onclick="Generate">Generate</BlazorStrap.BSButton>
+    }*@
+
 
 @code {
-
-    private int count = 1;
+    private InputFile inputFileRef;
 
     [CascadingParameter]
     public ILogsService Logs { get; set; }
 
-    private void Log()
+
+    private UsersGenerateModel? usersGenerateModel;
+
+
+    private class IncorrectCSVException : Exception
     {
-        Logs.LogInfo(string.Join("|", Enumerable.Repeat("Hop hey!", count++)));
+        public class AdditionalInfo
+        {
+            public string? ExceptionType { get; set; }
+            public string? Field { get; set; }
+            public string? RawRecord { get; set; }
+        }
+        public AdditionalInfo Info { get; }
+        public IncorrectCSVException(Exception innerException) : base(innerException.Message)
+        {
+            Info = new AdditionalInfo { ExceptionType = innerException.GetType().FullName };
+        }
+        public IncorrectCSVException(string Field, string RawRecord) : base("Bad data")
+        {
+            Info = new AdditionalInfo { Field = Field, RawRecord = RawRecord };
+        }
+    }
+
+    async Task HandleSelection(InputFileChangeEventArgs files)
+    {
+        using (var reader = new System.IO.StreamReader(files.File.OpenReadStream()))
+        using (var csv = new CsvHelper.CsvReader(reader, new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
+        {
+            DetectColumnCountChanges = true,
+            ReadingExceptionOccurred = error => throw new IncorrectCSVException(error.Exception),
+            BadDataFound = error => throw new IncorrectCSVException(error.Field, error.RawRecord)
+        }))
+        {
+            try
+            {
+                await csv.ReadAsync();
+                csv.ReadHeader();
+                usersGenerateModel = new UsersGenerateModel(csv.Parser.Record);
+
+                while (await csv.ReadAsync())
+                {
+                    usersGenerateModel.AddUserRow(csv.Parser.Record, () => "MOCK PASSWORD GENERATOR");
+                }
+            }
+            catch (IncorrectColumnsException columnsEx)
+            {
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = columnsEx.Summary,
+                    Description = columnsEx.Description,
+                    NotificationType = NotificationType.Error,
+                });
+            }
+            catch (Exception ex)
+            {
+                if (ex is IncorrectCSVException csvEx)
+                {
+                    Logs.LogInfoObject(csvEx.Message, csvEx.Info);
+                }
+                else
+                {
+                    Logs.LogInfoObject(ex.Message, new { Type = ex.GetType().FullName });
+                }
+                var key = DateTime.Now.ToString();
+                await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Ошибка при чтении файла",
+                    Description = "Проверьте CSV файл на правильность, количество колонок в строках, заголовки.",
+                    NotificationType = NotificationType.Error,
+                    Key = key,
+                    Btn = Logs.OpenLogsButton(key)
+                });
+            }
+        }
+    }
+
+    private async Task Generate()
+    {
+        List<UserGenerateRow> generates = new List<UserGenerateRow>();
+        var defaultClaims = new List<System.Security.Claims.Claim> { new System.Security.Claims.Claim("reset_password", "need") };
+        foreach (var (userToGenerate, i) in usersGenerateModel.UserGenerateRows.Select((u, i) => (u, i)))
+        {
+            //User user = new User()
+            //{
+            //    Email = $"{userToGenerate.StudentID}@{generateSettings.Value.Domain}",
+            //    UserName = userToGenerate.StudentID,
+            //    EmailConfirmed = true,
+            //    StudentID = userToGenerate.StudentID,
+            //    FirstName = userToGenerate.FirstName
+            //};
+
+            //var result = await Service.CreateAsync(user, userToGenerate.Password);
+            //if (!result.Succeeded)
+            //{
+            //    await logs.Log(string.Join('\n', result.Errors.Select(ir => ir.Description)));
+            //    continue;
+            //}
+            //result = await Service.AddToRoleAsync(user, "User");
+            //result = await Service.AddClaimsAsync(user, userToGenerate.Claims.Concat(defaultClaims));
+            generates.Add(userToGenerate);
+            Logs.LogInfo($"Generate user: {i + 1}/{usersGenerateModel.UserGenerateRows.Count} | {userToGenerate.StudentID}");
+        }
+
+        if (generates.Any())
+        {
+            await DownloadResults(generates);
+            //await JS.DownloadFile("passwords.tsv", System.Text.Encoding.UTF8.GetBytes(string.Join('\n', generates.Select(u => $"{u.Login}\t{u.Password}"))));
+        }
+    }
+
+    private async Task DownloadResults(List<UserGenerateRow> generated)
+    {
+        using var workBook = new ClosedXML.Excel.XLWorkbook();
+        var workSheet = workBook.Worksheets.Add("Users");
+        var currentRow = 1;
+        var currentColumn = 1;
+        workSheet.Cell(currentRow, currentColumn++).SetValue("ID (login)");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Password");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Name");
+        foreach (var claim in generated.First().Claims)
+        {
+            workSheet.Cell(currentRow, currentColumn++).Value = claim.Type;
+        }
+        foreach (var row in generated)
+        {
+            currentRow++;
+            currentColumn = 1;
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.StudentID);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.Password);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.FirstName);
+            foreach (var claim in row.Claims)
+            {
+                workSheet.Cell(currentRow, currentColumn++).SetValue(claim.Value);
+            }
+        }
+        using (var stream = new System.IO.MemoryStream())
+        {
+            workBook.SaveAs(stream);
+            var content = stream.ToArray();
+
+            await JS.DownloadFile($"users.xlsx", content);
+        }
+    }
+
+    private class UserGenerateRow
+    {
+        public string StudentID { get; set; }
+        public string FirstName { get; set; }
+        public string Password { get; set; }
+        public List<System.Security.Claims.Claim> Claims { get; set; }
+    }
+
+    private class IncorrectColumnsException : Exception
+    {
+        public string Summary { get; }
+        public string Description { get; }
+        public IncorrectColumnsException(string summary, string description) : base($"{summary}|{description}")
+        {
+            Summary = summary;
+            Description = description;
+        }
+    }
+    private class UsersGenerateModel
+    {
+        public string[] ColumnNames { get; }
+        public const string DefaultPassworkColumnName = "DefaultPassword";
+        public IReadOnlyCollection<UserGenerateRow> UserGenerateRows => userGenerateRows;
+
+        private List<UserGenerateRow> userGenerateRows = new List<UserGenerateRow>();
+
+        public UsersGenerateModel(string[] columnNames)
+        {
+            if (columnNames.Length < 2)
+            {
+                throw new IncorrectColumnsException("Обязательные колонки", "You must provide two columns 'ID' and 'Name'");
+            }
+            if (columnNames[0] != "ID")
+            {
+                throw new IncorrectColumnsException("Название первой колонки", "First column must be called 'ID'");
+            }
+            if (columnNames[1] != "Name")
+            {
+                throw new IncorrectColumnsException("Название второй колонки", "Second column must be called 'Name'");
+            }
+            for (int i = 2; i < columnNames.Length; i++)
+            {
+                if (!Regex.IsMatch(columnNames[i], @"^\S+$"))
+                {
+                    throw new IncorrectColumnsException(columnNames[i], $"Название свойства должно состоять из непробельных символов");
+                }
+            }
+            ColumnNames = columnNames;
+        }
+
+        public void AddUserRow(string[] row, Func<string> createPasswordFunc)
+        {
+            if (row.Length != ColumnNames.Length)
+            {
+                throw new Exception("Incorrect row length");
+            }
+            userGenerateRows.Add(new UserGenerateRow
+            {
+                StudentID = row[0],
+                FirstName = row[1],
+                Password = IsContainsPasswordColumn(out var passworcColumnNameIndex) ?
+                    row[passworcColumnNameIndex] : createPasswordFunc(),
+                Claims = row
+                    .Skip(2)
+                    .Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i + 2], r))
+                    .ToList()
+            });
+        }
+
+        public bool IsContainsPasswordColumn(out int index)
+        {
+            index = Array.IndexOf(ColumnNames, DefaultPassworkColumnName);
+            return index != -1;
+        }
     }
 }

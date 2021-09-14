@@ -5,6 +5,7 @@
 @implements ILogsService
 @implements IDisposable
 
+@inject NotificationService _notice
 @inject IJSRuntime JS;
 @{
     RenderFragment drawerTitle =
@@ -13,7 +14,7 @@
         <Popover Placement="PlacementType.BottomLeft">
             <ContentTemplate>
                 <Text>Максимальное количество сообщений</Text>
-                <AntDesign.InputNumber Min="1" Max="60" @bind-Value="maxMessagesCount" OnChange="@((int n) => CleanMessages())"/>
+                <AntDesign.InputNumber Min="1" Max="60" @bind-Value="maxMessagesCount" OnChange="@((int n) => CleanMessages())" />
             </ContentTemplate>
             <ChildContent>
                 <Icon Type="setting" Theme="outline" />
@@ -70,9 +71,13 @@
         base.OnAfterRender(firstRender);
         if (firstRender)
         {
-
+            OpenLogsButton = key =>
+    @<Button OnClick="() => { Show(); _notice.Close(key); }">Открыть логи</Button>
+    ;
         }
     }
+
+    public RenderFragment<string> OpenLogsButton { get; private set; }
 
     public void LogInfo(string message, string? description = null)
     {

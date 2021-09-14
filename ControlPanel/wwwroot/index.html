@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 
 <head>
     <meta charset="utf-8" />
@@ -23,6 +23,17 @@
     <script>
         window.openLinkInNewTab = function (url) {
             open(url, '_blank');
+        }
+        window.saveAsFile = (filename, bytesBase64) => {
+            var link = document.createElement('a');
+            link.download = filename;
+            link.href = "data:application/octet-stream;base64," + bytesBase64;
+            document.body.appendChild(link); // Needed for Firefox
+            link.click();
+            document.body.removeChild(link);
+        }
+        window.clickElement = function (elementReference) {
+            elementReference.click();
         }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
