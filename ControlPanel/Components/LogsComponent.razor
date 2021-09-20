@@ -2,8 +2,8 @@
 @using System.Text.Json
 @using System.Text.Encodings.Web
 @using System.Text.Unicode
+@using System.Threading
 @implements ILogsService
-@implements IDisposable
 
 @inject NotificationService _notice
 @inject IJSRuntime JS;
@@ -64,7 +64,6 @@
         WriteIndented = true
     };
     private bool visible;
-    private CancellationTokenSource updateUISource = new CancellationTokenSource();
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -151,10 +150,5 @@
 
         public string DateView { get; }
         public string HeaderView { get; }
-    }
-
-    public void Dispose()
-    {
-        updateUISource.Cancel();
     }
 }

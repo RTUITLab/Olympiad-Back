@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Olympiad.ControlPanel.Services;
 using Refit;
 using System.Globalization;
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

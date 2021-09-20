@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace Olympiad.ControlPanel.Extensions;
 public static class JSExtensions
