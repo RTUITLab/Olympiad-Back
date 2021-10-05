@@ -24,13 +24,22 @@
         window.openLinkInNewTab = function (url) {
             open(url, '_blank');
         }
-        window.saveAsFile = (filename, bytesBase64) => {
+        window.saveAsFile = (filename, fileContentArray) => {
+            blob = new Blob([fileContentArray], {
+                type: "application/octet-stream"
+            });
+            url = window.URL.createObjectURL(blob);
             var link = document.createElement('a');
+            link.style = 'display: none';
             link.download = filename;
-            link.href = "data:application/octet-stream;base64," + bytesBase64;
+            link.href = url;
             document.body.appendChild(link); // Needed for Firefox
             link.click();
-            document.body.removeChild(link);
+            link.remove();
+            return url;
+        }
+        window.revokeURL = (url) => {
+            window.URL.revokeObjectURL(url);
         }
         window.clickElement = function (elementReference) {
             elementReference.click();

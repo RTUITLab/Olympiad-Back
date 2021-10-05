@@ -13,9 +13,13 @@ namespace Olympiad.ControlPanel.JsWrappers
         {
             await jSRuntime.DownloadFile(fileName, Encoding.UTF8.GetBytes(content));
         }
-        public static async Task DownloadFile(this IJSRuntime jSRuntime, string fileName, byte[] data)
+        public static async Task<string> DownloadFile(this IJSRuntime jSRuntime, string fileName, byte[] data)
         {
-            await jSRuntime.InvokeVoidAsync("saveAsFile", fileName, data);
+            return await jSRuntime.InvokeAsync<string>("saveAsFile", fileName, data);
+        }
+        public static async Task RevokeUrl(this IJSRuntime jSRuntime, string url)
+        {
+            await jSRuntime.InvokeVoidAsync("revokeURL", url);
         }
     }
 }
