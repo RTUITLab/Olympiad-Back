@@ -2,11 +2,11 @@
 
 namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
 {
-    public class IncorrectColumnsException : Exception
+    public class IncorrectUsersFileFormatException : Exception
     {
         public string Summary { get; }
         public string Description { get; }
-        public IncorrectColumnsException(string summary, string description) : base($"{summary}|{description}")
+        public IncorrectUsersFileFormatException(string summary, string description) : base($"{summary}|{description}")
         {
             Summary = summary;
             Description = description;

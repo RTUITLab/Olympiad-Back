@@ -10,6 +10,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
+using Olympiad.Shared;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -38,6 +39,7 @@ builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationPr
 builder.Services.AddScoped<AuthenticationStateProvider, LocalStorageJwtAuthenticationProvider>();
 builder.Services.AddAuthorizationCore();
 
+builder.Services.AddTransient<UserPasswordGenerator>();
 
 
 builder.Services.AddBlazoredSessionStorage();

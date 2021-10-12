@@ -2,11 +2,12 @@
 
 @implements IAsyncDisposable
 
+
 <Modal Width="@("70%")"
        Visible="visible"
        Closable="false"
-       MaskClosable="!IsLoading"
-       OnCancel="() => HideModal()">
+       Footer="null"
+       MaskClosable="!IsLoading">
 
     @if (currentStatus <= CreatingStatus.GeneratingDocument)
     {
@@ -20,8 +21,9 @@
     @switch (currentStatus)
     {
         case CreatingStatus.WaitStartCommand when (modelToGenerate is not null):
-            <Title>Создание @modelToGenerate.UserGenerateRows.Count пользователей</Title>
+            <Title Level="3">Создание @modelToGenerate.UserGenerateRows.Count пользователей</Title>
             <Button Type="@ButtonType.Primary" OnClick="() => CreateUsers(modelToGenerate)">Начать</Button>
+            <Button Type="default" OnClick="async () => await HideModal()">Закрыть окно</Button>
             break;
         case CreatingStatus.WaitStartCommand when (modelToGenerate is null):
             <Alert Type="@AlertType.Error"
@@ -30,19 +32,21 @@
            ShowIcon="true" />
             break;
         case CreatingStatus.CreatingUsers when (modelToGenerate is not null):
-            <Text>Генерирование @currentGeneratingUser.userInfo?.StudentID <Text Keyboard>@(currentGeneratingUser.index + 1)</Text> / <Text Keyboard>@modelToGenerate.UserGenerateRows.Count</Text></Text>
+            <Title Level="3">Генерирование @currentGeneratingUser.userInfo?.StudentID <Text Keyboard>@(currentGeneratingUser.index + 1)</Text>/<Text Keyboard>@modelToGenerate.UserGenerateRows.Count</Text></Title>
             <Progress Percent="ProgressPercents" Status="@ProgressStatus.Active" />
             break;
         case CreatingStatus.GeneratingDocument:
-            <Spin Size="large" Spinning>Генерирование результатов</Spin>
+            <Title Level="3">Генерирование результатов</Title>
+            <Spin Size="large" Spinning Tip="Создание документа"></Spin>
             break;
         case CreatingStatus.TotalSuccess:
             <Result Status="success"
             Title="Все пользователи созданы успешно!">
                 <Extra>
                     <a href="@documentLink" download="@documentDownloadName">
-                        <Button Type="primary">Скачать результаты</Button>
+                        <Button Type="@ButtonType.Default">Скачать результаты</Button>
                     </a>
+                    <Button Type="@ButtonType.Primary" OnClick="async () => await HideModal()">Закрыть окно</Button>
                 </Extra>
             </Result>
             break;
@@ -82,7 +86,7 @@
     public ILogsService Logs { get; set; }
 
     private UsersGenerateModel? modelToGenerate;
-    private double ProgressPercents => Math.Round((double)currentGeneratingUser.index / (modelToGenerate?.UserGenerateRows.Count ?? 0) * 100, 2);
+    private int ProgressPercents => (int)((double)currentGeneratingUser.index / (modelToGenerate?.UserGenerateRows.Count ?? 0) * 100);
     private (UserGenerateRow? userInfo, int index) currentGeneratingUser;
     private string? documentLink;
     private string? documentDownloadName;
@@ -139,7 +143,7 @@
 
     private async Task GenerateUser(UserGenerateRow user)
     {
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(2));
         //User user = new User()
         //{
         //    Email = $"{userToGenerate.StudentID}@{generateSettings.Value.Domain}",
@@ -161,6 +165,7 @@
 
     private async Task DownloadResults(string sourceFileName, List<UserGenerateRow> generated)
     {
+        await Task.Delay(TimeSpan.FromSeconds(5));
         using var workBook = new ClosedXML.Excel.XLWorkbook();
         var workSheet = workBook.Worksheets.Add("Users");
         var currentRow = 1;
@@ -187,7 +192,7 @@
         using var stream = new System.IO.MemoryStream();
         workBook.SaveAs(stream);
         var content = stream.ToArray();
-        documentDownloadName = $"{sourceFileName} - Пользователи.xlsx";
+        documentDownloadName = $"{DateTime.Now:yyyy MM dd} {sourceFileName} - Пользователи.xlsx";
         documentLink = await JS.DownloadFile(documentDownloadName, content);
     }
 

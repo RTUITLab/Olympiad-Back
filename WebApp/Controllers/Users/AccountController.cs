@@ -24,7 +24,6 @@ using WebApp.Extensions;
 using PublicAPI.Responses;
 using System.ComponentModel.DataAnnotations;
 using Npgsql;
-using WebApp.Services;
 using PublicAPI.Responses.Account;
 using System.Security.Claims;
 using Olympiad.Shared;

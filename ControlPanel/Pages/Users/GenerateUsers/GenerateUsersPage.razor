@@ -6,9 +6,11 @@
 
 
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
+
 @inject NotificationService _notice
 
 @inject IControlPanelApiService ControlPanelApiService
+@inject UserPasswordGenerator UserPasswordGenerator
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
@@ -28,8 +30,8 @@
 
 <Title Level="2">Правила составления CSV файла</Title>
 <Text>
-    CSV файл <Text Strong>должен</Text> Содержать колонки <Text Keyboard>ID</Text>, и <Text Keyboard>Name</Text>.
-    Если есть необходимость - можно использовать колонку <Text Keyboard>DefaultPassword</Text> для предварительной генерации пароля
+    CSV файл <Text Strong>должен</Text> иметь первые две колонки <Text Keyboard>@UsersGenerateModelBuilder.IDColumnName</Text> и <Text Keyboard>@UsersGenerateModelBuilder.NameColumnName</Text>.
+    Если есть необходимость - можно использовать третью колонку <Text Keyboard>@UsersGenerateModelBuilder.DefaultPassworkColumnName</Text> для использования предварительно заданного пароля вместо генерирования.
 </Text>
 <Title Level="3">Дополнительные свойства</Title>
 <Text>
@@ -63,21 +65,14 @@
         <Column Field="context.FirstName">
             <TitleTemplate>Name<HelpTooltip Text="Имя студента, для обращения" /></TitleTemplate>
         </Column>
-        @foreach (var (columnName, index) in usersGenerateModel?.ColumnNames.Select((name, i) => (name, i)).Skip(2) ?? Enumerable.Empty<(string, int)>())
+        <Column Field="context.Password">
+            <TitleTemplate>Пароль<HelpTooltip Text="Пароль для входа по умолчанию" /></TitleTemplate>
+        </Column>
+        @foreach (var (columnName, index) in usersGenerateModel?.ColumnNames.Select((c, i) => (c, i)) ?? Enumerable.Empty<(string, int)>())
         {
-            <Column TData="string">
-                <TitleTemplate>
-                    @columnName
-                    @switch (columnName)
-                    {
-                        case "DefaultPassword":
-                            <HelpTooltip Text="Пароль, который будет установленный для данного пользователя" />
-                            ; break;
-                        default:; break;
-                    }
-                </TitleTemplate>
+            <Column TData="string" Title="@columnName">
                 <ChildContent>
-                    @context.Claims[index-2].Value
+                    @context.Claims[index].Value
                 </ChildContent>
             </Column>
         }
@@ -135,14 +130,15 @@
             {
                 await csv.ReadAsync();
                 csv.ReadHeader();
-                usersGenerateModel = new UsersGenerateModel(files.File.Name, csv.Parser.Record);
 
+                var builder = new UsersGenerateModelBuilder(files.File.Name, csv.Parser.Record);
                 while (await csv.ReadAsync())
                 {
-                    usersGenerateModel.AddUserRow(csv.Parser.Record, () => "MOCK PASSWORD GENERATOR");
+                    builder.AddUserRow(csv.Parser.Record, UserPasswordGenerator.GeneratePassword);
                 }
+                usersGenerateModel = builder.Build();
             }
-            catch (IncorrectColumnsException columnsEx)
+            catch (IncorrectUsersFileFormatException columnsEx)
             {
                 await _notice.Open(new NotificationConfig()
                     {
