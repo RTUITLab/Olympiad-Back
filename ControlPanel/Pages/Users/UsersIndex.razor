@@ -39,8 +39,8 @@
                Total="loadedData?.Total ?? 0"
                @bind-PageIndex="PageIndex"
                @bind-PageSize="PageSize"
-               TItem=UserInfoResponse
-               OnChange=HandleChange>
+               TItem="UserInfoResponse"
+               OnChange="HandleChange">
 
             <Column @bind-Field="context.FirstName" Title="Имя" Sortable></Column>
             <Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
@@ -62,44 +62,34 @@
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public int PageIndex { get; set; }
+    public int PageIndex { get; set; } = 1;
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public int PageSize { get; set; }
+    public int PageSize { get; set; } = 50;
 
     private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
     private ListResponse<UserInfoResponse>? loadedData;
     private bool loading;
-    protected override async Task OnParametersSetAsync()
+
+    private async Task HandleChange()
     {
-        await base.OnParametersSetAsync();
-        var needChangeUrl = false;
-        if (PageIndex < 1)
-        {
-            PageIndex = 1;
-            needChangeUrl |= true;
-        }
-        if (PageSize == 0)
-        {
+        if (PageSize < 1) {
             PageSize = 50;
-            needChangeUrl |= true;
         }
-        if (Match?.Length > 100)
-        {
-            Match = Match[0..100];
-            needChangeUrl |= true;
+        if (PageIndex < 1) {
+            PageIndex = 1;
         }
-        if (needChangeUrl)
+        if (PageSize > 200)
         {
-            NavigationManager.NavigateTo(CalcCurrentUrl(), replace: true);
+            PageSize = 200;
+        }
+        var newUrl = CalcCurrentUrl();
+        if (NavigationManager.Uri != newUrl)
+        {
+            NavigationManager.NavigateTo(newUrl);
         }
         await LoadData();
-    }
-
-    private void HandleChange()
-    {
-        NavigationManager.NavigateTo(CalcCurrentUrl());
     }
 
     private async Task LoadData()
@@ -107,7 +97,11 @@
         loading = true;
         try
         {
-            loadedData = await ControlPanelApiService.SearchUsers(Match, PageSize, (PageIndex - 1) * PageSize);
+            var pageSizeToLoad = PageSize < 1 ? 50 : PageSize;
+            var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
+
+            var loaded = await ControlPanelApiService.SearchUsers(Match, pageSizeToLoad, (pageIndexToLoad - 1) * pageSizeToLoad);
+            loadedData = loaded;
         }
         finally
         {
@@ -117,25 +111,12 @@
 
     private string CalcCurrentUrl()
     {
-        var queryParams = new List<string>();
-        if (PageIndex != 1)
+        var queryParams = new Dictionary<string, object?>
         {
-            queryParams.Add($"pageIndex={PageIndex}");
-        }
-        if (PageSize != 50)
-        {
-            queryParams.Add($"pageSize={PageSize}");
-        }
-        if (!string.IsNullOrEmpty(Match))
-        {
-            queryParams.Add($"match={Match}");
-        }
-
-        var url = $"users";
-        if (queryParams.Any())
-        {
-            url += "?" + string.Join("&", queryParams);
-        }
-        return url;
+            {nameof(PageIndex), PageIndex <= 1 ? null : PageIndex},
+            {nameof(PageSize), PageSize == 50 ? null : PageSize},
+            {nameof(Match), Match},
+        };
+        return NavigationManager.GetUriWithQueryParameters(queryParams);
     }
 }

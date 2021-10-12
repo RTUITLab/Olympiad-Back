@@ -122,6 +122,10 @@
 
     private async ValueTask HideModal()
     {
+        if (IsLoading)
+        {
+            return;
+        }
         await CleanResources();
         visible = false;
     }

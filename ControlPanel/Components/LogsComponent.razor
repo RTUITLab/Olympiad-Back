@@ -11,7 +11,7 @@
     RenderFragment drawerTitle =
     @<AntDesign.Text>
         Логи работы системы
-        <Popover Placement="PlacementType.BottomLeft">
+        <Popover Placement="Placement.BottomLeft">
             <ContentTemplate>
                 <Text>Максимальное количество сообщений</Text>
                 <AntDesign.InputNumber Min="1" Max="60" @bind-Value="maxMessagesCount" OnChange="@((int n) => CleanMessages())" />
