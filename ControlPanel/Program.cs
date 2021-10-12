@@ -40,6 +40,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, LocalStorageJwtAuthentic
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddTransient<UserPasswordGenerator>();
+builder.Services.AddScoped<GenerateUserService>();
 
 
 builder.Services.AddBlazoredSessionStorage();

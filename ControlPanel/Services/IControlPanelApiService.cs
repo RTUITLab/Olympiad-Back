@@ -26,6 +26,8 @@ public interface IControlPanelApiService
     public Task<UserInfoResponse> UpdateUserInfo(Guid userId, [Body] UpdateAccountInfoRequest body);
     [Post("/api/account/adminChangePassword/{userId}")]
     public Task<NewPasswordGeneratedResponse> GenerateNewPasswordForUser(Guid userId);
+    [Post("/api/account/generate")]
+    public Task GenerateNewUser([Body]GenerateUserRequest generateUserRequest);
     [Delete("/api/account/{userId}")]
     public Task<HttpResponseMessage> DeleteUser(Guid userId);
 

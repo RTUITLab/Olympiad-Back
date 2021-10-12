@@ -53,11 +53,24 @@ namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
             {
                 throw new Exception("Incorrect row length");
             }
+            var userPassword = containsDefaultPassword ? row[2] : createPasswordFunc();
+            if (userPassword is null)
+            {
+                throw new IncorrectUsersFileFormatException(
+                    "Некорректный пароль",
+                    $"Для пользователя {row[0]} задан пароль '{userPassword}', являющийся некорректным.");
+            }
+            if (userPassword.Length < 6)
+            {
+                throw new IncorrectUsersFileFormatException(
+                    "Слишком короткий пароль",
+                    $"Для пользователя {row[0]} задан пароль '{userPassword}' длиной {userPassword.Length}. Минимальная длина пароля - 6 символов.");
+            }
             userGenerateRows.Add(new UserGenerateRow
             (
                 StudentID: row[0],
                 FirstName: row[1],
-                Password: containsDefaultPassword ? row[2] : createPasswordFunc(),
+                Password: userPassword,
                 Claims: row
                     .Skip(SkipColumnsCount)
                     .Select((r, i) => new System.Security.Claims.Claim(ColumnNames[i], r))

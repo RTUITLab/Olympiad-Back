@@ -27,6 +27,9 @@ using Npgsql;
 using PublicAPI.Responses.Account;
 using System.Security.Claims;
 using Olympiad.Shared;
+using PublicAPI.Requests.Account;
+using OneOf;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace WebApp.Controllers.Users
 {
@@ -168,6 +171,46 @@ namespace WebApp.Controllers.Users
             return NoContent();
         }
 
+        [HttpPost("generate")]
+        [Authorize(Roles = "Admin")]
+        [Obsolete("Move generating user logic to Service")]
+        public async Task<ActionResult> GenerateUser([FromBody] GenerateUserRequest model)
+        {
+            var createUserResult = await CreateUser(new CreateUserDataModel
+            {
+                StudentID = model.ID,
+                Email = $"{model.ID}@{options.Value.EmailDomain}",
+                FirstName = model.Name,
+                Password = model.Password,
+                LastName = ""
+            });
+            if (createUserResult.IsT1)
+            {
+                var (statusCode, value) = createUserResult.AsT1;
+                if (statusCode == 400 && value is ModelStateDictionary modelState)
+                {
+                    return BadRequest(modelState);
+                }
+                return StatusCode(statusCode, value);
+            }
+            if (model.Claims is null)
+            {
+                return Ok();
+            }
+            var user = createUserResult.AsT0;
+            foreach (var claim in model.Claims)
+            {
+                var claimToAdd = new Claim(claim.Type, claim.Value);
+                var result = await UserManager.AddClaimAsync(user, claimToAdd);
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"Can't add claim {claimToAdd} to user {user.Id} {user.StudentID}: {result}");
+                    return StatusCode(500, "Unexpected error");
+                }
+            }
+            return Ok();
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<ActionResult<UserInfoResponse>> Post([FromBody] RegistrationRequest model)
@@ -185,34 +228,57 @@ namespace WebApp.Controllers.Users
                 return BadRequest();
             }
 
-            User userIdentity = mapper.Map<User>(model);
+            var createUserResult = await CreateUser(model);
+            if (createUserResult.IsT0)
+            {
+                return mapper.Map<UserInfoResponse>(createUserResult.AsT0);
+            }
+            else
+            {
+                var (statusCode, value) = createUserResult.AsT1;
+                if(statusCode == 400 && value is ModelStateDictionary modelState)
+                {
+                    return BadRequest(modelState);
+                }
+                return StatusCode(statusCode, value);
+            }
+        }
+
+        // TODO: Extract that method to service
+        [Obsolete("Extract that method to service")]
+        private async Task<OneOf<User, (int statusCode, object content)>> CreateUser(CreateUserDataModel createUserModel)
+        {
+            User userIdentity = mapper.Map<User>(createUserModel);
             try
             {
 
-                var result = await UserManager.CreateAsync(userIdentity, model.Password);
+                var result = await UserManager.CreateAsync(userIdentity, createUserModel.Password);
 
                 if (!result.Succeeded)
-                    return BadRequest(Errors.AddErrorsToModelState(result, ModelState));
+                {
+                    Errors.AddErrorsToModelState(result, ModelState);
+                    return (400, ModelState);
+                }
 
                 result = await UserManager.AddToRoleAsync(userIdentity, RoleNames.USER);
                 if (!result.Succeeded)
                 {
                     logger.LogError($"Can't add user to role {result}");
-                    return StatusCode(500, "Unexpected error");
+                    return (500, "Unexpected error");
                 }
-                
+
                 result = await UserManager.AddClaimAsync(userIdentity, DefaultClaims.NeedResetPassword.Claim);
                 if (!result.Succeeded)
                 {
                     logger.LogError($"Can't add default claim {result}");
-                    return StatusCode(500, "Unexpected error");
+                    return (500, "Unexpected error");
                 }
 
                 //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
                 //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
                 //await emailSender.SendEmailConfirm(model.Email, url);
 
-                return mapper.Map<UserInfoResponse>(userIdentity);
+                return userIdentity;
             }
             catch (DbUpdateException ex) when (
                 ex.InnerException is PostgresException psex &&
@@ -220,7 +286,7 @@ namespace WebApp.Controllers.Users
                 psex.ConstraintName.Contains(nameof(userIdentity.StudentID)))
             {
                 ModelState.AddModelError(nameof(userIdentity.StudentID), $"StudentID {userIdentity.StudentID} already exists");
-                return BadRequest(ModelState);
+                return (400, ModelState);
             }
         }
 

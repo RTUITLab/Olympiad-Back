@@ -8,5 +8,6 @@ namespace WebApp.Models.Settings
     public class AccountSettings
     {
         public bool IsRegisterAvailable { get; set; }
+        public string EmailDomain { get; set; }
     }
 }

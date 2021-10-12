@@ -1,13 +1,22 @@
-﻿@inject IJSRuntime JS
+﻿@implements IAsyncDisposable
 
-@implements IAsyncDisposable
 
+@inject IJSRuntime JS
+@inject GenerateUserService GenerateService
+
+@{
+    RenderFragment closeIcon =
+    @<div></div>
+    ;
+}
 
 <Modal Width="@("70%")"
        Visible="visible"
-       Closable="false"
+       Closable="!IsLoading"
+       CloseIcon="closeIcon"
        Footer="null"
-       MaskClosable="!IsLoading">
+       OnCancel="async () => await HideModal()"
+       >
 
     @if (currentStatus <= CreatingStatus.GeneratingDocument)
     {
@@ -56,8 +65,9 @@
             SubTitle="Подробная информация содержится в итоговом файле">
                 <Extra>
                     <a href="@documentLink" download="@documentDownloadName">
-                        <Button Type="primary">Скачать результаты</Button>
+                        <Button Type="@ButtonType.Default">Скачать результаты</Button>
                     </a>
+                    <Button Type="@ButtonType.Primary" OnClick="async () => await HideModal()">Закрыть окно</Button>
                 </Extra>
             </Result>
             break;
@@ -112,26 +122,27 @@
         StateHasChanged();
 
 
-        List<UserGenerateRow> generates = new List<UserGenerateRow>();
+        List<UserGenerateResult> generates = new List<UserGenerateResult>();
         var defaultClaims = new List<System.Security.Claims.Claim> { new System.Security.Claims.Claim("reset_password", "need") };
+
+
         foreach (var currentUser in usersGenerateModel.UserGenerateRows.Select((u, i) => (u, i)))
         {
             var (userToGenerate, i) = currentUser;
             currentGeneratingUser = currentUser;
             StateHasChanged();
-            await GenerateUser(userToGenerate);
-            generates.Add(userToGenerate);
+            generates.Add(await GenerateService.GenerateUser(userToGenerate));
             Logs.LogInfo($"Generate user: {i + 1}/{usersGenerateModel.UserGenerateRows.Count} | {userToGenerate.StudentID}");
         }
 
-        if (generates.Any())
-        {
-            currentStatus = CreatingStatus.GeneratingDocument;
-            StateHasChanged();
-            await DownloadResults(usersGenerateModel.SourceFileName, generates);
-        }
 
-        if (generates.Count == usersGenerateModel.UserGenerateRows.Count)
+        currentStatus = CreatingStatus.GeneratingDocument;
+        StateHasChanged();
+
+        bool totalSuccess = generates.All(u => u.Success);
+        await DownloadResults(usersGenerateModel.SourceFileName, generates, !totalSuccess);
+
+        if (totalSuccess)
         {
             currentStatus = CreatingStatus.TotalSuccess;
         }
@@ -141,31 +152,9 @@
         }
     }
 
-    private async Task GenerateUser(UserGenerateRow user)
+    private async Task DownloadResults(string sourceFileName, List<UserGenerateResult> generated, bool isContainsErrors)
     {
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        //User user = new User()
-        //{
-        //    Email = $"{userToGenerate.StudentID}@{generateSettings.Value.Domain}",
-        //    UserName = userToGenerate.StudentID,
-        //    EmailConfirmed = true,
-        //    StudentID = userToGenerate.StudentID,
-        //    FirstName = userToGenerate.FirstName
-        //};
 
-        //var result = await Service.CreateAsync(user, userToGenerate.Password);
-        //if (!result.Succeeded)
-        //{
-        //    await logs.Log(string.Join('\n', result.Errors.Select(ir => ir.Description)));
-        //    continue;
-        //}
-        //result = await Service.AddToRoleAsync(user, "User");
-        //result = await Service.AddClaimsAsync(user, userToGenerate.Claims.Concat(defaultClaims));
-    }
-
-    private async Task DownloadResults(string sourceFileName, List<UserGenerateRow> generated)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(5));
         using var workBook = new ClosedXML.Excel.XLWorkbook();
         var workSheet = workBook.Worksheets.Add("Users");
         var currentRow = 1;
@@ -173,11 +162,15 @@
         workSheet.Cell(currentRow, currentColumn++).SetValue("ID (login)");
         workSheet.Cell(currentRow, currentColumn++).SetValue("Password");
         workSheet.Cell(currentRow, currentColumn++).SetValue("Name");
-        foreach (var claim in generated.First().Claims)
+        foreach (var claim in generated.First().Raw.Claims)
         {
-            workSheet.Cell(currentRow, currentColumn++).Value = claim.Type;
+            workSheet.Cell(currentRow, currentColumn++).SetValue(claim.Type);
         }
-        foreach (var row in generated)
+        if (isContainsErrors)
+        {
+            workSheet.Cell(currentRow, currentColumn++).SetValue("Ошибка");
+        }
+        foreach (var (row, success, errorMessage) in generated)
         {
             currentRow++;
             currentColumn = 1;
@@ -187,6 +180,10 @@
             foreach (var claim in row.Claims)
             {
                 workSheet.Cell(currentRow, currentColumn++).SetValue(claim.Value);
+            }
+            if (isContainsErrors && !success)
+            {
+                workSheet.Cell(currentRow, currentColumn++).SetValue(errorMessage);
             }
         }
         using var stream = new System.IO.MemoryStream();

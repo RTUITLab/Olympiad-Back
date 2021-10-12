@@ -5,6 +5,7 @@ services:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+            - AccountSettings__EmailDomain=${USER_GENERATE_EMAIL_DOMAIN?pass email generating domain USER_GENERATE_EMAIL_DOMAIN}
         deploy:
             resources:
                 limits:

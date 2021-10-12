@@ -10,7 +10,7 @@ namespace WebApp.ViewModels.Mappings
     {
         public RequestsMappingProfile()
         {
-            CreateMap<RegistrationRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
+            CreateMap<CreateUserDataModel, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
 
             CreateMap<SolutionCheckRequest, SolutionCheck>();
 
