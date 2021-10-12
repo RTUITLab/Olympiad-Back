@@ -8,6 +8,20 @@
     RenderFragment closeIcon =
     @<div></div>
     ;
+    RenderFragment doneButtons =
+    @<div>
+        <a href="@documentLink" download="@documentDownloadName">
+            <Button Type="@ButtonType.Default">Скачать результаты</Button>
+        </a>
+        <Button Type="@ButtonType.Primary" OnClick="async () => await HideModal()">Закрыть окно</Button>
+    </div>
+    ;
+    RenderFragment pleaseDoNotCloseTabMessage =
+    @<Alert Type="@AlertType.Warning"
+           Message="Не закрывайте эту вкладку"
+           Description="Не закрывайте эту вкладку, пока не завершится создание пользователей."
+           ShowIcon="true" />
+    ;
 }
 
 <Modal Width="@("70%")"
@@ -15,8 +29,7 @@
        Closable="!IsLoading"
        CloseIcon="closeIcon"
        Footer="null"
-       OnCancel="async () => await HideModal()"
-       >
+       OnCancel="async () => await HideModal()">
 
     @if (currentStatus <= CreatingStatus.GeneratingDocument)
     {
@@ -43,19 +56,18 @@
         case CreatingStatus.CreatingUsers when (modelToGenerate is not null):
             <Title Level="3">Генерирование @currentGeneratingUser.userInfo?.StudentID <Text Keyboard>@(currentGeneratingUser.index + 1)</Text>/<Text Keyboard>@modelToGenerate.UserGenerateRows.Count</Text></Title>
             <Progress Percent="ProgressPercents" Status="@ProgressStatus.Active" />
+            @pleaseDoNotCloseTabMessage
             break;
         case CreatingStatus.GeneratingDocument:
             <Title Level="3">Генерирование результатов</Title>
             <Spin Size="large" Spinning Tip="Создание документа"></Spin>
+            @pleaseDoNotCloseTabMessage
             break;
         case CreatingStatus.TotalSuccess:
             <Result Status="success"
             Title="Все пользователи созданы успешно!">
                 <Extra>
-                    <a href="@documentLink" download="@documentDownloadName">
-                        <Button Type="@ButtonType.Default">Скачать результаты</Button>
-                    </a>
-                    <Button Type="@ButtonType.Primary" OnClick="async () => await HideModal()">Закрыть окно</Button>
+                    @doneButtons
                 </Extra>
             </Result>
             break;
@@ -64,10 +76,7 @@
             Title="При создании пользователей произошли ошибки"
             SubTitle="Подробная информация содержится в итоговом файле">
                 <Extra>
-                    <a href="@documentLink" download="@documentDownloadName">
-                        <Button Type="@ButtonType.Default">Скачать результаты</Button>
-                    </a>
-                    <Button Type="@ButtonType.Primary" OnClick="async () => await HideModal()">Закрыть окно</Button>
+                    @doneButtons
                 </Extra>
             </Result>
             break;
@@ -93,7 +102,8 @@
     }
 
     [CascadingParameter]
-    public ILogsService Logs { get; set; }
+    public ILogsService? LogsFromCascading { get; set; }
+    private ILogsService Logs => LogsFromCascading ?? throw new ArgumentNullException(nameof(LogsFromCascading));
 
     private UsersGenerateModel? modelToGenerate;
     private int ProgressPercents => (int)((double)currentGeneratingUser.index / (modelToGenerate?.UserGenerateRows.Count ?? 0) * 100);
