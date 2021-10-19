@@ -33,7 +33,7 @@ namespace WebApp.Controllers.Users
         [HttpGet("{userId:guid}")]
         public async Task<IEnumerable<string>> RolesFor(Guid userId)
         {
-            return await UserManager.GetRolesAsync(await CurrentUser());
+            return await UserManager.GetRolesAsync(await GetCurrentUser());
         }
 
         [Authorize(Roles = "Admin")]
@@ -42,7 +42,7 @@ namespace WebApp.Controllers.Users
         {
             if (!await roleManager.RoleExistsAsync(role))
                 throw StatusCodeException.BadRequest();
-            var result = await UserManager.AddToRoleAsync(await CurrentUser(), role);
+            var result = await UserManager.AddToRoleAsync(await GetCurrentUser(), role);
             if (result.Succeeded)
                 return role;
             throw StatusCodeException.BadRequest(string.Join(',', result.Errors));
@@ -53,7 +53,7 @@ namespace WebApp.Controllers.Users
         {
             if (!await roleManager.RoleExistsAsync(role))
                 throw StatusCodeException.BadRequest();
-            var result = await UserManager.RemoveFromRoleAsync(await CurrentUser(), role);
+            var result = await UserManager.RemoveFromRoleAsync(await GetCurrentUser(), role);
             if (result.Succeeded)
                 return role;
             throw StatusCodeException.BadRequest(string.Join(',', result.Errors));

@@ -1,4 +1,4 @@
-Feature: account feature
+Feature: account change password
 
 Background:
   * url baseUrl
@@ -33,3 +33,4 @@ Scenario: change password
   And request { "currentPassword": #(newPassword), "newPassword": #(oldPassword) }
   When method post
   Then status 200
+

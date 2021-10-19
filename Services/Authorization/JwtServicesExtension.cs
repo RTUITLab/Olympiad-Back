@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Olympiad.Services.JWT
+namespace Olympiad.Services.Authorization
 {
     public static class JwtServicesExtension
     {

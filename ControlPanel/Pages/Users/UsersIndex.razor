@@ -1,0 +1,122 @@
+﻿@page "/users"
+
+@using AntDesign.TableModels
+@using Olympiad.Shared
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Users
+@using System.Text
+
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+@inject MessageService _message
+@inject IControlPanelApiService ControlPanelApiService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+
+<PageHeader Title="Управление пользователями">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem>
+                Пользователи
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+    <PageHeaderExtra>
+        <NavLink href="users/generate">
+            <Button Type="@ButtonType.Primary">Генерация</Button>
+        </NavLink>
+    </PageHeaderExtra>
+</PageHeader>
+
+
+<Space Direction="DirectionVHType.Vertical" Style="width: 100%">
+    <SpaceItem>
+        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
+    </SpaceItem>
+    <SpaceItem>
+        <Table DataSource="usersSource"
+               Loading="loading"
+               Total="loadedData?.Total ?? 0"
+               @bind-PageIndex="PageIndex"
+               @bind-PageSize="PageSize"
+               TItem="UserInfoResponse"
+               OnChange="HandleChange">
+
+            <Column @bind-Field="context.FirstName" Title="Имя" Sortable></Column>
+            <Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
+            <Column @bind-Field="context.Email" Sortable></Column>
+            <ActionColumn>
+                <NavLink href="@($"users/{context.Id}")"><Button>Редактировать</Button></NavLink>
+            </ActionColumn>
+        </Table>
+    </SpaceItem>
+</Space>
+
+
+
+@code {
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? Match { get; set; }
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int PageIndex { get; set; } = 1;
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int PageSize { get; set; } = 50;
+
+    private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
+    private ListResponse<UserInfoResponse>? loadedData;
+    private bool loading;
+
+    private async Task HandleChange()
+    {
+        if (PageSize < 1) {
+            PageSize = 50;
+        }
+        if (PageIndex < 1) {
+            PageIndex = 1;
+        }
+        if (PageSize > 200)
+        {
+            PageSize = 200;
+        }
+        var newUrl = CalcCurrentUrl();
+        if (NavigationManager.Uri != newUrl)
+        {
+            NavigationManager.NavigateTo(newUrl);
+        }
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            var pageSizeToLoad = PageSize < 1 ? 50 : PageSize;
+            var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
+
+            var loaded = await ControlPanelApiService.SearchUsers(Match, pageSizeToLoad, (pageIndexToLoad - 1) * pageSizeToLoad);
+            loadedData = loaded;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private string CalcCurrentUrl()
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            {nameof(PageIndex), PageIndex <= 1 ? null : PageIndex},
+            {nameof(PageSize), PageSize == 50 ? null : PageSize},
+            {nameof(Match), Match},
+        };
+        return NavigationManager.GetUriWithQueryParameters(queryParams);
+    }
+}

@@ -1,0 +1,13 @@
+﻿@page "/"
+@attribute [Authorize]
+@inject ILoginRefresh LoginRefresh
+<PageHeader Title="Панель управления" />
+<AuthorizeView>
+	<Authorized>
+		@if (context.User.IsAdmin())
+		{
+			<CheckingStatistic />
+		}
+	</Authorized>
+
+</AuthorizeView>

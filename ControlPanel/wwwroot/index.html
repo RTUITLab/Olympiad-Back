@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ControlPanel</title>
+    <base href="/control-panel/" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="ControlPanel.styles.css" rel="stylesheet" />
+    <link href="_content/AntDesign/css/ant-design-blazor.css" rel="stylesheet" />
+    <script src="_content/AntDesign/js/ant-design-blazor.js"></script>
+</head>
+
+<body>
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script>
+        window.openLinkInNewTab = function (url) {
+            open(url, '_blank');
+        }
+        window.saveAsFile = (filename, fileContentArray) => {
+            blob = new Blob([fileContentArray], {
+                type: "application/octet-stream"
+            });
+            url = window.URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.style = 'display: none';
+            link.download = filename;
+            link.href = url;
+            document.body.appendChild(link); // Needed for Firefox
+            link.click();
+            link.remove();
+            return url;
+        }
+        window.revokeURL = (url) => {
+            window.URL.revokeObjectURL(url);
+        }
+        window.clickElement = function (elementReference) {
+            elementReference.click();
+        }
+    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

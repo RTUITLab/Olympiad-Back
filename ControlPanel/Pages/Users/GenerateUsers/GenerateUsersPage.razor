@@ -1,0 +1,188 @@
+﻿@page "/users/generate"
+@using CsvHelper.Configuration
+@using Olympiad.Shared
+@using System.Text.RegularExpressions
+
+
+
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+
+@inject NotificationService _notice
+
+@inject IControlPanelApiService ControlPanelApiService
+@inject UserPasswordGenerator UserPasswordGenerator
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+
+<PageHeader Title="Генерирование пользователей" OnBack="@(() => NavigationManager.NavigateTo("users"))">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem Href="users">
+                Пользователи
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                Геренация
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+</PageHeader>
+
+<Title Level="2">Правила составления CSV файла</Title>
+<Text>
+    CSV файл <Text Strong>должен</Text> иметь первые две колонки <Text Keyboard>@UsersGenerateModelBuilder.IDColumnName</Text> и <Text Keyboard>@UsersGenerateModelBuilder.NameColumnName</Text>.
+    Если есть необходимость - можно использовать третью колонку <Text Keyboard>@UsersGenerateModelBuilder.DefaultPassworkColumnName</Text> для использования предварительно заданного пароля вместо генерирования. Минимальная длина пароля - 6 символов.
+</Text>
+<Title Level="3">Дополнительные свойства</Title>
+<Text>
+    Для последующей идентификации и поиска пользователей можно добавить генерируемым пользователям свойства.
+    Например, добавить колонку <Text Keyboard>Класс</Text>, и у каждого пользователя вписать класс, в котором он учится.
+    Это может быть удобно для последующего предоставления доступа пользователям к конкретным соревнованиям.
+</Text>
+
+
+
+@if (usersGenerateModel == null)
+{
+    <Alert Type="@AlertType.Info"
+       Message="Выберете CSV файл"
+       Description="Выберите CSV файл для предпросмотра создаваемых пользователей"
+       ShowIcon="true" />
+}
+<Table Bordered
+       HidePagination
+       PageSize="@(usersGenerateModel?.UserGenerateRows?.Count ?? 0)"
+       DataSource="usersGenerateModel?.UserGenerateRows">
+    <TitleTemplate>
+        <Button Icon="@IconType.Outline.FileExcel" OnClick="@(() => JS.InvokeVoidAsync("clickElement", inputFileRef.Element))">Выбрать CSV файл</Button>
+        <InputFile @ref="inputFileRef" style="display: none" OnChange="HandleSelection" accept=".csv" />
+        <AntDesign.Text>Записей: @(usersGenerateModel?.UserGenerateRows.Count ?? 0)</AntDesign.Text>
+    </TitleTemplate>
+    <ChildContent>
+        <Column Field="context.StudentID">
+            <TitleTemplate>ID<HelpTooltip Text="Индентификатор студента, будет использоваться для входа" /></TitleTemplate>
+        </Column>
+        <Column Field="context.FirstName">
+            <TitleTemplate>Name<HelpTooltip Text="Имя студента, для обращения" /></TitleTemplate>
+        </Column>
+        <Column Field="context.Password">
+            <TitleTemplate>Пароль<HelpTooltip Text="Пароль для входа по умолчанию" /></TitleTemplate>
+        </Column>
+        @foreach (var (columnName, index) in usersGenerateModel?.ColumnNames.Select((c, i) => (c, i)) ?? Enumerable.Empty<(string, int)>())
+        {
+            <Column TData="string" Title="@columnName">
+                <ChildContent>
+                    @context.Claims[index].Value
+                </ChildContent>
+            </Column>
+        }
+    </ChildContent>
+    <FooterTemplate>
+        @if (usersGenerateModel != null)
+        {
+            <Button Type="@ButtonType.Primary" OnClick="Generate">Сгенерировать пользователей</Button>
+            <CreatingUsersModal @ref="creatingUsersModal" />
+        }
+    </FooterTemplate>
+</Table>
+
+
+@code {
+    private InputFile inputFileRef;
+
+    [CascadingParameter]
+    public ILogsService Logs { get; set; }
+
+
+    private UsersGenerateModel? usersGenerateModel;
+    private CreatingUsersModal? creatingUsersModal;
+
+    private class IncorrectCSVException : Exception
+    {
+        public class AdditionalInfo
+        {
+            public string? ExceptionType { get; set; }
+            public string? Field { get; set; }
+            public string? RawRecord { get; set; }
+        }
+        public AdditionalInfo Info { get; }
+        public IncorrectCSVException(Exception innerException) : base(innerException.Message)
+        {
+            Info = new AdditionalInfo { ExceptionType = innerException.GetType().FullName };
+        }
+        public IncorrectCSVException(string Field, string RawRecord) : base("Bad data")
+        {
+            Info = new AdditionalInfo { Field = Field, RawRecord = RawRecord };
+        }
+    }
+
+    async Task HandleSelection(InputFileChangeEventArgs files)
+    {
+        using (var reader = new System.IO.StreamReader(files.File.OpenReadStream()))
+        using (var csv = new CsvHelper.CsvReader(reader, new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
+            {
+                DetectColumnCountChanges = true,
+                ReadingExceptionOccurred = error => throw new IncorrectCSVException(error.Exception),
+                BadDataFound = error => throw new IncorrectCSVException(error.Field, error.RawRecord)
+            }))
+        {
+            try
+            {
+                await csv.ReadAsync();
+                csv.ReadHeader();
+
+                var builder = new UsersGenerateModelBuilder(files.File.Name, csv.Parser.Record);
+                while (await csv.ReadAsync())
+                {
+                    builder.AddUserRow(csv.Parser.Record, UserPasswordGenerator.GeneratePassword);
+                }
+                usersGenerateModel = builder.Build();
+            }
+            catch (IncorrectUsersFileFormatException columnsEx)
+            {
+                await _notice.Open(new NotificationConfig()
+                    {
+                        Message = columnsEx.Summary,
+                        Description = columnsEx.Description,
+                        NotificationType = NotificationType.Error,
+                    });
+            }
+            catch (Exception ex)
+            {
+                if (ex is IncorrectCSVException csvEx)
+                {
+                    Logs.LogInfoObject(csvEx.Message, csvEx.Info);
+                }
+                else
+                {
+                    Logs.LogInfoObject(ex.Message, new { Type = ex.GetType().FullName });
+                }
+                var key = DateTime.Now.ToString();
+                await _notice.Open(new NotificationConfig()
+                    {
+                        Message = "Ошибка при чтении файла",
+                        Description = "Проверьте CSV файл на правильность, количество колонок в строках, заголовки.",
+                        NotificationType = NotificationType.Error,
+                        Key = key,
+                        Btn = Logs.OpenLogsButton(key)
+                    });
+            }
+        }
+    }
+
+    private async Task Generate()
+    {
+        if (creatingUsersModal == null || usersGenerateModel == null)
+        {
+            await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Ошибка",
+                    Description = "Данные не готовы",
+                    NotificationType = NotificationType.Error,
+                });
+            return;
+        }
+        creatingUsersModal.StartCreatingUsers(usersGenerateModel);
+    }
+
+}

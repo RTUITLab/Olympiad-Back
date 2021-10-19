@@ -1,0 +1,154 @@
+﻿@using Humanizer
+@using System.Text.Json
+@using System.Text.Encodings.Web
+@using System.Text.Unicode
+@using System.Threading
+@implements ILogsService
+
+@inject NotificationService _notice
+@inject IJSRuntime JS;
+@{
+    RenderFragment drawerTitle =
+    @<AntDesign.Text>
+        Логи работы системы
+        <Popover Placement="Placement.BottomLeft">
+            <ContentTemplate>
+                <Text>Максимальное количество сообщений</Text>
+                <AntDesign.InputNumber Min="1" Max="60" @bind-Value="maxMessagesCount" OnChange="@((int n) => CleanMessages())" />
+            </ContentTemplate>
+            <ChildContent>
+                <Icon Type="setting" Theme="outline" />
+            </ChildContent>
+        </Popover>
+
+    </AntDesign.Text>
+    ;
+}
+<Drawer Closable="true"
+        Width="720"
+        Visible="visible"
+        Title="drawerTitle"
+        OnClose="Hide">
+    <Collapse>
+        @foreach (var entry in messages)
+        {
+            <Panel @key="entry.Id" Key="@entry.Id" ShowArrow="false" Header="@entry.HeaderView">
+                <ExtraTemplate>
+                    <Tooltip Title="@(entry.Date.ToString())">
+                        <Text>@entry.DateView</Text>
+                    </Tooltip>
+                </ExtraTemplate>
+                <ChildContent>
+                    @if (entry.SeparateHeader)
+                    {
+                        <AntDesign.Text Style="white-space: break-spaces;">@entry.Header</AntDesign.Text>
+                        <Divider />
+                    }
+                    <Text Style="white-space: break-spaces;">@entry.Message</Text>
+                </ChildContent>
+            </Panel>
+        }
+    </Collapse>
+</Drawer>
+
+
+
+
+@code {
+    private int maxMessagesCount = 50;
+    private LinkedList<LogMessageEntry> messages = new LinkedList<LogMessageEntry>();
+
+    private JsonSerializerOptions jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+    {
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+        WriteIndented = true
+    };
+    private bool visible;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            OpenLogsButton = key =>
+    @<Button OnClick="() => { Show(); _notice.Close(key); }">Открыть логи</Button>
+    ;
+        }
+    }
+
+    public RenderFragment<string> OpenLogsButton { get; private set; }
+
+    public void LogInfo(string message, string? description = null)
+    {
+        AddMessageEntry(new LogMessageEntry(message, description ?? message));
+    }
+
+    public void LogInfoObject<T>(T message)
+    {
+        var serializedMessage = JsonSerializer.Serialize(message, jsonOptions);
+        AddMessageEntry(new LogMessageEntry(serializedMessage));
+    }
+
+    public void LogInfoObject<T>(string description, T message)
+    {
+        var serializedMessage = JsonSerializer.Serialize(message, jsonOptions);
+        AddMessageEntry(new LogMessageEntry(description, serializedMessage));
+    }
+
+    private void AddMessageEntry(LogMessageEntry entry)
+    {
+        messages.AddFirst(entry);
+        CleanMessages();
+    }
+
+    private void CleanMessages()
+    {
+        while (messages.Count > maxMessagesCount)
+        {
+            messages.RemoveLast();
+        }
+        StateHasChanged();
+    }
+
+    public void Show()
+    {
+        visible = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        visible = false;
+    }
+
+    private class LogMessageEntry
+    {
+        private static long lastId;
+
+        public LogMessageEntry(string message) : this(message, message) { }
+
+        public LogMessageEntry(string header, string message)
+        {
+            Id = (lastId++).ToString();
+
+            Date = DateTimeOffset.Now;
+            DateView = Date.ToString();
+
+            Header = header;
+            HeaderView = header.Truncate(70);
+
+            Message = message;
+
+            SeparateHeader = !string.Equals(Header, Message) && !string.Equals(Header, HeaderView);
+        }
+
+        public string Header { get; }
+        public string Message { get; }
+        public bool SeparateHeader { get; }
+        public DateTimeOffset Date { get; }
+        public string Id { get; }
+
+        public string DateView { get; }
+        public string HeaderView { get; }
+    }
+}

@@ -1,13 +1,13 @@
 ﻿@page "/users/{UserId:guid}"
+@using BlazorStrap
 
 @inherits OwningComponentBase<Microsoft.AspNetCore.Identity.UserManager<User>>
 
 @inject Olympiad.Admin.Services.UserPasswordGenerator userPasswordGenerator
 
 @inject NavigationManager navigationManager
-@inject Olympiad.Services.JWT.IJwtFactory jwtFctory
+@inject Olympiad.Services.Authorization.IJwtFactory jwtFctory
 
-@using BlazorStrap
 <h3>EditUser</h3>
 <NavLink href="users">Back to users</NavLink>
 

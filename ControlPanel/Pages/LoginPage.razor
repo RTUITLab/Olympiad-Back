@@ -1,0 +1,35 @@
+﻿@layout EmptyLayout
+@page "/login"
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+@inject IJSRuntime JS
+@inject ILoginRefresh LoginRefresh
+
+<Result Status="403" Title="Необходимо войти в аккаунт для доступа">
+	<Extra>
+		<Input @bind-Value=accessToken Placeholder="Введите токен доступа. В дальнейшем будет производиться перенаправление на клиентский сайт, для ввода логина и пароля"/>
+		<Button Type="@ButtonType.Primary" OnClick=@(() => LoginRefresh.SaveTokenAndRefreshAsync(accessToken))>Войти</Button>
+	</Extra>
+</Result>
+@code {
+
+	[CascadingParameter]
+	private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+	[Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnTo { get; set; }
+
+	private string? accessToken;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+		var state = await authenticationStateTask;
+		if (state?.User?.Identity?.IsAuthenticated == true)
+		{
+			NavigationManager.NavigateTo(ReturnTo ?? "");
+		}
+	}
+
+}

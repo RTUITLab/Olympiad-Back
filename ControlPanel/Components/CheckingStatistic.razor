@@ -1,0 +1,109 @@
+﻿@using Olympiad.Shared.Models
+@implements IAsyncDisposable
+@inject IControlPanelApiService ControlPanelApiService
+
+
+
+<p>Left: @Left() </p>
+<table class="table table-bordered">
+	<thead>
+		<tr>
+			<th>Type</th>
+			<th>Count</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var i in solutionCountRecords)
+		{
+			<tr>
+				<td>@i.Key</td>
+				<td>@i.Value</td>
+			</tr>
+		}
+	</tbody>
+</table>
+
+
+
+@code {
+	Dictionary<SolutionStatus, int> solutionCountRecords =
+				Enum.GetValues<SolutionStatus>()
+					.ToDictionary(s => s, _ => 0);
+
+
+	System.Threading.CancellationTokenSource source = new System.Threading.CancellationTokenSource();
+	Task? updateTask;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+		if (firstRender)
+		{
+			await Update();
+			updateTask = UpdateCycle(source.Token);
+		}
+	}
+
+	private int Left()
+	{
+		return
+			solutionCountRecords[SolutionStatus.InProcessing]
+			+
+			solutionCountRecords[SolutionStatus.InQueue];
+	}
+
+	private async Task UpdateCycle(System.Threading.CancellationToken cancellationToken)
+	{
+		while (true)
+		{
+			try
+			{
+				await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+				cancellationToken.ThrowIfCancellationRequested();
+				await Update();
+			}
+			catch (OperationCanceledException)
+			{
+				break;
+			}
+			catch { }
+		}
+	}
+
+	private async Task Update()
+	{
+		//await Logs.Log($"Updating");
+
+		var dbRecords = (await ControlPanelApiService.GetSolutionsStatisticsAsync())
+						.ToDictionary(s => s.SolutionStatus, v => v.Count);
+		foreach (var key in solutionCountRecords.Keys)
+		{
+			solutionCountRecords[key] = 0;
+		}
+		foreach (var dbRecord in dbRecords)
+		{
+			if (Enum.TryParse<SolutionStatus>(dbRecord.Key, out var enumKey))
+			{
+				solutionCountRecords[enumKey] = dbRecord.Value;
+			}
+			else
+			{
+				//await Logs.Log($"Incorrect solution status {dbRecord.Key}");
+			}
+		}
+		var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
+
+		//await Logs.Log($"Updated");
+		StateHasChanged();
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		source.Cancel();
+		if (updateTask != null)
+		{
+			await updateTask;
+		}
+	}
+}

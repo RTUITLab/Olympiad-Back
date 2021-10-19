@@ -10,6 +10,8 @@ using System.Linq;
 using PublicAPI.Responses.Solutions;
 using WebApp.Models;
 using Models.Checking;
+using System.Security.Claims;
+using PublicAPI.Responses.Account;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -61,6 +63,8 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<ExerciseData, ExerciseDataCompactResponse>();
 
             CreateMap<SolutionCheck, SolutionCheckResponse>();
+
+            CreateMap<Claim, ClaimResponseObject>();
         }
     }
 }

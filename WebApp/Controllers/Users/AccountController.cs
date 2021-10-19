@@ -21,6 +21,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using WebApp.Models.Settings;
 using WebApp.Extensions;
+using PublicAPI.Responses;
+using System.ComponentModel.DataAnnotations;
+using Npgsql;
+using PublicAPI.Responses.Account;
+using System.Security.Claims;
+using Olympiad.Shared;
+using PublicAPI.Requests.Account;
+using OneOf;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace WebApp.Controllers.Users
 {
@@ -52,7 +61,10 @@ namespace WebApp.Controllers.Users
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public Task<List<UserInfoResponse>> Get(string match)
+        public async Task<ListResponse<UserInfoResponse>> Get(
+            [MaxLength(100)] string match,
+            [Range(0, int.MaxValue)] int offset = 0,
+            [Range(1, 200)] int limit = 50)
         {
             var words = (match ?? "").ToUpper().Split(' ');
             var users = UserManager.Users;
@@ -61,12 +73,63 @@ namespace WebApp.Controllers.Users
                     u.FirstName.ToUpper().Contains(matcher) ||
                     u.Email.ToUpper().Contains(matcher) ||
                     u.StudentID.ToUpper().Contains(matcher)));
-            return users
+            var totalCount = await users.CountAsync();
+            var result = await users
+                .Skip(offset)
+                .Take(limit)
+                .OrderBy(u => u.FirstName)
                 .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
+            return new ListResponse<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = result };
         }
 
-        [HttpGet("{id}/{*token}")]
+        [HttpGet("{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserInfoResponse>> Get(Guid userId)
+        {
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            return mapper.Map<UserInfoResponse>(user);
+        }
+
+        [HttpPut("{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserInfoResponse>> UpdateAccountInfo(
+            Guid userId,
+            [FromBody] UpdateAccountInfoRequest model)
+        {
+            var targetUser = await UserManager.FindByIdAsync(userId.ToString());
+            if (targetUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            mapper.Map(model, targetUser);
+            try
+            {
+                var updateResul = await UserManager.UpdateAsync(targetUser);
+                if (!updateResul.Succeeded)
+                {
+                    logger.LogError($"Can't update user info {updateResul}");
+                    return StatusCode(500, "Unhandled error");
+                }
+                return mapper.Map<UserInfoResponse>(targetUser);
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is PostgresException psex &&
+                psex.SqlState == PostgresErrorCodes.UniqueViolation &&
+                psex.ConstraintName.Contains(nameof(targetUser.StudentID)))
+            {
+                ModelState.AddModelError(nameof(targetUser.StudentID), $"StudentID {targetUser.StudentID} already exists");
+                return BadRequest(ModelState);
+            }
+        }
+
+        [HttpGet("confirmEmail/{id}/{*token}")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string id, string token)
         {
@@ -90,18 +153,67 @@ namespace WebApp.Controllers.Users
         }
 
 
-        [HttpDelete("deleteUser/{studentId}")]
+        [HttpDelete("{userId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<int>> DeleteUser(string studentId)
+        public async Task<ActionResult> DeleteUser(Guid userId)
         {
-            var targetIUser = await UserManager.Users.Where(u => u.StudentID == studentId).SingleAsync();
-            await UserManager.DeleteAsync(targetIUser);
-            return 1;
+            var targetIUser = await UserManager.FindByIdAsync(userId.ToString());
+            if (targetIUser == null)
+            {
+                return NotFound("User not found");
+            }
+            var deleteResult = await UserManager.DeleteAsync(targetIUser);
+            if (!deleteResult.Succeeded)
+            {
+                logger.LogError($"Can't delete user {deleteResult}");
+                return StatusCode(500);
+            }
+            return NoContent();
+        }
+
+        [HttpPost("generate")]
+        [Authorize(Roles = "Admin")]
+        [Obsolete("Move generating user logic to Service")]
+        public async Task<ActionResult> GenerateUser([FromBody] GenerateUserRequest model)
+        {
+            var createUserResult = await CreateUser(new CreateUserDataModel
+            {
+                StudentID = model.ID,
+                Email = $"{model.ID}@{options.Value.EmailDomain}",
+                FirstName = model.Name,
+                Password = model.Password,
+                LastName = ""
+            });
+            if (createUserResult.IsT1)
+            {
+                var (statusCode, value) = createUserResult.AsT1;
+                if (statusCode == 400 && value is ModelStateDictionary modelState)
+                {
+                    return BadRequest(modelState);
+                }
+                return StatusCode(statusCode, value);
+            }
+            if (model.Claims is null)
+            {
+                return Ok();
+            }
+            var user = createUserResult.AsT0;
+            foreach (var claim in model.Claims)
+            {
+                var claimToAdd = new Claim(claim.Type, claim.Value);
+                var result = await UserManager.AddClaimAsync(user, claimToAdd);
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"Can't add claim {claimToAdd} to user {user.Id} {user.StudentID}: {result}");
+                    return StatusCode(500, "Unexpected error");
+                }
+            }
+            return Ok();
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Post([FromBody] RegistrationRequest model)
+        public async Task<ActionResult<UserInfoResponse>> Post([FromBody] RegistrationRequest model)
         {
             if (!options.Value.IsRegisterAvailable)
             {
@@ -116,19 +228,66 @@ namespace WebApp.Controllers.Users
                 return BadRequest();
             }
 
-            User userIdentity = mapper.Map<User>(model);
+            var createUserResult = await CreateUser(model);
+            if (createUserResult.IsT0)
+            {
+                return mapper.Map<UserInfoResponse>(createUserResult.AsT0);
+            }
+            else
+            {
+                var (statusCode, value) = createUserResult.AsT1;
+                if(statusCode == 400 && value is ModelStateDictionary modelState)
+                {
+                    return BadRequest(modelState);
+                }
+                return StatusCode(statusCode, value);
+            }
+        }
 
-            var result = await UserManager.CreateAsync(userIdentity, model.Password);
+        // TODO: Extract that method to service
+        [Obsolete("Extract that method to service")]
+        private async Task<OneOf<User, (int statusCode, object content)>> CreateUser(CreateUserDataModel createUserModel)
+        {
+            User userIdentity = mapper.Map<User>(createUserModel);
+            try
+            {
 
-            if (!result.Succeeded)
-                return new BadRequestObjectResult(Errors.AddErrorsToModelState(result, ModelState));
+                var result = await UserManager.CreateAsync(userIdentity, createUserModel.Password);
 
-            result = await UserManager.AddToRoleAsync(userIdentity, "User");
-            //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
-            //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
-            //await emailSender.SendEmailConfirm(model.Email, url);
+                if (!result.Succeeded)
+                {
+                    Errors.AddErrorsToModelState(result, ModelState);
+                    return (400, ModelState);
+                }
 
-            return Ok();
+                result = await UserManager.AddToRoleAsync(userIdentity, RoleNames.USER);
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"Can't add user to role {result}");
+                    return (500, "Unexpected error");
+                }
+
+                result = await UserManager.AddClaimAsync(userIdentity, DefaultClaims.NeedResetPassword.Claim);
+                if (!result.Succeeded)
+                {
+                    logger.LogError($"Can't add default claim {result}");
+                    return (500, "Unexpected error");
+                }
+
+                //var token = await UserManager.GenerateEmailConfirmationTokenAsync(userIdentity);
+                //var url = $"http://localhost:5000/api/Account/{userIdentity.Id}/{token}";
+                //await emailSender.SendEmailConfirm(model.Email, url);
+
+                return userIdentity;
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is PostgresException psex &&
+                psex.SqlState == PostgresErrorCodes.UniqueViolation &&
+                psex.ConstraintName.Contains(nameof(userIdentity.StudentID)))
+            {
+                ModelState.AddModelError(nameof(userIdentity.StudentID), $"StudentID {userIdentity.StudentID} already exists");
+                return (400, ModelState);
+            }
         }
 
         [HttpPost("changePassword")]
@@ -143,16 +302,61 @@ namespace WebApp.Controllers.Users
             {
                 var allClaims = await UserManager.GetClaimsAsync(user);
                 var resetPasswordClaims = allClaims
-                    .Where(c => c.Type == "reset_password" && c.Value == "need")
+                    .Where(c => c.Type == DefaultClaims.NeedResetPassword.Type && c.Value == DefaultClaims.NeedResetPassword.Value)
                     .ToList();
-                if(resetPasswordClaims.Any())
+                if (resetPasswordClaims.Any())
                 {
                     var removeClaimsResult = await UserManager.RemoveClaimsAsync(user, resetPasswordClaims);
                     logger.LogInformation($"User changed default password");
-                }    
+                }
                 return Ok();
             }
             return BadRequest(result.Errors);
+        }
+
+        [HttpPost("adminChangePassword/{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<NewPasswordGeneratedResponse>> AdminChangePassword(
+            Guid userId,
+            [FromServices] UserPasswordGenerator userPasswordGenerator)
+        {
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+            {
+                return NotFound("User nor found");
+            }
+            var removePasswordResult = await UserManager.RemovePasswordAsync(user);
+            if (!removePasswordResult.Succeeded)
+            {
+                logger.LogError($"Can't remove password");
+                return StatusCode(500, "Unhandled error");
+            }
+            var password = userPasswordGenerator.GeneratePassword();
+            var addPasswordResult = await UserManager.AddPasswordAsync(user, password);
+
+            if (!addPasswordResult.Succeeded)
+            {
+                logger.LogError($"Can't add new password");
+                return StatusCode(500, "Unhandled error");
+            }
+
+
+
+            var allClaims = await UserManager.GetClaimsAsync(user);
+            var resetPasswordClaims = allClaims
+                .Where(c => c.Type == DefaultClaims.NeedResetPassword.Type && c.Value == DefaultClaims.NeedResetPassword.Value)
+                .ToList();
+            if (!resetPasswordClaims.Any())
+            {
+                var addNeedChangePasswordResult = await UserManager.AddClaimAsync(user, DefaultClaims.NeedResetPassword.Claim);
+                if (!addNeedChangePasswordResult.Succeeded)
+                {
+                    logger.LogWarning($"Can't add claim about changing password {addNeedChangePasswordResult}");
+                }
+            }
+
+            return new NewPasswordGeneratedResponse { NewPassword = password };
         }
     }
 }

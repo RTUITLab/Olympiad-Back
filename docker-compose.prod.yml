@@ -5,6 +5,7 @@ services:
         environment:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+            - AccountSettings__EmailDomain=${GENERATE_USER_EMAIL_DOMAIN?pass email generating domain GENERATE_USER_EMAIL_DOMAIN}
         deploy:
             resources:
                 limits:
@@ -65,3 +66,17 @@ services:
             options:
                 max-size: "200k"
                 max-file: "10"
+    control-panel:
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.1'
+                    memory: 50M
+                reservations:
+                    cpus: '0.05'
+                    memory: 20M
+        logging:
+            driver: json-file
+            options:
+                max-file: '10'
+                max-size: 200k

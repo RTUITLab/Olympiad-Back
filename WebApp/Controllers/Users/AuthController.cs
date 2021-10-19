@@ -12,7 +12,11 @@ using PublicAPI.Requests;
 using PublicAPI.Responses;
 using WebApp.Services;
 using WebApp.Models.Settings;
-using Olympiad.Services.JWT;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using Olympiad.Shared;
+using Olympiad.Services.Authorization;
 
 namespace WebApp.Controllers
 {
@@ -20,17 +24,19 @@ namespace WebApp.Controllers
     [Route("api/[controller]")]
     public class AuthController : Controller
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IJwtFactory _jwtFactory;
+        private readonly UserManager<User> userManager;
+        private readonly IUserAuthorizationService authorizationService;
         private readonly IMapper mapper;
         private readonly ApplicationDbContext context;
+        private readonly ILogger<AuthController> logger;
 
-        public AuthController(UserManager<User> userManager, IJwtFactory jwtFactory, IMapper mapper, ApplicationDbContext context)
+        public AuthController(UserManager<User> userManager, IUserAuthorizationService authorizationService, IMapper mapper, ApplicationDbContext context, ILogger<AuthController> logger)
         {
-            _userManager = userManager;
-            _jwtFactory = jwtFactory;
+            this.userManager = userManager;
+            this.authorizationService = authorizationService;
             this.mapper = mapper;
             this.context = context;
+            this.logger = logger;
         }
 
         // POST api/auth/login
@@ -44,39 +50,72 @@ namespace WebApp.Controllers
             {
                 return BadRequest(ModelState);
             }
-            var user = await context.Students.SingleOrDefaultAsync(c => c.StudentID == credentials.Login || c.UserName == credentials.Login);
-            if (user == null) return BadRequest($"Can't find user with StudentID or UserName \"{credentials.Login}\"");
-            if (!await _userManager.CheckPasswordAsync(user, credentials.Password))
+            var result = await authorizationService.GetJwtTokenForUser(credentials.Login, credentials.Password);
+            if (result.IsT1)
             {
-                return Unauthorized("invalid username or password");
+                return Unauthorized();
             }
-            
-            var loginInfo = await GenerateResponse(user);
-            var claims = await _userManager.GetClaimsAsync(user);
-            if (claims.Any(c => c.Type == "reset_password"))
+            var (userToken, user) = result.AsT0;
+            var loginInfo = GenerateResponse(user, userToken);
+            var claims = await userManager.GetClaimsAsync(user);
+            if (claims.Any(c => c.Type == DefaultClaims.NeedResetPassword.Type))
             {
                 _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
             }
 
-            return Ok(loginInfo);
+            return loginInfo;
         }
 
 
         [HttpGet("getme")]
         [Authorize(AuthenticationSchemes = "Bearer")]
-        public async Task<IActionResult> Get()
+        public async Task<ActionResult<GetMeResult>> Get()
         {
-            var user = await _userManager.FindByIdAsync(_userManager.GetUserId(User));
-            if (user == null)
-                return StatusCode(403);
-            return Json(await GenerateResponse(user));
+            var userId = Guid.Parse(userManager.GetUserId(User));
+            var result = await authorizationService.GetJwtTokenForUser(userId);
+
+            if (result.IsT1)
+            {
+                logger.LogWarning($"Correct JWT but user not found userId: {userId}");
+                return Forbid("Bearer");
+            }
+
+            var (accessToken, user) = result.AsT0;
+            var plainResult = GenerateResponse(user, accessToken);
+            var claims = await userManager.GetClaimsAsync(user);
+
+            var roles = await userManager.GetRolesAsync(user);
+            claims = claims.Concat(roles.Select(r => new Claim(ClaimTypes.Role, r))).ToList();
+
+            var totalResult = new GetMeResult
+            {
+                Id = plainResult.Id,
+                FirstName = plainResult.FirstName,
+                Email = plainResult.Email,
+                Token = plainResult.Token,
+                StudentId = plainResult.StudentId,
+                Claims = claims.GroupBy(c => c.Type).ToDictionary(c => c.Key, g => g.Select(c => c.Value).ToArray())
+            };
+            return totalResult;
         }
 
-        private async Task<LoginResponse> GenerateResponse(User user)
+        [HttpGet("gettokenforuser/{userId:guid}")]
+        [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+        public async Task<ActionResult<TokenResponse>> GetTokenForUser(Guid userId)
+        {
+            var result = await authorizationService.GetJwtTokenForUser(userId);
+            if (result.IsT1)
+            {
+                return NotFound("User not found");
+            }
+            return new TokenResponse { Token = result.AsT0.accessToken };
+        }
+
+
+        private LoginResponse GenerateResponse(User user, string accessToken)
         {
             var loginInfo = mapper.Map<LoginResponse>(user);
-            var userRoles = await _userManager.GetRolesAsync(user);
-            loginInfo.Token = _jwtFactory.GenerateToken(user, userRoles);
+            loginInfo.Token = accessToken;
             return loginInfo;
         }
     }

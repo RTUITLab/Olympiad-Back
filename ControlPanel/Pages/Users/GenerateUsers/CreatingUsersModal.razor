@@ -1,0 +1,222 @@
+﻿@implements IAsyncDisposable
+
+
+@inject IJSRuntime JS
+@inject GenerateUserService GenerateService
+
+@{
+    RenderFragment closeIcon =
+    @<div></div>
+    ;
+    RenderFragment doneButtons =
+    @<div>
+        <a href="@documentLink" download="@documentDownloadName">
+            <Button Type="@ButtonType.Default">Скачать результаты</Button>
+        </a>
+        <Button Type="@ButtonType.Primary" OnClick="async () => await HideModal()">Закрыть окно</Button>
+    </div>
+    ;
+    RenderFragment pleaseDoNotCloseTabMessage =
+    @<Alert Type="@AlertType.Warning"
+           Message="Не закрывайте эту вкладку"
+           Description="Не закрывайте эту вкладку, пока не завершится создание пользователей."
+           ShowIcon="true" />
+    ;
+}
+
+<Modal Width="@("70%")"
+       Visible="visible"
+       Closable="!IsLoading"
+       CloseIcon="closeIcon"
+       Footer="null"
+       OnCancel="async () => await HideModal()">
+
+    @if (currentStatus <= CreatingStatus.GeneratingDocument)
+    {
+        <Steps Current="@((int)currentStatus)">
+            <Step Title="Подготовка" />
+            <Step Title="Генерирование" />
+            <Step Title="Выгрузка информации" />
+        </Steps>
+    }
+
+    @switch (currentStatus)
+    {
+        case CreatingStatus.WaitStartCommand when (modelToGenerate is not null):
+            <Title Level="3">Создание @modelToGenerate.UserGenerateRows.Count пользователей</Title>
+            <Button Type="@ButtonType.Primary" OnClick="() => CreateUsers(modelToGenerate)">Начать</Button>
+            <Button Type="default" OnClick="async () => await HideModal()">Закрыть окно</Button>
+            break;
+        case CreatingStatus.WaitStartCommand when (modelToGenerate is null):
+            <Alert Type="@AlertType.Error"
+           Message="Ошибка"
+           Description="Неверное использвоание модального окна. Пожалуйста, обновите страницу."
+           ShowIcon="true" />
+            break;
+        case CreatingStatus.CreatingUsers when (modelToGenerate is not null):
+            <Title Level="3">Генерирование @currentGeneratingUser.userInfo?.StudentID <Text Keyboard>@(currentGeneratingUser.index + 1)</Text>/<Text Keyboard>@modelToGenerate.UserGenerateRows.Count</Text></Title>
+            <Progress Percent="ProgressPercents" Status="@ProgressStatus.Active" />
+            @pleaseDoNotCloseTabMessage
+            break;
+        case CreatingStatus.GeneratingDocument:
+            <Title Level="3">Генерирование результатов</Title>
+            <Spin Size="large" Spinning Tip="Создание документа"></Spin>
+            @pleaseDoNotCloseTabMessage
+            break;
+        case CreatingStatus.TotalSuccess:
+            <Result Status="success"
+            Title="Все пользователи созданы успешно!">
+                <Extra>
+                    @doneButtons
+                </Extra>
+            </Result>
+            break;
+        case CreatingStatus.ContainsErrors:
+            <Result Status="warning"
+            Title="При создании пользователей произошли ошибки"
+            SubTitle="Подробная информация содержится в итоговом файле">
+                <Extra>
+                    @doneButtons
+                </Extra>
+            </Result>
+            break;
+        default:
+            <p>Неверный текущий статус, обновите страницу</p>
+            break;
+    }
+
+</Modal>
+
+@code {
+    private bool visible;
+
+    private bool IsLoading => currentStatus == CreatingStatus.CreatingUsers || currentStatus == CreatingStatus.GeneratingDocument;
+    private CreatingStatus currentStatus;
+    private enum CreatingStatus
+    {
+        WaitStartCommand,
+        CreatingUsers,
+        GeneratingDocument,
+        TotalSuccess,
+        ContainsErrors
+    }
+
+    [CascadingParameter]
+    public ILogsService? LogsFromCascading { get; set; }
+    private ILogsService Logs => LogsFromCascading ?? throw new ArgumentNullException(nameof(LogsFromCascading));
+
+    private UsersGenerateModel? modelToGenerate;
+    private int ProgressPercents => (int)((double)currentGeneratingUser.index / (modelToGenerate?.UserGenerateRows.Count ?? 0) * 100);
+    private (UserGenerateRow? userInfo, int index) currentGeneratingUser;
+    private string? documentLink;
+    private string? documentDownloadName;
+
+    internal void StartCreatingUsers(UsersGenerateModel usersGenerateModel)
+    {
+        visible = true;
+        modelToGenerate = usersGenerateModel;
+        currentStatus = CreatingStatus.WaitStartCommand;
+        documentLink = null;
+        StateHasChanged();
+    }
+
+    private async ValueTask HideModal()
+    {
+        if (IsLoading)
+        {
+            return;
+        }
+        await CleanResources();
+        visible = false;
+    }
+
+    private async Task CreateUsers(UsersGenerateModel usersGenerateModel)
+    {
+        currentStatus = CreatingStatus.CreatingUsers;
+        StateHasChanged();
+
+
+        List<UserGenerateResult> generates = new List<UserGenerateResult>();
+        var defaultClaims = new List<System.Security.Claims.Claim> { new System.Security.Claims.Claim("reset_password", "need") };
+
+
+        foreach (var currentUser in usersGenerateModel.UserGenerateRows.Select((u, i) => (u, i)))
+        {
+            var (userToGenerate, i) = currentUser;
+            currentGeneratingUser = currentUser;
+            StateHasChanged();
+            generates.Add(await GenerateService.GenerateUser(userToGenerate));
+            Logs.LogInfo($"Generate user: {i + 1}/{usersGenerateModel.UserGenerateRows.Count} | {userToGenerate.StudentID}");
+        }
+
+
+        currentStatus = CreatingStatus.GeneratingDocument;
+        StateHasChanged();
+
+        bool totalSuccess = generates.All(u => u.Success);
+        await DownloadResults(usersGenerateModel.SourceFileName, generates, !totalSuccess);
+
+        if (totalSuccess)
+        {
+            currentStatus = CreatingStatus.TotalSuccess;
+        }
+        else
+        {
+            currentStatus = CreatingStatus.ContainsErrors;
+        }
+    }
+
+    private async Task DownloadResults(string sourceFileName, List<UserGenerateResult> generated, bool isContainsErrors)
+    {
+
+        using var workBook = new ClosedXML.Excel.XLWorkbook();
+        var workSheet = workBook.Worksheets.Add("Users");
+        var currentRow = 1;
+        var currentColumn = 1;
+        workSheet.Cell(currentRow, currentColumn++).SetValue("ID (login)");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Password");
+        workSheet.Cell(currentRow, currentColumn++).SetValue("Name");
+        foreach (var claim in generated.First().Raw.Claims)
+        {
+            workSheet.Cell(currentRow, currentColumn++).SetValue(claim.Type);
+        }
+        if (isContainsErrors)
+        {
+            workSheet.Cell(currentRow, currentColumn++).SetValue("Ошибка");
+        }
+        foreach (var (row, success, errorMessage) in generated)
+        {
+            currentRow++;
+            currentColumn = 1;
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.StudentID);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.Password);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.FirstName);
+            foreach (var claim in row.Claims)
+            {
+                workSheet.Cell(currentRow, currentColumn++).SetValue(claim.Value);
+            }
+            if (isContainsErrors && !success)
+            {
+                workSheet.Cell(currentRow, currentColumn++).SetValue(errorMessage);
+            }
+        }
+        using var stream = new System.IO.MemoryStream();
+        workBook.SaveAs(stream);
+        var content = stream.ToArray();
+        documentDownloadName = $"{DateTime.Now:yyyy MM dd} {sourceFileName} - Пользователи.xlsx";
+        documentLink = await JS.DownloadFile(documentDownloadName, content);
+    }
+
+    private async ValueTask CleanResources()
+    {
+        if (documentLink is not null)
+        {
+            await JS.RevokeUrl(documentLink);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await CleanResources();
+    }
+}

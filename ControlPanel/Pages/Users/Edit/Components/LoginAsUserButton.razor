@@ -1,0 +1,25 @@
+﻿@inject IControlPanelApiService ControlPanelApiService
+@inject IJSRuntime JS
+<Button OnClick="LoginAsUser" Loading="isLoading">Войти под пользователем</Button>
+
+@code {
+    [Parameter]
+    public Guid UserId { get; set; }
+
+
+    private bool isLoading;
+
+    private async Task LoginAsUser()
+    {
+        isLoading = true;
+        try
+        {
+            var tokenInfo = await ControlPanelApiService.GetTokenForUser(UserId);
+            await JS.OpenLinkInNewTab($"/#{tokenInfo.Token}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
