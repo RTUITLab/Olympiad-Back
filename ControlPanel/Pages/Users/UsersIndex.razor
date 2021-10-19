@@ -1,4 +1,5 @@
 ﻿@page "/users"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
 
 @using AntDesign.TableModels
 @using Olympiad.Shared
@@ -6,7 +7,6 @@
 @using PublicAPI.Responses.Users
 @using System.Text
 
-@attribute [Authorize(Roles = RoleNames.ADMIN)]
 @inject MessageService _message
 @inject IControlPanelApiService ControlPanelApiService
 @inject NavigationManager NavigationManager
@@ -46,7 +46,7 @@
             <Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
             <Column @bind-Field="context.Email" Sortable></Column>
             <ActionColumn>
-                <NavLink href="@($"users/{context.Id}")"><Button>Редактировать</Button></NavLink>
+                <NavLink href="@($"users/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
             </ActionColumn>
         </Table>
     </SpaceItem>

@@ -200,6 +200,7 @@
                 workSheet.Cell(currentRow, currentColumn++).SetValue(errorMessage);
             }
         }
+        // TODO: use direct stream from workbook to js https://docs.microsoft.com/en-us/aspnet/core/blazor/javascript-interoperability/call-javascript-from-dotnet?view=aspnetcore-6.0#stream-from-net-to-javascript
         using var stream = new System.IO.MemoryStream();
         workBook.SaveAs(stream);
         var content = stream.ToArray();
