@@ -1,0 +1,126 @@
+﻿@using Microsoft.Extensions.Logging
+@using Olympiad.Shared.Models
+@using PublicAPI.Requests.Challenges
+@using PublicAPI.Responses.Challenges
+
+@inject IChallengesApi ChallengesApi
+@inject ILogger<EditChallengeBaseInfo> Logger
+@inject MessageService MessageService
+@inject IJSRuntime JS
+
+<Form Model="challengeModel"
+      LabelColSpan="4"
+      WrapperColSpan="20"
+      Loading="saving"
+      OnFinish="UpdatebaseInfo"
+      Layout="horizontal">
+    <FormItem Label="Название" Required>
+        <Input @bind-Value="@context.Name" />
+    </FormItem>
+    <FormItem Label="Описание">
+        @*<HelpTooltip>
+            <Text Style="color: white">Описание события на языке <a href="https://bustep.ru/markdown/shpargalka-po-markdown.html" target="_blank">Markdown</a></Text>
+        </HelpTooltip>
+        <RadioGroup @bind-Value="@descriptionMode">
+            <Radio RadioButton Value="@DescriptionMode.Row">Редактирование</Radio>
+            <Radio RadioButton Value="@DescriptionMode.Render">Предпросмотр</Radio>
+        </RadioGroup>*@
+        <TextArea MinRows="5"
+                  MaxRows="25"
+                  AutoSize
+                  @bind-Value="@context.Description" />
+    </FormItem>
+    <FormItem Label="Время начала">
+        <Text>Нуждается в реализации</Text>
+    </FormItem>
+    <FormItem Label="Время окончания">
+        <Text>Нуждается в реализации</Text>
+    </FormItem>
+    <FormItem Required Label="Результаты">
+        <Select @bind-Value="@context.ViewMode"
+                DefaultValue="@(ChallengeViewMode.Hidden)"
+                TItemValue="ChallengeViewMode"
+                TItem="ChallengeViewMode">
+            <SelectOptions>
+                <SelectOption TItemValue="ChallengeViewMode" TItem="ChallengeViewMode" Value="ChallengeViewMode.Hidden" Label="Скрыты" />
+                <SelectOption TItemValue="ChallengeViewMode" TItem="ChallengeViewMode" Value="ChallengeViewMode.Open" Label="Открыты" />
+            </SelectOptions>
+        </Select>
+        <Text Type="secondary">
+            @(context.ViewMode switch {
+            ChallengeViewMode.Hidden => "Пользователи видят только факт отправки решения",
+            ChallengeViewMode.Open => "Пользователи видят статус проверки решения",
+            _ => "Неверное значение"
+            })
+        </Text>
+    </FormItem>
+    <FormItem Label="Публичность" Required>
+        <Select @bind-Value="@context.AccessType"
+                DefaultValue="@(ChallengeAccessType.Private)"
+                TItemValue="ChallengeAccessType"
+                TItem="ChallengeAccessType">
+            <SelectOptions>
+                <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Private" Label="По приглашению" />
+                <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Public" Label="Публичное" />
+            </SelectOptions>
+        </Select>
+    </FormItem>
+    <FormItem WrapperColOffset="8" WrapperColSpan="16">
+        <Button Type="@ButtonType.Primary" HtmlType="submit">
+            Сохранить базовые параметры
+        </Button>
+    </FormItem>
+</Form>
+
+@code {
+    [Parameter]
+    public ChallengeResponse? Challenge { get; set; }
+    [Parameter]
+    public EventCallback<ChallengeResponse> ChallengeChanged { get; set; }
+
+    private enum DescriptionMode { Row, Render }
+    private DescriptionMode descriptionMode;
+
+    private UpdateChallengeInfoRequest challengeModel = new UpdateChallengeInfoRequest();
+
+    private bool saving;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Challenge == null)
+        {
+            return;
+        }
+        challengeModel.Name = Challenge.Name;
+        challengeModel.Description = Challenge.Description;
+        challengeModel.StartTime = Challenge.StartTime;
+        challengeModel.EndTime = Challenge.EndTime;
+        challengeModel.ViewMode = Challenge.ViewMode;
+        challengeModel.AccessType = Challenge.ChallengeAccessType;
+    }
+
+    private async Task UpdatebaseInfo()
+    {
+        if (Challenge == null)
+        {
+            return;
+        }
+        saving = true;
+        try
+        {
+            await JS.InvokeVoidAsync("console.log", challengeModel);
+            var updatedChallenge = await ChallengesApi.UpdateChallengeAsync(Challenge.Id, challengeModel);
+            await ChallengeChanged.InvokeAsync(updatedChallenge);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Can't save challenge info");
+            await MessageService.Error("Ошибка при сохранении информации о соревновании");
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

@@ -29,6 +29,7 @@ using Olympiad.Services;
 using Olympiad.Shared;
 using System.Security.Claims;
 using Olympiad.Services.Authorization;
+using System.Text.Json.Serialization;
 
 namespace WebApp
 {

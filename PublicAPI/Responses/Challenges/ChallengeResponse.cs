@@ -15,5 +15,6 @@ namespace PublicAPI.Responses.Challenges
         public TimeSpan? ToStart => StartTime == null ? null : StartTime - DateTimeOffset.UtcNow;
         public TimeSpan? ToEnd => EndTime == null ? null : EndTime - DateTimeOffset.UtcNow;
         public ChallengeAccessType ChallengeAccessType { get; set; }
+        public ChallengeViewMode ViewMode { get; set; }
     }
 }

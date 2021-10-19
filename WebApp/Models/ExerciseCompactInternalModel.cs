@@ -1,5 +1,4 @@
-﻿using Models.Exercises;
-using Olympiad.Shared.Models;
+﻿using Olympiad.Shared.Models;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
 using System;

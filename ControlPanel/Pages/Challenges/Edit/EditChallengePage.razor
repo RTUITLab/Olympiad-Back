@@ -25,13 +25,16 @@
             <GenerateNewPasswordButton UserId="UserId" PasswordChanged="@(() => editUserClaims.RefreshData())"/>*@
         @if (challengeResponse != null)
         {
-            <DeleteChallengeButton ChallengeId="ChallengeId" ChallengeDeleted="GoToChallenges"/>
+            <DeleteChallengeButton ChallengeId="ChallengeId" ChallengeDeleted="GoToChallenges" />
         }
     </PageHeaderExtra>
 </PageHeader>
 
+@if (challengeResponse != null)
+{
+    <EditChallengeBaseInfo Challenge="challengeResponse" />
+}
 
-@ChallengeId
 @code {
     [Parameter]
     public Guid ChallengeId { get; set; }

@@ -31,9 +31,15 @@ if (builder.HostEnvironment.IsDevelopment())
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseAddress });
 
 builder.Services.AddAntDesign();
-
 builder.Services.AddScoped<IControlPanelApiService>(sp => RestService.For<IControlPanelApiService>(sp.GetRequiredService<HttpClient>()));
-builder.Services.AddScoped<IChallengesApi>(sp => RestService.For<IChallengesApi>(sp.GetRequiredService<HttpClient>()));
+builder.Services.AddScoped<IChallengesApi>(sp => RestService.For<IChallengesApi>(sp.GetRequiredService<HttpClient>(), new RefitSettings
+{
+    ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+    })
+}));
 builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 

@@ -12,6 +12,8 @@ using Models;
 using Models.Exercises;
 using Models.Links;
 using Olympiad.Shared.Models;
+using PublicAPI.Requests;
+using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses.Challenges;
 using WebApp.Models;
 
@@ -76,6 +78,20 @@ namespace WebApp.Controllers
             context.Challenges.Add(newChallenge);
             await context.SaveChangesAsync();
             return newChallenge.Id;
+        }
+
+        [HttpPut("{id:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ChallengeResponse>> UpdateChallengeAsync(Guid id, UpdateChallengeInfoRequest request)
+        {
+            var targetChallenge = await context.Challenges.SingleOrDefaultAsync(c => c.Id == id);
+            if (targetChallenge == null)
+            {
+                return NotFound("challenge not found");
+            }
+            mapper.Map(request, targetChallenge);
+            await context.SaveChangesAsync();
+            return mapper.Map<ChallengeResponse>(targetChallenge);
         }
 
         [HttpDelete("{id:guid}")]

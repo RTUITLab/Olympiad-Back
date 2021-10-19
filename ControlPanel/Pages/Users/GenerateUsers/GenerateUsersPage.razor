@@ -92,7 +92,6 @@
 
     [CascadingParameter]
     public ILogsService? logs { get; set; }
-    [CascadingParameter]
     private ILogsService Logs => logs ?? throw new ArgumentNullException(nameof(logs));
 
 
