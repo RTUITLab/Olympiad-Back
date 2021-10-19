@@ -42,6 +42,17 @@ namespace WebApp.Controllers
             return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
         }
 
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public Task<List<ChallengeResponse>> GetAllAsync()
+        {
+            return context
+                .Challenges
+                .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<ChallengeResponse> Get(Guid id)
         {
@@ -50,12 +61,48 @@ namespace WebApp.Controllers
                         .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
         }
 
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<Guid> CreateDefaultChallengeAsync()
+        {
+            var newChallenge = new Challenge
+            {
+                Name = "NEW CHALLENGE NAME",
+                ChallengeAccessType = ChallengeAccessType.Private,
+                ViewMode = ChallengeViewMode.Hidden,
+                CreationTime = DateTime.UtcNow
+            };
+            context.Challenges.Add(newChallenge);
+            await context.SaveChangesAsync();
+            return newChallenge.Id;
+        }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DeleteAsync(Guid id)
+        {
+            var targetChallenge = await context.Challenges.SingleOrDefaultAsync(c => c.Id == id);
+            if (targetChallenge == null)
+            {
+                return NotFound("challenge not found");
+            }
+            context.Challenges.Remove(targetChallenge);
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
+
         private IQueryable<ChallengeResponse> AvailableChallenges()
         {
-            IQueryable<Challenge> query = context
-                .Challenges
-                .Where(c => c.ChallengeAccessType == ChallengeAccessType.Public ||
-                        c.UsersToChallenges.Any(utc => utc.UserId == UserId));
+            IQueryable<Challenge> query = context.Challenges;
+            if (!IsAdmin)
+            {
+                query = query.Where(c => 
+                    c.ChallengeAccessType == ChallengeAccessType.Public ||
+                    c.UsersToChallenges.Any(utc => utc.UserId == UserId)
+                );
+            }
+
             return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
         }
     }

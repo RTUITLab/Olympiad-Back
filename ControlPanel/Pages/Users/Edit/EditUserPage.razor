@@ -1,10 +1,9 @@
 ﻿@page "/users/{UserId:guid}"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
 
 @using Olympiad.ControlPanel.Pages.Users.Edit.Components
-@using Olympiad.Shared
 @using PublicAPI.Responses.Users
 
-@attribute [Authorize(Roles = RoleNames.ADMIN)]
 @inject MessageService _message
 @inject NavigationManager NavigationManager
 @inject IControlPanelApiService ControlPanelApiService
@@ -23,7 +22,7 @@
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
         <LoginAsUserButton UserId="UserId" />
-        <GenerateNewPasswordButton UserId="UserId" PasswordChanged="@(() => editUserClaims.RefreshData())"/>
+        <GenerateNewPasswordButton UserId="UserId" PasswordChanged="@(() => {editUserClaims?.RefreshData(); })" />
         <Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
     </PageHeaderExtra>
 </PageHeader>
@@ -32,13 +31,13 @@
 @if (userInfo != null)
 {
     <Row>
-        <AntDesign.Col Xs=24 Md=16 >
+        <AntDesign.Col Xs=24 Md=16>
             <EditUserBaseInfo @bind-User=userInfo />
         </AntDesign.Col>
     </Row>
     <Row>
-        <AntDesign.Col Xs=24 Md=16 >
-            <EditUserClaims User="userInfo" @ref="editUserClaims"/>
+        <AntDesign.Col Xs=24 Md=16>
+            <EditUserClaims User="userInfo" @ref="editUserClaims" />
         </AntDesign.Col>
     </Row>
 }
@@ -48,8 +47,8 @@
     [Parameter]
     public Guid UserId { get; set; }
 
-    private DeleteUserConfirmationModal deleteModal;
-    private EditUserClaims editUserClaims;
+    private DeleteUserConfirmationModal? deleteModal;
+    private EditUserClaims? editUserClaims;
     private UserInfoResponse? userInfo;
 
     protected override async Task OnParametersSetAsync()
@@ -68,6 +67,6 @@
 
     private void ShowDeleteModal()
     {
-        deleteModal.Show(userInfo!);
+        deleteModal?.Show(userInfo!);
     }
     }

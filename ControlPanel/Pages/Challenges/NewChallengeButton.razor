@@ -1,0 +1,27 @@
+﻿@inject IChallengesApi ChallengesApi
+@inject NavigationManager NavigationManager
+
+<Popconfirm Title="Будет создано приватное соревнование с параметрами по умолчанию для дальнейшей настрокйи"
+            OkText="Создать"
+            CancelText="Отмена"
+            OnConfirm="CreateChallenge">
+    <Button Type="@ButtonType.Primary" Loading="loading">Создать</Button>
+</Popconfirm>
+@code {
+    private bool loading;
+    private async Task CreateChallenge()
+    {
+        loading = true;
+        try
+        {
+            Console.WriteLine("click!");
+            await Task.Delay(1000);
+            var newChallengeId = await ChallengesApi.CreateChallengeAsync();
+            NavigationManager.NavigateTo($"challenges/{newChallengeId}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

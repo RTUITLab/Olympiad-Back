@@ -24,9 +24,9 @@
 </Form>
 @code {
 
-    [Parameter, EditorRequired]
-    public UserInfoResponse User { get; set; }
-    [Parameter, EditorRequired]
+    [Parameter]
+    public UserInfoResponse? User { get; set; }
+    [Parameter]
     public EventCallback<UserInfoResponse> UserChanged { get; set; }
 
 
@@ -35,12 +35,16 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        userModel.StudentId = User.StudentId;
-        userModel.FirstName = User.FirstName;
+        userModel.StudentId = User?.StudentId ?? "";
+        userModel.FirstName = User?.FirstName ?? "";
     }
 
     private async Task SaveBaseInfo()
     {
+        if (User == null)
+        {
+            return;
+        }
         saving = true;
         Task messageTask = Task.CompletedTask;
         try

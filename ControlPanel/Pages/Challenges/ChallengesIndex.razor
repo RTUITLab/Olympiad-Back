@@ -1,7 +1,6 @@
 ﻿@page "/challenges"
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 
-@using Olympiad.Shared
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
 
@@ -17,37 +16,36 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        <NavLink href="challenges/new">
-            <Button Type="@ButtonType.Primary">Создать</Button>
-        </NavLink>
+       <NewChallengeButton/>
     </PageHeaderExtra>
 </PageHeader>
 
 <Table DataSource="challenges"
-               Loading="@(challenges == null)"
-               PageSize="@(challenges?.Count ?? 0)"
-               Total="@(challenges?.Count ?? 0)"
-               HidePagination
->
+       Loading="@(challenges == null)"
+       PageSize="@(challenges?.Count ?? 0)"
+       Total="@(challenges?.Count ?? 0)"
+       HidePagination>
 
-            <Column @bind-Field="context.Name" Title="Название" Sortable></Column>
-            <Column @bind-Field="context.ChallengeAccessType" Title="Публичность" Sortable>
-                <Text>@(context.ChallengeAccessType switch {
-                    ChallengeAccessType.Public => "Публичное",
-                    ChallengeAccessType.Private => "По приглашениям",
-                    _ => "Некорректное значение"
-                    })</Text>
-            </Column>
-            <Column @bind-Field="context.StartTime" Title="Начало" Sortable>
-                <Text>@(context.StartTime?.ToString() ?? "—")</Text>
-            </Column>
-            <Column @bind-Field="context.EndTime" Title="Конец" Sortable>
-                <Text>@(context.EndTime?.ToString() ?? "—")</Text>
-            </Column>
-            <ActionColumn>
-                <NavLink href="@($"challenges/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
-            </ActionColumn>
-        </Table>
+    <Column @bind-Field="context.Name" Title="Название" Sortable></Column>
+    <Column @bind-Field="context.ChallengeAccessType" Title="Публичность" Sortable>
+        <Text>
+            @(context.ChallengeAccessType switch {
+            ChallengeAccessType.Public => "Публичное",
+            ChallengeAccessType.Private => "По приглашениям",
+            _ => "Некорректное значение"
+            })
+        </Text>
+    </Column>
+    <Column @bind-Field="context.StartTime" Title="Начало" Sortable>
+        <Text>@(context.StartTime?.ToString() ?? "—")</Text>
+    </Column>
+    <Column @bind-Field="context.EndTime" Title="Конец" Sortable>
+        <Text>@(context.EndTime?.ToString() ?? "—")</Text>
+    </Column>
+    <ActionColumn>
+        <NavLink href="@($"challenges/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
+    </ActionColumn>
+</Table>
 
 @code {
     private List<ChallengeResponse>? challenges;
@@ -55,6 +53,6 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        challenges = await ChallengesApi.GetChallengesAsync();
+        challenges = await ChallengesApi.GetAllChallengesAsync();
     }
 }

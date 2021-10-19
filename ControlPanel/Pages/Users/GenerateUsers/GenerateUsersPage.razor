@@ -22,7 +22,7 @@
                 Пользователи
             </BreadcrumbItem>
             <BreadcrumbItem>
-                Геренация
+                Генерация
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
@@ -54,7 +54,7 @@
        PageSize="@(usersGenerateModel?.UserGenerateRows?.Count ?? 0)"
        DataSource="usersGenerateModel?.UserGenerateRows">
     <TitleTemplate>
-        <Button Icon="@IconType.Outline.FileExcel" OnClick="@(() => JS.InvokeVoidAsync("clickElement", inputFileRef.Element))">Выбрать CSV файл</Button>
+        <Button Icon="@IconType.Outline.FileExcel" OnClick="@(() => JS.InvokeVoidAsync("clickElement", inputFileRef?.Element))">Выбрать CSV файл</Button>
         <InputFile @ref="inputFileRef" style="display: none" OnChange="HandleSelection" accept=".csv" />
         <AntDesign.Text>Записей: @(usersGenerateModel?.UserGenerateRows.Count ?? 0)</AntDesign.Text>
     </TitleTemplate>
@@ -88,10 +88,12 @@
 
 
 @code {
-    private InputFile inputFileRef;
+    private InputFile? inputFileRef;
 
     [CascadingParameter]
-    public ILogsService Logs { get; set; }
+    public ILogsService? logs { get; set; }
+    [CascadingParameter]
+    private ILogsService Logs => logs ?? throw new ArgumentNullException(nameof(logs));
 
 
     private UsersGenerateModel? usersGenerateModel;

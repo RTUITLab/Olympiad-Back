@@ -14,17 +14,20 @@
 @code {
 
 	[CascadingParameter]
-	private Task<AuthenticationState> authenticationStateTask { get; set; }
+	private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
 	[Parameter]
-    [SupplyParameterFromQuery]
-    public string? ReturnTo { get; set; }
+	[SupplyParameterFromQuery]
+	public string? ReturnTo { get; set; }
 
 	private string? accessToken;
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		await base.OnAfterRenderAsync(firstRender);
+		if (authenticationStateTask == null) {
+			return;
+		}
 		var state = await authenticationStateTask;
 		if (state?.User?.Identity?.IsAuthenticated == true)
 		{

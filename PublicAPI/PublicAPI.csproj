@@ -8,4 +8,8 @@
     <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Requests\Challenges\" />
+  </ItemGroup>
+
 </Project>

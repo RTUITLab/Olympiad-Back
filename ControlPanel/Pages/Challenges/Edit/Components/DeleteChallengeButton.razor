@@ -1,0 +1,35 @@
+﻿@inject IChallengesApi ChallengesApi
+@inject MessageService MessageService
+
+
+<Popconfirm Title="Вы действительно хотите удалить соревнование?"
+            OkText="Да"
+            CancelText="Нет"
+            OnConfirm="DeleteChallenge">
+
+    <Button Type="@ButtonType.Dashed" Danger Loading="loading" Icon="@IconType.Outline.Delete"></Button>
+</Popconfirm>
+
+@code {
+
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public EventCallback ChallengeDeleted { get; set; }
+
+    private bool loading;
+
+    private async Task DeleteChallenge()
+    {
+        loading = true;
+        try
+        {
+            await ChallengesApi.DeleteChallengeAsync(ChallengeId);
+            await Task.WhenAll(ChallengeDeleted.InvokeAsync(), MessageService.Info("Соревнование удалено"));
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

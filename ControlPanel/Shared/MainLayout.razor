@@ -9,7 +9,7 @@
             <Col Span="12" Style="text-align: right">
             <AuthorizeView>
                 <Authorized>
-                    <Text style="color: white;">@context.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="logs.Show"></Icon></Text>
+                    <Text style="color: white;">@context.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="@(() => {logs?.Show();})"></Icon></Text>
                 </Authorized>
             </AuthorizeView>
             </Col>
@@ -40,5 +40,5 @@
 
 
 @code {
-    LogsComponent logs;
+    LogsComponent? logs;
 }
