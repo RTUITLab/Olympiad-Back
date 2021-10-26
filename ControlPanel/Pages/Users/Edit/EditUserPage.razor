@@ -35,6 +35,11 @@
             <EditUserBaseInfo @bind-User=userInfo />
         </AntDesign.Col>
     </Row>
+    <Row Style="margin-bottom:4px">
+        <AntDesign.Col Xs=24 Md=16>
+            <EditUserRoles UserId="UserId" />
+        </AntDesign.Col>
+    </Row>
     <Row>
         <AntDesign.Col Xs=24 Md=16>
             <EditUserClaims User="userInfo" @ref="editUserClaims" />

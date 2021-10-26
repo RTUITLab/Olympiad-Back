@@ -24,39 +24,54 @@ namespace WebApp.Controllers.Users
             this.roleManager = roleManager;
         }
 
-        [HttpGet("")]
-        public Task<List<string>> RolesFor()
-        {
-            return roleManager.Roles.Select(r => r.Name).ToListAsync();
-        }
-
         [HttpGet("{userId:guid}")]
-        public async Task<IEnumerable<string>> RolesFor(Guid userId)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<string>>> GetRoles(Guid userId)
         {
-            return await UserManager.GetRolesAsync(await GetCurrentUser());
+            var user = await GetUser(userId);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+            return Ok(await UserManager.GetRolesAsync(user));
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("{userId:guid}/{role}")]
-        public async Task<string> AddRole(Guid userId, string role)
+        public async Task<ActionResult<IList<string>>> AddToRole(Guid userId, string role)
         {
             if (!await roleManager.RoleExistsAsync(role))
                 throw StatusCodeException.BadRequest();
-            var result = await UserManager.AddToRoleAsync(await GetCurrentUser(), role);
+            var targetUser = await GetUser(userId);
+            if (targetUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var result = await UserManager.AddToRoleAsync(targetUser, role);
             if (result.Succeeded)
-                return role;
-            throw StatusCodeException.BadRequest(string.Join(',', result.Errors));
+                return Ok(await UserManager.GetRolesAsync(targetUser));
+
+            return BadRequest(string.Join(',', result.Errors.Select(e => e.Description)));
         }
         [Authorize(Roles = "Admin")]
         [HttpDelete("{userId:guid}/{role}")]
-        public async Task<string> DemoveFromRole(Guid userId, string role)
+        public async Task<ActionResult<IList<string>>> RemoveFromRole(Guid userId, string role)
         {
             if (!await roleManager.RoleExistsAsync(role))
-                throw StatusCodeException.BadRequest();
-            var result = await UserManager.RemoveFromRoleAsync(await GetCurrentUser(), role);
+                return NotFound("Role not found");
+
+            var targetUser = await GetUser(userId);
+            if (targetUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var result = await UserManager.RemoveFromRoleAsync(targetUser, role);
             if (result.Succeeded)
-                return role;
-            throw StatusCodeException.BadRequest(string.Join(',', result.Errors));
+                return Ok(await UserManager.GetRolesAsync(targetUser));
+
+            return BadRequest(string.Join(',', result.Errors.Select(e => e.Description)));
         }
     }
 }

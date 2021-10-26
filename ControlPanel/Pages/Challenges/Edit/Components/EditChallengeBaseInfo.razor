@@ -48,9 +48,9 @@
         </Select>
         <Text Type="secondary">
             @(context.ViewMode switch {
-            ChallengeViewMode.Hidden => "Пользователи видят только факт отправки решения",
-            ChallengeViewMode.Open => "Пользователи видят статус проверки решения",
-            _ => "Неверное значение"
+                ChallengeViewMode.Hidden => "Пользователи видят только факт отправки решения",
+                ChallengeViewMode.Open => "Пользователи видят статус проверки решения",
+                _ => "Неверное значение"
             })
         </Text>
     </FormItem>

@@ -8,6 +8,6 @@
 
     private OneOf.OneOf<string, RenderFragment, MarkupString> Render => 
         !string.IsNullOrEmpty(Text) ? Text :
-        ChildContent != null ? ChildContent : ""
+        ChildContent != null ? ChildContent: ""
     ;
 }

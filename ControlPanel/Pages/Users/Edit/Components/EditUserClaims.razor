@@ -8,8 +8,7 @@
 @inject IJSRuntime JS
 @inject MessageService _message
 
-<Card>
-
+<Card Loading="claims is null">
     <TitleTemplate>
         Свойства пользователя
         <Tooltip Title="@("Могут быть использованы для массового добавления к соревнованиям")">
