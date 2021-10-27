@@ -20,7 +20,7 @@
     </FormItem>
     <FormItem Label="Описание">
         @*<HelpTooltip>
-            <Text Style="color: white">Описание события на языке <a href="https://bustep.ru/markdown/shpargalka-po-markdown.html" target="_blank">Markdown</a></Text>
+            <Text Style="color: white"></Text>
             </HelpTooltip>
             <RadioGroup @bind-Value="@descriptionMode">
             <Radio RadioButton Value="@DescriptionMode.Row">Редактирование</Radio>
@@ -30,6 +30,8 @@
                   MaxRows="25"
                   AutoSize
                   @bind-Value="@context.Description" />
+        <Button Size="@ButtonSize.Small" Icon="@IconType.Outline.Edit" OnClick="() => contentMarkdownEditor?.Show()">Открыть редактор</Button>
+        <MarkdownEditorModal @bind-Content="@context.Description" @ref="contentMarkdownEditor" />
     </FormItem>
     <FormItem Label="Режим проведения">
         <RadioGroup @bind-Value="@context.IsNoTimeLimits">
@@ -40,7 +42,7 @@
     @if (!context.IsNoTimeLimits)
     {
         <FormItem Label="Время проведения" Required>
-            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime='@("HH:mm")' Format='@("dd/MM/yyyy")' OnChange="ChallengeTimeUpdated" AllowClear="false" />
+            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime="@("HH:mm")" Format="@("dd-MM-yyyy HH:mm")" OnChange="ChallengeTimeUpdated" AllowClear="false" />
             <Text Type="@(context.Duration <= TimeSpan.Zero ? "danger" : "default")">@context.Duration?.Humanize(precision: 10)</Text>
         </FormItem>
     }
@@ -72,6 +74,13 @@
                 <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Public" Label="Публичное" />
             </SelectOptions>
         </Select>
+        <Text Type="secondary">
+            @(context.AccessType switch {
+            ChallengeAccessType.Private => "Необходимо пригласить конкретных пользователей в соревнование",
+            ChallengeAccessType.Public => "Доступно для прохождения всем зарегистрированным пользователям",
+            _ => "Неверное значение"
+            })
+        </Text>
     </FormItem>
     <FormItem WrapperColOffset="8" WrapperColSpan="16">
         <Button Type="@ButtonType.Primary" HtmlType="submit">
@@ -92,7 +101,7 @@
     private EditFormChallengeUpdateModel challengeModel = new EditFormChallengeUpdateModel();
 
     private bool saving;
-
+    private MarkdownEditorModal? contentMarkdownEditor;
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
