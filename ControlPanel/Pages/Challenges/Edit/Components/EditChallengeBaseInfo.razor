@@ -40,7 +40,7 @@
     @if (!context.IsNoTimeLimits)
     {
         <FormItem Label="Время проведения" Required>
-            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime='@("HH:mm")' OnChange="ChallengeTimeUpdated" AllowClear="false" />
+            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime='@("HH:mm")' Format='@("dd/MM/yyyy")' OnChange="ChallengeTimeUpdated" AllowClear="false" />
             <Text Type="@(context.Duration <= TimeSpan.Zero ? "danger" : "default")">@context.Duration?.Humanize(precision: 10)</Text>
         </FormItem>
     }

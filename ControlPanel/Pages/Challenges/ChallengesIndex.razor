@@ -16,7 +16,7 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-       <NewChallengeButton/>
+        <NewChallengeButton />
     </PageHeaderExtra>
 </PageHeader>
 
@@ -37,10 +37,14 @@
         </Text>
     </Column>
     <Column @bind-Field="context.StartTime" Title="Начало" Sortable>
-        <Text>@(context.StartTime?.ToString() ?? "—")</Text>
+        <Tooltip Title="context.StartTime?.ToString()">
+            <Text>@(context.StartTime?.LocalDateTime.ToString() ?? "—")</Text>
+        </Tooltip>
     </Column>
     <Column @bind-Field="context.EndTime" Title="Конец" Sortable>
-        <Text>@(context.EndTime?.ToString() ?? "—")</Text>
+        <Tooltip Title="context.EndTime?.ToString()">
+            <Text>@(context.EndTime?.LocalDateTime.ToString() ?? "—")</Text>
+        </Tooltip>
     </Column>
     <ActionColumn>
         <NavLink href="@($"challenges/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
