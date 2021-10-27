@@ -2,6 +2,7 @@
 @using Olympiad.Shared.Models
 @using PublicAPI.Requests.Challenges
 @using PublicAPI.Responses.Challenges
+@using Humanizer
 
 @inject IChallengesApi ChallengesApi
 @inject ILogger<EditChallengeBaseInfo> Logger
@@ -20,22 +21,29 @@
     <FormItem Label="Описание">
         @*<HelpTooltip>
             <Text Style="color: white">Описание события на языке <a href="https://bustep.ru/markdown/shpargalka-po-markdown.html" target="_blank">Markdown</a></Text>
-        </HelpTooltip>
-        <RadioGroup @bind-Value="@descriptionMode">
+            </HelpTooltip>
+            <RadioGroup @bind-Value="@descriptionMode">
             <Radio RadioButton Value="@DescriptionMode.Row">Редактирование</Radio>
             <Radio RadioButton Value="@DescriptionMode.Render">Предпросмотр</Radio>
-        </RadioGroup>*@
+            </RadioGroup>*@
         <TextArea MinRows="5"
                   MaxRows="25"
                   AutoSize
                   @bind-Value="@context.Description" />
     </FormItem>
-    <FormItem Label="Время начала">
-        <Text>Нуждается в реализации</Text>
+    <FormItem Label="Режим проведения">
+        <RadioGroup @bind-Value="@context.IsNoTimeLimits">
+            <Radio RadioButton Value="true">Бессрочное</Radio>
+            <Radio RadioButton Value="false">Ограниченное время</Radio>
+        </RadioGroup>
     </FormItem>
-    <FormItem Label="Время окончания">
-        <Text>Нуждается в реализации</Text>
-    </FormItem>
+    @if (!context.IsNoTimeLimits)
+    {
+        <FormItem Label="Время проведения" Required>
+            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime='@("HH:mm")' OnChange="ChallengeTimeUpdated" AllowClear="false" />
+            <Text Type="@(context.Duration <= TimeSpan.Zero ? "danger" : "default")">@context.Duration?.Humanize(precision: 10)</Text>
+        </FormItem>
+    }
     <FormItem Required Label="Результаты">
         <Select @bind-Value="@context.ViewMode"
                 DefaultValue="@(ChallengeViewMode.Hidden)"
@@ -48,9 +56,9 @@
         </Select>
         <Text Type="secondary">
             @(context.ViewMode switch {
-                ChallengeViewMode.Hidden => "Пользователи видят только факт отправки решения",
-                ChallengeViewMode.Open => "Пользователи видят статус проверки решения",
-                _ => "Неверное значение"
+            ChallengeViewMode.Hidden => "Пользователи видят только факт отправки решения",
+            ChallengeViewMode.Open => "Пользователи видят статус проверки решения",
+            _ => "Неверное значение"
             })
         </Text>
     </FormItem>
@@ -81,7 +89,7 @@
     private enum DescriptionMode { Row, Render }
     private DescriptionMode descriptionMode;
 
-    private UpdateChallengeInfoRequest challengeModel = new UpdateChallengeInfoRequest();
+    private EditFormChallengeUpdateModel challengeModel = new EditFormChallengeUpdateModel();
 
     private bool saving;
 
@@ -98,6 +106,11 @@
         challengeModel.EndTime = Challenge.EndTime;
         challengeModel.ViewMode = Challenge.ViewMode;
         challengeModel.AccessType = Challenge.ChallengeAccessType;
+    }
+
+    private void ChallengeTimeUpdated(DateRangeChangedEventArgs args)
+    {
+        challengeModel.TimeRange = args.Dates;
     }
 
     private async Task UpdatebaseInfo()
@@ -121,6 +134,56 @@
         finally
         {
             saving = false;
+        }
+    }
+
+    private class EditFormChallengeUpdateModel : UpdateChallengeInfoRequest
+    {
+        public bool IsNoTimeLimits
+        {
+            get => StartTime == null;
+            set
+            {
+                StartTime = EndTime = value ? null : TruncateMilliseconds(DateTime.Now);
+            }
+        }
+        public DateTime?[] TimeRange
+        {
+            get => new DateTime?[] { StartTime?.LocalDateTime, EndTime?.LocalDateTime };
+            set
+            {
+                if (value == null || value.Length != 2)
+                {
+                    StartTime = EndTime = null;
+                    return;
+                }
+                StartTime = TruncateMilliseconds(value[0]);
+                EndTime = TruncateMilliseconds(value[1]);
+                if (EndTime < StartTime)
+                {
+                    EndTime = StartTime;
+                }
+            }
+        }
+        private DateTime? TruncateMilliseconds(DateTime? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            return value.Value.AddTicks(-(value.Value.Ticks % TimeSpan.TicksPerSecond));
+        }
+        public TimeSpan? Duration
+        {
+            get
+            {
+                var range = TimeRange;
+                if (range == null)
+                {
+                    return null;
+                }
+                return range[1] - range[0];
+            }
         }
     }
 }
