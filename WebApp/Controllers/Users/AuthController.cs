@@ -17,6 +17,9 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Olympiad.Shared;
 using Olympiad.Services.Authorization;
+using Models.UserModels;
+using WebApp.Extensions;
+using Newtonsoft.Json;
 
 namespace WebApp.Controllers
 {
@@ -62,6 +65,21 @@ namespace WebApp.Controllers
             {
                 _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
             }
+
+
+            var loginEventRecord = new LoginEvent
+            {
+                UserId = user.Id,
+                LoginTime = DateTimeOffset.UtcNow,
+                IP = HttpContext.GetClientIP(),
+                UserAgent = HttpContext.GetClientUserAgent(),
+            };
+            logger.LogError($"READED IP IS >{loginEventRecord.IP}<");
+            logger.LogError($"READED USER_AGENT IS >{loginEventRecord.UserAgent}<");
+            logger.LogError(JsonConvert.SerializeObject(HttpContext.Request.Headers.Select(kvp => new { Key = kvp.Key, Value = kvp.Value })));
+            
+            context.LoginEvents.Add(loginEventRecord);
+            await context.SaveChangesAsync();
 
             return loginInfo;
         }

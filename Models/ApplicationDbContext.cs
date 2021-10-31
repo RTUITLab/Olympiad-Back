@@ -6,6 +6,7 @@ using Models.Checking;
 using Models.Exercises;
 using Models.Links;
 using Models.Solutions;
+using Models.UserModels;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -45,5 +46,6 @@ namespace Models
         public DbSet<Comment> Comments { get; set; }
         public DbSet<SolutionCheck> SolutionChecks { get; set; }
         public DbSet<SolutionBuildLog> SolutionBuildLogs { get; set; }
+        public DbSet<LoginEvent> LoginEvents { get; set; }
     }
 }
