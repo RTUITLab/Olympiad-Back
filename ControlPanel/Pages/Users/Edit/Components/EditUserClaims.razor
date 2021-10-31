@@ -8,14 +8,13 @@
 @inject IJSRuntime JS
 @inject MessageService _message
 
-<Card>
-
+<Card Loading="claims is null">
     <TitleTemplate>
         Свойства пользователя
         <Tooltip Title="@("Могут быть использованы для массового добавления к соревнованиям")">
             <Icon Type="@IconType.Outline.InfoCircle" />
         </Tooltip>
-        <Button Type="@ButtonType.Default" Icon="@IconType.Outline.Reload" OnClick="RefreshData"/>
+        <Button Type="@ButtonType.Default" Icon="@IconType.Outline.Reload" OnClick="RefreshData" />
     </TitleTemplate>
 
     <ChildContent>
@@ -60,17 +59,21 @@
 @code {
 
     [Parameter, EditorRequired]
-    public UserInfoResponse User { get; set; }
+    public UserInfoResponse? User { get; set; }
 
     private bool loading = true;
-    private List<ClaimResponseObject> claims;
+    private List<ClaimResponseObject>? claims;
 
     private ClaimRequest newClaim = new ClaimRequest();
 
-    private Input<string> typeInput;
+    private Input<string>? typeInput;
 
     public async Task RefreshData()
     {
+        if (User == null)
+        {
+            return;
+        }
         loading = true;
         try
         {
@@ -90,6 +93,10 @@
 
     private async Task AddClaim()
     {
+        if (User == null)
+        {
+            return;
+        }
         loading = true;
         try
         {
@@ -109,12 +116,19 @@
         if (needFocus)
         {
             needFocus = false;
-            await typeInput.Focus();
+            if (typeInput != null)
+            {
+                await typeInput.Focus();
+            }
         }
     }
 
     private async Task RemoveClaim(ClaimResponseObject claim)
     {
+        if (User == null)
+        {
+            return;
+        }
         loading = true;
         try
         {

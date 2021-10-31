@@ -8,10 +8,10 @@ namespace Olympiad.Shared
 {
     public class RoleNames
     {
-        public const string ADMIN = "Admin";
         public const string USER = "User";
-        public const string EXECUTOR = "Executor";
+        public const string ADMIN = "Admin";
         public const string RESULTS_VIEWER = "ResultsViewer";
+        public const string EXECUTOR = "Executor";
 
         public static IEnumerable<string> AllRoles => _roles.Value;
 

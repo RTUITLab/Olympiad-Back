@@ -1,0 +1,79 @@
+﻿@using Ganss.XSS
+@using Markdig
+@{
+    RenderFragment footer =
+    @<Button Type="@ButtonType.Primary" OnClick="Hide">Закрыть</Button>
+    ;
+}
+
+<Modal Title="Описание"
+       Visible="show"
+       Width="@("80vw")"
+       Footer="footer"
+       OnCancel="Hide">
+    <Row Gutter="20" Style="height: 60vh">
+        <AntDesign.Col Span="12">
+            <TextArea Style="height: 100%"
+                      @bind-Value="@Content"
+                      OnChange="UpdateValue" />
+        </AntDesign.Col>
+        <AntDesign.Col Span="12">
+            @Output
+        </AntDesign.Col>
+    </Row>
+    <Row Justify="space-between">
+        <AntDesign.Col>
+            <Text Type="secondary">
+                Используется язык <a href="https://gist.github.com/fomvasss/8dd8cd7f88c67a4e3727f9d39224a84c" target="_blank">Markdown</a>
+            </Text>
+        </AntDesign.Col>
+        <AntDesign.Col>
+            <Text Type="warning">
+                Не забудьте сохранить изменения!
+            </Text>
+        </AntDesign.Col>
+    </Row>
+</Modal>
+@code {
+    [Parameter]
+    public string? Content { get; set; }
+    [Parameter]
+    public EventCallback<string?> ContentChanged { get; set; }
+
+    private bool show;
+    public void Show()
+    {
+        show = true;
+        Task.Delay(150).ContinueWith(_ => StateHasChanged());
+    }
+    public void Hide()
+    {
+        show = false;
+    }
+
+    static MarkdownEditorModal()
+    {
+        htmlSanitizer = new HtmlSanitizer();
+        htmlSanitizer.AllowedAttributes.Add("class");
+    }
+
+    private static MarkdownPipeline pipeline = new MarkdownPipelineBuilder().Build();
+    private static HtmlSanitizer htmlSanitizer;
+    private MarkupString Output
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Content))
+            {
+                var html = Markdown.ToHtml(Content, pipeline);
+                var sanitizedHtml = htmlSanitizer.Sanitize(html);
+                return new MarkupString(sanitizedHtml);
+            }
+            return new MarkupString();
+        }
+    }
+    private void UpdateValue()
+    {
+        ContentChanged.InvokeAsync(Content);
+    }
+}

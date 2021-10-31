@@ -3,6 +3,7 @@ using Models;
 using Models.Checking;
 using Models.Exercises;
 using PublicAPI.Requests;
+using PublicAPI.Requests.Challenges;
 
 namespace WebApp.ViewModels.Mappings
 {
@@ -15,6 +16,9 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<SolutionCheckRequest, SolutionCheck>();
 
             CreateMap<UpdateAccountInfoRequest, User>();
+
+            CreateMap<UpdateChallengeInfoRequest, Challenge>()
+                .ForMember(c => c.ChallengeAccessType, map => map.MapFrom(ucir => ucir.AccessType));
         }
     }
 }

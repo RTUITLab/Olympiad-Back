@@ -1,0 +1,198 @@
+﻿@using Microsoft.Extensions.Logging
+@using Olympiad.Shared.Models
+@using PublicAPI.Requests.Challenges
+@using PublicAPI.Responses.Challenges
+@using Humanizer
+
+@inject IChallengesApi ChallengesApi
+@inject ILogger<EditChallengeBaseInfo> Logger
+@inject MessageService MessageService
+@inject IJSRuntime JS
+
+<Form Model="challengeModel"
+      LabelColSpan="4"
+      WrapperColSpan="20"
+      Loading="saving"
+      OnFinish="UpdatebaseInfo"
+      Layout="horizontal">
+    <FormItem Label="Название" Required>
+        <Input @bind-Value="@context.Name" />
+    </FormItem>
+    <FormItem Label="Описание">
+        @*<HelpTooltip>
+            <Text Style="color: white"></Text>
+            </HelpTooltip>
+            <RadioGroup @bind-Value="@descriptionMode">
+            <Radio RadioButton Value="@DescriptionMode.Row">Редактирование</Radio>
+            <Radio RadioButton Value="@DescriptionMode.Render">Предпросмотр</Radio>
+            </RadioGroup>*@
+        <TextArea MinRows="5"
+                  MaxRows="25"
+                  AutoSize
+                  @bind-Value="@context.Description" />
+        <Button Size="@ButtonSize.Small" Icon="@IconType.Outline.Edit" OnClick="() => contentMarkdownEditor?.Show()">Открыть редактор</Button>
+        <MarkdownEditorModal @bind-Content="@context.Description" @ref="contentMarkdownEditor" />
+    </FormItem>
+    <FormItem Label="Режим проведения">
+        <RadioGroup @bind-Value="@context.IsNoTimeLimits">
+            <Radio RadioButton Value="true">Бессрочное</Radio>
+            <Radio RadioButton Value="false">Ограниченное время</Radio>
+        </RadioGroup>
+    </FormItem>
+    @if (!context.IsNoTimeLimits)
+    {
+        <FormItem Label="Время проведения" Required>
+            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime="@("HH:mm")" Format="@("dd-MM-yyyy HH:mm")" OnChange="ChallengeTimeUpdated" AllowClear="false" />
+            <Text Type="@(context.Duration <= TimeSpan.Zero ? "danger" : "default")">@context.Duration?.Humanize(precision: 10)</Text>
+        </FormItem>
+    }
+    <FormItem Required Label="Результаты">
+        <Select @bind-Value="@context.ViewMode"
+                DefaultValue="@(ChallengeViewMode.Hidden)"
+                TItemValue="ChallengeViewMode"
+                TItem="ChallengeViewMode">
+            <SelectOptions>
+                <SelectOption TItemValue="ChallengeViewMode" TItem="ChallengeViewMode" Value="ChallengeViewMode.Hidden" Label="Скрыты" />
+                <SelectOption TItemValue="ChallengeViewMode" TItem="ChallengeViewMode" Value="ChallengeViewMode.Open" Label="Открыты" />
+            </SelectOptions>
+        </Select>
+        <Text Type="secondary">
+            @(context.ViewMode switch {
+            ChallengeViewMode.Hidden => "Пользователи видят только факт отправки решения",
+            ChallengeViewMode.Open => "Пользователи видят статус проверки решения",
+            _ => "Неверное значение"
+            })
+        </Text>
+    </FormItem>
+    <FormItem Label="Публичность" Required>
+        <Select @bind-Value="@context.AccessType"
+                DefaultValue="@(ChallengeAccessType.Private)"
+                TItemValue="ChallengeAccessType"
+                TItem="ChallengeAccessType">
+            <SelectOptions>
+                <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Private" Label="По приглашению" />
+                <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Public" Label="Публичное" />
+            </SelectOptions>
+        </Select>
+        <Text Type="secondary">
+            @(context.AccessType switch {
+            ChallengeAccessType.Private => "Необходимо пригласить конкретных пользователей в соревнование",
+            ChallengeAccessType.Public => "Доступно для прохождения всем зарегистрированным пользователям",
+            _ => "Неверное значение"
+            })
+        </Text>
+    </FormItem>
+    <FormItem WrapperColOffset="8" WrapperColSpan="16">
+        <Button Type="@ButtonType.Primary" HtmlType="submit">
+            Сохранить базовые параметры
+        </Button>
+    </FormItem>
+</Form>
+
+@code {
+    [Parameter]
+    public ChallengeResponse? Challenge { get; set; }
+    [Parameter]
+    public EventCallback<ChallengeResponse> ChallengeChanged { get; set; }
+
+    private enum DescriptionMode { Row, Render }
+    private DescriptionMode descriptionMode;
+
+    private EditFormChallengeUpdateModel challengeModel = new EditFormChallengeUpdateModel();
+
+    private bool saving;
+    private MarkdownEditorModal? contentMarkdownEditor;
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Challenge == null)
+        {
+            return;
+        }
+        challengeModel.Name = Challenge.Name;
+        challengeModel.Description = Challenge.Description;
+        challengeModel.StartTime = Challenge.StartTime;
+        challengeModel.EndTime = Challenge.EndTime;
+        challengeModel.ViewMode = Challenge.ViewMode;
+        challengeModel.AccessType = Challenge.ChallengeAccessType;
+    }
+
+    private void ChallengeTimeUpdated(DateRangeChangedEventArgs args)
+    {
+        challengeModel.TimeRange = args.Dates;
+    }
+
+    private async Task UpdatebaseInfo()
+    {
+        if (Challenge == null)
+        {
+            return;
+        }
+        saving = true;
+        try
+        {
+            await JS.InvokeVoidAsync("console.log", challengeModel);
+            var updatedChallenge = await ChallengesApi.UpdateChallengeAsync(Challenge.Id, challengeModel);
+            await ChallengeChanged.InvokeAsync(updatedChallenge);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Can't save challenge info");
+            await MessageService.Error("Ошибка при сохранении информации о соревновании");
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private class EditFormChallengeUpdateModel : UpdateChallengeInfoRequest
+    {
+        public bool IsNoTimeLimits
+        {
+            get => StartTime == null;
+            set
+            {
+                StartTime = EndTime = value ? null : TruncateMilliseconds(DateTime.Now);
+            }
+        }
+        public DateTime?[] TimeRange
+        {
+            get => new DateTime?[] { StartTime?.LocalDateTime, EndTime?.LocalDateTime };
+            set
+            {
+                if (value == null || value.Length != 2)
+                {
+                    StartTime = EndTime = null;
+                    return;
+                }
+                StartTime = TruncateMilliseconds(value[0]);
+                EndTime = TruncateMilliseconds(value[1]);
+                if (EndTime < StartTime)
+                {
+                    EndTime = StartTime;
+                }
+            }
+        }
+        private DateTime? TruncateMilliseconds(DateTime? value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            return value.Value.AddTicks(-(value.Value.Ticks % TimeSpan.TicksPerSecond));
+        }
+        public TimeSpan? Duration
+        {
+            get
+            {
+                var range = TimeRange;
+                if (range == null)
+                {
+                    return null;
+                }
+                return range[1] - range[0];
+            }
+        }
+    }
+}

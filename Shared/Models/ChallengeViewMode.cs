@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Models.Exercises
+namespace Olympiad.Shared.Models
 {
     public enum ChallengeViewMode
     {

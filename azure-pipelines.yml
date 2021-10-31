@@ -143,9 +143,13 @@ stages:
             OLYMPIAD_PRIVATE_REGISTRY_LOGIN: $(registryLogin)
             OLYMPIAD_PRIVATE_REGISTRY_PASSWORD: $(registryPassword)
 
-        - script: docker-compose -f stack.yml build
+        - script: docker-compose -f stack.yml build api admin results-viewer control-panel executor
           workingDirectory: ./tests/e2e
           displayName: build test images
+
+        - script: docker-compose -f stack.yml pull pdf-printer
+          workingDirectory: ./tests/e2e
+          displayName: pull pdf printer (base image deleted, use cached version TODO)
 
         - script: docker-compose -f stack.yml up -d api
           workingDirectory: ./tests/e2e
@@ -191,9 +195,9 @@ stages:
         control-panel:
           imageName: rtuitlab/olympiad-control-panel
           artifactName: control-panel-build
-        pdf-printer:
-          imageName: rtuitlab/olympiad-wkhtmltopdf-saas
-          artifactName: pdf-printer-build
+        #pdf-printer:
+        #  imageName: rtuitlab/olympiad-wkhtmltopdf-saas
+        #  artifactName: pdf-printer-build
     steps:
       - download: current
         artifact: $(artifactName)
@@ -340,29 +344,29 @@ stages:
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-control-panel:$(Build.BuildId) ${{variables.controlPanelServiceName}}'
                   readyTimeout: '20000'
-    - deployment: DeployPdfPrinter
-      displayName: Deploy pdf printer
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
-      strategy:
-        runOnce:
-          on:
-            failure:
-              steps:
-                - download: none
-                - task: SSH@0
-                  inputs:
-                    sshEndpoint: 'swarm manager'
-                    runOptions: 'commands'
-                    commands: 'docker service rollback ${{variables.pdfPrinterServiceName}}'
-                    readyTimeout: '20000'
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-wkhtmltopdf-saas:$(Build.BuildId) ${{variables.pdfPrinterServiceName}}'
-                  readyTimeout: '20000'
+    #- deployment: DeployPdfPrinter
+    #  displayName: Deploy pdf printer
+    #  pool:
+    #    vmImage: 'ubuntu-latest'
+    #  environment: ${{variables.deployEnvironment}}
+    #  strategy:
+    #    runOnce:
+    #      on:
+    #        failure:
+    #          steps:
+    #            - download: none
+    #            - task: SSH@0
+    #              inputs:
+    #                sshEndpoint: 'swarm manager'
+    #                runOptions: 'commands'
+    #                commands: 'docker service rollback ${{variables.pdfPrinterServiceName}}'
+    #                readyTimeout: '20000'
+    #      deploy:
+    #        steps:
+    #          - download: none
+    #          - task: SSH@0
+    #            inputs:
+    #              sshEndpoint: 'swarm manager'
+    #              runOptions: 'commands'
+    #              commands: 'docker service update --image rtuitlab/olympiad-wkhtmltopdf-saas:$(Build.BuildId) ${{variables.pdfPrinterServiceName}}'
+    #              readyTimeout: '20000'

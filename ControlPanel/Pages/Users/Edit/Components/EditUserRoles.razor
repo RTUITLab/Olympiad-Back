@@ -1,0 +1,99 @@
+﻿@using Olympiad.Shared
+@using PublicAPI.Requests
+@using PublicAPI.Responses.Users
+
+@inject IRolesApi RolesApi
+@inject MessageService _message
+
+<Card Title="Роли">
+    <Form Model="rolesModel"
+          LabelColSpan="8"
+          WrapperColSpan="16"
+          Loading="loading">
+        @foreach (var (roleModel, presenting) in context.Roles.Select(m => (model: m, presenting: HumanName(m.RoleName))))
+        {
+            <FormItem Label="@(presenting.title)">
+                <Checkbox @bind-Value="@roleModel.Contains"
+                      Disabled="@(!presenting.enabled)"
+                      CheckedChange="@((v) => ChangeRole(roleModel.RoleName, v))" />
+                <HelpTooltip Text="@presenting.description" />
+            </FormItem>
+        }
+    </Form>
+</Card>
+
+
+@code {
+    private RolesModel rolesModel = new();
+    private bool loading = true;
+    [Parameter]
+    public Guid UserId { get; set; }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            var rolesOfUser = await RolesApi.GetRoles(UserId);
+            UpdateModel(rolesOfUser);
+        }
+        finally
+        {
+            loading = false;
+        }
+        StateHasChanged();
+    }
+
+    private void UpdateModel(List<string> currentRoles)
+    {
+        foreach (var role in rolesModel.Roles)
+        {
+            role.Contains = currentRoles.Contains(role.RoleName);
+        }
+    }
+
+    private async Task ChangeRole(string roleName, bool tartegContains)
+    {
+        loading = true;
+        try
+        {
+            var roles = await (tartegContains ? RolesApi.AddToRole(UserId, roleName) : RolesApi.RemoveFromRole(UserId, roleName));
+            UpdateModel(roles);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private (string title, string description, bool enabled) HumanName(string roleName) => roleName switch
+    {
+        RoleNames.USER => ("Пользователь", "Может принимать участия в соревнованиях, отправлять решения", true),
+        RoleNames.ADMIN => ("Администратор", "Имеет полный доступ к системе, может редактировать все сущности", true),
+        RoleNames.RESULTS_VIEWER => ("Смотритель результатов", "Имеет доступ к просмотру результатов соревнований, решений студентов", true),
+        RoleNames.EXECUTOR => ("Проверятор", "Служебная роль для сервисов, выполняющих автоматическую проверку. Назначается системным администратором", false),
+        _ => ("Некорректное название роли", $"Требуемая для анализа роль не определена >{roleName}<", false)
+    };
+
+    private class RolesModel
+    {
+        public IReadOnlyCollection<RoleContains> Roles { get; } =
+            RoleNames
+            .AllRoles
+            .Select(rn => new RoleContains { RoleName = rn, Contains = false })
+            .ToList()
+            .AsReadOnly();
+    }
+    private class RoleContains
+    {
+        public string RoleName { get; set; } = "";
+        public bool Contains { get; set; }
+    }
+}

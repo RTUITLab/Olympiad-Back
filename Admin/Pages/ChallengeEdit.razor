@@ -4,6 +4,7 @@
 @inject Microsoft.Extensions.Options.IOptions<Options.EnvironmentOptions> EnvironmentOptions
 
 @using Microsoft.EntityFrameworkCore
+@using Olympiad.Shared.Models
 
 @inject NavigationManager navigationManager
 @inject IJSRuntime JS
@@ -78,7 +79,7 @@ else
                 <div class="form-group">
                     <label for="challenge-view-mode">View mode</label>
                     <InputSelect class="form-control" id="challenge-view-mode" @bind-Value="challenge.ViewMode">
-                        @foreach (var mode in Enum.GetValues(typeof(Models.Exercises.ChallengeViewMode)))
+                        @foreach (var mode in Enum.GetValues(typeof(ChallengeViewMode)))
                             {
                             <option value="@mode">@mode</option>
                             }

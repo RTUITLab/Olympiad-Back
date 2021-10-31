@@ -76,7 +76,7 @@
         }
     }
 
-    public RenderFragment<string> OpenLogsButton { get; private set; }
+    public RenderFragment<string> OpenLogsButton { get; private set; } = key => @<Template></Template>;
 
     public void LogInfo(string message, string? description = null)
     {
