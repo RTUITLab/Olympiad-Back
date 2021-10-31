@@ -37,14 +37,10 @@
         </Text>
     </Column>
     <Column @bind-Field="context.StartTime" Title="Начало" Sortable>
-        <Tooltip Title="context.StartTime?.ToString()">
-            <Text>@(context.StartTime?.LocalDateTime.ToString() ?? "—")</Text>
-        </Tooltip>
+        <PrettyDateTimeOffset  DateTimeOffset="context.StartTime"/>
     </Column>
     <Column @bind-Field="context.EndTime" Title="Конец" Sortable>
-        <Tooltip Title="context.EndTime?.ToString()">
-            <Text>@(context.EndTime?.LocalDateTime.ToString() ?? "—")</Text>
-        </Tooltip>
+        <PrettyDateTimeOffset  DateTimeOffset="context.EndTime"/>
     </Column>
     <ActionColumn>
         <NavLink href="@($"challenges/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>

@@ -38,6 +38,8 @@ public interface IControlPanelApiService
     public Task<List<ClaimResponseObject>> AddClaim(Guid userId, [Body] ClaimRequest request);
     [Delete("/api/account/{userId}/claims")]
     public Task<List<ClaimResponseObject>> RemoveClaim(Guid userId, string type, string value);
+    [Get("/api/account/{userId}/loginEvents")]
+    public Task<List<LoginEventResponse>> GetLoginEvents(Guid userId);
 
 
     [Get("/api/auth/gettokenforuser/{userId}")]

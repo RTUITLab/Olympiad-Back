@@ -358,5 +358,25 @@ namespace WebApp.Controllers.Users
 
             return new NewPasswordGeneratedResponse { NewPassword = password };
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{userId:guid}/loginEvents")]
+        public async Task<ActionResult<List<LoginEventResponse>>> GetLoginEvents(Guid userId)
+        {
+            var targetUser = await UserManager
+                .Users
+                .Include(u => u.LoginHistory)
+                .SingleOrDefaultAsync(u => u.Id == userId);
+            if (targetUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            return targetUser
+                .LoginHistory
+                .OrderByDescending(h => h.LoginTime)
+                .Select(h => mapper.Map<LoginEventResponse>(h))
+                .ToList();
+        }
     }
 }
