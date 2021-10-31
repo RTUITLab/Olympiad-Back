@@ -24,7 +24,16 @@ namespace WebApp.Services.Configure
         }
         public async Task Configure(CancellationToken cancellationToken)
         {
-            await dbContext.Database.MigrateAsync();
+            try
+            {
+                await dbContext.Database.MigrateAsync();
+            }
+            catch
+            {
+                logger.LogWarning("Waitnig to throw exception");
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                throw;
+            }
         }
     }
 }
