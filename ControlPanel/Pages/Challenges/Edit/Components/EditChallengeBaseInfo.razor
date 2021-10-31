@@ -42,7 +42,7 @@
     @if (!context.IsNoTimeLimits)
     {
         <FormItem Label="Время проведения" Required>
-            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime="@("HH:mm")" Format="@("dd-MM-yyyy HH:mm")" OnChange="ChallengeTimeUpdated" AllowClear="false" />
+            <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime="@("HH:mm")" Format="@("dd.MM.yyyy HH:mm")" OnChange="ChallengeTimeUpdated" AllowClear="false" />
             <Text Type="@(context.Duration <= TimeSpan.Zero ? "danger" : "default")">@context.Duration?.Humanize(precision: 10)</Text>
         </FormItem>
     }
@@ -128,6 +128,10 @@
         {
             return;
         }
+        if (challengeModel.Duration <= TimeSpan.Zero) {
+            await MessageService.Error("Соревнование должно длиться определенное время");
+            return;
+        }
         saving = true;
         try
         {
@@ -153,7 +157,7 @@
             get => StartTime == null;
             set
             {
-                StartTime = EndTime = value ? null : TruncateMilliseconds(DateTime.Now);
+                StartTime = EndTime = value ? null : TruncateSeconds(DateTime.Now);
             }
         }
         public DateTime?[] TimeRange
@@ -166,21 +170,21 @@
                     StartTime = EndTime = null;
                     return;
                 }
-                StartTime = TruncateMilliseconds(value[0]);
-                EndTime = TruncateMilliseconds(value[1]);
+                StartTime = TruncateSeconds(value[0]);
+                EndTime = TruncateSeconds(value[1]);
                 if (EndTime < StartTime)
                 {
                     EndTime = StartTime;
                 }
             }
         }
-        private DateTime? TruncateMilliseconds(DateTime? value)
+        private DateTime? TruncateSeconds(DateTime? value)
         {
             if (value == null)
             {
                 return null;
             }
-            return value.Value.AddTicks(-(value.Value.Ticks % TimeSpan.TicksPerSecond));
+            return value.Value.AddTicks(-(value.Value.Ticks % TimeSpan.TicksPerMinute));
         }
         public TimeSpan? Duration
         {

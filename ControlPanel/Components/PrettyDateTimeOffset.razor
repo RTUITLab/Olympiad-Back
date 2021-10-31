@@ -1,0 +1,7 @@
+﻿<Tooltip Title="DateTimeOffset?.ToString()">
+    <Text>@(DateTimeOffset?.LocalDateTime.ToString() ?? "—")</Text>
+</Tooltip>
+@code {
+    [Parameter]
+    public DateTimeOffset? DateTimeOffset { get; set; }
+}

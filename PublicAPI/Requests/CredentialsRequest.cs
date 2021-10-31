@@ -12,5 +12,7 @@ namespace PublicAPI.Requests
         public string Login { get; set; }
         [Required]
         public string Password { get; set; }
+        [MaxLength(50)]
+        public string ClientIP { get; set; }
     }
 }

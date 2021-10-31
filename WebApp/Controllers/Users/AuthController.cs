@@ -66,21 +66,29 @@ namespace WebApp.Controllers
                 _ = Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(async (t) => await notifyUsersService.SendInformationMessageToUser(user.Id, defaultUserSettings.Value.ResetPasswordWarningText));
             }
 
-
-            var loginEventRecord = new LoginEvent
-            {
-                UserId = user.Id,
-                LoginTime = DateTimeOffset.UtcNow,
-                IP = HttpContext.GetClientIP(),
-                UserAgent = HttpContext.GetClientUserAgent(),
-            };
-            
-            context.LoginEvents.Add(loginEventRecord);
-            await context.SaveChangesAsync();
+            await SaveLoginEvent(credentials.ClientIP, user.Id);
 
             return loginInfo;
         }
 
+        private async Task SaveLoginEvent(string clientIpFromRequest, Guid userId)
+        {
+            var clientIP = HttpContext.GetClientIP();
+            if (!string.IsNullOrEmpty(clientIpFromRequest))
+            {
+                clientIP = $"{clientIpFromRequest} | {clientIP}";
+            }
+            var loginEventRecord = new LoginEvent
+            {
+                UserId = userId,
+                LoginTime = DateTimeOffset.UtcNow,
+                IP = clientIP,
+                UserAgent = HttpContext.GetClientUserAgent(),
+            };
+
+            context.LoginEvents.Add(loginEventRecord);
+            await context.SaveChangesAsync();
+        }
 
         [HttpGet("getme")]
         [Authorize(AuthenticationSchemes = "Bearer")]

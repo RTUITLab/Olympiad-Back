@@ -12,6 +12,7 @@ using WebApp.Models;
 using Models.Checking;
 using System.Security.Claims;
 using PublicAPI.Responses.Account;
+using Models.UserModels;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -65,6 +66,9 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<SolutionCheck, SolutionCheckResponse>();
 
             CreateMap<Claim, ClaimResponseObject>();
+
+            CreateMap<LoginEvent, LoginEventResponse>()
+                .ForMember(r => r.Date, map => map.MapFrom(e => e.LoginTime));
         }
     }
 }
