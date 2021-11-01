@@ -44,7 +44,7 @@ namespace WebApp.Controllers.Challenges
                 .ToListAsync();
         }
 
-
+        // TODO: Currect work with limit and offset, use users count instead solutions count
         [HttpGet("{challengeId:guid}")]
         public async Task<ListResponse<UserChallengeResultsResponse>> GetUserResultsForChallenge(
             Guid challengeId,
@@ -71,7 +71,6 @@ namespace WebApp.Controllers.Challenges
                     m.User.FirstName,
                     m.ExerciseId
                 })
-                .OrderBy(s => s.Key.StudentID)
                 .Select(g => new
                 {
                     g.Key.UserId,
@@ -83,6 +82,7 @@ namespace WebApp.Controllers.Challenges
             var totalCount = await simpleDataRequest.CountAsync();
 
             var simpleData = await simpleDataRequest
+                .OrderBy(s => s.StudentID)
                 .ToListAsync();
             var userSolutions = simpleData
                 .GroupBy(s => new { s.UserId, s.StudentID, s.FirstName })
@@ -97,7 +97,7 @@ namespace WebApp.Controllers.Challenges
                     Scores = g.ToDictionary(g => g.ExerciseId.ToString(), g => g.Score),
                     TotalScore = g.Sum(e => e.Score)
                 })
-                .OrderBy(r => r.User.FirstName)
+                .OrderBy(r => r.User.StudentId)
                 .ToList();
             return new ListResponse<UserChallengeResultsResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = userSolutions };
         }
