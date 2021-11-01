@@ -38,8 +38,4 @@
     <ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\Challenges\" />
-  </ItemGroup>
 </Project>

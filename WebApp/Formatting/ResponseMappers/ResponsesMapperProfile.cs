@@ -13,6 +13,8 @@ using Models.Checking;
 using System.Security.Claims;
 using PublicAPI.Responses.Account;
 using Models.UserModels;
+using PublicAPI.Responses.Exercises;
+using PublicAPI.Responses.Challenges.Analytics;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -33,15 +35,19 @@ namespace WebApp.Formatting.ResponseMappers
                     ))
                 .ForMember(r => r.ChallengeViewMode, map => map.MapFrom(c => c.Challenge.ViewMode));
 
-            CreateMap<ExerciseCompactInternalModel, ExerciseCompactResponse>()
+            CreateMap<ExerciseCompactInternalModel, ExerciseForUserInfoResponse>()
                 .ForMember(ecim => ecim.Status, map => map.MapFrom(ecr => ecr.GetStatus()))
                 .ForMember(ecim => ecim.HiddenStatus, map => map.MapFrom(ecr => ecr.GetHiddenStatus()));
 
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
-                .ForMember(r => r.Solutions, map => map.Ignore());
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
+
+            CreateMap<Exercise, ExerciseCompactResponse>()
+                .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
 
 
             CreateMap<User, LoginResponse>()

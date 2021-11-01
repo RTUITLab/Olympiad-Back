@@ -18,6 +18,7 @@ using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
+using PublicAPI.Responses.Exercises;
 
 namespace WebApp.Controllers
 {
@@ -40,7 +41,7 @@ namespace WebApp.Controllers
 
 
         [HttpGet]
-        public async Task<List<ExerciseCompactResponse>> GetForChallenge(Guid challengeId)
+        public async Task<List<ExerciseForUserInfoResponse>> GetForChallenge(Guid challengeId)
         {
             var exercises = await context
                 .Exercises
@@ -51,7 +52,20 @@ namespace WebApp.Controllers
                 .OrderBy(e => e.ExerciseName)
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
-            return exercises.Select(e => mapper.Map<ExerciseCompactResponse>(e)).ToList();
+            return exercises.Select(e => mapper.Map<ExerciseForUserInfoResponse>(e)).ToList();
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin,ResultsViewer")]
+        public async Task<List<ExerciseCompactResponse>> GetAllForChallenge(Guid challengeId)
+        {
+            var exercises = await context
+                .Exercises
+                .Where(e => e.ChallengeId == challengeId)
+                .OrderBy(e => e.ExerciseName)
+                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+            return exercises;
         }
 
         [HttpGet]

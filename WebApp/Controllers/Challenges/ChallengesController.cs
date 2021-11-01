@@ -18,7 +18,7 @@ using PublicAPI.Responses.Challenges;
 using WebApp.Models;
 
 
-namespace WebApp.Controllers
+namespace WebApp.Controllers.Challenges
 {
     [Produces("application/json")]
     [Route("api/challenges")]
@@ -52,17 +52,6 @@ namespace WebApp.Controllers
             return context
                 .Challenges
                 .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
-                .OrderBy(c => c.Name)
-                .ToListAsync();
-        }
-
-        [HttpGet("all/withAnalytics")]
-        [Authorize(Roles = "Admin")]
-        public Task<List<ChallengeResponseWithAnalytics>> GetChallengesWithAnalitycsAsync()
-        {
-            return context
-                .Challenges
-                .ProjectTo<ChallengeResponseWithAnalytics>(mapper.ConfigurationProvider)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -125,7 +114,7 @@ namespace WebApp.Controllers
             IQueryable<Challenge> query = context.Challenges;
             if (!IsAdmin)
             {
-                query = query.Where(c => 
+                query = query.Where(c =>
                     c.ChallengeAccessType == ChallengeAccessType.Public ||
                     c.UsersToChallenges.Any(utc => utc.UserId == UserId)
                 );

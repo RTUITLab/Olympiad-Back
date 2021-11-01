@@ -97,10 +97,12 @@
         loading = true;
         try
         {
-            var pageSizeToLoad = PageSize < 1 ? 50 : PageSize;
+            var limit = PageSize < 1 ? 50 : PageSize;
             var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
 
-            var loaded = await ControlPanelApiService.SearchUsers(Match, pageSizeToLoad, (pageIndexToLoad - 1) * pageSizeToLoad);
+            var offset = (pageIndexToLoad - 1) * limit;
+
+            var loaded = await ControlPanelApiService.SearchUsers(Match, limit, offset);
             loadedData = loaded;
         }
         finally

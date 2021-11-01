@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PublicAPI.Responses.Challenges
+namespace PublicAPI.Responses.Challenges.Analytics
 {
     public class ChallengeResponseWithAnalytics : ChallengeResponse
     {
