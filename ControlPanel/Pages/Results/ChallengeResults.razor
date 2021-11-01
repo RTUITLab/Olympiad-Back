@@ -1,0 +1,50 @@
+﻿@page "/results/{ChallengeId:guid}"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+
+@using PublicAPI.Responses.Challenges
+@using Olympiad.ControlPanel.Pages.Challenges.Edit.Components
+
+
+@inject MessageService MessageService
+@inject NavigationManager NavigationManager
+@inject IChallengesApi ChallengesApi
+
+<PageHeader Title="@(challengeResponse?.Name ?? "Загрузка...")">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem Href="results">
+                Результаты
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                @(challengeResponse?.Name ?? "Загрузка...")
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+</PageHeader>
+
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private ChallengeResponse? challengeResponse;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        try
+        {
+            challengeResponse = await ChallengesApi.GetChallengeAsync(ChallengeId);
+        }
+        catch
+        {
+            GoToResults();
+            await MessageService.Warn("Соревнование не найдено");
+        }
+    }
+
+    private void GoToResults()
+    {
+        NavigationManager.NavigateTo("results");
+    }
+}

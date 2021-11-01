@@ -44,6 +44,7 @@ namespace WebApp.Controllers
             return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
         }
 
+
         [HttpGet("all")]
         [Authorize(Roles = "Admin")]
         public Task<List<ChallengeResponse>> GetAllAsync()
@@ -51,6 +52,17 @@ namespace WebApp.Controllers
             return context
                 .Challenges
                 .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
+
+        [HttpGet("all/withAnalytics")]
+        [Authorize(Roles = "Admin")]
+        public Task<List<ChallengeResponseWithAnalytics>> GetChallengesWithAnalitycsAsync()
+        {
+            return context
+                .Challenges
+                .ProjectTo<ChallengeResponseWithAnalytics>(mapper.ConfigurationProvider)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }

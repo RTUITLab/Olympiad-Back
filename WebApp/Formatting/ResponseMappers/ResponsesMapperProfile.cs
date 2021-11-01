@@ -58,6 +58,15 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()
                 .ForMember(cer => cer.Invited, map => map.MapFrom(c => c.UsersToChallenges.Select(utc => utc.User)));
+            CreateMap<Challenge, ChallengeResponseWithAnalytics>()
+                .ForMember(a => a.StartedExecutionCount, 
+                map => map.MapFrom(c => c
+                                    .Exercises
+                                    .SelectMany(e => e.Solutions)
+                                    .Select(s => s.UserId)
+                                    .Distinct()
+                                    .Count()))
+                .ForMember(a => a.InvitedCount, map => map.MapFrom(c => c.UsersToChallenges.Count()));
 
 
             CreateMap<ExerciseData, ExerciseDataResponse>();

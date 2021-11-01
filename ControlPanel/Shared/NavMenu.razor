@@ -3,10 +3,12 @@
 <Menu Mode="MenuMode.Inline"
       Style="height: 100%; border-right: 0;">
     <MenuItem Key="index" RouterLink="" RouterMatch="NavLinkMatch.All">Главная страница</MenuItem>
+    <MenuItem Key="main-site" RouterLink="/" RouterMatch="NavLinkMatch.All">Сайт пользователя</MenuItem>
     <AuthorizeView>
         <Authorized>
             @if (context.User.IsAdmin())
             {
+                <Divider Text="Администрирование" Orientation="left"/>
                 <MenuItem Key="users" RouterLink="users" RouterMatch="NavLinkMatch.Prefix">
                     <Icon Type="@IconType.Outline.Team" />
                     Пользователи
@@ -16,16 +18,25 @@
                     Соревнования
                 </MenuItem>
             }
+            @if (context.User.IsResultsViewer())
+            {
+                <Divider Text="Результаты" Orientation="left" />
+
+                <MenuItem Key="results" RouterLink="results" RouterMatch="NavLinkMatch.Prefix">
+                    <Icon Type="@IconType.Outline.Solution" />
+                    Результаты
+                </MenuItem>
+            }
         </Authorized>
 
     </AuthorizeView>
-   
+
     @*<MenuItem Key="admin" RouterLink="/admin" RouterMatch="NavLinkMatch.All">Панель администратора</MenuItem>*@
-    <MenuItem Key="main-site" RouterLink="/" RouterMatch="NavLinkMatch.All">Сайт пользователя</MenuItem>
+
 
 </Menu>
 
 @code {
 
-   
+
 }

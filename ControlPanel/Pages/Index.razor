@@ -3,11 +3,22 @@
 @inject ILoginRefresh LoginRefresh
 <PageHeader Title="Панель управления" />
 <AuthorizeView>
-	<Authorized>
-		@if (context.User.IsAdmin())
-		{
-			<CheckingStatistic />
-		}
-	</Authorized>
-
+    <Authorized>
+        @if (!context.User.IsResultsViewer() && !context.User.IsAdmin())
+        {
+            <Alert Type="info" ShowIcon="true">
+                Данный раздел используется для управления системой. Если у вас нет доступа к разделам этого сайта - вы можете <a href="/">вернуться на сайт пользователя</a>
+            </Alert>
+        }
+        @if (context.User.IsResultsViewer())
+        {
+            <Alert Type="info" ShowIcon="true">
+                У вас есть возможность просматривать результаты. <NavLink href="results"><Button>Перейти к результатам соревнований</Button></NavLink>
+            </Alert>
+        }
+        @if (context.User.IsAdmin())
+        {
+            <CheckingStatistic />
+        }
+    </Authorized>
 </AuthorizeView>
