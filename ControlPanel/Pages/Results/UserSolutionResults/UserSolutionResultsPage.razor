@@ -1,0 +1,14 @@
+﻿@page "/results/{ChallengeId:guid}/user/{UserId:guid}/solution/{SolutionId:guid}"
+@attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
+
+In progress
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+}

@@ -1,0 +1,54 @@
+﻿@using PublicAPI.Responses.Solutions
+@using System.Threading
+
+@inject ISolutionsApi SolutionsApi
+
+@if (solutions is null)
+{
+    <Skeleton Active></Skeleton>
+}
+else
+{
+    <AntList Bordered DataSource="solutions.OrderByDescending(s => s.Score)">
+        <ListItem>
+            <NavLink href="@($"results/{ChallengeId}/user/{UserId}/solution/{context.Id}")">
+                <Text>
+                    <ScoreBadge Score="context.Score" /> |
+                    @context.Status.ToRussian() |
+                    <Text Code>@context.Language</Text>  |
+                    <PrettyDateTimeOffset DateTimeOffset="@context.SendingTime" />
+                </Text>
+            </NavLink>
+        </ListItem>
+    </AntList>
+}
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private List<SolutionAnalyticCompactResponse>? solutions;
+
+    private SemaphoreSlim loadingSemaphore = new SemaphoreSlim(1, 1);
+    public async ValueTask TriggerOpen()
+    {
+        if (solutions is not null)
+        {
+            return;
+        }
+        await loadingSemaphore.WaitAsync();
+        try
+        {
+            solutions = await SolutionsApi.GetSolutionsForExerciseAsync(ExerciseId, UserId);
+        }
+        finally
+        {
+            loadingSemaphore.Release();
+            StateHasChanged();
+        }
+    }
+}

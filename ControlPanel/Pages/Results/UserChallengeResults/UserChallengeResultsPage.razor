@@ -6,12 +6,12 @@
 @using PublicAPI.Responses.Exercises
 @using PublicAPI.Responses.Solutions
 @using PublicAPI.Responses.Users
+@using Olympiad.ControlPanel.Pages.Results.UserChallengeResults.Components
 
-@inject ILogger<UserChallengeResults> logger
+@inject ILogger<UserChallengeResultsPage> logger
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
-@inject ISolutionsApi SolutionsApi
 @inject IControlPanelApiService ControlPanelApiService
 
 <PageTitle>@(user?.FirstName ?? $"Загрузка...") - @(challenge?.Name ?? $"Загрузка...")</PageTitle>
@@ -64,21 +64,16 @@
             <Collapse OnChange="ReaectOnChange">
                 @foreach (var exercise in exercises)
                 {
-                    <Panel Header="@exercise.Name" Key="@exercise.Id.ToString()">
-                        @if (exerciseCache.ContainsKey(exercise.Id))
-                        {
-                            <AntList Bordered DataSource="@exerciseCache[exercise.Id].OrderByDescending(s => s.Score)">
-                                <ListItem>
-                                    <NavLink href="@($"results/{ChallengeId}/user/{UserId}/solution/{context.Id}")">
-                                        <Text>@(context.Score?.ToString() ?? "No score") | @context.Status | @context.Language | <PrettyDateTimeOffset DateTimeOffset="@context.SendingTime" /></Text>
-                                    </NavLink>
-                                </ListItem>
-                            </AntList>
-                        }
-                        else
-                        {
-                            <Skeleton Active></Skeleton>
-                        }
+                    <Panel Key="@exercise.Id.ToString()">
+                        <HeaderTemplate>
+                            @exercise.Name <ScoreBadge Score="exercise.Score" />
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <UserSolutionsList ChallengeId="ChallengeId"
+                                       ExerciseId="exercise.Id"
+                                       UserId="UserId"
+                                       @ref="solutionLists[exercise.Id]" />
+                        </ChildContent>
                     </Panel>
                 }
             </Collapse>
@@ -100,7 +95,7 @@
     private List<ExerciseCompactResponse>? exercises;
     private UserInfoResponse? user;
 
-    private Dictionary<Guid, List<SolutionAnalyticCompactResponse>> exerciseCache = new();
+    private Dictionary<Guid, UserSolutionsList> solutionLists = new();
 
 
 
@@ -128,20 +123,12 @@
 
     private async Task ReaectOnChange(string[] keys)
     {
-        var ids = keys.Select(Guid.Parse).ToArray();
-        foreach (var id in ids)
+        foreach (var id in keys.Select(Guid.Parse))
         {
-            if (exerciseCache.ContainsKey(id))
+            if (solutionLists.TryGetValue(id, out var list))
             {
-                continue;
+                await list.TriggerOpen();
             }
-            await LoadSolutionsForExercise(id);
         }
-    }
-
-    private async Task LoadSolutionsForExercise(Guid exerciseId)
-    {
-        var solutions = await SolutionsApi.GetSolutionsForExerciseAsync(exerciseId, UserId);
-        exerciseCache[exerciseId] = solutions;
     }
 }
