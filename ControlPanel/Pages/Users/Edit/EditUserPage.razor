@@ -9,14 +9,15 @@
 @inject IControlPanelApiService ControlPanelApiService
 @inject IJSRuntime JS
 
-<PageHeader Title="@(userInfo?.FirstName ?? "Загрузка")">
+<PageTitle>@PageTitle</PageTitle>
+<PageHeader Title="@PageTitle">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem Href="users">
                 Пользователи
             </BreadcrumbItem>
             <BreadcrumbItem>
-                @(userInfo?.FirstName ?? "Загрузка")
+                @PageTitle
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
@@ -46,6 +47,8 @@
 @code {
     [Parameter]
     public Guid UserId { get; set; }
+
+    private string PageTitle => userInfo?.FirstName ?? "Загрузка...";
 
     private DeleteUserConfirmationModal? deleteModal;
     private EditUserClaims? editUserClaims;

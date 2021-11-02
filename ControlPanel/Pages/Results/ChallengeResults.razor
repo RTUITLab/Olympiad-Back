@@ -12,15 +12,15 @@
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
-
-<PageHeader Title="@(challengeResponse?.Name ?? "Загрузка...")">
+<PageTitle>@PageTitle</PageTitle>
+<PageHeader Title="@PageTitle">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem Href="results">
                 Результаты
             </BreadcrumbItem>
             <BreadcrumbItem>
-                @(challengeResponse?.Name ?? "Загрузка...")
+                @PageTitle
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
@@ -91,6 +91,8 @@
 </Space>
 
 @code {
+    private string PageTitle => challengeResponse?.Name ?? "Загрузка...";
+
     [Parameter]
     public Guid ChallengeId { get; set; }
 
