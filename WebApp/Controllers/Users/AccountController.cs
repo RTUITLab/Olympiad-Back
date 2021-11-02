@@ -61,7 +61,7 @@ namespace WebApp.Controllers.Users
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ListResponse<UserInfoResponse>> Get(
+        public async Task<ListResponseWithMatch<UserInfoResponse>> Get(
             [MaxLength(100)] string match,
             [Range(0, int.MaxValue)] int offset = 0,
             [Range(1, 200)] int limit = 50)
@@ -80,7 +80,7 @@ namespace WebApp.Controllers.Users
                 .Take(limit)
                 .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
-            return new ListResponse<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = result };
+            return new ListResponseWithMatch<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Match = match, Data = result };
         }
 
         [HttpGet("{userId:guid}")]
@@ -236,7 +236,7 @@ namespace WebApp.Controllers.Users
             else
             {
                 var (statusCode, value) = createUserResult.AsT1;
-                if(statusCode == 400 && value is ModelStateDictionary modelState)
+                if (statusCode == 400 && value is ModelStateDictionary modelState)
                 {
                     return BadRequest(modelState);
                 }

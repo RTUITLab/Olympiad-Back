@@ -6,21 +6,22 @@
 @using Olympiad.ControlPanel.Pages.Challenges.Edit.Components
 @using PublicAPI.Responses.Challenges.Analytics
 @using PublicAPI.Responses.Exercises
+@using System.Threading
 
 
 @inject MessageService MessageService
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
-
-<PageHeader Title="@(challengeResponse?.Name ?? "Загрузка...")">
+<PageTitle>@PageTitle</PageTitle>
+<PageHeader Title="@PageTitle">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem Href="results">
                 Результаты
             </BreadcrumbItem>
             <BreadcrumbItem>
-                @(challengeResponse?.Name ?? "Загрузка...")
+                @PageTitle
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
@@ -30,55 +31,69 @@
         <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
     </SpaceItem>
     <SpaceItem>
-        @if (exercises is null)
-        {
-            <Skeleton Active />
-        }
-        else
-        {
-            <Table DataSource="userResults?.Data"
-               Loading="loading"
-               Total="userResults?.Total ?? 0"
-               @bind-PageIndex="PageIndex"
-               @bind-PageSize="PageSize"
-               TItem="UserChallengeResultsResponse"
-               OnChange="HandleChange"
-               ScrollX="@((exercises.Count * 130).ToString())">
-                <ChildContent>
+        <AuthorizeView Context="userContext">
+            <Authorized>
+                @if (exercises is null)
+                {
+                    <Skeleton Active />
+                }
+                else
+                {
+                    <Table DataSource="userResults?.Data"
+                       Loading="loading"
+                       Total="userResults?.Total ?? 0"
+                       @bind-PageIndex="PageIndex"
+                       @bind-PageSize="PageSize"
+                       TItem="UserChallengeResultsResponse"
+                       OnChange="HandleChange"
+                       ScrollX="@((exercises.Count * 130).ToString())">
+                        <ChildContent>
 
-                    <Column Title="Идентификатор" TData="string" Fixed="left" Width="150">
-                        @*<NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.StudentId</NavLink>*@
-                        @context.User.StudentId
-                    </Column>
-                    @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
-                    {
-                        <Column TData="string" Width="130">
-                            <TitleTemplate>
-                                @exercise.Name (@exercise.Score)
-                            </TitleTemplate>
-                            <ChildContent>
-                                @if (context.Scores.ContainsKey(exercise.Id.ToString()))
-                                {
-                                    @context.Scores[exercise.Id.ToString()]
-                                }
-                                else
-                                {
-                                    <Text>—</Text>
-                                }
-                            </ChildContent>
-                        </Column>
-                    }
-                    <Column Title="Имя" TData="string" Width="120" Fixed="right">@context.User.FirstName</Column>
-                    <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
-                </ChildContent>
-                <FooterTemplate>
-                </FooterTemplate>
-            </Table>
-        }
+                            <Column Title="Идентификатор" TData="string" Fixed="left" Width="150">
+                                @*<NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.StudentId</NavLink>*@
+                                @context.User.StudentId
+                            </Column>
+                            @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
+                            {
+                                <Column TData="string" Width="130">
+                                    <TitleTemplate>
+                                        @exercise.Name (@exercise.Score)
+                                    </TitleTemplate>
+                                    <ChildContent>
+                                        @if (context.Scores.ContainsKey(exercise.Id.ToString()))
+                                        {
+                                            @context.Scores[exercise.Id.ToString()]
+                                        }
+                                        else
+                                        {
+                                            <Text>—</Text>
+                                        }
+                                    </ChildContent>
+                                </Column>
+                            }
+                            <Column Title="Имя" TData="string" Width="120" Fixed="right">@context.User.FirstName</Column>
+                            <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
+
+                            @if (userContext.User.IsAdmin())
+                            {
+                                <ActionColumn Width="100" Fixed="right">
+                                    <NavLink href="@($"users/{context.User.Id}")">
+                                        <Button Icon="@IconType.Outline.User" />
+                                    </NavLink>
+                                </ActionColumn>
+                            }
+
+                        </ChildContent>
+                    </Table>
+                }
+            </Authorized>
+        </AuthorizeView>
     </SpaceItem>
 </Space>
 
 @code {
+    private string PageTitle => challengeResponse?.Name ?? "Загрузка...";
+
     [Parameter]
     public Guid ChallengeId { get; set; }
 
@@ -97,9 +112,9 @@
     private bool loading = true;
 
     private ChallengeResponse? challengeResponse;
-    private ListResponse<UserChallengeResultsResponse>? userResults;
+    private ListResponseWithMatch<UserChallengeResultsResponse>? userResults;
     private List<ExerciseCompactResponse>? exercises;
-
+    private Guid loadedChallengeId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -138,20 +153,31 @@
         }
         await LoadData();
     }
-
+    private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
     private async Task LoadData()
     {
+        await loadDataSemaphore.WaitAsync();
         loading = true;
         try
         {
             var limit = PageSize < 1 ? 50 : PageSize;
             var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
             var offset = (pageIndexToLoad - 1) * limit;
-            userResults = await ChallengesApi.GetUserResultsForChallenge(ChallengeId, Match, offset, limit);
+            var localChallengeId = ChallengeId;
+            if (loadedChallengeId == localChallengeId &&
+                Match == userResults?.Match &&
+                offset == userResults?.Offset && 
+                limit == userResults?.Limit)
+            {
+                return;
+            }
+            userResults = await ChallengesApi.GetUserResultsForChallenge(localChallengeId, Match, offset, limit);
+            loadedChallengeId = localChallengeId;
         }
         finally
         {
             loading = false;
+            loadDataSemaphore.Release();
         }
     }
 

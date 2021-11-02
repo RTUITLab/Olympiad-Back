@@ -19,7 +19,7 @@ public interface IControlPanelApiService
     public Task<List<SolutionsStatisticResponse>> GetSolutionsStatisticsAsync();
 
     [Get("/api/account")]
-    public Task<ListResponse<UserInfoResponse>> SearchUsers(string? match, int limit, int offset);
+    public Task<ListResponseWithMatch<UserInfoResponse>> SearchUsers(string? match, int limit, int offset);
     [Get("/api/account/{userId}")]
     public Task<ApiResponse<UserInfoResponse>> GetUser(Guid userId);
     [Put("/api/account/{userId}")]

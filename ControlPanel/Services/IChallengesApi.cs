@@ -16,7 +16,7 @@ namespace Olympiad.ControlPanel.Services
         [Get("/api/challenges/analytics")]
         public Task<List<ChallengeResponseWithAnalytics>> GetAllChallengesWithAnalyticsAsync();
         [Get("/api/challenges/analytics/{challengeId}")]
-        public Task<ListResponse<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit);
+        public Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit);
 
 
         [Get("/api/challenges/{challengeId}")]
