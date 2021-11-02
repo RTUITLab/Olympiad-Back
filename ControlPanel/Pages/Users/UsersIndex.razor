@@ -6,6 +6,7 @@
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Users
 @using System.Text
+@using System.Threading
 
 @inject MessageService _message
 @inject IControlPanelApiService ControlPanelApiService
@@ -69,7 +70,7 @@
     public int PageSize { get; set; } = 50;
 
     private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
-    private ListResponse<UserInfoResponse>? loadedData;
+    private ListResponseWithMatch<UserInfoResponse>? loadedData;
     private bool loading;
 
     private async Task HandleChange()
@@ -91,9 +92,10 @@
         }
         await LoadData();
     }
-
+    private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
     private async Task LoadData()
     {
+        await loadDataSemaphore.WaitAsync();
         loading = true;
         try
         {
@@ -102,12 +104,17 @@
 
             var offset = (pageIndexToLoad - 1) * limit;
 
-            var loaded = await ControlPanelApiService.SearchUsers(Match, limit, offset);
-            loadedData = loaded;
+            if (limit == loadedData?.Limit && offset == loadedData?.Offset && Match == loadedData?.Match)
+            {
+                return;
+            }
+
+            loadedData = await ControlPanelApiService.SearchUsers(Match, limit, offset);
         }
         finally
         {
             loading = false;
+            loadDataSemaphore.Release();
         }
     }
 

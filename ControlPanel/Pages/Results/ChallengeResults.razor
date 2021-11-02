@@ -6,6 +6,7 @@
 @using Olympiad.ControlPanel.Pages.Challenges.Edit.Components
 @using PublicAPI.Responses.Challenges.Analytics
 @using PublicAPI.Responses.Exercises
+@using System.Threading
 
 
 @inject MessageService MessageService
@@ -111,9 +112,9 @@
     private bool loading = true;
 
     private ChallengeResponse? challengeResponse;
-    private ListResponse<UserChallengeResultsResponse>? userResults;
+    private ListResponseWithMatch<UserChallengeResultsResponse>? userResults;
     private List<ExerciseCompactResponse>? exercises;
-
+    private Guid loadedChallengeId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -152,20 +153,31 @@
         }
         await LoadData();
     }
-
+    private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
     private async Task LoadData()
     {
+        await loadDataSemaphore.WaitAsync();
         loading = true;
         try
         {
             var limit = PageSize < 1 ? 50 : PageSize;
             var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
             var offset = (pageIndexToLoad - 1) * limit;
-            userResults = await ChallengesApi.GetUserResultsForChallenge(ChallengeId, Match, offset, limit);
+            var localChallengeId = ChallengeId;
+            if (loadedChallengeId == localChallengeId &&
+                Match == userResults?.Match &&
+                offset == userResults?.Offset && 
+                limit == userResults?.Limit)
+            {
+                return;
+            }
+            userResults = await ChallengesApi.GetUserResultsForChallenge(localChallengeId, Match, offset, limit);
+            loadedChallengeId = localChallengeId;
         }
         finally
         {
             loading = false;
+            loadDataSemaphore.Release();
         }
     }
 

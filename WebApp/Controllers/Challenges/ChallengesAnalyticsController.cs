@@ -46,7 +46,7 @@ namespace WebApp.Controllers.Challenges
 
         // TODO: Currect work with limit and offset, use users count instead solutions count
         [HttpGet("{challengeId:guid}")]
-        public async Task<ListResponse<UserChallengeResultsResponse>> GetUserResultsForChallenge(
+        public async Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(
             Guid challengeId,
             [MaxLength(100)] string match,
             [Range(0, int.MaxValue)] int offset = 0,
@@ -99,7 +99,14 @@ namespace WebApp.Controllers.Challenges
                 })
                 .OrderBy(r => r.User.StudentId)
                 .ToList();
-            return new ListResponse<UserChallengeResultsResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = userSolutions };
+            return new ListResponseWithMatch<UserChallengeResultsResponse>
+            {
+                Limit = limit,
+                Total = totalCount,
+                Offset = offset,
+                Match = match,
+                Data = userSolutions
+            };
         }
     }
 }
