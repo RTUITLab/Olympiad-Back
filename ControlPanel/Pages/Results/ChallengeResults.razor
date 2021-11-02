@@ -30,51 +30,63 @@
         <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
     </SpaceItem>
     <SpaceItem>
-        @if (exercises is null)
-        {
-            <Skeleton Active />
-        }
-        else
-        {
-            <Table DataSource="userResults?.Data"
-               Loading="loading"
-               Total="userResults?.Total ?? 0"
-               @bind-PageIndex="PageIndex"
-               @bind-PageSize="PageSize"
-               TItem="UserChallengeResultsResponse"
-               OnChange="HandleChange"
-               ScrollX="@((exercises.Count * 130).ToString())">
-                <ChildContent>
+        <AuthorizeView Context="userContext">
+            <Authorized>
+                @if (exercises is null)
+                {
+                    <Skeleton Active />
+                }
+                else
+                {
+                    <Table DataSource="userResults?.Data"
+                       Loading="loading"
+                       Total="userResults?.Total ?? 0"
+                       @bind-PageIndex="PageIndex"
+                       @bind-PageSize="PageSize"
+                       TItem="UserChallengeResultsResponse"
+                       OnChange="HandleChange"
+                       ScrollX="@((exercises.Count * 130).ToString())">
+                        <ChildContent>
 
-                    <Column Title="Идентификатор" TData="string" Fixed="left" Width="150">
-                        @*<NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.StudentId</NavLink>*@
-                        @context.User.StudentId
-                    </Column>
-                    @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
-                    {
-                        <Column TData="string" Width="130">
-                            <TitleTemplate>
-                                @exercise.Name (@exercise.Score)
-                            </TitleTemplate>
-                            <ChildContent>
-                                @if (context.Scores.ContainsKey(exercise.Id.ToString()))
-                                {
-                                    @context.Scores[exercise.Id.ToString()]
-                                }
-                                else
-                                {
-                                    <Text>—</Text>
-                                }
-                            </ChildContent>
-                        </Column>
-                    }
-                    <Column Title="Имя" TData="string" Width="120" Fixed="right">@context.User.FirstName</Column>
-                    <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
-                </ChildContent>
-                <FooterTemplate>
-                </FooterTemplate>
-            </Table>
-        }
+                            <Column Title="Идентификатор" TData="string" Fixed="left" Width="150">
+                                @*<NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.StudentId</NavLink>*@
+                                @context.User.StudentId
+                            </Column>
+                            @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
+                            {
+                                <Column TData="string" Width="130">
+                                    <TitleTemplate>
+                                        @exercise.Name (@exercise.Score)
+                                    </TitleTemplate>
+                                    <ChildContent>
+                                        @if (context.Scores.ContainsKey(exercise.Id.ToString()))
+                                        {
+                                            @context.Scores[exercise.Id.ToString()]
+                                        }
+                                        else
+                                        {
+                                            <Text>—</Text>
+                                        }
+                                    </ChildContent>
+                                </Column>
+                            }
+                            <Column Title="Имя" TData="string" Width="120" Fixed="right">@context.User.FirstName</Column>
+                            <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
+
+                            @if (userContext.User.IsAdmin())
+                            {
+                                <ActionColumn Width="100" Fixed="right">
+                                    <NavLink href="@($"users/{context.User.Id}")">
+                                        <Button Icon="@IconType.Outline.User" />
+                                    </NavLink>
+                                </ActionColumn>
+                            }
+
+                        </ChildContent>
+                    </Table>
+                }
+            </Authorized>
+        </AuthorizeView>
     </SpaceItem>
 </Space>
 
