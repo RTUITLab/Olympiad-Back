@@ -60,6 +60,9 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<SolutionInternalModel, SolutionResponse>()
                 .ForMember(sr => sr.Status, map => map.MapFrom(sim => sim.GetStatus()))
                 .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()));
+            CreateMap<Solution, SolutionAnalyticCompactResponse>()
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
+
 
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()

@@ -11,5 +11,8 @@ namespace Olympiad.ControlPanel.Services
     {
         [Get("/api/exercises/all")]
         public Task<List<ExerciseCompactResponse>> GetExercisesAsync(Guid challengeId);
+
+        [Get("/api/exercises/analytics/withAttempt")]
+        public Task<List<ExerciseCompactResponse>> GetExercisesWithAtteptsForUserAsync(Guid challengeId, Guid userId);
     }
 }

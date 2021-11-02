@@ -1,5 +1,6 @@
 ﻿@page "/results/{ChallengeId:guid}"
-@attribute [Authorize(Roles = RoleNames.ADMIN)]
+@attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
+
 
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Challenges
@@ -49,9 +50,8 @@
                        ScrollX="@((exercises.Count * 130).ToString())">
                         <ChildContent>
 
-                            <Column Title="Идентификатор" TData="string" Fixed="left" Width="150">
-                                @*<NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.StudentId</NavLink>*@
-                                @context.User.StudentId
+                            <Column Title="Имя" TData="string" Fixed="left" Width="150">
+                                <NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.FirstName</NavLink>
                             </Column>
                             @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
                             {
@@ -66,7 +66,7 @@
                                     }
                                 </Column>
                             }
-                            <Column Title="Имя" TData="string" Width="120" Fixed="right">@context.User.FirstName</Column>
+                            <Column Title="Идентификатор" TData="string" Width="120" Fixed="right">@context.User.StudentId</Column>
                             <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
 
                             @if (userContext.User.IsAdmin())

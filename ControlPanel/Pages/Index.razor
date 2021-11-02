@@ -13,7 +13,7 @@
         @if (context.User.IsResultsViewer())
         {
             <Alert Type="info" ShowIcon="true">
-                У вас есть возможность просматривать результаты. <NavLink href="results"><Button>Перейти к результатам соревнований</Button></NavLink>
+                У вас есть возможность просматривать результаты. <NavLink href="results"><Button>Просмотреть</Button></NavLink>
             </Alert>
         }
         @if (context.User.IsAdmin())

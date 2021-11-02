@@ -33,7 +33,7 @@
         <Button Size="@ButtonSize.Small" Icon="@IconType.Outline.Edit" OnClick="() => contentMarkdownEditor?.Show()">Открыть редактор</Button>
         <MarkdownEditorModal @bind-Content="@context.Description" @ref="contentMarkdownEditor" />
     </FormItem>
-    <FormItem Label="Режим проведения">
+    <FormItem Label="Режим">
         <RadioGroup @bind-Value="@context.IsNoTimeLimits">
             <Radio RadioButton Value="true">Бессрочное</Radio>
             <Radio RadioButton Value="false">Ограниченное время</Radio>
@@ -41,7 +41,7 @@
     </FormItem>
     @if (!context.IsNoTimeLimits)
     {
-        <FormItem Label="Время проведения" Required>
+        <FormItem Label="Время" Required>
             <RangePicker TValue="DateTime?[]" @bind-Value="context.TimeRange" ShowTime="@("HH:mm")" Format="@("dd.MM.yyyy HH:mm")" OnChange="ChallengeTimeUpdated" AllowClear="false" />
             <Text Type="@(context.Duration <= TimeSpan.Zero ? "danger" : "default")">@context.Duration?.Humanize(precision: 10)</Text>
         </FormItem>
@@ -64,14 +64,14 @@
             })
         </Text>
     </FormItem>
-    <FormItem Label="Публичность" Required>
+    <FormItem Label="Доступ" Required>
         <Select @bind-Value="@context.AccessType"
                 DefaultValue="@(ChallengeAccessType.Private)"
                 TItemValue="ChallengeAccessType"
                 TItem="ChallengeAccessType">
             <SelectOptions>
                 <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Private" Label="По приглашению" />
-                <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Public" Label="Публичное" />
+                <SelectOption TItemValue="ChallengeAccessType" TItem="ChallengeAccessType" Value="ChallengeAccessType.Public" Label="Открытый" />
             </SelectOptions>
         </Select>
         <Text Type="secondary">

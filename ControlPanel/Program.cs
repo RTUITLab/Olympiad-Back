@@ -35,20 +35,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseAddress });
 builder.Services.AddAntDesign();
 
 
-
-var refitSettings = new RefitSettings
-{
-    ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
-    {
-        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-    })
-};
-builder.Services.AddScoped<IControlPanelApiService>(sp => RestService.For<IControlPanelApiService>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<IChallengesApi>(sp => RestService.For<IChallengesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<IExercisesApi>(sp => RestService.For<IExercisesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<IRolesApi>(sp => RestService.For<IRolesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
+RegisterApiServices(builder);
 builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+
 
 
 builder.Services.AddScoped<AuthenticationStateProvider, LocalStorageJwtAuthenticationProvider>();
@@ -67,3 +56,28 @@ CultureInfo.DefaultThreadCurrentCulture = ruCulture;
 CultureInfo.DefaultThreadCurrentUICulture = ruCulture;
 
 await builder.Build().RunAsync();
+
+
+void RegisterApiServices(WebAssemblyHostBuilder builder)
+{
+    var refitSettings = new RefitSettings
+    {
+        ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            WriteIndented = true,
+        })
+    };
+    void RegisterApiService<T>() where T: class
+    {
+        builder.Services.AddScoped<T>(sp => RestService.For<T>(sp.GetRequiredService<HttpClient>(), refitSettings));
+    }
+    
+    RegisterApiService<IControlPanelApiService>();
+    
+    RegisterApiService<IChallengesApi>();
+    RegisterApiService<IExercisesApi>();
+    RegisterApiService<ISolutionsApi>();
+    
+    RegisterApiService<IRolesApi>();
+}

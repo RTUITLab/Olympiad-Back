@@ -1,0 +1,147 @@
+﻿@page "/results/{ChallengeId:guid}/user/{UserId:guid}"
+@attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
+
+@using Microsoft.Extensions.Logging
+@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.Solutions
+@using PublicAPI.Responses.Users
+
+@inject ILogger<UserChallengeResults> logger
+@inject NavigationManager NavigationManager
+@inject IChallengesApi ChallengesApi
+@inject IExercisesApi ExercisesApi
+@inject ISolutionsApi SolutionsApi
+@inject IControlPanelApiService ControlPanelApiService
+
+<PageTitle>@(user?.FirstName ?? $"Загрузка...") - @(challenge?.Name ?? $"Загрузка...")</PageTitle>
+<AuthorizeView Context="userContext">
+    <Authorized>
+        <PageHeader Title="@(user?.FirstName ?? $"Загрузка...")">
+            <PageHeaderBreadcrumb>
+                <Breadcrumb>
+                    <BreadcrumbItem Href="results">
+                        Результаты
+                    </BreadcrumbItem>
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}")">
+                        @(challenge?.Name ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                        @(user?.FirstName ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                </Breadcrumb>
+            </PageHeaderBreadcrumb>
+            <PageHeaderContent>
+                <Descriptions>
+                    @if (userContext.User.IsAdmin())
+                    {
+                        <DescriptionsItem Title="Соревнование">
+
+                            @if (challenge is null)
+                            {
+                                <SkeletonElement Type="input" Active Style="width:150px"></SkeletonElement>
+                            }
+                            else
+                            {
+                                <NavLink href="@($"challenges/{ChallengeId}")">
+                                    <Button Icon="@IconType.Outline.Edit">@challenge.Name</Button>
+                                </NavLink>
+                            }
+                        </DescriptionsItem>
+                    }
+                    @*<DescriptionsItem Title="Report">
+                        <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create report about user"
+                        ChallengeId="ChallengeId"
+                        FileName="@user?.StudentId"
+                        UserStudentIds="@(new List<string> { user?.StudentId })" />
+                        </DescriptionsItem>*@
+                </Descriptions>
+            </PageHeaderContent>
+        </PageHeader>
+
+        @if (exercises != null)
+        {
+            <Collapse OnChange="ReaectOnChange">
+                @foreach (var exercise in exercises)
+                {
+                    <Panel Header="@exercise.Name" Key="@exercise.Id.ToString()">
+                        @if (exerciseCache.ContainsKey(exercise.Id))
+                        {
+                            <AntList Bordered DataSource="@exerciseCache[exercise.Id].OrderByDescending(s => s.Score)">
+                                <ListItem>
+                                    <NavLink href="@($"results/{ChallengeId}/user/{UserId}/solution/{context.Id}")">
+                                        <Text>@(context.Score?.ToString() ?? "No score") | @context.Status | @context.Language | <PrettyDateTimeOffset DateTimeOffset="@context.SendingTime" /></Text>
+                                    </NavLink>
+                                </ListItem>
+                            </AntList>
+                        }
+                        else
+                        {
+                            <Skeleton Active></Skeleton>
+                        }
+                    </Panel>
+                }
+            </Collapse>
+        }
+        else
+        {
+            <Skeleton Active></Skeleton>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private ChallengeResponse? challenge;
+    private List<ExerciseCompactResponse>? exercises;
+    private UserInfoResponse? user;
+
+    private Dictionary<Guid, List<SolutionAnalyticCompactResponse>> exerciseCache = new();
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        try
+        {
+            challenge = await ChallengesApi.GetChallengeAsync(ChallengeId);
+            exercises = await ExercisesApi.GetExercisesWithAtteptsForUserAsync(ChallengeId, UserId);
+            var response = await ControlPanelApiService.GetUser(UserId);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("incorrect status code");
+            }
+            user = response.Content;
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation(ex, "Can't load base info");
+            NavigationManager.NavigateTo($"results/{ChallengeId}");
+        }
+
+    }
+
+    private async Task ReaectOnChange(string[] keys)
+    {
+        var ids = keys.Select(Guid.Parse).ToArray();
+        foreach (var id in ids)
+        {
+            if (exerciseCache.ContainsKey(id))
+            {
+                continue;
+            }
+            await LoadSolutionsForExercise(id);
+        }
+    }
+
+    private async Task LoadSolutionsForExercise(Guid exerciseId)
+    {
+        var solutions = await SolutionsApi.GetSolutionsForExerciseAsync(exerciseId, UserId);
+        exerciseCache[exerciseId] = solutions;
+    }
+}
