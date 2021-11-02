@@ -3,16 +3,16 @@
 <Layout Style="min-height: 100vh;">
     <Header Class="header">
         <Row Justify="space-between">
-            <Col Span="12">
-            <Title Level="3" style="color: white;">Панель управления</Title>
-            </Col>
-            <Col Span="12" Style="text-align: right">
-            <AuthorizeView>
-                <Authorized>
-                    <Text style="color: white;">@context.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="@(() => {logs?.Show();})"></Icon></Text>
-                </Authorized>
-            </AuthorizeView>
-            </Col>
+            <AntDesign.Col Span="12" Style="align-self: center">
+                <Title Level="3" style="color: white; margin: 0">Панель управления</Title>
+            </AntDesign.Col>
+            <AntDesign.Col Span="12" Style="text-align: right">
+                <AuthorizeView>
+                    <Authorized>
+                        <Text style="color: white;">@context.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="@(() => {logs?.Show();})"></Icon></Text>
+                    </Authorized>
+                </AuthorizeView>
+            </AntDesign.Col>
         </Row>
     </Header>
     <Layout>
