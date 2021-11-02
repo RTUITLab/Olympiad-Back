@@ -8,21 +8,21 @@ Scenario: search without parameters
   Given path 'api/account'
   When method get
   Then status 200
-  And match response == {data: '#array', total: '#number', offset: 0, limit: 50}
+  And match response == {data: '#array', total: '#number', offset: 0, limit: 50, match: '#null'}
 
 Scenario: search one user
   Given path 'api/account'
   And param limit = 1
   When method get
   Then status 200
-  And match response == {data: '#[1]', total: '#number', offset: 0, limit: 1}
+  And match response == {data: '#[1]', total: '#number', offset: 0, limit: 1, match: '#null'}
 
 Scenario: search three users
   Given path 'api/account'
   And param limit = 3
   When method get
   Then status 200
-  And match response == {data: '#[3]', total: '#number', offset: 0, limit: 3}
+  And match response == {data: '#[3]', total: '#number', offset: 0, limit: 3, match: '#null'}
 
 Scenario: search with incorrect limit
   Given path 'api/account'
@@ -55,7 +55,7 @@ Scenario: search with skip users
   And param offset = 3
   When method get
   Then status 200
-  And match response == {data: '#array', total: '#number', offset: 3, limit: 50}
+  And match response == {data: '#array', total: '#number', offset: 3, limit: 50, match: '#null'}
   And assert response.data.length <= response.total
 
 
@@ -64,13 +64,13 @@ Scenario: search match user
   And param match = 'executor default'
   When method get
   Then status 200
-  And match response == {data: '#[1]', total: 1, offset: 0, limit: 50}
+  And match response == {data: '#[1]', total: 1, offset: 0, limit: 50, match: 'executor default'}
 
 Scenario: search incorrect user
   Given path 'api/account'
   And param match = 'nouserwiththattext'
   When method get
   Then status 200
-  And match response == {data: '#[0]', total: 0, offset: 0, limit: 50}
+  And match response == {data: '#[0]', total: 0, offset: 0, limit: 50, match: 'nouserwiththattext'}
 
 
