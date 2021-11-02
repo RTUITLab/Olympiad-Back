@@ -1,9 +1,11 @@
 ﻿using PublicAPI.Requests.Challenges;
 using PublicAPI.Responses.Challenges;
+using PublicAPI.Responses;
 using Refit;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PublicAPI.Responses.Challenges.Analytics;
 
 namespace Olympiad.ControlPanel.Services
 {
@@ -11,6 +13,11 @@ namespace Olympiad.ControlPanel.Services
     {
         [Get("/api/challenges/all")]
         public Task<List<ChallengeResponse>> GetAllChallengesAsync();
+        [Get("/api/challenges/analytics")]
+        public Task<List<ChallengeResponseWithAnalytics>> GetAllChallengesWithAnalyticsAsync();
+        [Get("/api/challenges/analytics/{challengeId}")]
+        public Task<ListResponse<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit);
+
 
         [Get("/api/challenges/{challengeId}")]
         public Task<ChallengeResponse> GetChallengeAsync(Guid challengeId);

@@ -9,7 +9,7 @@
             <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create personal report about each user"
                                                                 ChallengeId="ChallengeId"
                                                                 FileName="@challengeResults.ChallengeName"
-                                                                UserStudentIds="@challengeResults.UserSolutions.Select(us => us.StudentId).ToList()" />
+                                                                UserStudentIds="@challengeResults.UserSolutions.Select(us => us.User.StudentId).ToList()" />
         }
     </PageHeaderContent>
 </PageHeader>
@@ -27,8 +27,8 @@
            ScrollX="@tableScrollX">
         <ChildContent>
 
-            <Column Title="Student ID" Field="context.StudentId" Fixed="left" Width="100px">
-                <NavLink href="@($"challenge/{ChallengeId}/user/{context.UserId}")">@context.StudentId</NavLink>
+            <Column Title="Student ID" TData="string" Fixed="left" Width="100px">
+                <NavLink href="@($"challenge/{ChallengeId}/user/{context.User.Id}")">@context.User.StudentId</NavLink>
             </Column>
             @foreach (var exercise in challengeResults.Exercises)
             {
@@ -44,7 +44,7 @@
                     </ChildContent>
                 </Column>
             }
-            <Column Title="Name" Field="context.User?.FirstName" Width="120px" Fixed="right" />
+            <Column Title="Name" TData="string" Width="120px" Fixed="right" />
             <Column Title="Score" Field="context.Scores?.Sum(s => s.Value)" Width="70px" Fixed="right"></Column>
         </ChildContent>
         <FooterTemplate>
@@ -77,7 +77,7 @@
     {
         bySearch = challengeResults.UserSolutions
                   .Where(us =>
-                    us.StudentId.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase) ||
+                    us.User.StudentId.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase) ||
                     us.User.FirstName.Contains(searchPattern ?? "", StringComparison.OrdinalIgnoreCase))
                   .ToList();
     }
@@ -113,7 +113,7 @@
         {
             currentRow++;
             currentColumn = 1;
-            workSheet.Cell(currentRow, currentColumn++).SetValue(row.StudentId);
+            workSheet.Cell(currentRow, currentColumn++).SetValue(row.User.StudentId);
             foreach (var ex in challengeResults.Exercises)
             {
                 if (row.Scores.ContainsKey(ex.ExerciseID))

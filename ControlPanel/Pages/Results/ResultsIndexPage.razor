@@ -1,0 +1,76 @@
+﻿@page "/results"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+
+@using Humanizer
+@using Olympiad.Shared.Models
+@using PublicAPI.Responses.Challenges.Analytics
+
+@inject IChallengesApi ChallengesApi
+
+<PageHeader Title="Результаты">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem>
+                Результаты
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+</PageHeader>
+
+<AuthorizeView Context="authContext">
+
+    <Table DataSource="challenges"
+           Loading="@(challenges == null)"
+           PageSize="@(challenges?.Count ?? 0)"
+           Total="@(challenges?.Count ?? 0)"
+           HidePagination>
+
+        <Column @bind-Field="context.Name" Title="Название" Sortable>
+            <NavLink href="@($"results/{context.Id}")">@context.Name</NavLink>
+        </Column>
+        <Column @bind-Field="context.InvitedCount" Title="Имеют доступ">
+            <Text>
+                @(context.ChallengeAccessType switch {
+                ChallengeAccessType.Public => "Все пользователи",
+                ChallengeAccessType.Private => context.InvitedCount.ToString(),
+                _ => "Неверное значение"
+                })
+            </Text>
+        </Column>
+        <Column @bind-Field="context.StartedExecutionCount" Title="Приступили к выполнению" />
+        <Column @bind-Field="context.EndTime" Title="Времени до конца">
+            @if (!context.ToEnd.HasValue)
+            {
+                <Text>Бессрочное</Text>
+            }
+            else if (context.ToStart > TimeSpan.Zero)
+            {
+                <Text>До старта @context.ToStart.Value.Humanize(precision: 2)</Text>
+            }
+            else if (context.ToEnd < TimeSpan.Zero)
+            {
+                <Text>Окончено</Text>
+            }
+            else
+            {
+                <Text>@context.ToEnd.Value.Humanize(precision: 2)</Text>
+            }
+        </Column>
+        @if (authContext.User.IsAdmin())
+        {
+            <ActionColumn>
+                <NavLink href="@($"challenges/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
+            </ActionColumn>
+        }
+    </Table>
+
+</AuthorizeView>
+@code {
+    private List<ChallengeResponseWithAnalytics>? challenges;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        challenges = await ChallengesApi.GetAllChallengesWithAnalyticsAsync();
+    }
+}

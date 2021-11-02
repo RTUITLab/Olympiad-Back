@@ -75,9 +75,9 @@ namespace WebApp.Controllers.Users
                     u.StudentID.ToUpper().Contains(matcher)));
             var totalCount = await users.CountAsync();
             var result = await users
+                .OrderBy(u => u.FirstName)
                 .Skip(offset)
                 .Take(limit)
-                .OrderBy(u => u.FirstName)
                 .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
             return new ListResponse<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Data = result };

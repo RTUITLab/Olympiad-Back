@@ -44,6 +44,7 @@ var refitSettings = new RefitSettings
 };
 builder.Services.AddScoped<IControlPanelApiService>(sp => RestService.For<IControlPanelApiService>(sp.GetRequiredService<HttpClient>(), refitSettings));
 builder.Services.AddScoped<IChallengesApi>(sp => RestService.For<IChallengesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
+builder.Services.AddScoped<IExercisesApi>(sp => RestService.For<IExercisesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
 builder.Services.AddScoped<IRolesApi>(sp => RestService.For<IRolesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
 builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 

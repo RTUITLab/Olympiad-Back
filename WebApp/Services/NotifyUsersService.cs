@@ -6,6 +6,7 @@ using Models;
 using Models.Solutions;
 using Olympiad.Shared.Models;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Exercises;
 using PublicAPI.Responses.Solutions;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ namespace WebApp.Services
                 .Where(ex => ex.ExerciseID == solution.ExerciseId)
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = solution.UserId })
                 .SingleOrDefaultAsync();
-            var exercise = mapper.Map<ExerciseCompactResponse>(exerciseInternal);
+            var exercise = mapper.Map<ExerciseForUserInfoResponse>(exerciseInternal);
             await ExerciseStatusChanged(solution.UserId, exercise);
         }
 
@@ -64,10 +65,10 @@ namespace WebApp.Services
             return hubContext.Clients.User(solutionResponse.UserId)
                 .UpdateSolutionStatus(solutionResponse);
         }
-        private Task ExerciseStatusChanged(Guid userId, ExerciseCompactResponse exerciseCompactResponse)
+        private Task ExerciseStatusChanged(Guid userId, ExerciseForUserInfoResponse exerciseForUserInfo)
         {
             return hubContext.Clients.User(userId.ToString())
-                .UpdateExerciseStatus(exerciseCompactResponse);
+                .UpdateExerciseStatus(exerciseForUserInfo);
         }
     }
 }

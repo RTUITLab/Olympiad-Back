@@ -18,7 +18,7 @@ using PublicAPI.Responses.Challenges;
 using WebApp.Models;
 
 
-namespace WebApp.Controllers
+namespace WebApp.Controllers.Challenges
 {
     [Produces("application/json")]
     [Route("api/challenges")]
@@ -43,6 +43,7 @@ namespace WebApp.Controllers
         {
             return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
         }
+
 
         [HttpGet("all")]
         [Authorize(Roles = "Admin")]
@@ -113,7 +114,7 @@ namespace WebApp.Controllers
             IQueryable<Challenge> query = context.Challenges;
             if (!IsAdmin)
             {
-                query = query.Where(c => 
+                query = query.Where(c =>
                     c.ChallengeAccessType == ChallengeAccessType.Public ||
                     c.UsersToChallenges.Any(utc => utc.UserId == UserId)
                 );

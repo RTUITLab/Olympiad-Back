@@ -1,9 +1,9 @@
 ﻿using Olympiad.Shared.Models;
 using System;
 
-namespace PublicAPI.Responses
+namespace PublicAPI.Responses.Exercises
 {
-    public class ExerciseCompactResponse
+    public class ExerciseForUserInfoResponse
     {
         public Guid Id { get; set; }
 
