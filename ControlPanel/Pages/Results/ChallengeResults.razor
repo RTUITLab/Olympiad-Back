@@ -55,20 +55,15 @@
                             </Column>
                             @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
                             {
-                                <Column TData="string" Width="130">
-                                    <TitleTemplate>
-                                        @exercise.Name (@exercise.Score)
-                                    </TitleTemplate>
-                                    <ChildContent>
-                                        @if (context.Scores.ContainsKey(exercise.Id.ToString()))
-                                        {
-                                            @context.Scores[exercise.Id.ToString()]
-                                        }
-                                        else
-                                        {
-                                            <Text>—</Text>
-                                        }
-                                    </ChildContent>
+                                <Column TData="string" Width="130" Title="@($"{exercise.Name} ({exercise.Score})")">
+                                    @if (context.Scores.ContainsKey(exercise.Id.ToString()))
+                                    {
+                                        @context.Scores[exercise.Id.ToString()]
+                                    }
+                                    else
+                                    {
+                                        <Text>—</Text>
+                                    }
                                 </Column>
                             }
                             <Column Title="Имя" TData="string" Width="120" Fixed="right">@context.User.FirstName</Column>
@@ -166,7 +161,7 @@
             var localChallengeId = ChallengeId;
             if (loadedChallengeId == localChallengeId &&
                 Match == userResults?.Match &&
-                offset == userResults?.Offset && 
+                offset == userResults?.Offset &&
                 limit == userResults?.Limit)
             {
                 return;
