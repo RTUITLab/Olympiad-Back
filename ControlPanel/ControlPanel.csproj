@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Olympiad.ControlPanel</RootNamespace>
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>

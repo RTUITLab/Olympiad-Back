@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
 using PublicAPI.Responses.Solutions;
+using PublicAPI.Responses.Solutions.Analytics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,21 @@ namespace WebApp.Controllers.Solutions
                 .ProjectTo<SolutionAnalyticCompactResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
             return solutions;
+        }
+
+        [HttpGet("{solutionId}")]
+        public async Task<ActionResult<SolutionAnalyticsResponse>> GetInfoAboutSolution(Guid solutionId)
+        {
+            var solutionResponse = await context
+                .Solutions
+                .Where(s => s.Id == solutionId)
+                .ProjectTo<SolutionAnalyticsResponse>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync();
+            if (solutionResponse is null)
+            {
+                return NotFound("Solution not found");
+            }
+            return Ok(solutionResponse);
         }
     }
 }

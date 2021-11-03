@@ -7,12 +7,15 @@
 @using PublicAPI.Responses.Solutions
 @using PublicAPI.Responses.Users
 @using Olympiad.ControlPanel.Pages.Results.UserChallengeResults.Components
+@using Olympiad.ControlPanel.Pages.Results.Components
+
 
 @inject ILogger<UserChallengeResultsPage> logger
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
 @inject IControlPanelApiService ControlPanelApiService
+@inject MessageService MessageService
 
 <PageTitle>@(user?.FirstName ?? $"Загрузка...") - @(challenge?.Name ?? $"Загрузка...")</PageTitle>
 <AuthorizeView Context="userContext">
@@ -36,17 +39,11 @@
                     @if (userContext.User.IsAdmin())
                     {
                         <DescriptionsItem Title="Соревнование">
-
-                            @if (challenge is null)
-                            {
-                                <SkeletonElement Type="input" Active Style="width:150px"></SkeletonElement>
-                            }
-                            else
-                            {
+                            <SkeletonRowComponent Data="challenge" Context="loadedChallenge" TData="ChallengeResponse">
                                 <NavLink href="@($"challenges/{ChallengeId}")">
-                                    <Button Icon="@IconType.Outline.Edit">@challenge.Name</Button>
+                                    <Button Icon="@IconType.Outline.Edit">@loadedChallenge.Name</Button>
                                 </NavLink>
-                            }
+                            </SkeletonRowComponent>
                         </DescriptionsItem>
                     }
                     @*<DescriptionsItem Title="Report">
@@ -117,6 +114,7 @@
         {
             logger.LogInformation(ex, "Can't load base info");
             NavigationManager.NavigateTo($"results/{ChallengeId}");
+            await MessageService.Warn("Невозможно загрузить данные о решениях пользователя");
         }
 
     }

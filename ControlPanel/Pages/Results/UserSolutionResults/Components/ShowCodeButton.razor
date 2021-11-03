@@ -1,0 +1,27 @@
+﻿<Button Icon="@IconType.Outline.Code" OnClick="() => showSourceCode = true">Показать</Button>
+
+<Drawer Width="800"
+        Closable="true"
+        Visible="showSourceCode"
+        Placement="right"
+        Title='("Код решения")'
+        OnClose="() => showSourceCode = false">
+    @*@if (solution == null)
+    {*@
+        <Skeleton Active></Skeleton>
+        Source code will be here
+    @*}
+    else
+    {
+        <AntDesign.Text Copyable CopyConfig="new TypographyCopyableConfig { Text=solution.Raw }" style="overflow:auto; white-space:pre">@solution.Raw</AntDesign.Text>
+    }*@
+</Drawer>
+
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+
+
+    private bool showSourceCode = false;
+}

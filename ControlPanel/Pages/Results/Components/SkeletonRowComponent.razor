@@ -1,0 +1,24 @@
+﻿@typeparam TData where TData : notnull
+@if (Data is null)
+{
+    <SkeletonElement Type="input" Active Style="width:150px"></SkeletonElement>
+}
+else
+{
+    @if (ChildContent is null)
+    {
+        <Text>NULL</Text>
+    }
+    else
+    {
+        @ChildContent(Data!)
+    }
+}
+@code {
+    
+        [Parameter]
+        public TData? Data { get; set; }
+        [Parameter]
+        public RenderFragment<TData>? ChildContent { get; set; }
+  
+}

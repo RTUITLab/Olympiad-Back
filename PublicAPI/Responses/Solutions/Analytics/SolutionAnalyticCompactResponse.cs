@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PublicAPI.Responses.Solutions
+namespace PublicAPI.Responses.Solutions.Analytics
 {
     public class SolutionAnalyticCompactResponse
     {

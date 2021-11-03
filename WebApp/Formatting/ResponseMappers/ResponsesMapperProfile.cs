@@ -15,6 +15,7 @@ using PublicAPI.Responses.Account;
 using Models.UserModels;
 using PublicAPI.Responses.Exercises;
 using PublicAPI.Responses.Challenges.Analytics;
+using PublicAPI.Responses.Solutions.Analytics;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -62,7 +63,8 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()));
             CreateMap<Solution, SolutionAnalyticCompactResponse>()
                 .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
-
+            CreateMap<Solution, SolutionAnalyticsResponse>()
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
 
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()

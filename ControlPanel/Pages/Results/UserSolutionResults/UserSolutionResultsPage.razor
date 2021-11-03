@@ -1,7 +1,75 @@
 ﻿@page "/results/{ChallengeId:guid}/user/{UserId:guid}/solution/{SolutionId:guid}"
 @attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
 
-In progress
+@using Microsoft.Extensions.Logging
+@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.Solutions.Analytics
+@using PublicAPI.Responses.Users
+@using Olympiad.ControlPanel.Pages.Results.UserSolutionResults.Components
+
+@inject ILogger<UserSolutionResultsPage> logger
+@inject NavigationManager NavigationManager 
+@inject ISolutionsApi SolutionsApi
+@inject MessageService MessageService
+
+<PageTitle>@(exercise?.Name ?? "Загрузка...") - @(user?.FirstName ?? "Загрузка...")</PageTitle>
+<AuthorizeView Context="userContext">
+    <Authorized>
+        <PageHeader Title="@(exercise?.Name ?? "Загрузка...")">
+            <PageHeaderBreadcrumb>
+                <Breadcrumb>
+                    <BreadcrumbItem Href="results">
+                        Результаты
+                    </BreadcrumbItem>
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}")">
+                        @(challenge?.Name ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}/user{UserId}")">
+                        @(user?.FirstName ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                        @(exercise?.Name ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                </Breadcrumb>
+            </PageHeaderBreadcrumb>
+            <PageHeaderContent>
+                <SolutionPageDescriptions solution="solution"/>
+            </PageHeaderContent>
+        </PageHeader>
+
+        @*<Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
+            <TabPane Key="chacks">
+            <TabTemplate>Checks</TabTemplate>
+            <ChildContent>
+            <SolutionCheckView SolutionId="SolutionId" />
+            </ChildContent>
+            </TabPane>
+            <TabPane Key="build_logs">
+            <Tab>Build logs</Tab>
+            <ChildContent>
+            <Collapse>
+            @foreach (var log in solution.SolutionBuildLogs)
+            {
+            <Panel Header="@log.BuildedTime.ToString()" Key="@log.Id.ToString()">
+            <RadioGroup @bind-Value="@buildLogMode">
+            <Radio RadioButton Value="@("pretty")">Pretty</Radio>
+            <Radio RadioButton Value="@("raw")">Raw</Radio>
+            </RadioGroup>
+            <br />
+            <AntDesign.Text Style="white-space: pre-wrap">
+            @(buildLogMode == "pretty" ? log.PrettyLog : log.Log)
+            </AntDesign.Text>
+            </Panel>
+            }
+            </Collapse>
+            </ChildContent>
+            </TabPane>
+            </Tabs>*@
+    </Authorized>
+</AuthorizeView>
+
+
 
 @code {
     [Parameter]
@@ -11,4 +79,35 @@ In progress
     [Parameter]
     public Guid SolutionId { get; set; }
 
+    private SolutionAnalyticsResponse? solution;
+    private ExerciseInfo? exercise => solution?.Exercise;
+    private ChallengeResponse? challenge => exercise?.Challenge;
+    private UserInfoResponse? user => solution?.User;
+
+    private string tabs = "checks";
+    private string buildLogMode = "pretty";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        try
+        {
+            solution = await SolutionsApi.GetInfoAboutSolution(SolutionId);
+            if (solution.User.Id != UserId)
+            {
+                throw new ArgumentOutOfRangeException(nameof(UserId), $"Incorrect {nameof(UserId)} for {nameof(SolutionId)}");
+            }
+            if (solution.Exercise.ChallengeId != ChallengeId)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ChallengeId), $"Incorrect {nameof(ChallengeId)} for {nameof(SolutionId)}");
+            }
+        } catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Can't load solution info");
+            NavigationManager.NavigateTo($"results/{ChallengeId}/user/{UserId}");
+            await MessageService.Warn("Невозможно загрузить данные о решении");
+            return;
+        }
+    }
 }
