@@ -3,6 +3,7 @@
 
 @using Microsoft.Extensions.Logging
 @using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Challenges.Analytics
 @using PublicAPI.Responses.Exercises
 @using PublicAPI.Responses.Solutions
 @using PublicAPI.Responses.Users
@@ -88,7 +89,7 @@
     [Parameter]
     public Guid UserId { get; set; }
 
-    private ChallengeResponse? challenge;
+    private ChallengeResponseWithAnalytics? challenge;
     private List<ExerciseCompactResponse>? exercises;
     private UserInfoResponse? user;
 
@@ -101,7 +102,7 @@
         await base.OnParametersSetAsync();
         try
         {
-            challenge = await ChallengesApi.GetChallengeAsync(ChallengeId);
+            challenge = await ChallengesApi.GetOneChallengeAnalycisInfo(ChallengeId);
             exercises = await ExercisesApi.GetExercisesWithAtteptsForUserAsync(ChallengeId, UserId);
             var response = await ControlPanelApiService.GetUser(UserId);
             if (!response.IsSuccessStatusCode)
