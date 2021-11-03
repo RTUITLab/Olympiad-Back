@@ -106,7 +106,7 @@
 
     private bool loading = true;
 
-    private ChallengeResponse? challengeResponse;
+    private ChallengeResponseWithAnalytics? challengeResponse;
     private ListResponseWithMatch<UserChallengeResultsResponse>? userResults;
     private List<ExerciseCompactResponse>? exercises;
     private Guid loadedChallengeId;
@@ -116,7 +116,7 @@
         await base.OnParametersSetAsync();
         try
         {
-            challengeResponse = await ChallengesApi.GetChallengeAsync(ChallengeId);
+            challengeResponse = await ChallengesApi.GetOneChallengeAnalycisInfo(ChallengeId);
             exercises = await ExercisesApi.GetExercisesAsync(ChallengeId);
         }
         catch
