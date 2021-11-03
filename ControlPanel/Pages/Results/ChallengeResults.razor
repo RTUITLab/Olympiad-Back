@@ -56,9 +56,9 @@
                             @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
                             {
                                 <Column TData="string" Width="130" Title="@($"{exercise.Name} ({exercise.Score})")">
-                                    @if (context.Scores.ContainsKey(exercise.Id.ToString()))
+                                    @if (context.Scores.TryGetValue(exercise.Id.ToString(), out var score) && score.HasValue)
                                     {
-                                        @context.Scores[exercise.Id.ToString()]
+                                        @score
                                     }
                                     else
                                     {

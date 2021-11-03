@@ -1,38 +1,73 @@
 ﻿@layout EmptyLayout
 @page "/login"
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@using System.Net
 @inject NavigationManager NavigationManager
 @inject HttpClient HttpClient
 @inject IJSRuntime JS
 @inject ILoginRefresh LoginRefresh
+@inject IWebAssemblyHostEnvironment HostEnvironment
 
-<Result Status="403" Title="Необходимо войти в аккаунт для доступа">
-	<Extra>
-		<Input @bind-Value=accessToken Placeholder="Введите токен доступа. В дальнейшем будет производиться перенаправление на клиентский сайт, для ввода логина и пароля"/>
-		<Button Type="@ButtonType.Primary" OnClick=@(() => LoginRefresh.SaveTokenAndRefreshAsync(accessToken))>Войти</Button>
-	</Extra>
-</Result>
+<AuthorizeView>
+    <Authorized>
+        <Result Status="403" Title="У вас нет доступа к желаемому ресурсу">
+            <Extra>
+                <NavLink href="@(ReturnTo)">
+                    <Button>Попробовать снова</Button>
+                </NavLink>
+                <NavLink href="@(string.Empty)">
+                    <Button Type="@ButtonType.Primary">Перейти на главную страницу</Button>
+                </NavLink>
+            </Extra>
+        </Result>
+    </Authorized>
+    <NotAuthorized>
+        <Result Status="403" Title="Необходимо войти в аккаунт для доступа">
+            <Extra>
+                <NavLink href="@($"/login?returnTo={AbsoluteReturnTo}")">
+                    <Button Type="@ButtonType.Primary">Войти</Button>
+                </NavLink>
+                @if (HostEnvironment.IsDevelopment())
+                {
+                    <Divider Text="Режим разработки" />
+                    <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
+                        <SpaceItem>
+                            <Input @bind-Value=accessToken Placeholder="Введите JWT токен." />
+                        </SpaceItem>
+                        <SpaceItem>
+                            <Button Type="@ButtonType.Primary" OnClick=@(() => LoginRefresh.SaveTokenAndRefreshAsync(accessToken))>Сохранить токен</Button>
+                        </SpaceItem>
+                    </Space>
+                }
+            </Extra>
+        </Result>
+    </NotAuthorized>
+</AuthorizeView>
 @code {
+    private static bool automaticTryInvoked;
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
 
-	[CascadingParameter]
-	private Task<AuthenticationState>? authenticationStateTask { get; set; }
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnTo { get; set; }
 
-	[Parameter]
-	[SupplyParameterFromQuery]
-	public string? ReturnTo { get; set; }
+    private string AbsoluteReturnTo => WebUtility.UrlEncode($"control-panel/{ReturnTo}");
 
-	private string? accessToken;
+    private string? accessToken;
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		await base.OnAfterRenderAsync(firstRender);
-		if (authenticationStateTask == null) {
-			return;
-		}
-		var state = await authenticationStateTask;
-		if (state?.User?.Identity?.IsAuthenticated == true)
-		{
-			NavigationManager.NavigateTo(ReturnTo ?? "");
-		}
-	}
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (authenticationStateTask == null)
+        {
+            return;
+        }
+        var state = await authenticationStateTask;
+        if (state?.User?.Identity?.IsAuthenticated == true && !automaticTryInvoked)
+        {
+            automaticTryInvoked = true;
+            NavigationManager.NavigateTo(ReturnTo ?? "");
+        }
+    }
 }

@@ -10,57 +10,67 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Olympiad.ControlPanel;
-public class LocalStorageJwtAuthenticationProvider : AuthenticationStateProvider, ILoginRefresh
+public class BrowserStorageJwtAuthenticationProvider : AuthenticationStateProvider, ILoginRefresh
 {
+    public const string LOGIN_TYPE_CLAIM = nameof(BrowserStorageJwtAuthenticationProvider) + "_" + nameof(LOGIN_TYPE_CLAIM);
+    public const string TEMP_LOGIN = nameof(TEMP_LOGIN);
+    public const string PERMANENT_LOGIN = nameof(PERMANENT_LOGIN);
+
     private static readonly AuthenticationState EMPTY_STATE = new(new ClaimsPrincipal());
     private const string LOCAL_STORAGE_ACCESS_TOKEN_KEY = "userToken";
 
     private readonly ILocalStorageService localStorageService;
-    private readonly IJSRuntime js;
+    private readonly ISessionStorageService sessionStorageService;
     private readonly HttpClient httpClient;
 
-    public LocalStorageJwtAuthenticationProvider(
+    public BrowserStorageJwtAuthenticationProvider(
         ILocalStorageService localStorageService,
-        IJSRuntime JS,
+        ISessionStorageService sessionStorageService,
         HttpClient httpClient)
     {
         this.localStorageService = localStorageService;
-        js = JS;
+        this.sessionStorageService = sessionStorageService;
         this.httpClient = httpClient;
     }
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var userToken = await localStorageService.GetItemAsStringAsync(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
+        var loginType = TEMP_LOGIN;
+        var userToken = await sessionStorageService.GetItemAsStringAsync(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
         if (string.IsNullOrEmpty(userToken))
         {
-            return EMPTY_STATE;
+            userToken = await localStorageService.GetItemAsStringAsync(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
+            loginType = PERMANENT_LOGIN;
+            if (string.IsNullOrEmpty(userToken))
+            {
+                return EMPTY_STATE;
+            }
         }
 
         var responseBody = await GetMe(userToken);
-        return await responseBody.Match(
-            meInfo => HandleMeResult(meInfo),
-            state => ValueTask.FromResult(state));
+        return responseBody.Match(
+            meInfo => HandleMeResult(meInfo, loginType),
+            state => state);
     }
 
-	private async ValueTask<AuthenticationState> HandleMeResult(GetMeResult meInfo)
-	{
+    private AuthenticationState HandleMeResult(GetMeResult meInfo, string loginType)
+    {
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", meInfo.Token);
-        await localStorageService.SetItemAsStringAsync(LOCAL_STORAGE_ACCESS_TOKEN_KEY, meInfo.Token);
 
         var baseClaims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, meInfo.Id.ToString()),
-                    new Claim(ClaimTypes.Name, meInfo.FirstName)
+                    new Claim(ClaimTypes.Name, meInfo.FirstName),
+                    new Claim(LOGIN_TYPE_CLAIM, loginType)
             };
         var baseClaimsIdentity = new ClaimsIdentity(baseClaims, "baseClaimsIdentity");
 
         var specificClaims = meInfo.Claims.SelectMany(kvp => kvp.Value.Select(v => new Claim(kvp.Key, v))).ToArray();
         var specificClaimsIdentity = new ClaimsIdentity(specificClaims, "specificClaimsIdentity");
-        
+
         var principal = new ClaimsPrincipal(new ClaimsIdentity[] { baseClaimsIdentity, specificClaimsIdentity });
         return new AuthenticationState(principal);
     }
 
-	private async Task<OneOf.OneOf<GetMeResult, AuthenticationState>> GetMe(string userToken)
+    private async Task<OneOf.OneOf<GetMeResult, AuthenticationState>> GetMe(string userToken)
     {
         try
         {

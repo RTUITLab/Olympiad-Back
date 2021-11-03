@@ -84,7 +84,7 @@ namespace WebApp.Controllers.Users
         }
 
         [HttpGet("{userId:guid}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ResultsViewer")]
         public async Task<ActionResult<UserInfoResponse>> Get(Guid userId)
         {
             var user = await UserManager.FindByIdAsync(userId.ToString());
@@ -217,7 +217,7 @@ namespace WebApp.Controllers.Users
         {
             if (!options.Value.IsRegisterAvailable)
             {
-                return BadRequest(ModelState);
+                return Conflict("resgistration is not available");
             }
 
             var recaptchaResult = await recaptchaVerifier.Check(model.RecaptchaToken, HttpContext.Connection.RemoteIpAddress.ToString());

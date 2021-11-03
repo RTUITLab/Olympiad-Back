@@ -36,11 +36,11 @@ builder.Services.AddAntDesign();
 
 
 RegisterApiServices(builder);
-builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+builder.Services.AddScoped<ILoginRefresh>(sp => (BrowserStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 
 
-builder.Services.AddScoped<AuthenticationStateProvider, LocalStorageJwtAuthenticationProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, BrowserStorageJwtAuthenticationProvider>();
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddTransient<UserPasswordGenerator>();
