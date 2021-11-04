@@ -59,5 +59,18 @@ namespace WebApp.Controllers.Solutions
             }
             return Ok(solutionResponse);
         }
+
+        [HttpGet("{solutionId:guid}/buildLogs")]
+        public async Task<List<BuildLogAnalyticsResponse>> GetBuildLogs(Guid solutionId)
+        {
+            var buildLogs = await context
+                .SolutionBuildLogs
+                .Where(l => l.SolutionId == solutionId)
+                .OrderByDescending(l => l.BuildedTime)
+                .ProjectTo<BuildLogAnalyticsResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return buildLogs;
+        }
     }
 }

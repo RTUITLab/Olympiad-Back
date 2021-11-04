@@ -66,6 +66,8 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<Solution, SolutionAnalyticsResponse>()
                 .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
 
+            CreateMap<SolutionBuildLog, BuildLogAnalyticsResponse>();
+
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()
                 .ForMember(cer => cer.Invited, map => map.MapFrom(c => c.UsersToChallenges.Select(utc => utc.User)));

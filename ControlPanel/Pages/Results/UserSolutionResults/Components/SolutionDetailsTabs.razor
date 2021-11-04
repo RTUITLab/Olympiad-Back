@@ -1,0 +1,16 @@
+﻿<Tabs @bind-ActiveKey="tabs" Animated>
+    <TabPane Tab="Тесты" Key="tests">
+        <Text>Test results will be here</Text>
+        <Skeleton />
+    </TabPane>
+    <TabPane Tab="Логи сборки" Key="buildLogs">
+        <SolutionBuildLogs SolutionId="SolutionId" @ref="buildLogs" />
+    </TabPane>
+</Tabs>
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private string tabs = "checks";
+    private SolutionBuildLogs? buildLogs;
+}

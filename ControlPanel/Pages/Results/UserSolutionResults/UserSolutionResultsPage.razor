@@ -9,7 +9,7 @@
 @using Olympiad.ControlPanel.Pages.Results.UserSolutionResults.Components
 
 @inject ILogger<UserSolutionResultsPage> logger
-@inject NavigationManager NavigationManager 
+@inject NavigationManager NavigationManager
 @inject ISolutionsApi SolutionsApi
 @inject MessageService MessageService
 
@@ -34,10 +34,10 @@
                 </Breadcrumb>
             </PageHeaderBreadcrumb>
             <PageHeaderContent>
-                <SolutionPageDescriptions solution="solution"/>
+                <SolutionPageDescriptions solution="solution" />
             </PageHeaderContent>
         </PageHeader>
-
+        <SolutionDetailsTabs SolutionId="SolutionId" />
         @*<Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
             <TabPane Key="chacks">
             <TabTemplate>Checks</TabTemplate>
@@ -84,8 +84,6 @@
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
 
-    private string tabs = "checks";
-    private string buildLogMode = "pretty";
 
     protected override async Task OnParametersSetAsync()
     {
@@ -102,7 +100,8 @@
             {
                 throw new ArgumentOutOfRangeException(nameof(ChallengeId), $"Incorrect {nameof(ChallengeId)} for {nameof(SolutionId)}");
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             logger.LogWarning(ex, "Can't load solution info");
             NavigationManager.NavigateTo($"results/{ChallengeId}/user/{UserId}");

@@ -13,5 +13,7 @@ namespace Olympiad.ControlPanel.Services
         Task<List<SolutionAnalyticCompactResponse>> GetSolutionsForExerciseAsync(Guid exerciseId, Guid userId);
         [Get("/api/solutions/analytics/{solutionId}")]
         Task<SolutionAnalyticsResponse> GetInfoAboutSolution(Guid solutionId);
+        [Get("/api/solutions/analytics/{solutionId}/buildLogs")]
+        Task<List<BuildLogAnalyticsResponse>> GetBuildLogs(Guid solutionId);
     }
 }
