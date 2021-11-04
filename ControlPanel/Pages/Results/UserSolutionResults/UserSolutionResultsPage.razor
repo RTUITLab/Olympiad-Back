@@ -37,8 +37,15 @@
                 <SolutionPageDescriptions solution="solution" />
             </PageHeaderContent>
         </PageHeader>
-        <SolutionDetailsTabs SolutionId="SolutionId" />
-        @*<Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
+        <Tabs Animated>
+            <TabPane Tab="Тесты" Key="tests">
+                <Text>Test results will be here</Text>
+                <Skeleton />
+            </TabPane>
+            <TabPane Tab="Логи сборки" Key="buildLogs">
+                <SolutionBuildLogs SolutionId="SolutionId" />
+            </TabPane>
+        </Tabs>        @*<Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
             <TabPane Key="chacks">
             <TabTemplate>Checks</TabTemplate>
             <ChildContent>

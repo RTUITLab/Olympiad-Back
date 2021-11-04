@@ -79,7 +79,7 @@
             </DescriptionsItem>
             <DescriptionsItem Title="Код">
                 <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
-                    <ShowCodeButton SolutionId="loadedSolution.Id" />
+                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" />
                 </SkeletonRowComponent>
             </DescriptionsItem>
         </Descriptions>
@@ -96,6 +96,7 @@
 
     private bool showSourceCode = false;
 
+    private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.FileExtension}";
 
     private Dictionary<string, int> descriptionsColumn = new Dictionary<string, int> {
             { BreakpointType.Xxl.ToString(), 3 },

@@ -46,9 +46,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        Console.WriteLine("solution buiold param set lol");
         await base.OnParametersSetAsync();
-        await Task.Delay(2000);
         await Load();
     }
 

@@ -3,6 +3,7 @@ using PublicAPI.Responses.Solutions.Analytics;
 using Refit;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Olympiad.ControlPanel.Services
@@ -15,5 +16,10 @@ namespace Olympiad.ControlPanel.Services
         Task<SolutionAnalyticsResponse> GetInfoAboutSolution(Guid solutionId);
         [Get("/api/solutions/analytics/{solutionId}/buildLogs")]
         Task<List<BuildLogAnalyticsResponse>> GetBuildLogs(Guid solutionId);
+
+
+        [Get("/api/check/download/{solutionId}")]
+        Task<string> GetSolutionSource(Guid solutionId);
+
     }
 }

@@ -10,5 +10,6 @@ namespace PublicAPI.Responses.Solutions.Analytics
     {
         public ExerciseInfo Exercise { get; set; }
         public UserInfoResponse User { get; set; }
+        public string FileExtension { get; set; }
     }
 }

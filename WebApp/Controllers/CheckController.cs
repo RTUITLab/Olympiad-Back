@@ -18,6 +18,7 @@ using Models;
 using Models.Solutions;
 using Olympiad.Services;
 using Olympiad.Shared;
+using Olympiad.Shared.Extensions;
 using Olympiad.Shared.Models;
 using PublicAPI.Responses.Solutions;
 using WebApp.Extensions;
@@ -148,7 +149,8 @@ namespace WebApp.Controllers
             {
                 logger.LogInformation($"Put solution {solution.Id} to test queue");
                 queue.PutInQueue(solution.Id);
-            } else
+            }
+            else
             {
                 logger.LogWarning($"No exercise data for {solution.Id}, no put to test queue");
             }
@@ -212,7 +214,7 @@ namespace WebApp.Controllers
         }
 
 
-        [Authorize(Roles = RoleNames.EXECUTOR+","+ RoleNames.ADMIN)]
+        [Authorize(Roles = RoleNames.EXECUTOR + "," + RoleNames.ADMIN)]
         [HttpGet("statistic")]
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
         {
@@ -229,8 +231,12 @@ namespace WebApp.Controllers
             var solutions = context
                 .Solutions
                 .Where(s => s.Id == solutionId);
-            if (!IsAdmin)
+
+            if (!IsAdmin && !User.IsResultsViewer())
+            { 
                 solutions = solutions.Where(s => s.UserId == UserId);
+            }
+
             var solution = await solutions
                 .Select(s => new { s.Language, s.Raw })
                 .SingleOrDefaultAsync()
@@ -238,8 +244,8 @@ namespace WebApp.Controllers
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
             return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
         }
-
-        private static string GetExtensionsForLanguage(string language)
+        [Obsolete("Extract that method to some shared library")]
+        public static string GetExtensionsForLanguage(string language)
         {
             return language switch
             {
