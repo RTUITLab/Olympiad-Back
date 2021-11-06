@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
 
 @using Microsoft.Extensions.Logging
+@using Olympiad.Shared.Models
 @using PublicAPI.Responses.Challenges
 @using PublicAPI.Responses.Exercises
 @using PublicAPI.Responses.Solutions.Analytics
@@ -39,10 +40,17 @@
         </PageHeader>
         <Tabs Animated>
             <TabPane Tab="Тесты" Key="tests">
-                <SolutionChecksView SolutionId="SolutionId"/>
+                <SolutionChecksView SolutionId="SolutionId" />
             </TabPane>
-            <TabPane Tab="Логи сборки" Key="buildLogs">
-                <SolutionBuildLogs SolutionId="SolutionId" />
+            <TabPane Key="buildLogs">
+                <TabTemplate>
+                    <Badge Dot="@(solution?.Status <= SolutionStatus.CompileError)" Offset="(5, 0)">
+                        Логи сборки
+                    </Badge>
+                </TabTemplate>
+                <ChildContent>
+                    <SolutionBuildLogs SolutionId="SolutionId" />
+                </ChildContent>
             </TabPane>
         </Tabs>
     </Authorized>

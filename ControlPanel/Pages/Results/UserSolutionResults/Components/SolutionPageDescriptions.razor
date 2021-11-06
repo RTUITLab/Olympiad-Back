@@ -55,7 +55,7 @@
                 <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="ExerciseInfo">
                     @if (userContext.User.IsAdmin())
                     {
-                        <NavLink href="@($"challenges/{exercise.ChallengeId}/{loadedExercise.Id}")">
+                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/{loadedExercise.Id}")">
                             <Button Icon="@IconType.Outline.Edit">@loadedExercise.Name</Button>
                         </NavLink>
                     }
@@ -92,9 +92,6 @@
     private ExerciseInfo? exercise => solution?.Exercise;
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
-
-
-    private bool showSourceCode = false;
 
     private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.FileExtension}";
 

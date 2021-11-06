@@ -84,7 +84,7 @@ else
     }
     private void SortGroups(TestGroupOrdering ordering)
     {
-        solutionCheckGroups.Sort((w1, w2) =>
+        solutionCheckGroups?.Sort((w1, w2) =>
         {
             // Public always first
             var isPublicOrdering = w2.Result.IsPublic.CompareTo(w1.Result.IsPublic);
