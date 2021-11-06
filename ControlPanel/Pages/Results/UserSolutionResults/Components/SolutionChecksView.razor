@@ -1,0 +1,86 @@
+﻿@using PublicAPI.Responses.Solutions.Analytics
+
+@inject ISolutionsApi SolutionsApi
+
+@if (loading)
+{
+    <Skeleton Active />
+}
+else
+{
+    <Collapse Accordion>
+        @foreach (var wrapper in solutionCheckGroups ?? Enumerable.Empty<Wrapper>())
+        {
+            <Panel Key="@wrapper.Result.Id.ToString()" OnActiveChange="wrapper.LoadData">
+                <HeaderTemplate>
+                    <Text>
+                        @wrapper.Result.Title
+                        |
+                        <Icon Type="@(wrapper.Result.IsPublic ? IconType.Outline.Eye : IconType.Outline.EyeInvisible)" />
+                        |
+                        @if (wrapper.Result.ResultScoreScore.HasValue)
+                        {
+                            <ScoreBadge Score="wrapper.Result.ResultScoreScore"
+                            Hint="Присвоено баллов" />
+                        }
+                        else
+                        {
+                            <Text>
+                                @wrapper.Result.BestStatus.ToRussian()
+                            </Text>
+                        }
+                    </Text>
+                </HeaderTemplate>
+                <ChildContent>
+                    <SolutionResultsOnTestGroup SolutionId="SolutionId"
+                                        TestDataGroupId="wrapper.Result.Id"
+                                        @ref="wrapper.GroupResultsRef" />
+                </ChildContent>
+            </Panel>
+        }
+    </Collapse>
+}
+
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private List<Wrapper>? solutionCheckGroups { get; set; }
+
+    private bool loading;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            solutionCheckGroups = (await SolutionsApi.GetTestGroupResults(SolutionId))
+                .Select(r => new Wrapper(r))
+                .ToList();
+        }
+        finally
+        {
+            loading = false;
+        }
+        StateHasChanged();
+    }
+
+    private record Wrapper(SolutionTestGroupResulResponse Result)
+    {
+        public SolutionResultsOnTestGroup? GroupResultsRef { get; set; }
+        public Task LoadData(bool active)
+        {
+            return active ?
+                GroupResultsRef?.Load() ?? Task.CompletedTask
+                :
+                Task.CompletedTask;
+        }
+    }
+
+}

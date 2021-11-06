@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Olympiad.Shared.Models;
 using PublicAPI.Responses.Solutions;
 using PublicAPI.Responses.Solutions.Analytics;
 using System;
@@ -26,7 +27,7 @@ namespace WebApp.Controllers.Solutions
         public SolutionsAnalyticsController(
             UserManager<User> userManager,
             ApplicationDbContext context,
-            IMapper mapper) : base (userManager)
+            IMapper mapper) : base(userManager)
         {
             this.context = context;
             this.mapper = mapper;
@@ -71,6 +72,51 @@ namespace WebApp.Controllers.Solutions
                 .ToListAsync();
 
             return buildLogs;
+        }
+
+        [HttpGet("{solutionId:guid}/testGroupResults")]
+        public async Task<List<SolutionTestGroupResulResponse>> GetTestGroupResults(Guid solutionId)
+        {
+            var allChecks = await context
+                .SolutionChecks
+                .Where(s => s.SolutionId == solutionId)
+                .Select(s => new
+                {
+                    s.TestData.ExerciseDataGroup.Id,
+                    s.TestData.ExerciseDataGroup.Title,
+                    s.TestData.ExerciseDataGroup.IsPublic,
+                    s.TestData.ExerciseDataGroup.Score,
+                    IsSuccess = s.Status == SolutionStatus.Successful ? 1 : 0,
+                    s.Status
+                })
+                .GroupBy(s => new
+                {
+                    s.Id,
+                    s.Title,
+                    s.IsPublic,
+                    s.Score
+                })
+                .OrderByDescending(g => g.Key.IsPublic)
+                    .ThenBy(g => g.Key.Title)
+                .Select(g => new SolutionTestGroupResulResponse
+                {
+                    Id = g.Key.Id,
+                    Title = g.Key.Title,
+                    IsPublic = g.Key.IsPublic,
+                    GroupScore = g.Key.Score,
+                    BestStatus = g.Max(s => s.Status)
+                })
+                .ToListAsync();
+            return allChecks;
+        }
+        [HttpGet("{solutionId:guid}/checksForDataGroup")]
+        public async Task<List<SolutionCheckResponse>> GetChecksForDataGroup(Guid solutionId, Guid testDataGroupId)
+        {
+            return await context.SolutionChecks
+                .Where(sch => sch.SolutionId == solutionId)
+                .Where(sch => sch.TestData.ExerciseDataGroupId == testDataGroupId)
+                .ProjectTo<SolutionCheckResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
         }
     }
 }

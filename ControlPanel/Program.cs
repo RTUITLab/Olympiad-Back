@@ -12,10 +12,15 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using Olympiad.Shared;
 using Microsoft.AspNetCore.Components.Web;
+using DiffPlex.DiffBuilder;
+using DiffPlex;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddScoped<ISideBySideDiffBuilder, SideBySideDiffBuilder>();
+builder.Services.AddScoped<IDiffer, Differ>();
 
 Uri baseAddress;
 if (builder.HostEnvironment.IsDevelopment())

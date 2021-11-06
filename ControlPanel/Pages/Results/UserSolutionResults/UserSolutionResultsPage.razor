@@ -25,7 +25,7 @@
                     <BreadcrumbItem Href="@($"results/{ChallengeId}")">
                         @(challenge?.Name ?? $"Загрузка...")
                     </BreadcrumbItem>
-                    <BreadcrumbItem Href="@($"results/{ChallengeId}/user{UserId}")">
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}/user/{UserId}")">
                         @(user?.FirstName ?? $"Загрузка...")
                     </BreadcrumbItem>
                     <BreadcrumbItem>
@@ -39,40 +39,12 @@
         </PageHeader>
         <Tabs Animated>
             <TabPane Tab="Тесты" Key="tests">
-                <Text>Test results will be here</Text>
-                <Skeleton />
+                <SolutionChecksView SolutionId="SolutionId"/>
             </TabPane>
             <TabPane Tab="Логи сборки" Key="buildLogs">
                 <SolutionBuildLogs SolutionId="SolutionId" />
             </TabPane>
-        </Tabs>        @*<Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
-            <TabPane Key="chacks">
-            <TabTemplate>Checks</TabTemplate>
-            <ChildContent>
-            <SolutionCheckView SolutionId="SolutionId" />
-            </ChildContent>
-            </TabPane>
-            <TabPane Key="build_logs">
-            <Tab>Build logs</Tab>
-            <ChildContent>
-            <Collapse>
-            @foreach (var log in solution.SolutionBuildLogs)
-            {
-            <Panel Header="@log.BuildedTime.ToString()" Key="@log.Id.ToString()">
-            <RadioGroup @bind-Value="@buildLogMode">
-            <Radio RadioButton Value="@("pretty")">Pretty</Radio>
-            <Radio RadioButton Value="@("raw")">Raw</Radio>
-            </RadioGroup>
-            <br />
-            <AntDesign.Text Style="white-space: pre-wrap">
-            @(buildLogMode == "pretty" ? log.PrettyLog : log.Log)
-            </AntDesign.Text>
-            </Panel>
-            }
-            </Collapse>
-            </ChildContent>
-            </TabPane>
-            </Tabs>*@
+        </Tabs>
     </Authorized>
 </AuthorizeView>
 

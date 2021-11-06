@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Olympiad.Shared.Models;
+using System;
 
 namespace PublicAPI.Responses.Solutions
 {
@@ -8,6 +9,9 @@ namespace PublicAPI.Responses.Solutions
         public DateTimeOffset CheckedTime { get; set; }
         public string ExampleIn { get; set; }
         public string ExampleOut { get; set; }
+
+        public SolutionStatus Status { get; set; }
+
 
         public string ProgramOut { get; set; }
         public string ProgramErr { get; set; }

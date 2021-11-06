@@ -17,6 +17,12 @@ namespace Olympiad.ControlPanel.Services
         [Get("/api/solutions/analytics/{solutionId}/buildLogs")]
         Task<List<BuildLogAnalyticsResponse>> GetBuildLogs(Guid solutionId);
 
+        [Get("/api/solutions/analytics/{solutionId}/testGroupResults")]
+        Task<List<SolutionTestGroupResulResponse>> GetTestGroupResults(Guid solutionId);
+        [Get("/api/solutions/analytics/{solutionId}/checksForDataGroup")]
+        Task<List<SolutionCheckResponse>> GetChecksForDataGroup(Guid solutionId, Guid testDataGroupId);
+
+
 
         [Get("/api/check/download/{solutionId}")]
         Task<string> GetSolutionSource(Guid solutionId);

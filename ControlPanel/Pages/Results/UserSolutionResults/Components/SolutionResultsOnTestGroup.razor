@@ -1,0 +1,138 @@
+﻿@using System.Threading
+@using PublicAPI.Responses.Solutions
+
+@inject ISolutionsApi SolutionsApi
+
+@if (loading || checks is null)
+{
+    <Skeleton Active />
+    return;
+}
+@foreach (var check in checks)
+{
+    <Card>
+        <TitleTemplate>
+            @check.Status.ToRussian()
+            |
+            <PrettyDateTimeOffset DateTimeOffset="check.CheckedTime" />
+        </TitleTemplate>
+        <ChildContent>
+            <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
+                <SpaceItem>
+                    <Row>
+                        <AntDesign.Col Span="24" Xl="12">
+                            <LongTextArea Title="Данные на вход"
+                                      Value="@check.ExampleIn"
+                                      ContentName="program_in" />
+                        </AntDesign.Col>
+
+                        <AntDesign.Col Span="24" Xl="12">
+                            <LongTextArea Title="Поток ошибок"
+                                      Value="@check.ProgramErr"
+                                      ContentName="program_err" />
+                        </AntDesign.Col>
+                    </Row>
+                </SpaceItem>
+                <SpaceItem>
+
+                    <Row>
+                        <RadioGroup @bind-Value="@programOutMode">
+                            <Tooltip Title="@("Показывать раздельно")">
+                                <Radio RadioButton Value="OutputMode.Separate">
+                                    <Icon Type="@IconType.Outline.OneToOne" />
+                                </Radio>
+                            </Tooltip>
+                            <Tooltip Title="@("Показывать разницу")">
+                                <Radio RadioButton Value="OutputMode.Difference">
+                                    <Icon Type="@IconType.Outline.Diff" />
+                                </Radio>
+                            </Tooltip>
+
+                        </RadioGroup>
+                    </Row>
+                </SpaceItem>
+                <SpaceItem>
+                    <Row>
+                        @switch (programOutMode)
+                        {
+                            case OutputMode.Separate:
+                                <AntDesign.Col Span="24" Xl=12>
+                                    <LongTextArea Title="Правильный вывод"
+                                      Value="@check.ExampleOut"
+                                      ContentName="correct_out" />
+                                </AntDesign.Col>
+                                <AntDesign.Col Span="24" Xl=12>
+                                    <LongTextArea Title="Вывод программы"
+                                      Value="@check.ProgramOut"
+                                      ContentName="program_out" />
+                                </AntDesign.Col>
+                                break;
+                            case OutputMode.Difference:
+                                @if (check.ExampleOut.Length > 400 || check.ProgramOut.Length > 400)
+                                {
+                                    <DownloadCorrectAndProgramOutFiles CorrectOut="@check.ExampleOut"
+                                                       ProgramOut="@check.ProgramOut" />
+                                }
+                                else
+                                {
+                                    <AntDesign.Col Style="width: 100%">
+                                        <BlazorTextDiff.TextDiff OldText="@check.ExampleOut"
+                                                 NewText="@check.ProgramOut"
+                                                 CollapseContent="false"
+                                                 ShowWhiteSpace="true">
+                                            <Header></Header>
+                                        </BlazorTextDiff.TextDiff>
+                                    </AntDesign.Col>
+                                }
+                                break;
+                            default:
+                                <Text>Неверный тип отображения</Text>
+                                break;
+                        }
+                    </Row>
+                </SpaceItem>
+
+            </Space>
+
+        </ChildContent>
+    </Card>
+}
+
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+    [Parameter]
+    public Guid TestDataGroupId { get; set; }
+
+    private bool loading = true;
+    private List<SolutionCheckResponse>? checks;
+
+    private OutputMode programOutMode;
+    private enum OutputMode { Separate, Difference }
+
+    private SemaphoreSlim loadingSemaphore = new SemaphoreSlim(1, 1);
+    private (Guid solutinoId, Guid testDataGroupId)? loadedParams;
+    public async Task Load()
+    {
+        await loadingSemaphore.WaitAsync();
+        loading = true;
+        try
+        {
+            if (loadedParams == (SolutionId, TestDataGroupId))
+            {
+                return;
+            }
+            var (localSolutionId, localTestDataGroupId) = (SolutionId, TestDataGroupId);
+            checks = await SolutionsApi.GetChecksForDataGroup(localSolutionId, localTestDataGroupId);
+
+
+            loadedParams = (localSolutionId, localTestDataGroupId);
+        }
+        finally
+        {
+            loading = false;
+            loadingSemaphore.Release();
+            StateHasChanged();
+        }
+    }
+}
