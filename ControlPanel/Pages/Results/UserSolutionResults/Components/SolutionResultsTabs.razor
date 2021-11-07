@@ -1,0 +1,37 @@
+﻿<Tabs Animated @bind-ActiveKey="activeTab">
+    <TabPane Tab="Тесты" Key="@($"tests")">
+        <SolutionChecksView SolutionId="SolutionId" />
+    </TabPane>
+    <TabPane Key="@($"buildLogs")">
+        <TabTemplate>
+            <Badge Dot="BuildLogsAccent" Offset="(5, 0)">
+                Логи сборки
+            </Badge>
+        </TabTemplate>
+        <ChildContent>
+            <SolutionBuildLogs SolutionId="SolutionId" />
+        </ChildContent>
+    </TabPane>
+</Tabs>
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private bool buildLogsAccentValue;
+
+    private string activeTab = "tests";
+    [Parameter]
+    public bool BuildLogsAccent
+    {
+        get => buildLogsAccentValue;
+        set
+        {
+            if (value && !buildLogsAccentValue)
+            {
+                activeTab = "buildLogs";
+            }
+            buildLogsAccentValue = value;
+        }
+
+    }
+}

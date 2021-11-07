@@ -38,21 +38,8 @@
                 <SolutionPageDescriptions solution="solution" />
             </PageHeaderContent>
         </PageHeader>
-        <Tabs Animated>
-            <TabPane Tab="Тесты" Key="tests">
-                <SolutionChecksView SolutionId="SolutionId" />
-            </TabPane>
-            <TabPane Key="buildLogs">
-                <TabTemplate>
-                    <Badge Dot="@(solution?.Status <= SolutionStatus.CompileError)" Offset="(5, 0)">
-                        Логи сборки
-                    </Badge>
-                </TabTemplate>
-                <ChildContent>
-                    <SolutionBuildLogs SolutionId="SolutionId" />
-                </ChildContent>
-            </TabPane>
-        </Tabs>
+        <SolutionResultsTabs SolutionId="SolutionId"
+                             BuildLogsAccent="@(solution?.Status <= SolutionStatus.CompileError)" />
     </Authorized>
 </AuthorizeView>
 
@@ -71,6 +58,7 @@
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
 
+    private string activeTab = "tests";
 
     protected override async Task OnParametersSetAsync()
     {
@@ -78,6 +66,7 @@
 
         try
         {
+            await Task.Delay(1000);
             solution = await SolutionsApi.GetInfoAboutSolution(SolutionId);
             if (solution.User.Id != UserId)
             {
@@ -87,6 +76,7 @@
             {
                 throw new ArgumentOutOfRangeException(nameof(ChallengeId), $"Incorrect {nameof(ChallengeId)} for {nameof(SolutionId)}");
             }
+            StateHasChanged();
         }
         catch (Exception ex)
         {

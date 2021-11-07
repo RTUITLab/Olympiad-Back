@@ -7,6 +7,12 @@
 {
     <Skeleton Active />
 }
+else @if (solutionCheckGroups?.Count == 0)
+{
+    <Alert Type="@AlertType.Info">
+        Небыло произведено ни одной проверки решения
+    </Alert>
+}
 else
 {
     <Space Style="margin-bottom: 16px">
@@ -99,7 +105,8 @@ else
                 TestGroupOrdering.FailedFirst => w1.Result.BestStatus - w2.Result.BestStatus,
                 _ => 0
             };
-            if (specialOrdering != 0) {
+            if (specialOrdering != 0)
+            {
                 return specialOrdering;
             }
             // Alphabet always last
