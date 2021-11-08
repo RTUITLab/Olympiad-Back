@@ -13,4 +13,8 @@ public static class JSExtensions
     {
         return jsRuntime.InvokeVoidAsync("openLinkInNewTab", url);
     }
+    public static ValueTask<bool> CopyTextToClipboard(this IJSRuntime jsRuntime, string textToCopy)
+    {
+        return jsRuntime.InvokeAsync<bool>("copyTextToClipboard", textToCopy);
+    }
 }

@@ -12,10 +12,15 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
 using Olympiad.Shared;
 using Microsoft.AspNetCore.Components.Web;
+using DiffPlex.DiffBuilder;
+using DiffPlex;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+builder.Services.AddScoped<ISideBySideDiffBuilder, SideBySideDiffBuilder>();
+builder.Services.AddScoped<IDiffer, Differ>();
 
 Uri baseAddress;
 if (builder.HostEnvironment.IsDevelopment())
@@ -35,23 +40,12 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseAddress });
 builder.Services.AddAntDesign();
 
 
-
-var refitSettings = new RefitSettings
-{
-    ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
-    {
-        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-        WriteIndented = true,
-    })
-};
-builder.Services.AddScoped<IControlPanelApiService>(sp => RestService.For<IControlPanelApiService>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<IChallengesApi>(sp => RestService.For<IChallengesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<IExercisesApi>(sp => RestService.For<IExercisesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<IRolesApi>(sp => RestService.For<IRolesApi>(sp.GetRequiredService<HttpClient>(), refitSettings));
-builder.Services.AddScoped<ILoginRefresh>(sp => (LocalStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+RegisterApiServices(builder);
+builder.Services.AddScoped<ILoginRefresh>(sp => (BrowserStorageJwtAuthenticationProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 
 
-builder.Services.AddScoped<AuthenticationStateProvider, LocalStorageJwtAuthenticationProvider>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, BrowserStorageJwtAuthenticationProvider>();
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddTransient<UserPasswordGenerator>();
@@ -67,3 +61,28 @@ CultureInfo.DefaultThreadCurrentCulture = ruCulture;
 CultureInfo.DefaultThreadCurrentUICulture = ruCulture;
 
 await builder.Build().RunAsync();
+
+
+void RegisterApiServices(WebAssemblyHostBuilder builder)
+{
+    var refitSettings = new RefitSettings
+    {
+        ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            WriteIndented = true,
+        })
+    };
+    void RegisterApiService<T>() where T: class
+    {
+        builder.Services.AddScoped<T>(sp => RestService.For<T>(sp.GetRequiredService<HttpClient>(), refitSettings));
+    }
+    
+    RegisterApiService<IControlPanelApiService>();
+    
+    RegisterApiService<IChallengesApi>();
+    RegisterApiService<IExercisesApi>();
+    RegisterApiService<ISolutionsApi>();
+    
+    RegisterApiService<IRolesApi>();
+}

@@ -1,20 +1,33 @@
 ﻿@inherits LayoutComponentBase
 
 <Layout Style="min-height: 100vh;">
-    <Header Class="header">
-        <Row Justify="space-between">
-            <AntDesign.Col Span="12" Style="align-self: center">
-                <Title Level="3" style="color: white; margin: 0">Панель управления</Title>
-            </AntDesign.Col>
-            <AntDesign.Col Span="12" Style="text-align: right">
-                <AuthorizeView>
-                    <Authorized>
-                        <Text style="color: white;">@context.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="@(() => {logs?.Show();})"></Icon></Text>
-                    </Authorized>
-                </AuthorizeView>
-            </AntDesign.Col>
-        </Row>
-    </Header>
+    <AuthorizeView Context="userContext">
+        <Authorized>
+            @if (userContext.User.IsTempLogin())
+            {
+                <Header Style="background-color: #2b2b2b; height: 52px">
+                    <Row Justify="space-between" >
+                        <AntDesign.Col Span="24" Style="align-self: center">
+                            <Tooltip Title="@("Выполнен временный вход под пользователем")" Placement="Placement.Bottom">
+                                <Title Level="3" style="color: white; margin: 0">Временный пользователь: @userContext.User.Identity?.Name</Title>
+                            </Tooltip>
+                        </AntDesign.Col>
+                    </Row>
+                </Header>
+            }
+            <Header>
+
+                <Row Justify="space-between">
+                    <AntDesign.Col Span="12" Style="align-self: center">
+                        <Title Level="3" style="color: white; margin: 0">Панель управления</Title>
+                    </AntDesign.Col>
+                    <AntDesign.Col Span="12" Style="text-align: right">
+                        <Text style="color: white;">@userContext.User.Identity?.Name <Icon Type="unordered-list" Theme="outline" OnClick="@(() => {logs?.Show();})"></Icon></Text>
+                    </AntDesign.Col>
+                </Row>
+            </Header>
+        </Authorized>
+    </AuthorizeView>
     <Layout>
         <Sider Width="250"
                Class="site-layout-background"

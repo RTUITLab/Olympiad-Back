@@ -1,0 +1,74 @@
+﻿@using PublicAPI.Responses.Solutions.Analytics
+
+@inject ISolutionsApi SolutionsApi
+
+@if (loading)
+{
+    <Skeleton Active />
+}
+else
+{
+    <Collapse>
+        @foreach (var log in logs ?? Enumerable.Empty<BuildLogWrapper>())
+        {
+            <Panel Key="@log.BuildLog.Id.ToString()">
+                <HeaderTemplate>
+                    <PrettyDateTimeOffset DateTimeOffset="log.BuildLog.BuildedTime" />
+                </HeaderTemplate>
+                <ChildContent>
+                    <Space Direction="DirectionVHType.Vertical">
+                        <SpaceItem>
+                            <RadioGroup @bind-Value="@log.ShowMode">
+                                <Radio RadioButton Value="@ShowBuildLogsMode.Pretty">Pretty</Radio>
+                                <Radio RadioButton Value="@ShowBuildLogsMode.Raw">Raw</Radio>
+                            </RadioGroup>
+                        </SpaceItem>
+                        <SpaceItem>
+                            <AntDesign.Text Style="white-space: pre-wrap">
+                                @(log.ShowMode == ShowBuildLogsMode.Pretty ? log.BuildLog.PrettyLog : log.BuildLog.Log)
+                            </AntDesign.Text>
+                        </SpaceItem>
+
+                    </Space>
+                </ChildContent>
+            </Panel>
+        }
+    </Collapse>
+}
+
+@code {
+
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private bool loading = true;
+    private List<BuildLogWrapper>? logs;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        loading = true;
+        try
+        {
+            logs = (await SolutionsApi.GetBuildLogs(SolutionId))
+                .Select(l => new BuildLogWrapper(l))
+                .ToList();
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private enum ShowBuildLogsMode { Pretty, Raw }
+    private record BuildLogWrapper(BuildLogAnalyticsResponse BuildLog)
+    {
+        public ShowBuildLogsMode ShowMode { get; set; }
+    }
+    }

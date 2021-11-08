@@ -13,11 +13,14 @@ namespace Olympiad.ControlPanel.Services
     {
         [Get("/api/challenges/all")]
         public Task<List<ChallengeResponse>> GetAllChallengesAsync();
+
+
         [Get("/api/challenges/analytics")]
         public Task<List<ChallengeResponseWithAnalytics>> GetAllChallengesWithAnalyticsAsync();
         [Get("/api/challenges/analytics/{challengeId}")]
         public Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit);
-
+        [Get("/api/challenges/analytics/{challengeId}/info")]
+        public Task<ChallengeResponseWithAnalytics> GetOneChallengeAnalycisInfo(Guid challengeId);
 
         [Get("/api/challenges/{challengeId}")]
         public Task<ChallengeResponse> GetChallengeAsync(Guid challengeId);

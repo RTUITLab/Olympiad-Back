@@ -1,31 +1,31 @@
 ﻿@inject NavigationManager NavigationManager
 
 <CascadingAuthenticationState>
-	<Router AppAssembly="@typeof(App).Assembly">
-		<Found Context="routeData">
-			<AuthorizeRouteView RouteData=routeData DefaultLayout=typeof(MainLayout)>
-				<NotAuthorized>
-					<RedirectToLogin />
-				</NotAuthorized>
-				<Authorizing>
-					<Result Status="404" Title="Вход">
-						<Extra>
-							<Spin Size="large" />
-						</Extra>
-					</Result>
-				</Authorizing>
-			</AuthorizeRouteView>
-			<FocusOnNavigate RouteData="@routeData" Selector="h1" />
-		</Found>
-		<NotFound>
-			<LayoutView Layout="@typeof(MainLayout)">
-				<Result Status="404" Title="Страница не найдена">
-					<Extra>
-						<Button Type="@ButtonType.Primary" OnClick="@(() => NavigationManager.NavigateTo(""))">Вернуться на главную</Button>
-					</Extra>
-				</Result>
-			</LayoutView>
-		</NotFound>
-	</Router>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData=routeData DefaultLayout=typeof(MainLayout)>
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <Result Status="404" Title="Вход">
+                        <Extra>
+                            <Spin Size="large" />
+                        </Extra>
+                    </Result>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <Result Status="404" Title="Страница не найдена">
+                    <Extra>
+                        <Button Type="@ButtonType.Primary" OnClick="@(() => NavigationManager.NavigateTo(""))">Вернуться на главную</Button>
+                    </Extra>
+                </Result>
+            </LayoutView>
+        </NotFound>
+    </Router>
 </CascadingAuthenticationState>
 <AntContainer />

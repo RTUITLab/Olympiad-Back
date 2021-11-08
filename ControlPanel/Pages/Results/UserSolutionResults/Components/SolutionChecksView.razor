@@ -1,0 +1,136 @@
+﻿@using PublicAPI.Responses.Solutions.Analytics
+@using System.ComponentModel.DataAnnotations
+
+@inject ISolutionsApi SolutionsApi
+
+@if (loading)
+{
+    <Skeleton Active />
+}
+else @if (solutionCheckGroups?.Count == 0)
+{
+    <Alert Type="@AlertType.Info">
+        Небыло произведено ни одной проверки решения
+    </Alert>
+}
+else
+{
+    <Space Style="margin-bottom: 16px">
+        <SpaceItem>
+            <AntDesign.Text>
+                Сортировка групп тестов:
+            </AntDesign.Text>
+        </SpaceItem>
+        <SpaceItem>
+            <EnumSelect TEnum="TestGroupOrdering" @bind-Value="testGroupOrdering" OnSelectedItemChanged="SortGroups" />
+        </SpaceItem>
+    </Space>
+    <Collapse Accordion>
+        @foreach (var wrapper in (solutionCheckGroups ?? Enumerable.Empty<Wrapper>()))
+        {
+            <Panel Key="@wrapper.Result.Id.ToString()" OnActiveChange="wrapper.LoadData">
+                <HeaderTemplate>
+                    <Text>
+                        @wrapper.Result.Title
+                        |
+                        <Icon Type="@(wrapper.Result.IsPublic ? IconType.Outline.Eye : IconType.Outline.EyeInvisible)" />
+                        |
+                        @if (wrapper.Result.ResultScoreScore.HasValue)
+                        {
+                            <ScoreBadge Score="wrapper.Result.ResultScoreScore"
+                            Hint="Присвоено баллов" />
+                        }
+                        else
+                        {
+                            <Text>
+                                @wrapper.Result.BestStatus.ToRussian()
+                            </Text>
+                        }
+                    </Text>
+                </HeaderTemplate>
+                <ChildContent>
+                    <SolutionResultsOnTestGroup SolutionId="SolutionId"
+                                        TestDataGroupId="wrapper.Result.Id"
+                                        @ref="wrapper.GroupResultsRef" />
+                </ChildContent>
+            </Panel>
+        }
+    </Collapse>
+}
+
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private List<Wrapper>? solutionCheckGroups { get; set; }
+    private TestGroupOrdering testGroupOrdering = TestGroupOrdering.FailedFirst;
+    private bool loading;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            solutionCheckGroups = (await SolutionsApi.GetTestGroupResults(SolutionId))
+                .Select(r => new Wrapper(r))
+                .ToList();
+            SortGroups(testGroupOrdering);
+        }
+        finally
+        {
+            loading = false;
+        }
+        StateHasChanged();
+    }
+    private void SortGroups(TestGroupOrdering ordering)
+    {
+        solutionCheckGroups?.Sort((w1, w2) =>
+        {
+            // Public always first
+            var isPublicOrdering = w2.Result.IsPublic.CompareTo(w1.Result.IsPublic);
+            if (isPublicOrdering != 0)
+            {
+                return isPublicOrdering;
+            }
+            // Special orderings
+            var specialOrdering = ordering switch
+            {
+                TestGroupOrdering.Alphabet => 0,
+                TestGroupOrdering.FailedFirst => w1.Result.BestStatus - w2.Result.BestStatus,
+                _ => 0
+            };
+            if (specialOrdering != 0)
+            {
+                return specialOrdering;
+            }
+            // Alphabet always last
+            return w1.Result.Title.CompareTo(w2.Result.Title);
+        });
+    }
+
+
+    private record Wrapper(SolutionTestGroupResulResponse Result)
+    {
+        public SolutionResultsOnTestGroup? GroupResultsRef { get; set; }
+        public Task LoadData(bool active)
+        {
+            return active ?
+                GroupResultsRef?.Load() ?? Task.CompletedTask
+                :
+                Task.CompletedTask;
+        }
+    }
+    private enum TestGroupOrdering
+    {
+        [Display(Name = "По алфавиту")]
+        Alphabet,
+        [Display(Name = "Сначала непройденные")]
+        FailedFirst
+    }
+}

@@ -1,0 +1,74 @@
+﻿@inject ISolutionsApi SolutionsApi
+@inject IJSRuntime JS
+
+<Button Icon="@IconType.Outline.Code" OnClick="ShowCode">Показать</Button>
+
+@{
+    RenderFragment drawerTitle =
+    @<Template>
+        Код решения <Button Icon="@IconType.Outline.Download" Loading="loading" OnClick="DownloadSource"></Button>
+    </Template>;
+}
+
+<Drawer Width="800"
+        Closable="true"
+        Visible="showSourceCode"
+        Placement="right"
+        Title="drawerTitle"
+        OnClose="() => showSourceCode = false">
+
+    @if (loading)
+    {
+        <Skeleton Active></Skeleton>
+    }
+    else
+    {
+        <AntDesign.Text Copyable CopyConfig="new TypographyCopyableConfig { Text=sourceCode }" style="overflow:auto; white-space:pre">
+            @sourceCode
+        </AntDesign.Text>
+    }
+</Drawer>
+
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+    private Guid loadedSolutionId;
+    [Parameter]
+    public string? SolutionFileName { get; set; }
+
+    private bool loading = true;
+    private bool showSourceCode = false;
+
+    private string? sourceCode;
+    private async Task ShowCode()
+    {
+        showSourceCode = true;
+        if (loadedSolutionId != SolutionId)
+        {
+            await LoadSource();
+        }
+    }
+
+    private async Task LoadSource()
+    {
+        loading = true;
+        try
+        {
+            var localSolutionId = SolutionId;
+            sourceCode = await SolutionsApi.GetSolutionSource(localSolutionId);
+            loadedSolutionId = localSolutionId;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task DownloadSource()
+    {
+        if (!string.IsNullOrEmpty(SolutionFileName) && !string.IsNullOrEmpty(sourceCode))
+        {
+            await JS.DownloadFile(SolutionFileName, sourceCode);
+        }
+    }
+}

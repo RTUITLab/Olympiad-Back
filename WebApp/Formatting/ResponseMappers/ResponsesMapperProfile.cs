@@ -15,6 +15,8 @@ using PublicAPI.Responses.Account;
 using Models.UserModels;
 using PublicAPI.Responses.Exercises;
 using PublicAPI.Responses.Challenges.Analytics;
+using PublicAPI.Responses.Solutions.Analytics;
+using WebApp.Controllers;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -60,6 +62,14 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<SolutionInternalModel, SolutionResponse>()
                 .ForMember(sr => sr.Status, map => map.MapFrom(sim => sim.GetStatus()))
                 .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()));
+            CreateMap<Solution, SolutionAnalyticCompactResponse>()
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
+            CreateMap<Solution, SolutionAnalyticsResponse>()
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore))
+                .ForMember(r => r.FileExtension, map => map.MapFrom(s => CheckController.GetExtensionsForLanguage(s.Language)))
+                .ForMember(r => r.FileExtension, map => map.MapAtRuntime());
+
+            CreateMap<SolutionBuildLog, BuildLogAnalyticsResponse>();
 
             CreateMap<Challenge, ChallengeResponse>();
             CreateMap<Challenge, ChallengeExtendedResponse>()

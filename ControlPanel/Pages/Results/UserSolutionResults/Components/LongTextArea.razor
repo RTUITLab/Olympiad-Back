@@ -1,0 +1,35 @@
+﻿@inject IJSRuntime JS
+<Text>
+    @Title
+</Text>
+@if (Value?.Length > 400)
+{
+    <TextArea Value="@Value.Substring(0, 400)"></TextArea>
+    <Alert Type="info">
+        Данных слишком много для отображения на странице сайта
+        <Tooltip Title="@("Скачать как файл")">
+            <Button Icon="@IconType.Outline.Download"
+                Type="@ButtonType.Default" @onclick="@(() => JS.DownloadFile($"{ContentName}.txt", Value))" />
+        </Tooltip>
+    </Alert>
+}
+else
+{
+    <TextArea Value="@Value"></TextArea>
+}
+@code {
+    private string? actualValue;
+    [Parameter]
+    public string Value
+    {
+        get => actualValue ?? string.Empty; set
+        {
+            actualValue = value;
+        }
+    }
+    [Parameter]
+    public string? Title { get; set; }
+    [Parameter]
+    public string ContentName { get; set; } = "file";
+
+}

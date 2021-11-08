@@ -1,0 +1,89 @@
+﻿@page "/results/{ChallengeId:guid}/user/{UserId:guid}/solution/{SolutionId:guid}"
+@attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
+
+@using Microsoft.Extensions.Logging
+@using Olympiad.Shared.Models
+@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.Solutions.Analytics
+@using PublicAPI.Responses.Users
+@using Olympiad.ControlPanel.Pages.Results.UserSolutionResults.Components
+
+@inject ILogger<UserSolutionResultsPage> logger
+@inject NavigationManager NavigationManager
+@inject ISolutionsApi SolutionsApi
+@inject MessageService MessageService
+
+<PageTitle>@(exercise?.Name ?? "Загрузка...") - @(user?.FirstName ?? "Загрузка...")</PageTitle>
+<AuthorizeView Context="userContext">
+    <Authorized>
+        <PageHeader Title="@(exercise?.Name ?? "Загрузка...")">
+            <PageHeaderBreadcrumb>
+                <Breadcrumb>
+                    <BreadcrumbItem Href="results">
+                        Результаты
+                    </BreadcrumbItem>
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}")">
+                        @(challenge?.Name ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}/user/{UserId}")">
+                        @(user?.FirstName ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                        @(exercise?.Name ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                </Breadcrumb>
+            </PageHeaderBreadcrumb>
+            <PageHeaderContent>
+                <SolutionPageDescriptions solution="solution" />
+            </PageHeaderContent>
+        </PageHeader>
+        <SolutionResultsTabs SolutionId="SolutionId"
+                             BuildLogsAccent="@(solution?.Status <= SolutionStatus.CompileError)" />
+    </Authorized>
+</AuthorizeView>
+
+
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private SolutionAnalyticsResponse? solution;
+    private ExerciseInfo? exercise => solution?.Exercise;
+    private ChallengeResponse? challenge => exercise?.Challenge;
+    private UserInfoResponse? user => solution?.User;
+
+    private string activeTab = "tests";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        try
+        {
+            await Task.Delay(1000);
+            solution = await SolutionsApi.GetInfoAboutSolution(SolutionId);
+            if (solution.User.Id != UserId)
+            {
+                throw new ArgumentOutOfRangeException(nameof(UserId), $"Incorrect {nameof(UserId)} for {nameof(SolutionId)}");
+            }
+            if (solution.Exercise.ChallengeId != ChallengeId)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ChallengeId), $"Incorrect {nameof(ChallengeId)} for {nameof(SolutionId)}");
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Can't load solution info");
+            NavigationManager.NavigateTo($"results/{ChallengeId}/user/{UserId}");
+            await MessageService.Warn("Невозможно загрузить данные о решении");
+            return;
+        }
+    }
+}

@@ -1,0 +1,30 @@
+﻿@using Microsoft.Extensions.Logging
+@inject IJSRuntime JS
+
+@inject ILogger<DownloadCorrectAndProgramOutFiles> logger
+
+<Alert Type="info">
+    <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
+        <SpaceItem>
+            Данных слишком много, вы можете скачать данные как файлы для анализа в текстовом редакторе
+        </SpaceItem>
+        <SpaceItem>
+            <Button Icon="@IconType.Outline.Download" OnClick="DownloadFiles">Скачать</Button>
+        </SpaceItem>
+    </Space>
+</Alert>
+@code {
+    [Parameter]
+    public string? CorrectOut { get; set; }
+
+    [Parameter]
+    public string? ProgramOut { get; set; }
+
+    private async Task DownloadFiles()
+    {
+        // TODO: pack in archive
+        logger.LogWarning("downloading two files instead archive");
+        await JS.DownloadFile("correct_out.txt", CorrectOut ?? string.Empty);
+        await JS.DownloadFile("program_out.txt", ProgramOut ?? string.Empty);
+    }
+}

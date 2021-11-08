@@ -1,0 +1,9 @@
+﻿<Tooltip Title="@Hint">
+    <Text Keyboard>@(Score?.ToString() ?? "—")</Text>
+</Tooltip>
+@code {
+    [Parameter]
+    public int? Score { get; set; }
+    [Parameter]
+    public string Hint { get; set; } = "Баллы";
+}

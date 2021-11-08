@@ -44,6 +44,14 @@ namespace WebApp.Controllers.Challenges
                 .ToListAsync();
         }
 
+        [HttpGet("{challengeId:guid}/info")]
+        public async Task<ChallengeResponseWithAnalytics> GetAnalyticChallengeInfo(Guid challengeId)
+        {
+            return await context.Challenges
+                        .ProjectTo<ChallengeResponseWithAnalytics>(mapper.ConfigurationProvider)
+                        .SingleOrDefaultAsync(c => c.Id == challengeId);
+        }
+
         // TODO: Currect work with limit and offset, use users count instead solutions count
         [HttpGet("{challengeId:guid}")]
         public async Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(

@@ -1,0 +1,106 @@
+﻿@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.Solutions.Analytics
+@using PublicAPI.Responses.Users
+<AuthorizeView Context="userContext">
+    <Authorized>
+        <Descriptions Bordered
+                      Column="descriptionsColumn"
+                      Size="@DescriptionsSize.Small"
+                      Layout="@DescriptionsLayout.Horizontal">
+            <DescriptionsItem Title="Соревнование">
+                <SkeletonRowComponent Data="challenge" Context="loadedChallenge" TData="ChallengeResponse">
+                    @if (userContext.User.IsAdmin())
+                    {
+                        <NavLink href="@($"challenges/{loadedChallenge.Id}")">
+                            <Button Icon="@IconType.Outline.Edit">@loadedChallenge.Name</Button>
+                        </NavLink>
+                    }
+                    else
+                    {
+                        <Text>@loadedChallenge.Name</Text>
+                    }
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Идентификатор">
+                <SkeletonRowComponent Data="user" Context="loadedUser" TData="UserInfoResponse">
+                    @loadedUser.StudentId
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Имя">
+                <SkeletonRowComponent Data="user" Context="loadedUser" TData="UserInfoResponse">
+                    @if (userContext.User.IsAdmin())
+                    {
+                        <NavLink href="@($"users/{loadedUser.Id}")">
+                            <Button Icon="@IconType.Outline.User">@loadedUser.FirstName</Button>
+                        </NavLink>
+                    }
+                    else
+                    {
+                        @loadedUser.FirstName
+                    }
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Отправлено">
+                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                    <PrettyDateTimeOffset DateTimeOffset="loadedSolution.SendingTime" />
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Язык">
+                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                    <Text Code>@loadedSolution.Language</Text>
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Задание">
+                <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="ExerciseInfo">
+                    @if (userContext.User.IsAdmin())
+                    {
+                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/{loadedExercise.Id}")">
+                            <Button Icon="@IconType.Outline.Edit">@loadedExercise.Name</Button>
+                        </NavLink>
+                    }
+                    else
+                    {
+                        <Text>@loadedExercise.Name </Text>
+                    }
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Баллы">
+                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                    <ScoreBadge Score="loadedSolution.Score" Hint="Баллов получено" />
+                    /
+                    <ScoreBadge Score="loadedSolution.Exercise.Score" Hint="Возможно" />
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Статус">
+                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                    @loadedSolution.Status.ToRussian()
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+            <DescriptionsItem Title="Код">
+                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" />
+                </SkeletonRowComponent>
+            </DescriptionsItem>
+        </Descriptions>
+    </Authorized>
+</AuthorizeView>
+@code {
+
+    [Parameter]
+    public SolutionAnalyticsResponse? solution { get; set; }
+    private ExerciseInfo? exercise => solution?.Exercise;
+    private ChallengeResponse? challenge => exercise?.Challenge;
+    private UserInfoResponse? user => solution?.User;
+
+    private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.FileExtension}";
+
+    private Dictionary<string, int> descriptionsColumn = new Dictionary<string, int> {
+            { BreakpointType.Xxl.ToString(), 3 },
+            { BreakpointType.Xl.ToString(), 3},
+            { BreakpointType.Lg.ToString(), 2},
+            { BreakpointType.Md.ToString(), 1},
+            { BreakpointType.Sm.ToString(), 1},
+            { BreakpointType.Xs.ToString(), 1}
+        };
+}

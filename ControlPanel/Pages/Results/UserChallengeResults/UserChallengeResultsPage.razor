@@ -1,0 +1,133 @@
+﻿@page "/results/{ChallengeId:guid}/user/{UserId:guid}"
+@attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
+
+@using Microsoft.Extensions.Logging
+@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Challenges.Analytics
+@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.Solutions
+@using PublicAPI.Responses.Users
+@using Olympiad.ControlPanel.Pages.Results.UserChallengeResults.Components
+@using Olympiad.ControlPanel.Pages.Results.Components
+
+
+@inject ILogger<UserChallengeResultsPage> logger
+@inject NavigationManager NavigationManager
+@inject IChallengesApi ChallengesApi
+@inject IExercisesApi ExercisesApi
+@inject IControlPanelApiService ControlPanelApiService
+@inject MessageService MessageService
+
+<PageTitle>@(user?.FirstName ?? $"Загрузка...") - @(challenge?.Name ?? $"Загрузка...")</PageTitle>
+<AuthorizeView Context="userContext">
+    <Authorized>
+        <PageHeader Title="@(user?.FirstName ?? $"Загрузка...")">
+            <PageHeaderBreadcrumb>
+                <Breadcrumb>
+                    <BreadcrumbItem Href="results">
+                        Результаты
+                    </BreadcrumbItem>
+                    <BreadcrumbItem Href="@($"results/{ChallengeId}")">
+                        @(challenge?.Name ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                        @(user?.FirstName ?? $"Загрузка...")
+                    </BreadcrumbItem>
+                </Breadcrumb>
+            </PageHeaderBreadcrumb>
+            <PageHeaderContent>
+                <Descriptions>
+                    @if (userContext.User.IsAdmin())
+                    {
+                        <DescriptionsItem Title="Соревнование">
+                            <SkeletonRowComponent Data="challenge" Context="loadedChallenge" TData="ChallengeResponse">
+                                <NavLink href="@($"challenges/{ChallengeId}")">
+                                    <Button Icon="@IconType.Outline.Edit">@loadedChallenge.Name</Button>
+                                </NavLink>
+                            </SkeletonRowComponent>
+                        </DescriptionsItem>
+                    }
+                    @*<DescriptionsItem Title="Report">
+                        <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create report about user"
+                        ChallengeId="ChallengeId"
+                        FileName="@user?.StudentId"
+                        UserStudentIds="@(new List<string> { user?.StudentId })" />
+                        </DescriptionsItem>*@
+                </Descriptions>
+            </PageHeaderContent>
+        </PageHeader>
+
+        @if (exercises != null)
+        {
+            <Collapse OnChange="ReaectOnChange">
+                @foreach (var exercise in exercises)
+                {
+                    <Panel Key="@exercise.Id.ToString()">
+                        <HeaderTemplate>
+                            @exercise.Name <ScoreBadge Score="exercise.Score" />
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <UserSolutionsList ChallengeId="ChallengeId"
+                                       ExerciseId="exercise.Id"
+                                       UserId="UserId"
+                                       @ref="solutionLists[exercise.Id]" />
+                        </ChildContent>
+                    </Panel>
+                }
+            </Collapse>
+        }
+        else
+        {
+            <Skeleton Active></Skeleton>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private ChallengeResponseWithAnalytics? challenge;
+    private List<ExerciseCompactResponse>? exercises;
+    private UserInfoResponse? user;
+
+    private Dictionary<Guid, UserSolutionsList> solutionLists = new();
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        try
+        {
+            challenge = await ChallengesApi.GetOneChallengeAnalycisInfo(ChallengeId);
+            exercises = await ExercisesApi.GetExercisesWithAtteptsForUserAsync(ChallengeId, UserId);
+            var response = await ControlPanelApiService.GetUser(UserId);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("incorrect status code");
+            }
+            user = response.Content;
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation(ex, "Can't load base info");
+            NavigationManager.NavigateTo($"results/{ChallengeId}");
+            await MessageService.Warn("Невозможно загрузить данные о решениях пользователя");
+        }
+
+    }
+
+    private async Task ReaectOnChange(string[] keys)
+    {
+        foreach (var id in keys.Select(Guid.Parse))
+        {
+            if (solutionLists.TryGetValue(id, out var list))
+            {
+                await list.TriggerOpen();
+            }
+        }
+    }
+}
