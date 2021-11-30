@@ -30,6 +30,7 @@ using Olympiad.Shared;
 using PublicAPI.Requests.Account;
 using OneOf;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Models.Links;
 
 namespace WebApp.Controllers.Users
 {
@@ -174,7 +175,9 @@ namespace WebApp.Controllers.Users
         [HttpPost("generate")]
         [Authorize(Roles = "Admin")]
         [Obsolete("Move generating user logic to Service")]
-        public async Task<ActionResult> GenerateUser([FromBody] GenerateUserRequest model)
+        public async Task<ActionResult> GenerateUser(
+            [FromBody] GenerateUserRequest model,
+            [FromServices] ApplicationDbContext dbContext)
         {
             var createUserResult = await CreateUser(new CreateUserDataModel
             {
@@ -198,6 +201,29 @@ namespace WebApp.Controllers.Users
                 return Ok();
             }
             var user = createUserResult.AsT0;
+
+            foreach (var challengeId in model
+                .Claims.Where(c => c.Type == "add_to_challenge")
+                .Select(c => c.Value)
+                .Select(c => (success: Guid.TryParse(c, out var id), id))
+                .Where(c => c.success)
+                .Select(c => c.id))
+            {
+                try
+                {
+                    dbContext.Add(new UserToChallenge
+                    {
+                        ChallengeId = challengeId,
+                        UserId = user.Id
+                    });
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Can't add user {user} to challenge {challenge}", user.Id, challengeId);
+                }
+            }
+
             foreach (var claim in model.Claims)
             {
                 var claimToAdd = new Claim(claim.Type, claim.Value);
