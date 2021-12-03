@@ -75,13 +75,13 @@ namespace WebApp.Controllers
             if (file == null)
             {
                 logger.LogInformation("File is null");
-                throw StatusCodeException.BadRequest("file not exists");
+                return BadRequest("file not exists");
             }
 
-            if (file.Length > 10000)
+            if (file.Length > 5_000_000)
             {
                 logger.LogInformation($"File size too big {file.Length}");
-                throw StatusCodeException.BadRequest("file size more than 5MB");
+                return BadRequest("file size more than 5MB");
             }
             string fileBody;
             using (var streamReader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
