@@ -29,12 +29,13 @@
 </PageHeader>
 
 <Title Level="2">Правила составления CSV файла</Title>
-<Text>
+<Text Style="white-space: break-spaces">
     CSV файл <Text Strong>должен</Text> иметь первые две колонки <Text Keyboard>@UsersGenerateModelBuilder.IDColumnName</Text> и <Text Keyboard>@UsersGenerateModelBuilder.NameColumnName</Text>.
-    Если есть необходимость - можно использовать третью колонку <Text Keyboard>@UsersGenerateModelBuilder.DefaultPassworkColumnName</Text> для использования предварительно заданного пароля вместо генерирования. Минимальная длина пароля - 6 символов.
+    Если есть необходимость - можно использовать третью колонку <Text Keyboard>@UsersGenerateModelBuilder.DefaultPasswordColumnName</Text> для использования предварительно заданного пароля вместо генерирования. Минимальная длина пароля - 6 символов.
+    Можно добавлять необходимое количество колонок <Text Keyboard>@DefaultClaims.AddToChallenge.Type</Text>, в которых необходимо указать идентификаторы соревнований, в которые пользователь будет приглашен автоматически.
 </Text>
 <Title Level="3">Дополнительные свойства</Title>
-<Text>
+<Text Style="white-space: break-spaces">
     Для последующей идентификации и поиска пользователей можно добавить генерируемым пользователям свойства.
     Например, добавить колонку <Text Keyboard>Класс</Text>, и у каждого пользователя вписать класс, в котором он учится.
     Это может быть удобно для последующего предоставления доступа пользователям к конкретным соревнованиям.
@@ -45,8 +46,8 @@
 @if (usersGenerateModel == null)
 {
     <Alert Type="@AlertType.Info"
-       Message="Выберете CSV файл"
-       Description="Выберите CSV файл для предпросмотра создаваемых пользователей"
+       Message="Необходимо указать данные"
+       Description="Выберите CSV файл для предпросмотра создаваемых пользователей, или создайте единственного пользователя в ручном режиме"
        ShowIcon="true" />
 }
 <Table Bordered
@@ -56,14 +57,15 @@
     <TitleTemplate>
         <Button Icon="@IconType.Outline.FileExcel" OnClick="@(() => JS.InvokeVoidAsync("clickElement", inputFileRef?.Element))">Выбрать CSV файл</Button>
         <InputFile @ref="inputFileRef" style="display: none" OnChange="HandleSelection" accept=".csv" />
+        <AddHandMadeUserModal OnFormFilled="SetFromHandmade"/>
         <AntDesign.Text>Записей: @(usersGenerateModel?.UserGenerateRows.Count ?? 0)</AntDesign.Text>
     </TitleTemplate>
     <ChildContent>
         <Column Field="context.StudentID">
-            <TitleTemplate>ID<HelpTooltip Text="Индентификатор студента, будет использоваться для входа" /></TitleTemplate>
+            <TitleTemplate>ID<HelpTooltip Text="@Tooltips.TOOLTIP_ID" /></TitleTemplate>
         </Column>
         <Column Field="context.FirstName">
-            <TitleTemplate>Name<HelpTooltip Text="Имя студента, для обращения" /></TitleTemplate>
+            <TitleTemplate>Name<HelpTooltip Text="@Tooltips.TOOLTIP_NAME" /></TitleTemplate>
         </Column>
         <Column Field="context.Password">
             <TitleTemplate>Пароль<HelpTooltip Text="Пароль для входа по умолчанию" /></TitleTemplate>
@@ -117,6 +119,11 @@
         }
     }
 
+    private void SetFromHandmade(UsersGenerateModel model)
+    {
+        usersGenerateModel = model;
+    }
+
     async Task HandleSelection(InputFileChangeEventArgs files)
     {
         using (var reader = new System.IO.StreamReader(files.File.OpenReadStream()))
@@ -132,7 +139,7 @@
                 await csv.ReadAsync();
                 csv.ReadHeader();
 
-                var builder = new UsersGenerateModelBuilder(files.File.Name, csv.Parser.Record);
+                var builder = new UsersGenerateModelBuilder(csv.Parser.Record);
                 while (await csv.ReadAsync())
                 {
                     builder.AddUserRow(csv.Parser.Record, UserPasswordGenerator.GeneratePassword);

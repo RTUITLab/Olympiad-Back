@@ -203,7 +203,7 @@ namespace WebApp.Controllers.Users
             var user = createUserResult.AsT0;
 
             foreach (var challengeId in model
-                .Claims.Where(c => c.Type == "add_to_challenge")
+                .Claims.Where(c => c.Type == DefaultClaims.AddToChallenge.Type)
                 .Select(c => c.Value)
                 .Select(c => (success: Guid.TryParse(c, out var id), id))
                 .Where(c => c.success)

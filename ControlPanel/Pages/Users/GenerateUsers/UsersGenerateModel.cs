@@ -5,5 +5,5 @@ using System.Text.RegularExpressions;
 
 namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
 {
-    internal record UsersGenerateModel(string SourceFileName, IReadOnlyList<string> ColumnNames, IReadOnlyCollection<UserGenerateRow> UserGenerateRows);
+    public record UsersGenerateModel(IReadOnlyList<string> ColumnNames, IReadOnlyCollection<UserGenerateRow> UserGenerateRows);
 }
