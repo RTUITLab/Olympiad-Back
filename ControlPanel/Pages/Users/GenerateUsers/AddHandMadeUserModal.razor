@@ -1,4 +1,4 @@
-﻿@using Microsoft.Extensions.Logging
+@using Microsoft.Extensions.Logging
 @using System.ComponentModel.DataAnnotations
 @inject IJSRuntime JS
 @inject IChallengesApi ChallengeApi
@@ -74,7 +74,7 @@
     </Form>
 </Modal>
 @code {
-    private bool showModal = true;
+    private bool showModal;
 
     private CreateUserModel model = new CreateUserModel();
     private Form<CreateUserModel>? form;
