@@ -154,7 +154,7 @@
         StateHasChanged();
 
         bool totalSuccess = generates.All(u => u.Success);
-        await DownloadResults(usersGenerateModel.SourceFileName, generates, !totalSuccess);
+        await DownloadResults(generates, !totalSuccess);
 
         if (totalSuccess)
         {
@@ -166,7 +166,7 @@
         }
     }
 
-    private async Task DownloadResults(string sourceFileName, List<UserGenerateResult> generated, bool isContainsErrors)
+    private async Task DownloadResults(List<UserGenerateResult> generated, bool isContainsErrors)
     {
 
         using var workBook = new ClosedXML.Excel.XLWorkbook();
@@ -204,7 +204,7 @@
         using var stream = new System.IO.MemoryStream();
         workBook.SaveAs(stream);
         var content = stream.ToArray();
-        documentDownloadName = $"{DateTime.Now:yyyy MM dd} {sourceFileName} - Пользователи.xlsx";
+        documentDownloadName = $"{DateTime.Now:yyyy MM dd} - Пользователи.xlsx";
         documentLink = await JS.DownloadFile(documentDownloadName, content);
     }
 

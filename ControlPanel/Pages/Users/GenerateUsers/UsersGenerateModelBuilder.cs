@@ -7,7 +7,6 @@ namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
 {
     internal class UsersGenerateModelBuilder
     {
-        public string SourceFileName { get; }
         public IReadOnlyList<string> ColumnNames { get; }
 
         private readonly bool containsDefaultPassword;
@@ -15,12 +14,11 @@ namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
 
         public const string IDColumnName = "ID";
         public const string NameColumnName = "Name";
-        public const string DefaultPassworkColumnName = "DefaultPassword";
+        public const string DefaultPasswordColumnName = "DefaultPassword";
 
         private readonly List<UserGenerateRow> userGenerateRows = new();
-        public UsersGenerateModelBuilder(string sourceFileName, string[] columnNames)
+        public UsersGenerateModelBuilder(string[] columnNames)
         {
-            SourceFileName = sourceFileName;
             if (columnNames.Length < 2)
             {
                 throw new IncorrectUsersFileFormatException("Обязательные колонки", "Первые две колонки 'ID' и 'Name' обязательны");
@@ -40,7 +38,7 @@ namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
                     throw new IncorrectUsersFileFormatException(columnNames[i], $"Название свойства должно состоять из непробельных символов");
                 }
             }
-            if (columnNames.Length > 2 && columnNames[2] == DefaultPassworkColumnName)
+            if (columnNames.Length > 2 && columnNames[2] == DefaultPasswordColumnName)
             {
                 containsDefaultPassword = true;
             }
@@ -52,6 +50,12 @@ namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
             if (row.Length - SkipColumnsCount != ColumnNames.Count)
             {
                 throw new Exception("Incorrect row length");
+            }
+            if (string.IsNullOrEmpty(row[0]))
+            {
+                throw new IncorrectUsersFileFormatException(
+                    "Пустой идентификатор",
+                    "При создании пользователя необходим уникальный идентификатор");
             }
             var userPassword = containsDefaultPassword ? row[2] : createPasswordFunc();
             if (userPassword is null)
@@ -84,7 +88,7 @@ namespace Olympiad.ControlPanel.Pages.Users.GenerateUsers
             {
                 throw new IncorrectUsersFileFormatException("Пустой файл", "В выбранном файле нет записей о пользователеях");
             }
-            return new UsersGenerateModel(SourceFileName, ColumnNames, userGenerateRows);
+            return new UsersGenerateModel(ColumnNames, userGenerateRows);
         }
     }
 }

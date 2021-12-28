@@ -13,5 +13,10 @@ namespace Olympiad.Shared
             public const string Value = "need";
             public static Claim Claim => new Claim(Type, Value);
         }
+
+        public static class AddToChallenge
+        {
+            public const string Type = "AddToChallenge";
+        }
     }
 }

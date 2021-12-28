@@ -1,0 +1,180 @@
+﻿@using Microsoft.Extensions.Logging
+@using System.ComponentModel.DataAnnotations
+@inject IJSRuntime JS
+@inject IChallengesApi ChallengeApi
+@inject ILogger<AddHandMadeUserModal> Logger
+@inject NotificationService _notice
+@inject UserPasswordGenerator UserPasswordGenerator
+
+
+<Button OnClick="ShowModal"
+        Type="@ButtonType.Default"
+        Icon="@IconType.Outline.UserAdd">
+    Создать вручную
+</Button>
+
+@{
+    RenderFragment footer =
+    @<Template>
+        <Button Type="@ButtonType.Primary" OnClick="@(() => form?.Submit())">Ок</Button>
+        <Popconfirm Title="Вы уверены, что хотите прервать заполнение формы?"
+                OnConfirm="HideModal"
+                OkText="Да"
+                CancelText="Нет">
+            <Button>Отмена</Button>
+        </Popconfirm>
+    </Template>;
+}
+
+<Modal Title="Создание пользователя"
+       Visible="showModal"
+       Closable="false"
+       OnOk="OnOk"
+       Footer=footer>
+
+    <Form Model="model"
+          LabelColSpan="4"
+          WrapperColSpan="20"
+          Layout="horizontal"
+          OnFinish="OnOk"
+          @ref="form">
+        <FormItem Label="ID" Help="@Tooltips.TOOLTIP_ID" Required>
+            <Input @bind-Value="@context.Id" />
+        </FormItem>
+        <FormItem Label="Name" Help="@Tooltips.TOOLTIP_NAME" Required>
+            <Input @bind-Value="@context.Name" />
+        </FormItem>
+        <Divider Orientation="left" Plain>Свойства</Divider>
+
+        @foreach (var claim in model.Claims)
+        {
+            <FormItem WrapperColSpan="24" LabelColSpan="0" Help="@GetHint(claim.Type)">
+                <InputGroup Compact>
+                    <AutoComplete @bind-Value="claim.Type" Options="baseClaimTyles" />
+                    <Input TValue="string" Style="background: #fff; width: 30px;" Placeholder=":" Disabled />
+
+                    @if (claim.Type == DefaultClaims.AddToChallenge.Type)
+                    {
+                        <AutoComplete @bind-Value="claim.Value"
+                              Options="challengeNames.Keys"
+                              OptionFormat="@(t =>challengeNames[t.Value])"
+                              FilterExpression=@((option, value) => option.Label.Contains(value, StringComparison.InvariantCultureIgnoreCase) || option.Value.Contains(value, StringComparison.InvariantCultureIgnoreCase)) />
+                    }
+                    else
+                    {
+                        <Input @bind-Value="claim.Value" />
+                    }
+                    <Button Icon="@IconType.Outline.Delete" OnClick="() => DeleteClaim(claim)" />
+                </InputGroup>
+            </FormItem>
+        }
+        <FormItem>
+            <Button OnClick="AddClaim">Добавить свойство</Button>
+        </FormItem>
+    </Form>
+</Modal>
+@code {
+    private bool showModal = true;
+
+    private CreateUserModel model = new CreateUserModel();
+    private Form<CreateUserModel>? form;
+    private Dictionary<string, string> challengeNames = new Dictionary<string, string>();
+
+
+    private static readonly string[] baseClaimTyles = new string[] { UsersGenerateModelBuilder.DefaultPasswordColumnName, DefaultClaims.AddToChallenge.Type };
+
+    [Parameter]
+    public EventCallback<UsersGenerateModel> OnFormFilled {  get;  set; }
+
+    // TODO: Create PR with validation messages on Ant design
+    [Obsolete("Create PR with validation messages on Ant design")]
+    private string GetHint(string claimType)
+    {
+        Logger.LogDebug("TODO FormItem dynamic hint");
+        return "";
+        //return claimType switch
+        //{
+        //    UsersGenerateModelBuilder.DefaultPasswordColumnName => "Будущий пароль",
+        //    DefaultClaims.AddToChallenge.Type => "Пользователь будет добавлен в соревнование с выбранным идентификатором",
+        //    _ => "По умолчанию"
+        //};
+    }
+
+    private async Task OnOk()
+    {
+        var defaultPasswordClaims = model.Claims.Where(c => c.Type == UsersGenerateModelBuilder.DefaultPasswordColumnName).ToList();
+        if (defaultPasswordClaims.Count > 1)
+        {
+            await _notice.Open(new NotificationConfig()
+                {
+                    Message = "Неверный пароль",
+                    Description = $"Можно указать только одно свойство с типом {UsersGenerateModelBuilder.DefaultPasswordColumnName}",
+                    NotificationType = NotificationType.Error,
+                });
+            return;
+        }
+        try
+        {
+
+            var builder = new UsersGenerateModelBuilder(new string[] { UsersGenerateModelBuilder.IDColumnName, UsersGenerateModelBuilder.NameColumnName }
+                                                            .Concat(model.Claims.Select(c => c.Type)).ToArray());
+            builder.AddUserRow(new string[] { model.Id, model.Name }.Concat(model.Claims.Select(c => c.Value)).ToArray(), UserPasswordGenerator.GeneratePassword);
+            if (OnFormFilled.HasDelegate)
+            {
+                await OnFormFilled.InvokeAsync(builder.Build());
+            }
+            HideModal();
+        }
+        catch (IncorrectUsersFileFormatException iex)
+        {
+            await _notice.Open(new NotificationConfig()
+                {
+                    Message = iex.Summary,
+                    Description = iex.Message,
+                    NotificationType = NotificationType.Error,
+                });
+        }
+    }
+
+    private void AddClaim()
+    {
+        model.Claims.Add(new CreateUserClaim());
+    }
+
+    private void DeleteClaim(CreateUserClaim claim)
+    {
+        model.Claims.Remove(claim);
+    }
+
+    private async Task ShowModal()
+    {
+        model = new CreateUserModel();
+        showModal = true;
+        await LoadChallengeNames();
+    }
+
+    private async Task LoadChallengeNames()
+    {
+        challengeNames = (await ChallengeApi.GetAllChallengesAsync())
+            .ToDictionary(c => c.Id.ToString(), c => c.Name);
+        StateHasChanged();
+    }
+
+    private void HideModal()
+    {
+        showModal = false;
+    }
+
+    private class CreateUserModel
+    {
+        [Required]
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public List<CreateUserClaim> Claims { get; set; } = new List<CreateUserClaim>() { new CreateUserClaim() };
+    }
+    private class CreateUserClaim
+    {
+        public string Type { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+}
