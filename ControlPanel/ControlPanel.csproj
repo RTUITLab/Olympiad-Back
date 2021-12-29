@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.1.*" />
     <PackageReference Include="OneOf" Version="3.0.205" />
     <PackageReference Include="Refit" Version="6.1.15" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
