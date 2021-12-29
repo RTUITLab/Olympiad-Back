@@ -42,31 +42,25 @@
 </PageHeader>
 
 <Tabs DefaultActiveKey="checks" @bind-ActiveKey="tabs">
-    <TabPane Key="chacks">
-        <Tab>Checks</Tab>
-        <ChildContent>
-            <SolutionCheckView SolutionId="SolutionId" />
-        </ChildContent>
+    <TabPane Key="chacks" Tab="Checks">
+        <SolutionCheckView SolutionId="SolutionId" />
     </TabPane>
-    <TabPane Key="build_logs">
-        <Tab>Build logs</Tab>
-        <ChildContent>
-            <Collapse>
-                @foreach (var log in solution.SolutionBuildLogs)
-                {
-                    <Panel Header="@log.BuildedTime.ToString()" Key="@log.Id.ToString()">
-                        <RadioGroup @bind-Value="@buildLogMode">
-                            <Radio RadioButton Value="@("pretty")">Pretty</Radio>
-                            <Radio RadioButton Value="@("raw")">Raw</Radio>
-                        </RadioGroup>
-                        <br />
-                        <AntDesign.Text Style="white-space: pre-wrap">
-                            @(buildLogMode == "pretty" ? log.PrettyLog : log.Log)
-                        </AntDesign.Text>
-                    </Panel>
-                }
-            </Collapse>
-        </ChildContent>
+    <TabPane Key="build_logs" Tab="Build logs">
+        <Collapse>
+            @foreach (var log in solution.SolutionBuildLogs)
+            {
+                <Panel Header="@log.BuildedTime.ToString()" Key="@log.Id.ToString()">
+                    <RadioGroup @bind-Value="@buildLogMode">
+                        <Radio RadioButton Value="@("pretty")">Pretty</Radio>
+                        <Radio RadioButton Value="@("raw")">Raw</Radio>
+                    </RadioGroup>
+                    <br />
+                    <AntDesign.Text Style="white-space: pre-wrap">
+                        @(buildLogMode == "pretty" ? log.PrettyLog : log.Log)
+                    </AntDesign.Text>
+                </Panel>
+            }
+        </Collapse>
     </TabPane>
 </Tabs>
 

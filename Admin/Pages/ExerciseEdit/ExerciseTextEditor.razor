@@ -41,7 +41,7 @@
                             {
                                 <td>@($"[{fileRecord.Value.FileName}][{fileRecord.Key}-{fileRecord.Value.FileName}]")</td>
                             }
-                            <td><button class="btn btn-danger" @onclick="() => { RemoveFile(fileRecord.Key); }">Del</button></td>
+                            <td><button class="btn btn-danger" @onclick="() => RemoveFile(fileRecord.Key)">Del</button></td>
                         </tr>
                     }
                 </tbody>
@@ -119,7 +119,7 @@
         }
     }
 
-    private async Task RemoveFile(string key)
+    private void RemoveFile(string key)
     {
         files.Remove(key);
         EditableText = _editableText;

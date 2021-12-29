@@ -58,8 +58,6 @@
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
 
-    private string activeTab = "tests";
-
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();

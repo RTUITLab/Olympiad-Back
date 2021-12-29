@@ -181,7 +181,7 @@ namespace Executor.Executers.Build
             string sourceDirectory)
         {
             var outStream = File.Create(tgzFilename);
-            var tarOutputStream = new TarOutputStream(outStream);
+            var tarOutputStream = new TarOutputStream(outStream, Encoding.UTF8);
 
             var fileNames = Directory.GetFiles(sourceDirectory).Where(f => !f.EndsWith(".tar.gz"));
             foreach (var filename in fileNames)
