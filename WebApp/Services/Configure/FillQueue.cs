@@ -11,7 +11,6 @@ using Models;
 using Models.Solutions;
 using Olympiad.Services;
 using Olympiad.Shared.Models;
-using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using WebApp.Models.Settings;
 using WebApp.Services.Interfaces;
 

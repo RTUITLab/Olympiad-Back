@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Olympiad.Services.Authorization;
-using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Models;
 using Models.Exercises;
 using Olympiad.Shared.Models;
-using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

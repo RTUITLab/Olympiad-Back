@@ -20,8 +20,6 @@ using WebApp.Middleware;
 using WebApp.Services.ReCaptcha;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using RTUITLab.AspNetCore.Configure.Configure;
-using RTUITLab.AspNetCore.Configure.Invokations;
 using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
 using WebApp.Formatting;
@@ -30,6 +28,7 @@ using Olympiad.Shared;
 using System.Security.Claims;
 using Olympiad.Services.Authorization;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace WebApp
 {
@@ -107,7 +106,7 @@ namespace WebApp
                             context.Token = accessToken;
                         }
 
-                       
+
 
                         return Task.CompletedTask;
                     },
@@ -155,7 +154,7 @@ namespace WebApp
                     options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
                     options.JsonSerializerOptions.Converters.Add(new TimeSpanConverter());
                 });
-            
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Olympiad API", Version = "v1" });
@@ -182,13 +181,7 @@ namespace WebApp
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
             services.AddTransient<UserPasswordGenerator>();
 
-
-            services.AddWebAppConfigure()
-                .AddTransientConfigure<AutoMigrate>(0)
-                .AddTransientConfigure<DefaultRolesConfigure>(1)
-                // .AddTransientConfigure<FillQueue>(1) // TODO send events table
-                .AddTransientConfigure<DefaultChallengeCreator>(2)
-                .AddTransientConfigure<DefaultUsersTokensPrinter>(Configuration.GetValue<bool>("SHOW_DEFAULT_USER_TOKENS"), 3);
+            AddConfigurationServices(services);
 
             if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
                 services.AddHostedService<RestartCheckingService>();
@@ -196,6 +189,26 @@ namespace WebApp
             services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
             services.AddSignalR();
             services.AddTransient<NotifyUsersService>();
+        }
+
+        private void AddConfigurationServices(IServiceCollection services)
+        {
+            List<Type> configureTypes = new List<Type>();
+            void RegisterService<T>() where T : class, IConfigureWork
+            {
+                configureTypes.Add(typeof(T));
+                services.AddScoped<T>();
+            }
+            RegisterService<AutoMigrate>();
+            RegisterService<DefaultRolesConfigure>();
+            // RegisterServic<FillQueue>() // TODO send events table
+            RegisterService<DefaultChallengeCreator>();
+            if (Configuration.GetValue<bool>("SHOW_DEFAULT_USER_TOKENS"))
+            {
+                RegisterService<DefaultUsersTokensPrinter>();
+            }
+            services.AddSingleton(sp => new ConfigureAllService.ServicesList(configureTypes));
+            services.AddHostedService<ConfigureAllService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -220,8 +233,6 @@ namespace WebApp
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
-
-            app.UseWebAppConfigure();
 
             app.UseSwagger(c => { c.RouteTemplate = "api/{documentName}/swagger.json"; });
             app.UseSwaggerUI(c =>

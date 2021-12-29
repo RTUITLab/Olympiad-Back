@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Olympiad.Shared;
-using RTUITLab.AspNetCore.Configure.Configure.Interfaces;
 using WebApp.Models.Settings;
 
 namespace WebApp.Services.Configure
