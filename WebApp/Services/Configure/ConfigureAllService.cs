@@ -45,7 +45,7 @@ namespace WebApp.Services.Configure
                         throw new ArgumentException($"type must implements {nameof(IConfigureWork)}", nameof(targetType));
                     }
                     await work.Configure(cancellationToken);
-                    break;
+                    return;
                 }
                 catch (Exception ex)
                 {
