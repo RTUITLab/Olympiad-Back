@@ -30,7 +30,7 @@ namespace Executor
                 var servicesProvider = BuildServices();
                 var versionConfig = servicesProvider.GetRequiredService<IOptions<StartSettings>>();
 
-                Console.WriteLine($"Version: {versionConfig.Value.Version}");
+                Console.WriteLine($"Version: {versionConfig.Value.VersionString}");
 
                 if (!await IsDockerAvailable(servicesProvider.GetRequiredService<IDockerClient>()))
                 {
@@ -96,7 +96,7 @@ namespace Executor
                 {
                     var options = sp.GetRequiredService<IOptions<StartSettings>>();
                     client.BaseAddress = new Uri(options.Value.Address);
-                    client.DefaultRequestHeaders.Add("Executor-Version", options.Value.Version.ToString());
+                    client.DefaultRequestHeaders.Add("Executor-Version", options.Value.VersionString);
                 })
                 .Services
                 .AddSingleton<IDockerClient>(sp =>

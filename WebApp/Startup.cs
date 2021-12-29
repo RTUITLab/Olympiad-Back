@@ -128,7 +128,7 @@ namespace WebApp
             {
                 options.AddPolicy("Executor", policy => policy
                     .RequireRole(RoleNames.EXECUTOR)
-                    .RequireClaim("ExecutorVersion", executorOptions.Version.ToString())
+                    .RequireClaim("ExecutorVersion", executorOptions.VersionString)
                     .RequireAuthenticatedUser());
             });
 

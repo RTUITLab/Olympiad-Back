@@ -1,5 +1,4 @@
-﻿using Semver;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,6 +10,5 @@ namespace WebApp.Models.Settings
     {
         [Required]
         public string VersionString { get; set; }
-        public SemVersion Version => SemVersion.Parse(VersionString);
     }
 }
