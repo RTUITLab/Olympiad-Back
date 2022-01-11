@@ -92,6 +92,8 @@ stages:
         includePreviewVersions: true
     - task: Cake@2
       displayName: build service
+      env:
+        BUILD_NUMBER: $(Build.BuildId)
       inputs:
         script: 'build.cake'
         target: $(cakeTarget)

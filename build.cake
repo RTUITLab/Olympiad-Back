@@ -32,34 +32,43 @@ Setup(ctx =>
 Task("RestoreSolution")
    .Does(() =>
 {
-   DotNetCoreRestore(apiProject);
-   DotNetCoreRestore(executorProject);
-   DotNetCoreRestore(adminProject);
-   DotNetCoreRestore(resultsViewerProject);
-   DotNetCoreRestore(controlPanelProject);
+   DotNetRestore(apiProject);
+   DotNetRestore(executorProject);
+   DotNetRestore(adminProject);
+   DotNetRestore(resultsViewerProject);
+   DotNetRestore(controlPanelProject);
 });
 
 Task("BuildApi")
    .IsDependentOn("RestoreSolution")
    .Does(() =>
 {
-   var settings = new DotNetCoreBuildSettings {
+   var settings = new DotNetBuildSettings {
       Configuration = configuration
    };
-   DotNetCoreBuild(apiProject, settings);
+   DotNetBuild(apiProject, settings);
 });
 
 Task("PublishApi")
    .IsDependentOn("BuildApi")
    .Does(() =>
 {
-   var settings = new DotNetCorePublishSettings
+   var settings = new DotNetPublishSettings
    {
       Configuration = configuration,
       OutputDirectory = apiPublishDir
    };
 
-   DotNetCorePublish(apiProject, settings);
+   DotNetPublish(apiProject, settings);
+
+   System.IO.File.WriteAllText(apiPublishDir + "/appsettings.Build.json",
+      System.Text.Json.JsonSerializer.Serialize(new { 
+         About = new {
+            BuildNumber = EnvironmentVariable<string>("BUILD_NUMBER", "no-build-id")
+         } 
+      })
+      );
+
 });
 
 Task("PublishApiToTests")
@@ -73,92 +82,92 @@ Task("BuildExecutor")
    .IsDependentOn("RestoreSolution")
    .Does(() =>
 {
-   var settings = new DotNetCoreBuildSettings {
+   var settings = new DotNetBuildSettings {
       Configuration = configuration
    };
-   DotNetCoreBuild(executorProject, settings);
+   DotNetBuild(executorProject, settings);
 });
 
 Task("PublishExecutor")
    .IsDependentOn("BuildExecutor")
    .Does(() =>
 {
-   var settings = new DotNetCorePublishSettings
+   var settings = new DotNetPublishSettings
    {
       Configuration = configuration,
       OutputDirectory = executorPublishDir
    };
 
-   DotNetCorePublish(executorProject, settings);
+   DotNetPublish(executorProject, settings);
 });
 
 Task("BuildAdmin")
    .IsDependentOn("RestoreSolution")
    .Does(() =>
 {
-   var settings = new DotNetCoreBuildSettings {
+   var settings = new DotNetBuildSettings {
       Configuration = configuration
    };
-   DotNetCoreBuild(adminProject, settings);
+   DotNetBuild(adminProject, settings);
 });
 
 Task("PublishAdmin")
    .IsDependentOn("BuildAdmin")
    .Does(() =>
 {
-   var settings = new DotNetCorePublishSettings
+   var settings = new DotNetPublishSettings
    {
       Configuration = configuration,
       OutputDirectory = adminPublishDir
    };
 
-   DotNetCorePublish(adminProject, settings);
+   DotNetPublish(adminProject, settings);
 });
 
 Task("BuildResultsViewer")
    .IsDependentOn("RestoreSolution")
    .Does(() =>
 {
-   var settings = new DotNetCoreBuildSettings {
+   var settings = new DotNetBuildSettings {
       Configuration = configuration
    };
-   DotNetCoreBuild(resultsViewerProject, settings);
+   DotNetBuild(resultsViewerProject, settings);
 });
 
 Task("PublishResultsViewer")
    .IsDependentOn("BuildResultsViewer")
    .Does(() =>
 {
-   var settings = new DotNetCorePublishSettings
+   var settings = new DotNetPublishSettings
    {
       Configuration = configuration,
       OutputDirectory = resultsViewerPublishDir
    };
 
-   DotNetCorePublish(resultsViewerProject, settings);
+   DotNetPublish(resultsViewerProject, settings);
 });
 
 Task("BuildControlPanel")
    .IsDependentOn("RestoreSolution")
    .Does(() =>
 {
-   var settings = new DotNetCoreBuildSettings {
+   var settings = new DotNetBuildSettings {
       Configuration = configuration
    };
-   DotNetCoreBuild(controlPanelProject, settings);
+   DotNetBuild(controlPanelProject, settings);
 });
 
 Task("PublishControlPanel")
    .IsDependentOn("BuildControlPanel")
    .Does(() =>
 {
-   var settings = new DotNetCorePublishSettings
+   var settings = new DotNetPublishSettings
    {
       Configuration = configuration,
       OutputDirectory = controlPanelPublishDir
    };
 
-   DotNetCorePublish(controlPanelProject, settings);
+   DotNetPublish(controlPanelProject, settings);
 });
 
 Task("PublishAll")
