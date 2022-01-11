@@ -21,7 +21,7 @@ using AutoMapper.QueryableExtensions;
 using PublicAPI.Responses.Exercises;
 using System.Linq.Expressions;
 
-namespace WebApp.Controllers
+namespace WebApp.Controllers.Exercises
 {
     [Produces("application/json")]
     [Route("api/exercises")]
@@ -36,7 +36,7 @@ namespace WebApp.Controllers
             IMapper mapper,
             UserManager<User> userManager) : base(userManager)
         {
-            this.context = applicationDbContext;
+            context = applicationDbContext;
             this.mapper = mapper;
         }
 
@@ -63,6 +63,19 @@ namespace WebApp.Controllers
                 .Where(e => e.ChallengeId == challengeId)
                 .OrderBy(e => e.ExerciseName)
                 .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+            return exercises;
+        }
+
+        [HttpGet("all/withtests")]
+        [Authorize(Roles = "Admin,ResultsViewer")]
+        public async Task<List<ExerciseWithTestCasesCountResponse>> GetAllWithTestsForChallenge(Guid challengeId)
+        {
+            var exercises = await context
+                .Exercises
+                .Where(e => e.ChallengeId == challengeId)
+                .OrderBy(e => e.ExerciseName)
+                .ProjectTo<ExerciseWithTestCasesCountResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
             return exercises;
         }

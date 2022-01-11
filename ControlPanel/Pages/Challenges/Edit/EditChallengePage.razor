@@ -21,10 +21,9 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        @*<LoginAsUserButton UserId="UserId" />
-            <GenerateNewPasswordButton UserId="UserId" PasswordChanged="@(() => editUserClaims.RefreshData())"/>*@
         @if (challengeResponse != null)
         {
+            <NavLink  href="@($"challenges/{ChallengeId}/exercises")"><Button Icon="@IconType.Outline.Reconciliation">Задания</Button></NavLink>
             <DeleteChallengeButton ChallengeId="ChallengeId" ChallengeDeleted="GoToChallenges" />
         }
     </PageHeaderExtra>
@@ -38,8 +37,8 @@
 @code {
     [Parameter]
     public Guid ChallengeId { get; set; }
-   
-    
+
+
     private string PageTitle => challengeResponse?.Name ?? "Загрузка...";
 
     private ChallengeResponse? challengeResponse;

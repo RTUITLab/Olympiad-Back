@@ -51,6 +51,11 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
                 .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
 
+            CreateMap<Exercise, ExerciseWithTestCasesCountResponse>()
+                .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
+                .ForMember(r => r.TestCasesCount, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.ExerciseDatas.Count)));
 
             CreateMap<User, LoginResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));

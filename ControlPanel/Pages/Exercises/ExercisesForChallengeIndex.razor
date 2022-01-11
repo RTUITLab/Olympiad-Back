@@ -1,0 +1,99 @@
+﻿@page "/challenges/{ChallengeId:guid}/exercises"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+
+@using PublicAPI.Responses.Challenges
+@using Olympiad.Shared.Models
+@using PublicAPI.Responses.Exercises
+
+@inject IChallengesApi ChallengesApi
+@inject IExercisesApi ExercisesApi
+@inject MessageService MessageService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@ChallengeName | Задания</PageTitle>
+<PageHeader Title="Задания" Subtitle="@ChallengeName">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem Href="challenges">
+                Соревнования
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"challenges/{ChallengeId}")">
+                @ChallengeName
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"challenges/{ChallengeId}/exercises")">
+                Задания
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+</PageHeader>
+
+
+<Table DataSource="exercisesResponse"
+       Loading="@(exercisesResponse == null)"
+       PageSize="@(exercisesResponse?.Count ?? 0)"
+       Total="@(exercisesResponse?.Count ?? 0)"
+       HidePagination
+       Context="exercise">
+    <Column @bind-Field="exercise.Name" Title="Название" Sortable></Column>
+    <Column @bind-Field="exercise.TestCasesCount" Sortable>
+        <TitleTemplate>
+            <Text>Тесты</Text>
+            <HelpTooltip>Количество тестов для задания</HelpTooltip>
+        </TitleTemplate>
+        <ChildContent>
+            @if (exercise.TestCasesCount == 0)
+            {
+                <Alert Type="@AlertType.Error" Message="Не представлено тестов для проверки"/>
+            }
+            else if (exercise.TestCasesCount < 2)
+            {
+                <Alert Type="@AlertType.Warning" Message="@($"Мало тестов для проверки ({exercise.TestCasesCount})")"/>
+            }
+            else
+            {
+                @exercise.TestCasesCount
+            }
+        </ChildContent>
+    </Column>
+    <Column @bind-Field="exercise.Score" Title="Баллы" Sortable></Column>
+</Table>
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private string ChallengeName => challengeResponse?.Name ?? "Загрузка...";
+
+    private ChallengeResponse? challengeResponse;
+    private List<ExerciseWithTestCasesCountResponse>? exercisesResponse;
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        try
+        {
+            challengeResponse = await ChallengesApi.GetChallengeAsync(ChallengeId);
+        }
+        catch
+        {
+            GoToChallengePage();
+            await MessageService.Warn("Соревнование не найдено");
+        }
+        try
+        {
+            exercisesResponse = (await ExercisesApi.GetExercisesWithTestsAsync(ChallengeId))
+                .OrderBy(e => e.TestCasesCount)
+                .ThenBy(e => e.Name)
+                .ToList();
+        }
+        catch
+        {
+            GoToChallengePage();
+            await MessageService.Warn("Не удалось получить список заданий");
+        }
+    }
+
+    private void GoToChallengePage()
+    {
+        NavigationManager.NavigateTo($"challenges/{ChallengeId}");
+    }
+}
