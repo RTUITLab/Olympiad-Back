@@ -19,6 +19,7 @@ using WebApp.Models;
 using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
 using PublicAPI.Responses.Exercises;
+using System.Linq.Expressions;
 
 namespace WebApp.Controllers
 {
@@ -46,9 +47,7 @@ namespace WebApp.Controllers
             var exercises = await context
                 .Exercises
                 .Where(e => e.ChallengeId == challengeId)
-                .Where(e => e.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
-                           e.Challenge.UsersToChallenges.Any(utc => utc.UserId == UserId))
-                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .Where(AvailableExercise(UserId))
                 .OrderBy(e => e.ExerciseName)
                 .ProjectTo<ExerciseCompactInternalModel>(mapper.ConfigurationProvider, new { userId = UserId })
                 .ToListAsync();
@@ -75,12 +74,26 @@ namespace WebApp.Controllers
             var exercise = await context
                 .Exercises
                 .Where(ex => ex.ExerciseID == exerciseId)
-                .Where(e => e.Challenge.StartTime == null || e.Challenge.StartTime <= Now)
+                .Where(AvailableExercise(UserId))
                 .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
 
             return exercise;
+        }
+
+        private Expression<Func<Exercise, bool>> AvailableExercise(Guid userId)
+        {
+            return ex =>
+                // Can get info only for started challenges
+                ex.Challenge.StartTime == null || ex.Challenge.StartTime <= Now &&
+                (
+                    // Can get exercise for publick challenge
+                    ex.Challenge.ChallengeAccessType == ChallengeAccessType.Public ||
+                    // Or for private for invite
+                    ex.Challenge.UsersToChallenges.Any(utc => utc.UserId == userId)
+                );
+
         }
     }
 }
