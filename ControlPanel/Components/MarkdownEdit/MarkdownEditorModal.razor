@@ -10,12 +10,12 @@
        Footer="footer"
        OnCancel="Hide">
     <Row Gutter="20" Style="height: 60vh">
-        <AntDesign.Col Span="12">
+        <AntDesign.Col Span="12" Style="max-height: 100%;">
             <TextArea Style="height: 100%"
                       @bind-Value="@Content"
                       OnChange="UpdateValue" />
         </AntDesign.Col>
-        <AntDesign.Col Span="12">
+        <AntDesign.Col Span="12" Style="max-height: 100%; overflow: auto;">
             @Output
         </AntDesign.Col>
     </Row>

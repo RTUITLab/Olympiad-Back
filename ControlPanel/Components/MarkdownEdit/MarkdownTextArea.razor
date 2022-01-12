@@ -1,4 +1,4 @@
-﻿@using Ganss.XSS
+@using Ganss.XSS
 @using Markdig
 <Tabs DefaultActiveKey="area" @bind-ActiveKey="activeTab" Type="@TabType.Card" OnChange="OnChangeTab">
     <TabPane Key="area">
@@ -74,6 +74,7 @@
     {
         htmlSanitizer = new HtmlSanitizer();
         htmlSanitizer.AllowedAttributes.Add("class");
+        htmlSanitizer.AllowedSchemes.Add("data");   
     }
 
     private static MarkdownPipeline pipeline = new MarkdownPipelineBuilder().Build();
@@ -88,7 +89,8 @@
         {
             var html = Markdown.ToHtml(Value, pipeline);
             var sanitizedHtml = htmlSanitizer.Sanitize(html);
-            Output = new MarkupString(sanitizedHtml);
+            var styledWrapper = $"<div class=\"markdown-editor\">{sanitizedHtml}</div>";
+            Output = new MarkupString(styledWrapper);
         }
         else
         {
