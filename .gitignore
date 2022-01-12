@@ -292,3 +292,4 @@ deploy/results-viewer/results-viewer-build/
 /ResultsViewer/appsettings.Local.json
 /Admin/appsettings.Local.json
 /WebApp/appsettings.Local.json
+/ControlPanel/wwwroot/css/lib

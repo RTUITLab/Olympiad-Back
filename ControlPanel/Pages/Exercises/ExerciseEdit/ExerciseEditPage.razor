@@ -1,6 +1,7 @@
 ﻿@page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}"
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 
+@using Olympiad.ControlPanel.Components.MarkdownEdit
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
 @using PublicAPI.Responses.Exercises
@@ -10,60 +11,49 @@
 @inject MessageService MessageService
 @inject NavigationManager NavigationManager
 
-<PageTitle>@ChallengeName | Задания</PageTitle>
-<PageHeader Title="Задания" Subtitle="@ChallengeName">
+<PageTitle>@ExerciseName()</PageTitle>
+<PageHeader TitleTemplate="ExerciseName(SkeletonElementSize.Default)">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem Href="challenges">
                 Соревнования
             </BreadcrumbItem>
             <BreadcrumbItem Href="@($"challenges/{ChallengeId}")">
-                @ChallengeName
+                <TextFieldSkeleton Text="@challengeResponse?.Name" />
             </BreadcrumbItem>
             <BreadcrumbItem Href="@($"challenges/{ChallengeId}/exercises")">
                 Задания
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"challenges/{ChallengeId}/exercises")">
+                @ExerciseName()
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
 </PageHeader>
 
-@*
-<Table DataSource="exercisesResponse"
-       Loading="@(exercisesResponse == null)"
-       PageSize="@(exercisesResponse?.Count ?? 0)"
-       Total="@(exercisesResponse?.Count ?? 0)"
-       HidePagination
-       Context="exercise">
-    <Column @bind-Field="exercise.Name" Title="Название" Sortable></Column>
-    <Column @bind-Field="exercise.TestCasesCount" Sortable>
+@if (exerciseResponse is not null)
+{
+    <MarkdownTextArea @bind-Value="exerciseResponse.ExerciseTask">
         <TitleTemplate>
-            <Text>Тесты</Text>
-            <HelpTooltip>Количество тестов для задания</HelpTooltip>
+            <Text>@exerciseResponse.Name</Text>
+            <Text Type="@TextElementType.Secondary">Текст задания (@exerciseResponse.Challenge.Name)</Text>
         </TitleTemplate>
-        <ChildContent>
-            @if (exercise.TestCasesCount == 0)
-            {
-                <Alert Type="@AlertType.Error" Message="Не представлено тестов для проверки"/>
-            }
-            else if (exercise.TestCasesCount < 2)
-            {
-                <Alert Type="@AlertType.Warning" Message="@($"Мало тестов для проверки ({exercise.TestCasesCount})")"/>
-            }
-            else
-            {
-                @exercise.TestCasesCount
-            }
-        </ChildContent>
-    </Column>
-    <Column @bind-Field="exercise.Score" Title="Баллы" Sortable></Column>
-</Table>*@
+    </MarkdownTextArea>
+}
 
 @code {
     [Parameter]
     public Guid ChallengeId { get; set; }
     [Parameter]
     public Guid ExerciseId { get; set; }
-    private string ChallengeName => challengeResponse?.Name ?? "Загрузка...";
+
+    private RenderFragment ExerciseName(string size = SkeletonElementSize.Small)
+    {
+        // Return template in full body method for VS code formatter
+        return @<Template>
+        <TextFieldSkeleton Text="@exerciseResponse?.Name" Size="@size" />
+    </Template>;
+    }
 
     private ChallengeResponse? challengeResponse;
     private ExerciseInfo? exerciseResponse;
@@ -81,7 +71,13 @@
         }
         try
         {
-            //exerciseResponse = await ExercisesApi.GetExercisesWithTestsAsync(ChallengeId)
+            await Task.Delay(1000);
+            exerciseResponse = await ExercisesApi.GetExerciseAsync(ExerciseId);
+            if (exerciseResponse.ChallengeId != ChallengeId)
+            {
+                GoToExercisesPage();
+                await MessageService.Warn("Неверно составленный адрес страницы");
+            }
         }
         catch
         {

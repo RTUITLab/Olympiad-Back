@@ -23,7 +23,9 @@
     <PageHeaderExtra>
         @if (challengeResponse != null)
         {
-            <NavLink  href="@($"challenges/{ChallengeId}/exercises")"><Button Icon="@IconType.Outline.Reconciliation">Задания</Button></NavLink>
+            <NavLink href="@($"challenges/{ChallengeId}/exercises")">
+                <Button Icon="@IconType.Outline.Reconciliation">Задания</Button>
+            </NavLink>
             <DeleteChallengeButton ChallengeId="ChallengeId" ChallengeDeleted="GoToChallenges" />
         }
     </PageHeaderExtra>

@@ -34,7 +34,9 @@
        Total="@(exercisesResponse?.Count ?? 0)"
        HidePagination
        Context="exercise">
-    <Column @bind-Field="exercise.Name" Title="Название" Sortable></Column>
+    <Column @bind-Field="exercise.Name" Title="Название" Sortable>
+        <NavLink href="@($"challenges/{ChallengeId}/exercises/{exercise.Id}")">@exercise.Name</NavLink>
+    </Column>
     <Column @bind-Field="exercise.TestCasesCount" Sortable>
         <TitleTemplate>
             <Text>Тесты</Text>

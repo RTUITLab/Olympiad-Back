@@ -81,6 +81,20 @@ namespace WebApp.Controllers.Exercises
         }
 
         [HttpGet]
+        [Route("all/{exerciseId}")]
+        [Authorize(Roles = "Admin,ResultsViewer")]
+        public async Task<ExerciseInfo> GetForAdmin(Guid exerciseId)
+        {
+            var exercise = await context
+                .Exercises
+                .Where(ex => ex.ExerciseID == exerciseId)
+                .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync()
+                ?? throw StatusCodeException.NotFount;
+            return exercise;
+        }
+
+        [HttpGet]
         [Route("{exerciseId}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {

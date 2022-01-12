@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Extensions.Logging
 @using Olympiad.Shared.Models
+@using Olympiad.ControlPanel.Components.MarkdownEdit
 @using PublicAPI.Requests.Challenges
 @using PublicAPI.Responses.Challenges
 @using Humanizer
@@ -19,19 +20,12 @@
         <Input @bind-Value="@context.Name" />
     </FormItem>
     <FormItem Label="Описание">
-        @*<HelpTooltip>
-            <Text Style="color: white"></Text>
-            </HelpTooltip>
-            <RadioGroup @bind-Value="@descriptionMode">
-            <Radio RadioButton Value="@DescriptionMode.Row">Редактирование</Radio>
-            <Radio RadioButton Value="@DescriptionMode.Render">Предпросмотр</Radio>
-            </RadioGroup>*@
-        <TextArea MinRows="5"
-                  MaxRows="25"
-                  AutoSize
-                  @bind-Value="@context.Description" />
-        <Button Size="@ButtonSize.Small" Icon="@IconType.Outline.Edit" OnClick="() => contentMarkdownEditor?.Show()">Открыть редактор</Button>
-        <MarkdownEditorModal @bind-Content="@context.Description" @ref="contentMarkdownEditor" />
+        <MarkdownTextArea @bind-Value="context.Description">
+            <TitleTemplate>
+                <Text>@challengeModel.Name</Text>
+                <Text Type="@TextElementType.Secondary">описание</Text>
+            </TitleTemplate>
+        </MarkdownTextArea>
     </FormItem>
     <FormItem Label="Режим">
         <RadioGroup @bind-Value="@context.IsNoTimeLimits">
@@ -95,13 +89,9 @@
     [Parameter]
     public EventCallback<ChallengeResponse> ChallengeChanged { get; set; }
 
-    //private enum DescriptionMode { Row, Render }
-    //private DescriptionMode descriptionMode;
-
     private EditFormChallengeUpdateModel challengeModel = new EditFormChallengeUpdateModel();
 
     private bool saving;
-    private MarkdownEditorModal? contentMarkdownEditor;
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -128,7 +118,8 @@
         {
             return;
         }
-        if (challengeModel.Duration <= TimeSpan.Zero) {
+        if (challengeModel.Duration <= TimeSpan.Zero)
+        {
             await MessageService.Error("Соревнование должно длиться определенное время");
             return;
         }

@@ -1,0 +1,12 @@
+﻿<SkeletonRowComponent Data="@Text"
+                      TData="string"
+                      Size="@Size">
+    @context
+</SkeletonRowComponent>
+
+@code {
+    [Parameter]
+    public string? Text { get; set; }
+    [Parameter]
+    public string Size { get; set; } = SkeletonElementSize.Small;
+}

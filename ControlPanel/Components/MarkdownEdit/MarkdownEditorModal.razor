@@ -1,12 +1,10 @@
-﻿@using Ganss.XSS
-@using Markdig
-@{
+﻿@{
     RenderFragment footer =
     @<Button Type="@ButtonType.Primary" OnClick="Hide">Закрыть</Button>
     ;
 }
 
-<Modal Title="Описание"
+<Modal TitleTemplate="@SafeTitleTemplate"
        Visible="show"
        Width="@("80vw")"
        Footer="footer"
@@ -35,10 +33,34 @@
     </Row>
 </Modal>
 @code {
+
     [Parameter]
     public string? Content { get; set; }
     [Parameter]
     public EventCallback<string?> ContentChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment? TitleTemplate { get; set; }
+    // TODO: null operator
+    private RenderFragment SafeTitleTemplate
+    {
+        get
+        {
+            if (TitleTemplate is null)
+            {
+                return
+    @<Template></Template>
+    ;
+            }
+            else
+            {
+                return TitleTemplate;
+            }
+        }
+    }
+
+    [CascadingParameter]
+    public MarkupString Output { get; set; }
 
     private bool show;
     public void Show()
@@ -51,29 +73,8 @@
         show = false;
     }
 
-    static MarkdownEditorModal()
+    private Task UpdateValue()
     {
-        htmlSanitizer = new HtmlSanitizer();
-        htmlSanitizer.AllowedAttributes.Add("class");
+        return ContentChanged.InvokeAsync(Content);
     }
-
-    private static MarkdownPipeline pipeline = new MarkdownPipelineBuilder().Build();
-    private static HtmlSanitizer htmlSanitizer;
-    private MarkupString Output
-    {
-        get
-        {
-            if (!string.IsNullOrWhiteSpace(Content))
-            {
-                var html = Markdown.ToHtml(Content, pipeline);
-                var sanitizedHtml = htmlSanitizer.Sanitize(html);
-                return new MarkupString(sanitizedHtml);
-            }
-            return new MarkupString();
-        }
     }
-    private void UpdateValue()
-    {
-        ContentChanged.InvokeAsync(Content);
-    }
-}
