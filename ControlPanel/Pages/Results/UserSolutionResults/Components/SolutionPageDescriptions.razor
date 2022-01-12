@@ -55,7 +55,7 @@
                 <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="ExerciseInfo">
                     @if (userContext.User.IsAdmin())
                     {
-                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/{loadedExercise.Id}")">
+                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/exercises/{loadedExercise.Id}")">
                             <Button Icon="@IconType.Outline.Edit">@loadedExercise.Name</Button>
                         </NavLink>
                     }
