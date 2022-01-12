@@ -26,7 +26,9 @@
        Total="@(challenges?.Count ?? 0)"
        HidePagination>
 
-    <Column @bind-Field="context.Name" Title="Название" Sortable></Column>
+    <Column @bind-Field="context.Name" Title="Название" Sortable>
+        <NavLink href="@($"challenges/{context.Id}")">@context.Name</NavLink>
+    </Column>
     <Column @bind-Field="context.ChallengeAccessType" Title="Публичность" Sortable>
         <Text>
             @(context.ChallengeAccessType switch {
@@ -42,9 +44,6 @@
     <Column @bind-Field="context.EndTime" Title="Конец" Sortable>
         <PrettyDateTimeOffset  DateTimeOffset="context.EndTime"/>
     </Column>
-    <ActionColumn>
-        <NavLink href="@($"challenges/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
-    </ActionColumn>
 </Table>
 
 @code {
