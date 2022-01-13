@@ -12,6 +12,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Olympiad.ControlPanel.Services;
+[Headers("Authorization: Bearer")]
 public interface IControlPanelApiService
 {
 

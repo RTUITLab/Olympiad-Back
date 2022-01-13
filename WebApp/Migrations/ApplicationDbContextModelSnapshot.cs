@@ -15,9 +15,9 @@ namespace WebApp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "3.1.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
@@ -30,18 +30,18 @@ namespace WebApp.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasColumnType("character varying(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedName")
-                        .HasColumnType("character varying(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasName("RoleNameIndex");
+                        .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles");
                 });
@@ -406,8 +406,8 @@ namespace WebApp.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .HasColumnType("character varying(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
@@ -422,12 +422,12 @@ namespace WebApp.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
-                        .HasColumnType("character varying(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedUserName")
-                        .HasColumnType("character varying(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
@@ -448,17 +448,17 @@ namespace WebApp.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("UserName")
-                        .HasColumnType("character varying(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
-                        .HasName("EmailIndex");
+                        .HasDatabaseName("EmailIndex");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasName("UserNameIndex");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.HasIndex("StudentID")
                         .IsUnique();
@@ -549,6 +549,8 @@ namespace WebApp.Migrations
                         .HasForeignKey("SolutionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Solution");
                 });
 
             modelBuilder.Entity("Models.Checking.SolutionCheck", b =>
@@ -564,6 +566,10 @@ namespace WebApp.Migrations
                         .HasForeignKey("TestDataId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Solution");
+
+                    b.Navigation("TestData");
                 });
 
             modelBuilder.Entity("Models.Exercises.Exercise", b =>
@@ -573,6 +579,8 @@ namespace WebApp.Migrations
                         .HasForeignKey("ChallengeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Challenge");
                 });
 
             modelBuilder.Entity("Models.Exercises.ExerciseData", b =>
@@ -582,6 +590,8 @@ namespace WebApp.Migrations
                         .HasForeignKey("ExerciseDataGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ExerciseDataGroup");
                 });
 
             modelBuilder.Entity("Models.Exercises.ExerciseDataGroup", b =>
@@ -591,6 +601,8 @@ namespace WebApp.Migrations
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Exercise");
                 });
 
             modelBuilder.Entity("Models.Links.UserToChallenge", b =>
@@ -606,6 +618,10 @@ namespace WebApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Challenge");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Models.Solutions.Solution", b =>
@@ -621,6 +637,10 @@ namespace WebApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Exercise");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Models.UserModels.LoginEvent", b =>
@@ -630,6 +650,43 @@ namespace WebApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Models.Exercises.Challenge", b =>
+                {
+                    b.Navigation("Exercises");
+
+                    b.Navigation("UsersToChallenges");
+                });
+
+            modelBuilder.Entity("Models.Exercises.Exercise", b =>
+                {
+                    b.Navigation("ExerciseDataGroups");
+
+                    b.Navigation("Solutions");
+                });
+
+            modelBuilder.Entity("Models.Exercises.ExerciseDataGroup", b =>
+                {
+                    b.Navigation("ExerciseDatas");
+                });
+
+            modelBuilder.Entity("Models.Solutions.Solution", b =>
+                {
+                    b.Navigation("SolutionBuildLogs");
+
+                    b.Navigation("SolutionChecks");
+                });
+
+            modelBuilder.Entity("Models.User", b =>
+                {
+                    b.Navigation("LoginHistory");
+
+                    b.Navigation("Solutions");
+
+                    b.Navigation("UsersToChallenges");
                 });
 #pragma warning restore 612, 618
         }

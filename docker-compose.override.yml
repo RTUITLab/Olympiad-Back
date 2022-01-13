@@ -54,7 +54,7 @@ services:
         ports:
             - 5432:5432
         volumes:
-            - ${BACK_CONTEXT:-.}/postgres-data/:/var/lib/postgresql/data
+            - ${BACK_CONTEXT:-.}/dev-data/postgres-data/:/var/lib/postgresql/data
         restart: on-failure
         logging:
             driver: "json-file"
@@ -66,4 +66,17 @@ services:
         ports:
             - 5672:5672
             - 8080:15672
+        restart: on-failure
+    s3:
+        image: zenko/cloudserver
+        environment:
+          ENDPOINT: 'localhost:5505'
+          REMOTE_MANAGEMENT_DISABLE: '1'
+          S3BACKEND: 'file'
+          LOG_LEVEL: trace
+        ports:
+            - 8000:8000
+        volumes:
+            - ${BACK_CONTEXT:-.}/s3-data/data:/usr/src/app/localData
+            - ${BACK_CONTEXT:-.}/s3-data/metadata:/usr/src/app/localMetadata
         restart: on-failure

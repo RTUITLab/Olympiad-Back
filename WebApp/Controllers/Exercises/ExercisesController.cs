@@ -20,6 +20,13 @@ using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
 using PublicAPI.Responses.Exercises;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Options;
+using WebApp.Models.Settings;
+using WebApp.Services;
+using ByteSizeLib;
+using Olympiad.Shared;
+using System.ComponentModel.DataAnnotations;
+using WebApp.Services.Attachments;
 
 namespace WebApp.Controllers.Exercises
 {
@@ -80,9 +87,8 @@ namespace WebApp.Controllers.Exercises
             return exercises;
         }
 
-        [HttpGet]
-        [Route("all/{exerciseId}")]
-        [Authorize(Roles = "Admin,ResultsViewer")]
+        [HttpGet("all/{exerciseId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ExerciseInfo> GetForAdmin(Guid exerciseId)
         {
             var exercise = await context
@@ -92,6 +98,50 @@ namespace WebApp.Controllers.Exercises
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             return exercise;
+        }
+
+        [HttpGet("{exerciseId}/attachmentLinks")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<string>>> GetAttachmentsLinks(Guid exerciseId,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            if (!await context.Exercises.AnyAsync(e => e.ExerciseID == exerciseId))
+            {
+                return NotFound("Exercise not found");
+            }
+            return await attachmentsService.GetAttachmentsForExercise(exerciseId);
+        }
+
+        [HttpGet("{exerciseId}/attachment/upload/{fileName}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UploadFileUrlResponse>> UploadAttachment(
+            Guid exerciseId,
+            [Required] string fileName,
+            [Required] string mimeType,
+            [Required] long contentLength,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            var existingExercise = await context.Exercises.SingleOrDefaultAsync(e => e.ExerciseID == exerciseId)
+                ?? throw StatusCodeException.NotFount;
+            var uploadSize = ByteSize.FromBytes(contentLength);
+            if (uploadSize > AttachmentLimitations.MaxAttachmentSize)
+            {
+                return BadRequest($"Maximum attachment size is {AttachmentLimitations.MaxAttachmentSize} (sent {uploadSize})");
+            }
+            return new UploadFileUrlResponse
+            {
+                Url = attachmentsService.GetUploadUrlForExercise(exerciseId, mimeType, uploadSize, fileName)
+            };
+        }
+
+        [HttpGet("{exerciseId}/attachment/{fileName}")]
+        [AllowAnonymous]
+        public ActionResult<string> GetAttachment(
+            Guid exerciseId,
+            string fileName,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            return Redirect(attachmentsService.GetUrlForExerciseAttachment(exerciseId, fileName));
         }
 
         [HttpGet]
