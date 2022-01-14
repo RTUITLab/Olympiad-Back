@@ -100,16 +100,22 @@ namespace WebApp.Controllers.Exercises
             return exercise;
         }
 
-        [HttpGet("{exerciseId}/attachmentLinks")]
+        [HttpGet("{exerciseId}/attachment")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<List<string>>> GetAttachmentsLinks(Guid exerciseId,
+        public async Task<ActionResult<List<AttachmentResponse>>> GetAttachments(Guid exerciseId,
             [FromServices] IAttachmentsService attachmentsService)
         {
             if (!await context.Exercises.AnyAsync(e => e.ExerciseID == exerciseId))
             {
                 return NotFound("Exercise not found");
             }
-            return await attachmentsService.GetAttachmentsForExercise(exerciseId);
+            return (await attachmentsService.GetAttachmentsForExercise(exerciseId))
+                .Select(t => new AttachmentResponse
+                {
+                    FileName = t.fileName,
+                    MimeType = t.contentType
+                })
+                .ToList();
         }
 
         [HttpGet("{exerciseId}/attachment/upload/{fileName}")]
@@ -136,12 +142,24 @@ namespace WebApp.Controllers.Exercises
 
         [HttpGet("{exerciseId}/attachment/{fileName}")]
         [AllowAnonymous]
-        public ActionResult<string> GetAttachment(
+        public ActionResult GetAttachment(
             Guid exerciseId,
             string fileName,
             [FromServices] IAttachmentsService attachmentsService)
         {
             return Redirect(attachmentsService.GetUrlForExerciseAttachment(exerciseId, fileName));
+        }
+        [HttpDelete("{exerciseId}/attachment/{fileName}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DeleteAttachment(
+            Guid exerciseId,
+            string fileName,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            var existingExercise = await context.Exercises.SingleOrDefaultAsync(e => e.ExerciseID == exerciseId)
+                ?? throw StatusCodeException.NotFount;
+            await attachmentsService.DeleteExerciseAttachment(exerciseId, fileName);
+            return NoContent();
         }
 
         [HttpGet]

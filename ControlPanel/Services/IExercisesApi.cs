@@ -18,8 +18,10 @@ public interface IExercisesApi
     [Get("/api/exercises/all/{exerciseId}")]
     public Task<ExerciseInfo> GetExerciseAsync(Guid exerciseId);
 
-    [Get("/api/exercises/{exerciseId}/attachmentLinks")]
-    public Task<List<string>> GetExerciseAttachmentLinksAsync(Guid exerciseId);
+    [Get("/api/exercises/{exerciseId}/attachment")]
+    public Task<List<AttachmentResponse>> GetExerciseAttachmentsAsync(Guid exerciseId);
+    [Delete("/api/exercises/{exerciseId}/attachment/{fileName}")]
+    public Task DeleteExerciseAttachmentAsync(Guid exerciseId, string fileName);
 
     [Get("/api/exercises/{exerciseId}/attachment/upload/{fileName}")]
     public Task<UploadFileUrlResponse> GetUploadAttachmentUrl(Guid exerciseId, string mimeType, long contentLength, string fileName);

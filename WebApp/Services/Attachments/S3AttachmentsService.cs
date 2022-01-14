@@ -23,17 +23,36 @@ namespace WebApp.Services.Attachments
             this.s3Client = s3Client;
             this.options = options.Value;
         }
-        public async Task<List<string>> GetAttachmentsForExercise(Guid exerciseId)
+
+        
+
+        public async Task<List<(string fileName, string contentType)>> GetAttachmentsForExercise(Guid exerciseId)
         {
             var url = await s3Client.ListObjectsV2Async(new ListObjectsV2Request
             {
                 BucketName = options.BucketName,
                 Prefix = ExerciseAttachmentsKey(exerciseId)
             });
-            return url.S3Objects
-                .Select(o => Path.GetFileName(o.Key))
-                .Where(n => !string.IsNullOrEmpty(n))
+            var targetObjects = url.S3Objects
+                .Where(o => !string.IsNullOrEmpty(Path.GetFileName(o.Key)))
                 .ToList();
+            var metaDataRequests = targetObjects
+                .Select(o => s3Client.GetObjectMetadataAsync(options.BucketName, o.Key))
+                .ToList();
+            await Task.WhenAll(metaDataRequests);
+            return 
+                targetObjects
+                .Zip(metaDataRequests.Select(t => t.Result), (o, m) => (Path.GetFileName(o.Key), m.Headers.ContentType))
+                .ToList();
+        }
+
+        public async Task DeleteExerciseAttachment(Guid exerciseId, string fileName)
+        {
+            await s3Client.DeleteObjectAsync(new DeleteObjectRequest
+            {
+                BucketName = options.BucketName,
+                Key = ExerciseAttachmentKey(exerciseId, fileName)
+            });
         }
 
         public string GetUploadUrlForExercise(Guid exerciseId, string contentType, ByteSize uploadSize, string fileName)

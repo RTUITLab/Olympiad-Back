@@ -17,6 +17,14 @@ namespace Olympiad.ControlPanel.JsWrappers
         {
             return await jSRuntime.InvokeAsync<string>("saveAsFile", fileName, data);
         }
+        public static async Task DownloadFileByUrl(this IJSRuntime jSRuntime, string fileName, string? url)
+        {
+            if (url is null)
+            {
+                return;
+            }
+            await jSRuntime.InvokeAsync<string>("saveUrlAsFile", fileName, url);
+        }
         public static async Task RevokeUrl(this IJSRuntime jSRuntime, string url)
         {
             await jSRuntime.InvokeVoidAsync("revokeURL", url);

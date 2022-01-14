@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 
 @using Olympiad.ControlPanel.Components.MarkdownEdit
+@using PublicAPI.Responses
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
 @using PublicAPI.Responses.Exercises
@@ -36,28 +37,16 @@
 
 @if (exerciseResponse is not null)
 {
-    <MarkdownTextArea @bind-Value="exerciseResponse.ExerciseTask">
-        <TitleTemplate>
-            <Text>@exerciseResponse.Name</Text>
-            <Text Type="@TextElementType.Secondary">Текст задания (@exerciseResponse.Challenge.Name)</Text>
-        </TitleTemplate>
-    </MarkdownTextArea>
+    <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
+        <MarkdownTextArea @bind-Value="exerciseResponse.ExerciseTask">
+            <TitleTemplate>
+                <Text>@exerciseResponse.Name</Text>
+                <Text Type="@TextElementType.Secondary">Текст задания (@exerciseResponse.Challenge.Name)</Text>
+            </TitleTemplate>
+        </MarkdownTextArea>
+    </CascadingValue>
 }
 
-<Button OnClick="GetLink">Get link</Button>
-
-<Button Icon="@IconType.Outline.FileExcel" OnClick="@(() => JS.InvokeVoidAsync("clickElement", inputFileRef?.Element))">Выбрать CSV файл</Button>
-<InputFile @ref="inputFileRef" style="display: none" OnChange="HandleSelection" />
-
-<ul>
-
-    @foreach (var file in files ?? Enumerable.Empty<string>())
-    {
-        <li>
-            <a href="@AttachmentLinkGenerator.GetExerciseLink(ExerciseId, file)">@file</a>
-        </li>
-    }
-</ul>
 
 @code {
     [Parameter]
@@ -76,29 +65,17 @@
     </Template>
     ;
     }
-    private List<string> files;
+    private ExerciseAttachmentsProvider? attachmentsProvider;
     private ChallengeResponse? challengeResponse;
     private ExerciseInfo? exerciseResponse;
-
-    private async Task GetLink()
-    {
-        await JS.InvokeVoidAsync("console.log", files = await ExercisesApi.GetExerciseAttachmentLinksAsync(ExerciseId));
-    }
-
-    private async Task HandleSelection(InputFileChangeEventArgs files)
-    {
-        await JS.InvokeVoidAsync("console.log", files);
-        var url = await ExercisesApi.GetUploadAttachmentUrl(ExerciseId, files.File.ContentType, files.File.Size, files.File.Name);
-        var message = new HttpRequestMessage(HttpMethod.Put, url.Url);
-        message.Headers.Add("x-amz-acl", "public-read");
-        message.Content = new StreamContent(files.File.OpenReadStream(files.File.Size));
-        message.Content.Headers.Add("Content-Type", files.File.ContentType);
-        await HttpClient.SendAsync(message);
-    }
-
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        if (attachmentsProvider?.ExerciseId != ExerciseId)
+        {
+            attachmentsProvider = new ExerciseAttachmentsProvider(ExerciseId, ExercisesApi, AttachmentLinkGenerator);
+        }
         try
         {
             challengeResponse = await ChallengesApi.GetChallengeAsync(ChallengeId);
@@ -128,5 +105,40 @@
     private void GoToExercisesPage()
     {
         NavigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
+    }
+
+    private class ExerciseAttachmentsProvider : IAttachmentsProvider
+    {
+        private readonly IExercisesApi exercisesApi;
+        private readonly AttachmentLinkGenerator attachmentLinkGenerator;
+
+        public Guid ExerciseId { get; }
+
+        public ExerciseAttachmentsProvider(Guid exerciseId, IExercisesApi exercisesApi, AttachmentLinkGenerator attachmentLinkGenerator)
+        {
+            ExerciseId = exerciseId;
+            this.exercisesApi = exercisesApi;
+            this.attachmentLinkGenerator = attachmentLinkGenerator;
+        }
+
+        public Task<List<AttachmentResponse>> GetAttachments()
+        {
+            return exercisesApi.GetExerciseAttachmentsAsync(ExerciseId);
+        }
+
+        public string GetAttachmentUrl(string fileName)
+        {
+            return attachmentLinkGenerator.GetExerciseLink(ExerciseId, fileName);
+        }
+
+        public async Task<string> GetUploadUrl(string fileName, long fileSize, string mimeType)
+        {
+            return (await exercisesApi.GetUploadAttachmentUrl(ExerciseId, mimeType, fileSize, fileName)).Url;
+        }
+
+        public Task DeleteAttachment(string fileName)
+        {
+            return exercisesApi.DeleteExerciseAttachmentAsync(ExerciseId, fileName);
+        }
     }
 }

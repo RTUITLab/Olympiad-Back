@@ -46,7 +46,6 @@
     private string activeTab = "area";
     private string prevActiveTab = "area";
 
-
     [Parameter]
     public string? Value { get; set; }
     [Parameter]
@@ -88,7 +87,9 @@
         if (!string.IsNullOrWhiteSpace(Value))
         {
             var html = Markdown.ToHtml(Value, pipeline);
+            Console.WriteLine(html);
             var sanitizedHtml = htmlSanitizer.Sanitize(html);
+            Console.WriteLine(sanitizedHtml);
             var styledWrapper = $"<div class=\"markdown-editor\">{sanitizedHtml}</div>";
             Output = new MarkupString(styledWrapper);
         }

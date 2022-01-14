@@ -10,6 +10,6 @@ namespace Olympiad.ControlPanel.Services
         {
             this.baseApiAddress = baseApiAddress;
         }
-        public string GetExerciseLink(Guid exerciseId, string fileName) => $"{baseApiAddress}api/exercises/{exerciseId}/attachment/{fileName}";
+        public string GetExerciseLink(Guid exerciseId, string fileName) => $"{baseApiAddress}api/exercises/{exerciseId}/attachment/{Uri.EscapeDataString(fileName)}";
     }
 }
