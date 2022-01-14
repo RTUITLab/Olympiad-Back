@@ -1,0 +1,87 @@
+﻿@page "/challenges/{ChallengeId:guid}/exercises/{ExerciseId:guid}"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+
+@using Olympiad.ControlPanel.Components.MarkdownEdit
+@using Olympiad.ControlPanel.Pages.Exercises.Edit.Components
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Challenges
+@using Olympiad.Shared.Models
+@using PublicAPI.Responses.Exercises
+
+@inject IExercisesApi ExercisesApi
+@inject MessageService MessageService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject HttpClient HttpClient
+
+<PageTitle>@ExerciseName()</PageTitle>
+<PageHeader TitleTemplate="ExerciseName(SkeletonElementSize.Default)">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem Href="challenges">
+                Соревнования
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"challenges/{ChallengeId}")">
+                <TextFieldSkeleton Text="@exerciseResponse?.Challenge.Name" />
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"challenges/{ChallengeId}/exercises")">
+                Задания
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"challenges/{ChallengeId}/exercises")">
+                @ExerciseName()
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+</PageHeader>
+
+@if (exerciseResponse is null)
+{
+    <Skeleton Active/>
+}
+else
+{
+    <EditExerciseBaseInfo @bind-Exercise="exerciseResponse"/>
+}
+
+@code {
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+
+    private RenderFragment ExerciseName(string size = SkeletonElementSize.Small)
+    {
+        // Return template in full body method for VS code formatter
+        return
+    @<Template>
+        <TextFieldSkeleton Text="@exerciseResponse?.Name" Size="@size" />
+    </Template>
+    ;
+    }
+    private ExerciseInfo? exerciseResponse;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        try
+        {
+            await Task.Delay(1000);
+            exerciseResponse = await ExercisesApi.GetExerciseAsync(ExerciseId);
+            if (exerciseResponse.ChallengeId != ChallengeId)
+            {
+                GoToExercisesPage();
+                await MessageService.Warn("Неверно составленный адрес страницы");
+            }
+        }
+        catch
+        {
+            GoToExercisesPage();
+            await MessageService.Warn("Не удалось получить список заданий");
+        }
+    }
+
+    private void GoToExercisesPage()
+    {
+        NavigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
+    }
+}

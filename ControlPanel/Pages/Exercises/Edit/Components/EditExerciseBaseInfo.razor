@@ -1,0 +1,132 @@
+﻿@using Microsoft.Extensions.Logging
+@using Olympiad.Shared.Models
+@using Olympiad.ControlPanel.Components.MarkdownEdit
+@using PublicAPI.Requests.Challenges
+@using PublicAPI.Requests.Exercises
+@using PublicAPI.Responses.Challenges
+@using Humanizer
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Exercises
+
+@inject IExercisesApi ExercisesApi
+@inject ILogger<EditExerciseBaseInfo> Logger
+@inject MessageService MessageService
+@inject IJSRuntime JS
+@inject AttachmentLinkGenerator AttachmentLinkGenerator
+
+<Form Model="exerciseModel"
+      LabelColSpan="4"
+      WrapperColSpan="20"
+      Loading="saving"
+      OnFinish="UpdateBaseInfo"
+      Layout="horizontal">
+    <FormItem Label="Название" Required>
+        <Input @bind-Value="@context.Title"/>
+    </FormItem>
+    <FormItem Label="Задание">
+        <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
+            <MarkdownTextArea @bind-Value="exerciseModel.Task"
+                              MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH">
+                <TitleTemplate>
+                    <Text>@exerciseModel.Title</Text>
+                    <Text Type="@TextElementType.Secondary">Текст задания (@Exercise?.Challenge.Name)</Text>
+                </TitleTemplate>
+            </MarkdownTextArea>
+        </CascadingValue>
+    </FormItem>
+    <FormItem WrapperColOffset="8" WrapperColSpan="16">
+        <Button Type="@ButtonType.Primary" HtmlType="submit">
+            Сохранить базовые параметры
+        </Button>
+    </FormItem>
+</Form>
+
+@code {
+
+    [Parameter]
+    public ExerciseInfo? Exercise { get; set; }
+
+    [Parameter]
+    public EventCallback<ExerciseInfo> ExerciseChanged { get; set; }
+
+    private readonly UpdateExerciseRequest exerciseModel = new();
+    private ExerciseAttachmentsProvider? attachmentsProvider;
+
+    private bool saving;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Exercise == null)
+        {
+            return;
+        }
+        if (attachmentsProvider?.ExerciseId != Exercise.Id)
+        {
+            attachmentsProvider = new ExerciseAttachmentsProvider(Exercise.Id, ExercisesApi, AttachmentLinkGenerator);
+        }
+        exerciseModel.Title = Exercise.Name;
+        exerciseModel.Task = Exercise.ExerciseTask;
+    }
+
+
+    private async Task UpdateBaseInfo()
+    {
+        if (Exercise is null)
+        {
+            return;
+        }
+        saving = true;
+        try
+        {
+            var updateExercise = await ExercisesApi.UpdateExercise(Exercise.Id, exerciseModel);
+            await ExerciseChanged.InvokeAsync(updateExercise);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Can't save exercise info");
+            await MessageService.Error("Ошибка при сохранении информации о задании");
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+    private class ExerciseAttachmentsProvider : IAttachmentsProvider
+    {
+        private readonly IExercisesApi exercisesApi;
+        private readonly AttachmentLinkGenerator attachmentLinkGenerator;
+
+        public Guid ExerciseId { get; }
+
+        public ExerciseAttachmentsProvider(Guid exerciseId, IExercisesApi exercisesApi, AttachmentLinkGenerator attachmentLinkGenerator)
+        {
+            ExerciseId = exerciseId;
+            this.exercisesApi = exercisesApi;
+            this.attachmentLinkGenerator = attachmentLinkGenerator;
+            CurrentEditableEntityKey = $"exercise/{ExerciseId}";
+        }
+
+        public string CurrentEditableEntityKey { get; }
+
+        public Task<List<AttachmentResponse>> GetAttachments()
+        {
+            return exercisesApi.GetExerciseAttachmentsAsync(ExerciseId);
+        }
+
+        public string GetAttachmentUrl(string fileName)
+        {
+            return attachmentLinkGenerator.GetExerciseLink(ExerciseId, fileName);
+        }
+
+        public async Task<string> GetUploadUrl(string fileName, long fileSize, string mimeType)
+        {
+            return (await exercisesApi.GetUploadAttachmentUrl(ExerciseId, mimeType, fileSize, fileName)).Url;
+        }
+
+        public Task DeleteAttachment(string fileName)
+        {
+            return exercisesApi.DeleteExerciseAttachmentAsync(ExerciseId, fileName);
+        }
+    }
+}

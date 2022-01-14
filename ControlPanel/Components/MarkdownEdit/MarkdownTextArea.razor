@@ -10,6 +10,8 @@
         <ChildContent>
             <TextArea MinRows="5"
                       MaxRows="25"
+                      ShowCount
+                      MaxLength="MaxLength"
                       AutoSize
                       @bind-Value="@Value"
                       OnChange="UpdateValue" />
@@ -23,7 +25,7 @@
         </TabTemplate>
         <ChildContent>
             <Card>
-                @Output
+                @ExerciseTaskPreview
             </Card>
         </ChildContent>
     </TabPane>
@@ -35,12 +37,14 @@
         </TabTemplate>
     </TabPane>
 </Tabs>
-<CascadingValue Value="Output">
+<CascadingValue Value="ExerciseTaskPreview" Name="@(nameof(ExerciseTaskPreview))">
     <MarkdownEditorModal Content="@Value"
+                         MaxLength="MaxLength"
                          ContentChanged="v => ValueChanged.InvokeAsync(Value = v)"
                          TitleTemplate="@TitleTemplate"
                          @ref="contentMarkdownEditor" />
 </CascadingValue>
+
 @code {
     private MarkdownEditorModal? contentMarkdownEditor;
     private string activeTab = "area";
@@ -48,8 +52,13 @@
 
     [Parameter]
     public string? Value { get; set; }
+
     [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public int MaxLength { get; set; } = 100;
+
     /// <summary>
     /// WIll be used in Editor Title
     /// </summary>
@@ -73,29 +82,36 @@
     {
         htmlSanitizer = new HtmlSanitizer();
         htmlSanitizer.AllowedAttributes.Add("class");
-        htmlSanitizer.AllowedSchemes.Add("data");   
+        htmlSanitizer.AllowedSchemes.Add("data");
     }
 
     private static MarkdownPipeline pipeline = new MarkdownPipelineBuilder().Build();
     private static HtmlSanitizer htmlSanitizer;
 
-    private MarkupString Output { get; set; }
+    private List<MarkupString>? parsedRows;
+    private string? renderedValue;
+    // Optimize rendering editable content
+    private RenderFragment ExerciseTaskPreview =>
+    @<Template>
+        <div class="markdown-editor">
+            @foreach (var line in parsedRows ?? Enumerable.Empty<MarkupString>())
+                {
+                    @line
+                }
+            </div>
+        </Template>
+    ;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        if (!string.IsNullOrWhiteSpace(Value))
+        if (!string.IsNullOrWhiteSpace(Value) && renderedValue != Value)
         {
             var html = Markdown.ToHtml(Value, pipeline);
             Console.WriteLine(html);
             var sanitizedHtml = htmlSanitizer.Sanitize(html);
-            Console.WriteLine(sanitizedHtml);
-            var styledWrapper = $"<div class=\"markdown-editor\">{sanitizedHtml}</div>";
-            Output = new MarkupString(styledWrapper);
-        }
-        else
-        {
-            Output = new MarkupString();
+            parsedRows = sanitizedHtml.Split('\n').Select(r => new MarkupString(r)).ToList();
+            renderedValue = Value;
         }
     }
 
@@ -103,4 +119,5 @@
     {
         return ValueChanged.InvokeAsync(Value);
     }
+
 }

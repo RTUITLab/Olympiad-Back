@@ -103,7 +103,7 @@
         try
         {
             challenge = await ChallengesApi.GetOneChallengeAnalycisInfo(ChallengeId);
-            exercises = await ExercisesApi.GetExercisesWithAtteptsForUserAsync(ChallengeId, UserId);
+            exercises = await ExercisesApi.GetExercisesWithAttemptsForUserAsync(ChallengeId, UserId);
             var response = await ControlPanelApiService.GetUser(UserId);
             if (!response.IsSuccessStatusCode)
             {

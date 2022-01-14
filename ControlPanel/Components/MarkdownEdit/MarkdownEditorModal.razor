@@ -15,7 +15,7 @@
             </SpaceItem>
         </Space>
     </Template>
-    ;
+        ;
     RenderFragment title =
     @<Template>
         <Row Justify="space-between">
@@ -27,7 +27,6 @@
                 </AntDesign.Col>
                 <AntDesign.Col>
                     <Dropdown Trigger="@(new Trigger[] { Trigger.Click })"
-                      OnClick='e => { Console.WriteLine("Dropdown button clicked."); }'
                       Placement="Placement.BottomRight">
                         <Overlay>
                             <Menu SelectedKeys="Array.Empty<string>()">
@@ -58,26 +57,35 @@
        OnCancel="Hide"
        Closable="false">
     <Row Gutter="20" Style="height: 60vh">
-        <AntDesign.Col Span="12" Style="max-height: 100%; display: flex; flex-direction: column;">
-            <TextArea Style="height: 100%; resize: none; margin-bottom: 4px;"
+        <AntDesign.Col Span="12" Style="max-height: 100%; display: flex; flex-direction: column;" Class="markdown-editor-textarea">
+            <TextArea Style="resize: none; height: 100%;"
                       @bind-Value="@Content"
+                      MaxLength="MaxLength"
+                      ShowCount
                       OnChange="UpdateValue" />
-            <AttachmentManager MaxHeigth="20vh"/>
             <Text Type="secondary">
                 Используется язык <a href="https://gist.github.com/fomvasss/8dd8cd7f88c67a4e3727f9d39224a84c" target="_blank">Markdown</a>
             </Text>
+            <AttachmentManager MaxHeight="20vh" />
         </AntDesign.Col>
         <AntDesign.Col Span="12" Style="max-height: 100%; overflow: auto;">
-            @Output
+            @if (ExerciseTaskPreview is not null)
+            {
+                @ExerciseTaskPreview
+            }
         </AntDesign.Col>
     </Row>
 </Modal>
-@code {
 
+@code {
     [Parameter]
     public string? Content { get; set; }
+
     [Parameter]
     public EventCallback<string?> ContentChanged { get; set; }
+
+    [Parameter]
+    public int MaxLength { get; set; }
 
     [Parameter]
     public RenderFragment? TitleTemplate { get; set; }
@@ -102,15 +110,17 @@
     }
 
 
-    [CascadingParameter]
-    public MarkupString Output { get; set; }
+    [CascadingParameter(Name = "ExerciseTaskPreview")]
+    public RenderFragment? ExerciseTaskPreview { get; set; }
 
     private bool show;
+
     public void Show()
     {
         show = true;
         Task.Delay(150).ContinueWith(_ => StateHasChanged());
     }
+
     public void Hide()
     {
         show = false;
@@ -120,4 +130,4 @@
     {
         return ContentChanged.InvokeAsync(Content);
     }
-    }
+}

@@ -126,7 +126,6 @@
         saving = true;
         try
         {
-            await JS.InvokeVoidAsync("console.log", challengeModel);
             var updatedChallenge = await ChallengesApi.UpdateChallengeAsync(Challenge.Id, challengeModel);
             await ChallengeChanged.InvokeAsync(updatedChallenge);
         }

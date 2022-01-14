@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
+using PublicAPI.Requests.Exercises;
 using PublicAPI.Responses;
 
 namespace Olympiad.ControlPanel.Services;
@@ -30,5 +31,7 @@ public interface IExercisesApi
     public Task<List<ExerciseWithTestCasesCountResponse>> GetExercisesWithTestsAsync(Guid challengeId);
 
     [Get("/api/exercises/analytics/withAttempt")]
-    public Task<List<ExerciseCompactResponse>> GetExercisesWithAtteptsForUserAsync(Guid challengeId, Guid userId);
+    public Task<List<ExerciseCompactResponse>> GetExercisesWithAttemptsForUserAsync(Guid challengeId, Guid userId);
+    [Put("/api/exercises/{exerciseId}")]
+    Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
 }

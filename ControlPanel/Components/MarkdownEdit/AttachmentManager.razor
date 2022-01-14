@@ -1,12 +1,16 @@
 ﻿@using ByteSizeLib
+@using Microsoft.Extensions.Logging
 @using PublicAPI.Responses
 @inject IJSRuntime JS
 @inject NotificationService NotificationService
 @inject MessageService MessageService
 @inject HttpClient HttpClient
+@inject ILogger<AttachmentManager> Logger
+
 @if (AttachmentsProvider is null)
 {
     //Stop rendering
+    Logger.LogWarning($"{nameof(AttachmentsProvider)} is required");
     return;
 }
 <Collapse>
@@ -18,23 +22,23 @@
                 Файлы
                 @if (loading)
                 {
-                    <Badge Status="processing" />
+                    <Badge Status="processing"/>
                 }
             </Badge>
         </HeaderTemplate>
         <ExtraTemplate>
             <Button Icon="@IconType.Outline.Plus" Style="height: 1.5em;" OnClick="() => JS.Click(uploadAttachmentRef?.Element)"></Button>
-            <InputFile @ref="uploadAttachmentRef" style="display: none" OnChange="UploadFileSelected" />
+            <InputFile @ref="uploadAttachmentRef" style="display: none" OnChange="UploadFileSelected"/>
         </ExtraTemplate>
         <ChildContent>
             <AntList DataSource="attachments"
                      Context="attachment"
                      Loading="loading"
-                     Style="@($"max-height: {MaxHeigth}; overflow: auto;")">
+                     Style="@($"max-height: {MaxHeight}; overflow: auto;")">
                 <ListItem>
                     <ChildContent>
                         <Text Ellipsis>
-                            <Icon Type="@GetIconType(attachment)" />
+                            <Icon Type="@GetIconType(attachment)"/>
                             <Text Style="font-size: 12px">
                                 <a href="@AttachmentsProvider?.GetAttachmentUrl(attachment.FileName)" target="_blank">@attachment.FileName</a>
                             </Text>
@@ -54,7 +58,7 @@
                             </Overlay>
                             <ChildContent>
                                 <Tooltip Title="@("Скопировать markdown для использования в разметке")">
-                                    <Icon Type="@IconType.Outline.Copy" />
+                                    <Icon Type="@IconType.Outline.Copy"/>
                                 </Tooltip>
                             </ChildContent>
                         </DropdownButton>
@@ -67,71 +71,66 @@
 </Collapse>
 
 @code {
+    private string? currentEntityKey;
     [CascadingParameter]
     public IAttachmentsProvider? AttachmentsProvider { get; set; }
+
     [Parameter]
-    public string? MaxHeigth { get; set; }
+    public string? MaxHeight { get; set; }
+
     private bool loading;
     private List<AttachmentResponse>? attachments;
     private InputFile? uploadAttachmentRef;
 
     private string GetIconType(AttachmentResponse attachmentResponse)
     {
-        switch (attachmentResponse)
+        return attachmentResponse switch
         {
-            case AttachmentResponse r when r.FileName.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FilePdf;
-            case AttachmentResponse r
-                when r.FileName.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FileJpg;
-            case AttachmentResponse r when r.FileName.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FileGif;
-            case AttachmentResponse r
-                when r.FileName.EndsWith(".xlsx", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".xls", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".xlsb", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".xlsm", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FileExcel;
-            case AttachmentResponse r
-                when r.FileName.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".doc", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".docm", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".dotx", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".dotm", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FileWord;
-            case AttachmentResponse r
-                when r.FileName.EndsWith(".pptx", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".ppt", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".pptm", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".potm", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".potx", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".ppam", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".ppsx", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".ppsm", StringComparison.InvariantCultureIgnoreCase)
-                  || r.FileName.EndsWith(".pps", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FilePpt;
-            case AttachmentResponse r
-                when r.FileName.EndsWith(".md", StringComparison.InvariantCultureIgnoreCase):
-                return IconType.Outline.FileMarkdown;
-            case AttachmentResponse r
-                when r.MimeType.StartsWith("text"):
-                return IconType.Outline.FileText;
-            case AttachmentResponse r
-                when r.MimeType.StartsWith("image"):
-                return IconType.Outline.FileImage;
-            case AttachmentResponse r
-                when r.MimeType.StartsWith("video"):
-                return IconType.Outline.VideoCamera;
-            default: return IconType.Outline.File;
-        }
+            var (fileName, _) when fileName.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FilePdf,
+            var (fileName, _) when fileName.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase) ||
+                                   fileName.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileJpg,
+            var (fileName, _) when fileName.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileGif,
+            var (fileName, _) when fileName.EndsWith(".xlsx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".xls", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".xlsb", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".xlsm", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileExcel,
+            var (fileName, _) when fileName.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".doc", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".docm", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".dotx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".dotm", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileWord,
+            var (fileName, _) when fileName.EndsWith(".md", StringComparison.InvariantCultureIgnoreCase)
+                => IconType.Outline.FileMarkdown,
+            var (fileName, _) when fileName.EndsWith(".pptx", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppt", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".pptm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".potm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".potx", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppam", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppsx", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppsm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".pps", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FilePpt,
+            var (_, mimeType) when mimeType.StartsWith("text") => IconType.Outline.FileText,
+            var (_, mimeType) when mimeType.StartsWith("image") => IconType.Outline.FileImage,
+            var (_, mimeType) when mimeType.StartsWith("video") => IconType.Outline.VideoCamera,
+            _ => IconType.Outline.File
+            };
     }
 
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await LoadList();
+        if (currentEntityKey != AttachmentsProvider?.CurrentEditableEntityKey)
+        {
+            await LoadList();
+        }
     }
 
     private async Task LoadList()
@@ -144,6 +143,7 @@
         try
         {
             attachments = await AttachmentsProvider.GetAttachments();
+            currentEntityKey = AttachmentsProvider.CurrentEditableEntityKey;
         }
         finally
         {
@@ -157,21 +157,21 @@
         if (fileSize > AttachmentLimitations.MaxAttachmentSize)
         {
             await NotificationService.Open(new NotificationConfig
-                {
-                    Message = "Слишком большой файл",
-                    Description = $"{files.File.Name} Слишком большой ({fileSize:0.##}). Максимально возможный размер файла: {AttachmentLimitations.MaxAttachmentSize:0.##}",
-                    NotificationType = NotificationType.Error
-                });
+            {
+                Message = "Слишком большой файл",
+                Description = $"{files.File.Name} Слишком большой ({fileSize:0.##}). Максимально возможный размер файла: {AttachmentLimitations.MaxAttachmentSize:0.##}",
+                NotificationType = NotificationType.Error
+            });
             return;
         }
         if (string.IsNullOrEmpty(files.File.ContentType))
         {
             await NotificationService.Open(new NotificationConfig
-                {
-                    Message = "Неподдерживаемый файл",
-                    Description = $"Данный формат ({System.IO.Path.GetExtension(files.File.Name)} {files.File.ContentType}) файлов на данный момент не поддерживается",
-                    NotificationType = NotificationType.Warning
-                });
+            {
+                Message = "Неподдерживаемый файл",
+                Description = $"Данный формат ({System.IO.Path.GetExtension(files.File.Name)} {files.File.ContentType}) файлов на данный момент не поддерживается",
+                NotificationType = NotificationType.Warning
+            });
             return;
         }
         if (AttachmentsProvider is null)
@@ -210,6 +210,7 @@
     {
         await JS.DownloadFileByUrl(fileName, AttachmentsProvider?.GetAttachmentUrl(fileName));
     }
+
     private async Task DeleteAttachment(string fileName)
     {
         if (AttachmentsProvider is null)
@@ -219,4 +220,4 @@
         await AttachmentsProvider.DeleteAttachment(fileName);
         await LoadList();
     }
-    }
+}
