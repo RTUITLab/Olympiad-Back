@@ -20,7 +20,7 @@
         <Input @bind-Value="@context.Name" />
     </FormItem>
     <FormItem Label="Описание">
-        <MarkdownTextArea @bind-Value="context.Description">
+        <MarkdownTextArea @bind-Value="context.Description" MaxLength="@ChallengeLimitations.MAX_CHALLENGE_DESCRIPTION_LENGTH">
             <TitleTemplate>
                 <Text>@challengeModel.Name</Text>
                 <Text Type="@TextElementType.Secondary">описание</Text>

@@ -108,7 +108,6 @@
         if (!string.IsNullOrWhiteSpace(Value) && renderedValue != Value)
         {
             var html = Markdown.ToHtml(Value, pipeline);
-            Console.WriteLine(html);
             var sanitizedHtml = htmlSanitizer.Sanitize(html);
             parsedRows = sanitizedHtml.Split('\n').Select(r => new MarkupString(r)).ToList();
             renderedValue = Value;
