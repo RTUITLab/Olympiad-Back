@@ -6,7 +6,7 @@ services:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
             - AccountSettings__EmailDomain=${GENERATE_USER_EMAIL_DOMAIN?pass email generating domain GENERATE_USER_EMAIL_DOMAIN}
-            - RabbitMqQueueSettings__Password=${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}
+            - RabbitMqQueueSettings__Uri=${RABBITMQ_URI?pass rabbitmq connection uri RABBITMQ_URI}
         deploy:
             resources:
                 limits:
@@ -22,7 +22,7 @@ services:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
             - GenerateSettings__Domain=${GENERATE_USER_EMAIL_DOMAIN? Place domain to generate users email GENERATE_USER_EMAIL_DOMAIN}
-            - RabbitMqQueueSettings__Password=${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}
+            - RabbitMqQueueSettings__Uri=${RABBITMQ_URI?pass rabbitmq connection uri RABBITMQ_URI}
         deploy:
             replicas: 1
             resources:
@@ -56,7 +56,7 @@ services:
             - StartSettings__PrivateDockerRegistry__Password=${OLYMPIAD_PRIVATE_REGISTRY_PASSWORD?pass olympiad private registry password OLYMPIAD_PRIVATE_REGISTRY_PASSWORD}
             - UserInfo__UserName=${EXECUTOR_USER_LOGIN?pass user login for executor service EXECUTOR_USER_LOGIN}
             - UserInfo__Password=${EXECUTOR_USER_PASSWORD?pass user password for executor service EXECUTOR_USER_PASSWORD}
-            - RabbitMqQueueSettings__Password=${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}
+            - RabbitMqQueueSettings__Uri=${RABBITMQ_URI?pass rabbitmq connection uri RABBITMQ_URI}
         deploy:
             placement:
                 max_replicas_per_node: 1
@@ -83,3 +83,16 @@ services:
             options:
                 max-file: '10'
                 max-size: 200k
+    rabbitmq:
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.2'
+                    memory: 500M
+        logging:
+            driver: json-file
+            options:
+                max-file: '10'
+                max-size: 200k
+        environment:
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}

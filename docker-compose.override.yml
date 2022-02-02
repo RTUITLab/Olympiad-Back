@@ -6,8 +6,7 @@ services:
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
-           - RabbitMqQueueSettings__Host=rabbitmq
-           - RabbitMqQueueSettings__Password=password
+           - RabbitMqQueueSettings__Uri=amqp://rabbitmq-user:password@rabbitmq:5672
         restart: on-failure
         ports:
             - 5501:5501
@@ -21,8 +20,7 @@ services:
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
-           - RabbitMqQueueSettings__Host=rabbitmq
-           - RabbitMqQueueSettings__Password=password
+           - RabbitMqQueueSettings__Uri=amqp://rabbitmq-user:password@rabbitmq:5672
         restart: on-failure
     results-viewer:
         build: ${BACK_CONTEXT:-.}/deploy/results-viewer
@@ -42,8 +40,7 @@ services:
             - ASPNETCORE_ENVIRONMENT=Development
             - UserInfo__UserName=executor@localhost.ru
             - UserInfo__Password=ExecutorVeryStrongPass1
-            - RabbitMqQueueSettings__Host=rabbitmq
-            - RabbitMqQueueSettings__Password=password
+            - RabbitMqQueueSettings__Uri=amqp://rabbitmq-user:password@rabbitmq:5672
         restart: on-failure
         depends_on:
             - rabbitmq

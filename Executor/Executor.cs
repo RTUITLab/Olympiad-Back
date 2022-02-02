@@ -73,7 +73,8 @@ namespace Executor
         {
             var factory = new ConnectionFactory()
             {
-                HostName = rabbitMQOptinos.Value.Host,
+                Uri = new Uri(rabbitMQOptinos.Value.Uri),
+                ClientProvidedName = rabbitMQOptinos.Value.ClientProvidedName,
                 DispatchConsumersAsync = true
             };
             var connection = factory.CreateConnection();
