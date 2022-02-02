@@ -64,6 +64,7 @@ namespace Executor
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Can't subscribe workers to rabbitmq");
                 throw new Exception("Can't subscribe workers to rabbitmq", ex);
             }
             await Task.Delay(-1);
