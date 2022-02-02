@@ -22,6 +22,7 @@ namespace Executor
         static async Task Main(string[] args)
         {
             Console.WriteLine($"Started {DateTime.UtcNow}");
+            ILogger logger;
             try
             {
 
@@ -36,7 +37,6 @@ namespace Executor
                 {
                     throw new Exception("host must see docker!");
                 }
-
                 var executor = servicesProvider.GetRequiredService<Executor>();
                 var statusReporter = servicesProvider.GetRequiredService<ConsoleStatusReporter>();
                 var statusReporterTask = configuration.GetConsoleMode() == ConsoleMode.StatusReporting ?

@@ -64,6 +64,7 @@ namespace Executor
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Can't subscribe workers to rabbitmq");
                 throw new Exception("Can't subscribe workers to rabbitmq", ex);
             }
             await Task.Delay(-1);
@@ -73,7 +74,8 @@ namespace Executor
         {
             var factory = new ConnectionFactory()
             {
-                HostName = rabbitMQOptinos.Value.Host,
+                Uri = new Uri(rabbitMQOptinos.Value.Uri),
+                ClientProvidedName = rabbitMQOptinos.Value.ClientProvidedName,
                 DispatchConsumersAsync = true
             };
             var connection = factory.CreateConnection();

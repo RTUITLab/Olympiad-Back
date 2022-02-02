@@ -21,8 +21,8 @@ namespace Olympiad.Services
             ILogger<RabbitMQQueue> logger)
         {
             var factory = new ConnectionFactory() { 
-                HostName = options.Value.Host,
-                ClientProvidedName = options.Value.ClientProvidedName
+                ClientProvidedName = options.Value.ClientProvidedName,
+                Uri = new Uri(options.Value.Uri)
             };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
