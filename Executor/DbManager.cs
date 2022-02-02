@@ -63,6 +63,8 @@ namespace Executor
 
         public async Task SaveLog(Guid solutionId, Guid testDataId, SolutionCheckRequest solutionCheck)
         {
+            logger.LogWarning($"Trim program out");
+            solutionCheck.ProgramOut = solutionCheck.ProgramOut.Substring(0, 500_000);
             var jsonString = JsonConvert.SerializeObject(solutionCheck);
             var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
             var result = await InvokePostInternal($"api/executor/checklog/{solutionId}/{testDataId}", content);
