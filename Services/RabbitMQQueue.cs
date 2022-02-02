@@ -22,7 +22,9 @@ namespace Olympiad.Services
         {
             var factory = new ConnectionFactory() { 
                 HostName = options.Value.Host,
-                ClientProvidedName = options.Value.ClientProvidedName
+                ClientProvidedName = options.Value.ClientProvidedName,
+                UserName = options.Value.UserName,
+                Password = options.Value.Password,
             };
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
