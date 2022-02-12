@@ -3,12 +3,8 @@ version: "3.8"
 services:
     api:
         image: rtuitlab/olympiad-api:${OLYMPIAD_SERVICE_TAG-latest}
-        environment:
-            - RabbitMqQueueSettings__Host=rabbitmq
     admin:
         image: rtuitlab/olympiad-admin:${OLYMPIAD_SERVICE_TAG-latest}
-        environment:
-            - RabbitMqQueueSettings__Host=rabbitmq
     results-viewer:
         image: rtuitlab/olympiad-results-viewer:${OLYMPIAD_SERVICE_TAG-latest}
     control-panel:
@@ -17,7 +13,6 @@ services:
         image: rtuitlab/olympiad-executor:${OLYMPIAD_SERVICE_TAG-latest}
         environment:
             - StartSettings__DockerEndPoint=unix:///var/run/docker.sock
-            - RabbitMqQueueSettings__Host=rabbitmq
             - StartSettings__Address=http://api:5501
             - CONSOLE_MODE=Logs
         volumes:
@@ -28,3 +23,5 @@ services:
             - APP_ENV=dev
     rabbitmq:
         image: rabbitmq:3-management
+        environment:
+            - RABBITMQ_DEFAULT_USER=rabbitmq-user
