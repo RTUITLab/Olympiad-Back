@@ -3,7 +3,7 @@
 
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
-@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.ExerciseTestData
 
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
@@ -25,6 +25,9 @@
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
+    <PageHeaderExtra>
+        <NewExerciseButton ChallengeId="ChallengeId" />
+    </PageHeaderExtra>
 </PageHeader>
 
 
@@ -37,7 +40,7 @@
     <Column @bind-Field="exercise.Name" Title="Название" Sortable>
         <NavLink href="@($"challenges/{ChallengeId}/exercises/{exercise.Id}")">@exercise.Name</NavLink>
     </Column>
-    <Column @bind-Field="exercise.TestCasesCount" Sortable>
+    <Column @bind-Field="exercise.TestCasesCount" Title="Количество тестов" Sortable>
         <TitleTemplate>
             <Text>Тесты</Text>
             <HelpTooltip>Количество тестов для задания</HelpTooltip>
@@ -45,11 +48,11 @@
         <ChildContent>
             @if (exercise.TestCasesCount == 0)
             {
-                <Alert Type="@AlertType.Error" Message="Не представлено тестов для проверки"/>
+                <Alert Type="@AlertType.Error" Message="Не представлено тестов для проверки" />
             }
             else if (exercise.TestCasesCount < 2)
             {
-                <Alert Type="@AlertType.Warning" Message="@($"Мало тестов для проверки ({exercise.TestCasesCount})")"/>
+                <Alert Type="@AlertType.Warning" Message="@($"Мало тестов для проверки ({exercise.TestCasesCount})")" />
             }
             else
             {

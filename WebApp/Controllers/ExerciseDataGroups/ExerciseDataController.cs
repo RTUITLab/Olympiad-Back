@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Models;
 using Models.Exercises;
 using PublicAPI.Requests;
-using PublicAPI.Responses;
+using PublicAPI.Responses.ExercisesTestData;
 using WebApp.Models;
 using WebApp.ViewModels;
 
@@ -38,13 +38,13 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [Route("{exerciseId}")]
-        public Task<List<ExerciseDataCompactResponse>> Get(Guid exerciseId)
+        public Task<List<ExerciseDataResponse>> GetPublicGroups(Guid exerciseId)
         {
             return context
                 .TestData
                 .Where(p => p.ExerciseDataGroup.ExerciseId == exerciseId)
                 .Where(p => p.ExerciseDataGroup.IsPublic)
-                .ProjectTo<ExerciseDataCompactResponse>(mapper.ConfigurationProvider)
+                .ProjectTo<ExerciseDataResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 

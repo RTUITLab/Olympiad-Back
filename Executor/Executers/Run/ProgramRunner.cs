@@ -15,6 +15,7 @@ using PublicAPI.Requests;
 using System.Collections.Generic;
 using Executor.Models.Settings;
 using System.Security.Cryptography.X509Certificates;
+using PublicAPI.Responses.ExercisesTestData;
 
 namespace Executor.Executers.Run
 {
@@ -48,7 +49,7 @@ namespace Executor.Executers.Run
             this.runningSettings = runningSettings;
             this.logger = logger;
         }
-        public async Task RunAndCheckSolution(Guid solutionId, ExerciseData[] testData)
+        public async Task RunAndCheckSolution(Guid solutionId, ExerciseDataResponse[] testData)
         {
             if (blackList.Contains(solutionId))
             {
@@ -111,7 +112,7 @@ namespace Executor.Executers.Run
         }
 
 
-        private async Task HandleSolutionWorker(Guid solutionId, string imageName, ExerciseData[] testData, Action<SolutionStatus> storeSolutionStatus, CancellationToken token)
+        private async Task HandleSolutionWorker(Guid solutionId, string imageName, ExerciseDataResponse[] testData, Action<SolutionStatus> storeSolutionStatus, CancellationToken token)
         {
             while (CurrentTestDataCheckedCount < CurrentTestDataCount && !token.IsCancellationRequested)
             {

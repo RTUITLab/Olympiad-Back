@@ -1,7 +1,7 @@
 ﻿using Olympiad.Shared.Models;
 using System;
 
-namespace PublicAPI.Responses.Exercises
+namespace PublicAPI.Responses.ExerciseTestData
 {
     public class ExerciseForUserInfoResponse
     {

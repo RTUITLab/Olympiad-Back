@@ -1,0 +1,29 @@
+﻿@inject IExercisesApi ExercisesApi
+@inject NavigationManager NavigationManager
+
+<Popconfirm Title="Будет создано задание с параметрами по умолчанию для дальнейшей настрокйи"
+            OkText="Создать"
+            CancelText="Отмена"
+            OnConfirm="CreateExercise">
+    <Button Type="@ButtonType.Primary" Loading="loading">Создать</Button>
+</Popconfirm>
+@code {
+    private bool loading;
+
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private async Task CreateExercise()
+    {
+        loading = true;
+        try
+        {
+            var newExerciseId = await ExercisesApi.CreateExerciseAsync(ChallengeId);
+            NavigationManager.NavigateTo($"challenges/{ChallengeId}/exercises/{newExerciseId}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

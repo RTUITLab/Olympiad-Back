@@ -14,6 +14,7 @@ using Olympiad.Shared.Models;
 using Models.Solutions;
 using PublicAPI.Requests;
 using PublicAPI.Responses.Solutions;
+using PublicAPI.Responses.ExercisesTestData;
 
 namespace Executor
 {
@@ -37,9 +38,9 @@ namespace Executor
             logger.LogInformation($"user name : {options.Value.UserName}");
             client = httpClientFactory.CreateClient(DbManagerHttpClientName);
         }
-        public Task<ExerciseData[]> GetExerciseData(Guid exId)
+        public Task<ExerciseDataResponse[]> GetExerciseData(Guid exId)
         {
-            return Invoke<ExerciseData[]>($"api/ExerciseData/all/{exId}");
+            return Invoke<ExerciseDataResponse[]>($"api/ExerciseData/all/{exId}");
         }
 
         public Task SaveChanges(Guid solutionId, SolutionStatus status)

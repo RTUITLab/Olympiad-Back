@@ -6,13 +6,14 @@
 @using PublicAPI.Responses.Challenges
 @using Humanizer
 @using PublicAPI.Responses
-@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.ExerciseTestData
 
 @inject IExercisesApi ExercisesApi
 @inject ILogger<EditExerciseBaseInfo> Logger
 @inject MessageService MessageService
 @inject IJSRuntime JS
 @inject AttachmentLinkGenerator AttachmentLinkGenerator
+
 
 <Form Model="exerciseModel"
       LabelColSpan="4"

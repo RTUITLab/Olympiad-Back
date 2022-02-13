@@ -18,7 +18,7 @@ using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
-using PublicAPI.Responses.Exercises;
+using PublicAPI.Responses.ExerciseTestData;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
 using WebApp.Models.Settings;
@@ -48,6 +48,21 @@ namespace WebApp.Controllers.Exercises
             this.mapper = mapper;
         }
 
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<Guid> CreateDefaultExerciseAsync(Guid challengeId)
+        {
+            var newExercise = new Exercise
+            {
+                ExerciseName = "NEW EXERCISE NAME",
+                ChallengeId = challengeId,
+                ExerciseTask = "FILL EXERCISE TASK"
+            };
+            context.Exercises.Add(newExercise);
+            await context.SaveChangesAsync();
+            return newExercise.ExerciseID;
+        }
 
         [HttpGet]
         public async Task<List<ExerciseForUserInfoResponse>> GetForChallenge(Guid challengeId)

@@ -1,5 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Office2010.ExcelAc;
-using PublicAPI.Responses.Exercises;
+using PublicAPI.Responses.ExerciseTestData;
 using Refit;
 using System;
 using System.Threading.Tasks;
@@ -7,12 +7,17 @@ using System.Collections.Generic;
 using System.IO;
 using PublicAPI.Requests.Exercises;
 using PublicAPI.Responses;
+using PublicAPI.Responses.ExercisesTestData;
 
 namespace Olympiad.ControlPanel.Services;
 
 [Headers("Authorization: Bearer")]
 public interface IExercisesApi
 {
+
+    [Post("/api/exercises")]
+    public Task<Guid> CreateExerciseAsync(Guid challengeId);
+
     [Get("/api/exercises/all")]
     public Task<List<ExerciseCompactResponse>> GetExercisesAsync(Guid challengeId);
 
@@ -34,4 +39,6 @@ public interface IExercisesApi
     public Task<List<ExerciseCompactResponse>> GetExercisesWithAttemptsForUserAsync(Guid challengeId, Guid userId);
     [Put("/api/exercises/{exerciseId}")]
     Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
+    [Get("/api/exercises/{exerciseId}/testGroups")]
+    Task<List<ExercisesTestDataGroupResponse>> GetTestGroupsAsync(Guid exerciseId);
 }
