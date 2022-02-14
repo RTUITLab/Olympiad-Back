@@ -4,19 +4,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Models.Exercises
+namespace PublicAPI.Requests.Exercises
 {
-    public class ExerciseData
+    public  class CreateTestCaseRequest
     {
-        public Guid Id { get; set; }
         [Required]
         [MaxLength(ExerciseDataLimitations.MAX_IN_DATA_LENGTH)]
-        public string InData { get; set; }
+        public string In { get; set; }
         [Required]
         [MaxLength(ExerciseDataLimitations.MAX_OUT_DATA_LENGTH)]
-        public string OutData { get; set; }
-        
-        public ExerciseDataGroup ExerciseDataGroup { get; set; }
-        public Guid ExerciseDataGroupId { get; set; }
+        public string Out { get; set; }
     }
 }

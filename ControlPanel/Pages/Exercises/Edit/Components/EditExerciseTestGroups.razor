@@ -1,5 +1,5 @@
 ﻿@using ByteSizeLib
-@using Olympiad.ControlPanel.Pages.Exercises.Edit.Models
+@using PublicAPI.Requests.Exercises
 @using PublicAPI.Responses.ExercisesTestData
 @using System.Text.Json
 @inject IExercisesApi ExercisesApi
@@ -7,29 +7,38 @@
 @inject NotificationService NotificationService
 
 
-<PageHeader Title="Группы тестов">
-    <PageHeaderExtra>
-        <ExerciseTestGroupsFileFormatDescriptionModal @ref="helpRef" ExerciseTitle="@ExerciseTitle" />
-        <Button OnClick=@(() => helpRef?.Show()) Icon="@IconType.Outline.InfoCircle">Справка</Button>
+<Row Justify="space-between">
+    <AntDesign.Col>
+        <Title Level="4">Группы тестов</Title>
+    </AntDesign.Col>
+    <AntDesign.Col>
+        <Space Direction="DirectionVHType.Horizontal">
+            <SpaceItem>
+                <ExerciseTestGroupsFileFormatDescriptionModal @ref="helpRef" ExerciseTitle="@ExerciseTitle" />
+                <Button OnClick=@(() => helpRef?.Show()) Icon="@IconType.Outline.InfoCircle">Справка</Button>
+            </SpaceItem>
+            <SpaceItem>
+                <Dropdown Trigger="@(new Trigger[] { Trigger.Click })"
+                          OnClick='e => { Console.WriteLine("Dropdown button clicked."); }'>
+                    <Overlay>
+                        <Menu Selectable="false">
+                            <InputFile @ref="inputFileRef" style="display: none" OnChange="TestGroupsFilesSelected" accept=".json" />
+                            <MenuItem Icon="@IconType.Outline.Upload" Title="Загрузить" OnClick="@(() => JS.Click(inputFileRef?.Element))" />
+                            @if (exercisesTestDataGroups?.Any() == true)
+                            {
+                                <MenuItem Icon="@IconType.Outline.Download" OnClick="DownloadTestGroups">Скачать</MenuItem>
+                            }
+                        </Menu>
+                    </Overlay>
+                    <Unbound>
+                        <Button RefBack=@context>Действия <Icon Type="@IconType.Outline.Down" /></Button>
+                    </Unbound>
+                </Dropdown>
+            </SpaceItem>
+        </Space>
 
-        <Dropdown Trigger="@(new Trigger[] { Trigger.Click })"
-                  OnClick='e => { Console.WriteLine("Dropdown button clicked."); }'>
-            <Overlay>
-                <Menu Selectable="false">
-                    <MenuItem Icon="@IconType.Outline.Upload" Title="Загрузить" OnClick="@(() => JS.Click(inputFileRef?.Element))" />
-                    @if (exercisesTestDataGroups?.Any() == true)
-                    {
-                        <MenuItem Icon="@IconType.Outline.Download" OnClick="DownloadTestGroups">Скачать</MenuItem>
-                    }
-                </Menu>
-            </Overlay>
-            <Unbound>
-                <Button RefBack=@context>Действия <Icon Type="@IconType.Outline.Down" /></Button>
-            </Unbound>
-        </Dropdown>
-        <InputFile @ref="inputFileRef" style="display: none" OnChange="TestGroupsFilesSelected" accept=".json" />
-    </PageHeaderExtra>
-</PageHeader>
+    </AntDesign.Col>
+</Row>
 
 @if (loading)
 {
@@ -127,6 +136,7 @@ else
                 });
             return;
         }
+
         if (files.FileCount != 1)
         {
             await NotificationService.Error(new NotificationConfig
@@ -135,6 +145,7 @@ else
                 });
             return;
         }
+
         var file = files.File;
         var maxFileSize = ByteSize.FromMegaBytes(1);
         if (ByteSize.FromBytes(file.Size) > maxFileSize)
@@ -145,10 +156,11 @@ else
                 });
             return;
         }
-        List<JsonUserFileFormat> testGroups;
+
+        List<CreateTestDataGroupRequest> testGroups;
         try
         {
-            var temp = await JsonSerializer.DeserializeAsync<List<JsonUserFileFormat>>(file.OpenReadStream((long)maxFileSize.Bytes));
+            var temp = await JsonSerializer.DeserializeAsync<List<CreateTestDataGroupRequest>>(file.OpenReadStream((long)maxFileSize.Bytes));
             if (temp is null)
             {
                 throw new Exception($"{nameof(JsonSerializer)} returns null");
@@ -166,12 +178,25 @@ else
                 });
             return;
         }
-        if (testGroups.Select(g => g.Title).Intersect(exercisesTestDataGroups.Select(g => g.Title)).Any())
+
+        if (testGroups.Select(g => g.Title).Distinct().Count() != testGroups.Count ||
+            testGroups.Select(g => g.Title).Intersect(exercisesTestDataGroups.Select(g => g.Title)).Any())
         {
             await NotificationService.Error(new NotificationConfig
                 {
                     Message = "Названия групп тестов должны быть уникальны",
                     Description = "Если есть необходимость отредактировать существующую группу - необходимо её удалить, потом загрузить новый файл, содержащий эту группу"
+                });
+            return;
+        }
+
+        var noTestsGroup = testGroups.FirstOrDefault(g => g.Cases?.Any() != true);
+        if (noTestsGroup is not null)
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "В каждой группе должен быть как минимум один тест",
+                    Description = $"В группе {noTestsGroup.Title} нет тест-кейсов"
                 });
             return;
         }
@@ -187,9 +212,17 @@ else
                 });
             return;
         }
-        var userFileModel = exercisesTestDataGroups.Select(g => new JsonUserFileFormat(g.Title, g.Score, g.IsPublic,
-            g.TestCases.Select(tc => new UserTestCase(tc.InData, tc.OutData)).ToList()))
-            .ToList();
+        var userFileModel = exercisesTestDataGroups.Select(g => new CreateTestDataGroupRequest
+            {
+                Title = g.Title,
+                Score = g.Score,
+                IsPublic = g.IsPublic,
+                Cases = g.TestCases.Select(tc => new CreateTestCaseRequest
+                {
+                    In = tc.InData,
+                    Out = tc.OutData
+                }).ToList()
+            }).ToList();
         var jsonView = JsonSerializer.Serialize(userFileModel);
         await JS.DownloadFile($"{ExerciseTitle}_Tests.json", jsonView);
     }

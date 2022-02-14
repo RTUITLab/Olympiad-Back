@@ -1,8 +1,8 @@
 ﻿@using System.Text.Json
 @using Markdig
-@using Olympiad.ControlPanel.Pages.Exercises.Edit.Models
 @using System.Text.Encodings.Web
 @using System.Text.Unicode
+@using PublicAPI.Requests.Exercises
 @inject IJSRuntime JS
 
 <Modal Visible="visible"
@@ -25,34 +25,36 @@
         <Paragraph>
             Для каждого задания необходимо сформировать набор групп тестов, за которые могут быть начислены баллы.
             За группу зачисляются баллы только в случае прохождения решением всех тест-кейсов из этой группы.
-            При необходимости можно создавать неограниченное количество групп для проверки работы на разных масштабах данных, таким образом формируя промежуточные баллы за частичное выполнение.
+            При необходимости можно создавать различное количество групп для проверки работы на разных масштабах данных, таким образом формируя промежуточные баллы за частичное выполнение. Максимальное количество групп тестов - <Text Code>@ExerciseDataLimitations.MAX_GROUPS_COUNT</Text>.
             Допустимым является создание групп, содержащих один тест-кейс, для начисления баллов за каждый отдельно взятый тест.
         </Paragraph>
-        
+
         <Title Level="4">Порядок изменения тестов</Title>
         <Paragraph>
             После загрузки новых тестов <Text Strong>необходимо</Text> запустить перепроверку задания, нажав соответствующую кнопку.
             Данное действие обнулит все полученные ранее результаты по заданию, и поставит решения в очередь на проверку на актуальных тестовых группах.
         </Paragraph>
-        
+
         <Title Level="4">Формат файла с тестами</Title>
-        <Paragraph>Тесты могут быть загружены из <Text Keyboard>.json</Text> файла, содержащего список объектов, представляющих собой группы тестов</Paragraph>
-        
+        <Paragraph>Тесты могут быть загружены из <Text Keyboard>.json</Text> файла, содержащего список объектов, представляющих собой группы тестов.</Paragraph>
+
         <Title Level="4">Пример группы тестов</Title>
         <Paragraph Style="white-space:pre; overflow: auto;">
             @groupExample
         </Paragraph>
         <Paragraph>
-            <Text Keyboard>title</Text>: Уникальное в рамках задание название тестовой группы. Используется для простоты навигации в процессе анализа решений и управления группами тестов
+            <Text Keyboard>title</Text>: Обязательное и уникальное в рамках задания название тестовой группы. Используется для простоты навигации в процессе анализа решений и управления группами тестов. Максимальная длина - <Text Code>@ExerciseDataLimitations.MAX_GROUP_TITLE_LENGTH</Text> символов.
         </Paragraph>
         <Paragraph>
-            <Text Keyboard>score</Text>: Целое неотрицательное число, определяющее, сколько баллов будет засчитано пользователю, при прохождении <Text Strong>ВСЕХ</Text> тестов внутри обозначенной группы. Для публичных тестов принято писать 0, так как пользователь может реализовать прохождение публичных тестов банальным образом, не реализовывая алгоритм вовсе
+            <Text Keyboard>score</Text>: Число в промежутке от <Text Code>0</Text> до <Text Code>@ExerciseDataLimitations.MAX_GROUP_SCORE</Text>, определяющее, сколько баллов будет засчитано пользователю, при прохождении <Text Strong>ВСЕХ</Text> тестов внутри обозначенной группы. Для публичных тестов принято писать 0, так как пользователь может реализовать прохождение публичных тестов банальным образом, не реализовывая алгоритм вовсе.
         </Paragraph>
         <Paragraph>
-            <Text Keyboard>isPublic</Text>: булево значение, принимающее <Text Code>true</Text> если группа должна быть публичная, и видна после условия задачи, и <Text Code>false</Text> если тест не должен быть показан пользователю. Во втором случае данная группа будет использована только при проверке решения
+            <Text Keyboard>isPublic</Text>: булево значение, принимающее <Text Code>true</Text> если группа должна быть публичная, и видна после условия задачи, и <Text Code>false</Text> если тест не должен быть показан пользователю. Во втором случае данная группа будет использована только при проверке решения.
         </Paragraph>
         <Paragraph>
             <Text Keyboard>cases</Text>: список тестов, на которых будет проверяться решение. Тесты состоят из строго двух полей <Text Keyboard>in</Text> и <Text Keyboard>out</Text>. Первое поле отвечает за строковый контент, который будет подан на вход <Text Type="@TextElementType.Secondary">(STDIN)</Text>  программе. Второе - за корректный вывод <Text Type="@TextElementType.Secondary">(STDOUT)</Text>, который должен получиться при работе программы.
+            Максимальная длина сообщения на вход - <Text Code>@ExerciseDataLimitations.MAX_IN_DATA_LENGTH</Text> символов.
+            Максимальная длина сообщения на выход - <Text Code>@ExerciseDataLimitations.MAX_OUT_DATA_LENGTH</Text> символов.
         </Paragraph>
     </ChildContent>
 </Modal>
@@ -76,10 +78,20 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        var exampleModel = new JsonUserFileFormat("Некоторая группа", 132, false, new List<UserTestCase>
-        {
-            new ("входные данные", "выходные данные")
-        });
+        var exampleModel = new CreateTestDataGroupRequest
+            {
+                Title = "Некоторая группа",
+                Score = 132,
+                IsPublic = false,
+                Cases = new List<CreateTestCaseRequest>
+                {
+                    new CreateTestCaseRequest
+                    {
+                        In ="входные данные",
+                        Out = "выходные данные"
+                    }
+                }
+            };
         var json = JsonSerializer.Serialize(exampleModel, jsonOptions);
         var html = Markdown.ToHtml($"```json\n{json}\n```", new MarkdownPipelineBuilder().Build());
         groupExample = new MarkupString(html);
@@ -93,17 +105,35 @@
 
     private async Task DownloadExample()
     {
-        var exampleModel = new List<JsonUserFileFormat>
-            {
-                new ("Public gorup",  0, true, new List<UserTestCase>
+        var exampleModel = new List<CreateTestDataGroupRequest>
+        {
+            new CreateTestDataGroupRequest {
+                Title = "Публичные тесты",
+                Score = 0,
+                IsPublic = true,
+                Cases = new List<CreateTestCaseRequest>
                 {
-                    new ("1 2", "3")
-                }),
-                new ("Private gorup",  10, false, new List<UserTestCase>
+                    new CreateTestCaseRequest
+                    {
+                        In = "1\n2",
+                        Out = "3"
+                    }
+                }
+            },
+            new CreateTestDataGroupRequest{
+                Title = "Приватные тесты",
+                Score = 10,
+                IsPublic = false,
+                Cases = new List<CreateTestCaseRequest>
                 {
-                    new ("5 9", "14")
-                })
-            };
+                    new CreateTestCaseRequest
+                    {
+                        In = "5\n9",
+                        Out = "14"
+                    }
+                }
+            }
+        };
         await JS.DownloadFile($"{ExerciseTitle}_Tests.json", JsonSerializer.Serialize(exampleModel, jsonOptions));
     }
 
