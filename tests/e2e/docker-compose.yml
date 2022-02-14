@@ -4,7 +4,9 @@ services:
   api:
     depends_on:
       - executor
-
+  s3:
+    environment:
+      ENDPOINT: 's3'
   tests:
     build: olympiad-tests
     volumes:
