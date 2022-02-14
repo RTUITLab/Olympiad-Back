@@ -4,6 +4,7 @@ using Models.Checking;
 using Models.Exercises;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
+using PublicAPI.Requests.Exercises;
 
 namespace WebApp.ViewModels.Mappings
 {
@@ -19,6 +20,12 @@ namespace WebApp.ViewModels.Mappings
 
             CreateMap<UpdateChallengeInfoRequest, Challenge>()
                 .ForMember(c => c.ChallengeAccessType, map => map.MapFrom(ucir => ucir.AccessType));
+
+            CreateMap<CreateTestCaseRequest, ExerciseData>()
+                .ForMember(ed => ed.InData, map => map.MapFrom(cr => cr.In))
+                .ForMember(ed => ed.OutData, map => map.MapFrom(cr => cr.Out));
+            CreateMap<CreateTestDataGroupRequest, ExerciseDataGroup>()
+                .ForMember(edg => edg.ExerciseDatas, map => map.MapFrom(edg => edg.Cases));
         }
     }
 }

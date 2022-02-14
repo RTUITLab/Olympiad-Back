@@ -28,6 +28,8 @@ using Olympiad.Shared;
 using System.ComponentModel.DataAnnotations;
 using PublicAPI.Requests.Exercises;
 using WebApp.Services.Attachments;
+using Olympiad.Services;
+using Microsoft.Extensions.Logging;
 
 namespace WebApp.Controllers.Exercises
 {
@@ -37,15 +39,18 @@ namespace WebApp.Controllers.Exercises
     public class ExercisesController : AuthorizeController
     {
         private readonly IMapper mapper;
+        private readonly ILogger<ExercisesController> logger;
         private readonly ApplicationDbContext context;
 
         public ExercisesController(
             ApplicationDbContext applicationDbContext,
             IMapper mapper,
+            ILogger<ExercisesController> logger,
             UserManager<User> userManager) : base(userManager)
         {
             context = applicationDbContext;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
 
@@ -196,12 +201,12 @@ namespace WebApp.Controllers.Exercises
 
             return exercise;
         }
-        
+
         [HttpPut("{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<ExerciseInfo> UpdateExerciseBaseInfo(Guid exerciseId, UpdateExerciseRequest request)
         {
-            
+
             var exercise = await context
                                .Exercises
                                .Where(ex => ex.ExerciseID == exerciseId)
@@ -211,6 +216,24 @@ namespace WebApp.Controllers.Exercises
             exercise.ExerciseTask = request.Task;
             await context.SaveChangesAsync();
             return await GetForAdmin(exerciseId);
+        }
+
+        [HttpPost("{exerciseId:guid}/recheck")]
+        [Authorize(Roles = "Admin")]
+        public async Task<int> RecheckExerciseSolutions(
+            [FromServices] IQueueChecker queueChecker,
+            [FromRoute] Guid exerciseId)
+        {
+            var recheckedSolutionsCount = await ReCheckService.ReCheckSolutions(
+                        context,
+                        queueChecker,
+                        db => db.Solutions.Where(s => s.ExerciseId == exerciseId),
+                        m =>
+                        {
+                            logger.LogInformation(m);
+                            return Task.CompletedTask;
+                        });
+            return recheckedSolutionsCount;
         }
 
         private Expression<Func<Exercise, bool>> AvailableExercise(Guid userId)

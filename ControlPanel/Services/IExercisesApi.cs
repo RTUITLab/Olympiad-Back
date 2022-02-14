@@ -37,8 +37,19 @@ public interface IExercisesApi
 
     [Get("/api/exercises/analytics/withAttempt")]
     public Task<List<ExerciseCompactResponse>> GetExercisesWithAttemptsForUserAsync(Guid challengeId, Guid userId);
+    
     [Put("/api/exercises/{exerciseId}")]
     Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
+    
     [Get("/api/exercises/{exerciseId}/testGroups")]
     Task<List<ExercisesTestDataGroupResponse>> GetTestGroupsAsync(Guid exerciseId);
+    
+    [Post("/api/exercises/{exerciseId}/testGroups")]
+    Task CreateTestGroupsAsync(Guid exerciseId, CreateTestDataGroupRequest createRequest);
+    
+    [Delete("/api/exercises/{exerciseId}/testGroups/{groupDataId}")]
+    Task DeleteTestGroupsAsync(Guid exerciseId, Guid groupDataId);
+    
+    [Post("/api/exercises/{exerciseId}/recheck")]
+    Task<int> RecheckExerciseSolutions(Guid exerciseId);
 }

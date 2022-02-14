@@ -68,12 +68,7 @@
     @<Template></Template>
     ;
     private MarkupString groupExample;
-    private JsonSerializerOptions jsonOptions = new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
+
 
     protected override void OnInitialized()
     {
@@ -92,7 +87,7 @@
                     }
                 }
             };
-        var json = JsonSerializer.Serialize(exampleModel, jsonOptions);
+        var json = JsonSerializer.Serialize(exampleModel, UserFileJsonOptions.Options);
         var html = Markdown.ToHtml($"```json\n{json}\n```", new MarkdownPipelineBuilder().Build());
         groupExample = new MarkupString(html);
     }
@@ -134,7 +129,7 @@
                 }
             }
         };
-        await JS.DownloadFile($"{ExerciseTitle}_Tests.json", JsonSerializer.Serialize(exampleModel, jsonOptions));
+        await JS.DownloadFile($"{ExerciseTitle}_Tests.json", JsonSerializer.Serialize(exampleModel, UserFileJsonOptions.Options));
     }
 
     private void Hide()
