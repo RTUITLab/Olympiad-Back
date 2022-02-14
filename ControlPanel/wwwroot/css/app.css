@@ -16,7 +16,9 @@
         right: 0.75rem;
         top: 0.5rem;
     }
-
+.ant-btn.big-icon > .anticon {
+    font-size: 1.2em;
+}
 .markdown-editor img {
     max-width: 100%;
     max-height: 60vh;
