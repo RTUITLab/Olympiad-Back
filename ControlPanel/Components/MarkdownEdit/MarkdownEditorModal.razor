@@ -1,73 +1,126 @@
-﻿@{
+﻿@using System.IO
+@inject IJSRuntime JS
+
+@{
     RenderFragment footer =
-    @<Button Type="@ButtonType.Primary" OnClick="Hide">Закрыть</Button>
-    ;
+    @<Template>
+        <Space Direction="DirectionVHType.Vertical">
+            <SpaceItem>
+                <Text Type="warning">
+                    Не забудьте сохранить изменения!
+                </Text>
+            </SpaceItem>
+            <SpaceItem>
+                <Button Type="@ButtonType.Primary" OnClick="Hide">Закрыть</Button>
+            </SpaceItem>
+        </Space>
+    </Template>
+        ;
+    RenderFragment title =
+    @<Template>
+        <Row Justify="space-between">
+            <AntDesign.Col @ref="titleColElement">
+                @if (TitleTemplate is not null)
+                    {
+                        @TitleTemplate
+                    }
+                </AntDesign.Col>
+                <AntDesign.Col>
+                    <Dropdown Trigger="@(new Trigger[] { Trigger.Click })"
+                      Placement="Placement.BottomRight">
+                        <Overlay>
+                            <Menu SelectedKeys="Array.Empty<string>()">
+                                <MenuItem>
+                                    <Button Icon="@IconType.Outline.Download" OnClick="DownloadExerciseText">
+                                        Скачать текст задания
+                                    </Button>
+                                </MenuItem>
+                                <MenuItem>
+                                    <Button Icon="@IconType.Outline.Upload" OnClick="() => JS.Click(uploadMdRef?.Element)">Загрузить из файла</Button>
+                                    <InputFile @ref="uploadMdRef" style="display: none" OnChange="UploadMdFileSelected" accept=".md" />
+                                </MenuItem>
+                            </Menu>
+                        </Overlay>
+                        <Unbound>
+                            <Button RefBack=@context Icon="@IconType.Outline.Ellipsis"></Button>
+                        </Unbound>
+                    </Dropdown>
+                </AntDesign.Col>
+            </Row>
+        </Template>;
 }
 
-<Modal TitleTemplate="@SafeTitleTemplate"
+<Modal TitleTemplate="title"
        Visible="show"
        Width="@("80vw")"
        Footer="footer"
-       OnCancel="Hide">
+       OnCancel="Hide"
+       Closable="false">
     <Row Gutter="20" Style="height: 60vh">
-        <AntDesign.Col Span="12">
-            <TextArea Style="height: 100%"
+        <AntDesign.Col Span="12" Style="max-height: 100%; display: flex; flex-direction: column;" Class="markdown-editor-textarea">
+            <TextArea Style="resize: none; height: 100%;"
                       @bind-Value="@Content"
+                      MaxLength="MaxLength"
+                      ShowCount
                       OnChange="UpdateValue" />
-        </AntDesign.Col>
-        <AntDesign.Col Span="12">
-            @Output
-        </AntDesign.Col>
-    </Row>
-    <Row Justify="space-between">
-        <AntDesign.Col>
             <Text Type="secondary">
                 Используется язык <a href="https://gist.github.com/fomvasss/8dd8cd7f88c67a4e3727f9d39224a84c" target="_blank">Markdown</a>
             </Text>
+            <AttachmentManager MaxHeight="20vh" />
         </AntDesign.Col>
-        <AntDesign.Col>
-            <Text Type="warning">
-                Не забудьте сохранить изменения!
-            </Text>
+        <AntDesign.Col Span="12" Style="max-height: 100%; overflow: auto;">
+            @if (ExerciseTaskPreview is not null)
+            {
+                @ExerciseTaskPreview
+            }
         </AntDesign.Col>
     </Row>
 </Modal>
-@code {
 
+@code {
     [Parameter]
     public string? Content { get; set; }
+
     [Parameter]
     public EventCallback<string?> ContentChanged { get; set; }
 
     [Parameter]
+    public int MaxLength { get; set; }
+
+    [Parameter]
     public RenderFragment? TitleTemplate { get; set; }
-    // TODO: null operator
-    private RenderFragment SafeTitleTemplate
+
+    private InputFile? uploadMdRef;
+    private AntDesign.Col? titleColElement;
+
+    private async Task DownloadExerciseText()
     {
-        get
+        if (titleColElement is null || Content is null)
         {
-            if (TitleTemplate is null)
-            {
-                return
-    @<Template></Template>
-    ;
-            }
-            else
-            {
-                return TitleTemplate;
-            }
+            return;
         }
+        await JS.DownloadFile($"{await JS.GetInnerText(titleColElement.Ref)}.md", Content);
     }
 
-    [CascadingParameter]
-    public MarkupString Output { get; set; }
+    private async Task UploadMdFileSelected(InputFileChangeEventArgs files)
+    {
+        using var reader = new StreamReader(files.File.OpenReadStream(files.File.Size));
+        Content = await reader.ReadToEndAsync();
+        await UpdateValue();
+    }
+
+
+    [CascadingParameter(Name = "ExerciseTaskPreview")]
+    public RenderFragment? ExerciseTaskPreview { get; set; }
 
     private bool show;
+
     public void Show()
     {
         show = true;
         Task.Delay(150).ContinueWith(_ => StateHasChanged());
     }
+
     public void Hide()
     {
         show = false;
@@ -77,4 +130,4 @@
     {
         return ContentChanged.InvokeAsync(Content);
     }
-    }
+}

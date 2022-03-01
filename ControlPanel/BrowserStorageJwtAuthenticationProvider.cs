@@ -2,6 +2,7 @@
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
+using Olympiad.ControlPanel.Services;
 using PublicAPI.Responses;
 using System.Linq;
 using System.Net.Http;
@@ -21,15 +22,18 @@ public class BrowserStorageJwtAuthenticationProvider : AuthenticationStateProvid
 
     private readonly ILocalStorageService localStorageService;
     private readonly ISessionStorageService sessionStorageService;
+    private readonly AccessTokenProvider accessTokenProvider;
     private readonly HttpClient httpClient;
 
     public BrowserStorageJwtAuthenticationProvider(
         ILocalStorageService localStorageService,
         ISessionStorageService sessionStorageService,
+        AccessTokenProvider accessTokenProvider,
         HttpClient httpClient)
     {
         this.localStorageService = localStorageService;
         this.sessionStorageService = sessionStorageService;
+        this.accessTokenProvider = accessTokenProvider;
         this.httpClient = httpClient;
     }
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -54,7 +58,8 @@ public class BrowserStorageJwtAuthenticationProvider : AuthenticationStateProvid
 
     private AuthenticationState HandleMeResult(GetMeResult meInfo, string loginType)
     {
-        httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", meInfo.Token);
+        accessTokenProvider.AccessToken = meInfo.Token;
+        //httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", meInfo.Token);
 
         var baseClaims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, meInfo.Id.ToString()),

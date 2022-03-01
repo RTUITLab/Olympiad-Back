@@ -1,0 +1,223 @@
+﻿@using ByteSizeLib
+@using Microsoft.Extensions.Logging
+@using PublicAPI.Responses
+@inject IJSRuntime JS
+@inject NotificationService NotificationService
+@inject MessageService MessageService
+@inject HttpClient HttpClient
+@inject ILogger<AttachmentManager> Logger
+
+@if (AttachmentsProvider is null)
+{
+    //Stop rendering
+    Logger.LogWarning($"{nameof(AttachmentsProvider)} is required");
+    return;
+}
+<Collapse>
+    <Panel>
+        <HeaderTemplate>
+            <Badge Count="@attachments?.Count"
+                   Style="background-color: #8c8c8c;"
+                   Offset="(20, 8)">
+                Файлы
+                @if (loading)
+                {
+                    <Badge Status="processing"/>
+                }
+            </Badge>
+        </HeaderTemplate>
+        <ExtraTemplate>
+            <Button Icon="@IconType.Outline.Plus" Style="height: 1.5em;" OnClick="() => JS.Click(uploadAttachmentRef?.Element)"></Button>
+            <InputFile @ref="uploadAttachmentRef" style="display: none" OnChange="UploadFileSelected"/>
+        </ExtraTemplate>
+        <ChildContent>
+            <AntList DataSource="attachments"
+                     Context="attachment"
+                     Loading="loading"
+                     Style="@($"max-height: {MaxHeight}; overflow: auto;")">
+                <ListItem>
+                    <ChildContent>
+                        <Text Ellipsis>
+                            <Icon Type="@GetIconType(attachment)"/>
+                            <Text Style="font-size: 12px">
+                                <a href="@AttachmentsProvider?.GetAttachmentUrl(attachment.FileName)" target="_blank">@attachment.FileName</a>
+                            </Text>
+                        </Text>
+                    </ChildContent>
+                    <Extra>
+                        <DropdownButton OnClick="() => CopyAttachmentMarkdownToClipboard(attachment)" Style="margin-right: 4px">
+                            <Overlay>
+                                <Menu SelectedKeys="Array.Empty<string>()">
+                                    <MenuItem>
+                                        <Button Icon="@IconType.Outline.Download" OnClick="() => DownloadAttachment(attachment.FileName)">Скачать</Button>
+                                    </MenuItem>
+                                    <MenuItem>
+                                        <Button Danger Icon="@IconType.Outline.Delete" OnClick="() => DeleteAttachment(attachment.FileName)">Удалить</Button>
+                                    </MenuItem>
+                                </Menu>
+                            </Overlay>
+                            <ChildContent>
+                                <Tooltip Title="@("Скопировать markdown для использования в разметке")">
+                                    <Icon Type="@IconType.Outline.Copy"/>
+                                </Tooltip>
+                            </ChildContent>
+                        </DropdownButton>
+                    </Extra>
+                </ListItem>
+            </AntList>
+
+        </ChildContent>
+    </Panel>
+</Collapse>
+
+@code {
+    private string? currentEntityKey;
+    [CascadingParameter]
+    public IAttachmentsProvider? AttachmentsProvider { get; set; }
+
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    private bool loading;
+    private List<AttachmentResponse>? attachments;
+    private InputFile? uploadAttachmentRef;
+
+    private string GetIconType(AttachmentResponse attachmentResponse)
+    {
+        return attachmentResponse switch
+        {
+            var (fileName, _) when fileName.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FilePdf,
+            var (fileName, _) when fileName.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase) ||
+                                   fileName.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileJpg,
+            var (fileName, _) when fileName.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileGif,
+            var (fileName, _) when fileName.EndsWith(".xlsx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".xls", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".xlsb", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".xlsm", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileExcel,
+            var (fileName, _) when fileName.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".doc", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".docm", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".dotx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".dotm", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FileWord,
+            var (fileName, _) when fileName.EndsWith(".md", StringComparison.InvariantCultureIgnoreCase)
+                => IconType.Outline.FileMarkdown,
+            var (fileName, _) when fileName.EndsWith(".pptx", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppt", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".pptm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".potm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".potx", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppam", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppsx", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".ppsm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".pps", StringComparison.InvariantCultureIgnoreCase) 
+                => IconType.Outline.FilePpt,
+            var (_, mimeType) when mimeType.StartsWith("text") => IconType.Outline.FileText,
+            var (_, mimeType) when mimeType.StartsWith("image") => IconType.Outline.FileImage,
+            var (_, mimeType) when mimeType.StartsWith("video") => IconType.Outline.VideoCamera,
+            _ => IconType.Outline.File
+            };
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (currentEntityKey != AttachmentsProvider?.CurrentEditableEntityKey)
+        {
+            await LoadList();
+        }
+    }
+
+    private async Task LoadList()
+    {
+        if (AttachmentsProvider is null)
+        {
+            return;
+        }
+        loading = true;
+        try
+        {
+            attachments = await AttachmentsProvider.GetAttachments();
+            currentEntityKey = AttachmentsProvider.CurrentEditableEntityKey;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task UploadFileSelected(InputFileChangeEventArgs files)
+    {
+        var fileSize = ByteSize.FromBytes(files.File.Size);
+        if (fileSize > AttachmentLimitations.MaxAttachmentSize)
+        {
+            await NotificationService.Open(new NotificationConfig
+            {
+                Message = "Слишком большой файл",
+                Description = $"{files.File.Name} Слишком большой ({fileSize:0.##}). Максимально возможный размер файла: {AttachmentLimitations.MaxAttachmentSize:0.##}",
+                NotificationType = NotificationType.Error
+            });
+            return;
+        }
+        if (string.IsNullOrEmpty(files.File.ContentType))
+        {
+            await NotificationService.Open(new NotificationConfig
+            {
+                Message = "Неподдерживаемый файл",
+                Description = $"Данный формат ({System.IO.Path.GetExtension(files.File.Name)} {files.File.ContentType}) файлов на данный момент не поддерживается",
+                NotificationType = NotificationType.Warning
+            });
+            return;
+        }
+        if (AttachmentsProvider is null)
+        {
+            return;
+        }
+        loading = true;
+        try
+        {
+            var url = await AttachmentsProvider.GetUploadUrl(files.File.Name, files.File.Size, files.File.ContentType);
+            var message = new HttpRequestMessage(HttpMethod.Put, url);
+            message.Headers.Add("x-amz-acl", "public-read");
+            message.Content = new StreamContent(files.File.OpenReadStream(files.File.Size));
+            message.Content.Headers.Add("Content-Type", files.File.ContentType);
+            await HttpClient.SendAsync(message);
+        }
+        finally
+        {
+            loading = false;
+        }
+        await LoadList();
+    }
+
+    private async Task CopyAttachmentMarkdownToClipboard(AttachmentResponse attachment)
+    {
+        if (AttachmentsProvider is null)
+        {
+            return;
+        }
+        await JS.CopyTextToClipboard(
+            $"{(attachment.MimeType.StartsWith("image") ? "!" : "")}[{attachment.FileName}]({AttachmentsProvider.GetAttachmentUrl(attachment.FileName)})");
+        await MessageService.Success("Разметка скопирована в буфер обмена");
+    }
+
+    private async Task DownloadAttachment(string fileName)
+    {
+        await JS.DownloadFileByUrl(fileName, AttachmentsProvider?.GetAttachmentUrl(fileName));
+    }
+
+    private async Task DeleteAttachment(string fileName)
+    {
+        if (AttachmentsProvider is null)
+        {
+            return;
+        }
+        await AttachmentsProvider.DeleteAttachment(fileName);
+        await LoadList();
+    }
+}

@@ -124,7 +124,7 @@
         usersGenerateModel = model;
     }
 
-    async Task HandleSelection(InputFileChangeEventArgs files)
+    private async Task HandleSelection(InputFileChangeEventArgs files)
     {
         using (var reader = new System.IO.StreamReader(files.File.OpenReadStream()))
         using (var csv = new CsvHelper.CsvReader(reader, new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)

@@ -12,6 +12,14 @@ namespace Olympiad.Services
 {
     public class ReCheckService
     {
+        /// <summary>
+        /// Recheck solytions
+        /// </summary>
+        /// <param name="dbContext">Db context with all information</param>
+        /// <param name="queueChecker">Queue service</param>
+        /// <param name="solutionsSelector">Selector for target solutions</param>
+        /// <param name="logger">Additional info logger</param>
+        /// <returns>Count of solutions to recheck</returns>
         public static async Task<int> ReCheckSolutions(
             ApplicationDbContext dbContext, 
             IQueueChecker queueChecker,
@@ -22,10 +30,10 @@ namespace Olympiad.Services
                 .Select(s => new { s.Id, checks = s.SolutionChecks.Select(ch => ch.Id), logs = s.SolutionBuildLogs.Select(bl => bl.Id) })
                 .ToListAsync();
             await logger($"Loaded {solutionViews.Count} ids");
-            var solutions = new List<Models.Solutions.Solution>();
+            var solutions = new List<Solution>();
             foreach (var solutionView in solutionViews)
             {
-                var solution = new Models.Solutions.Solution
+                var solution = new Solution
                 {
                     Id = solutionView.Id,
                     Status = Olympiad.Shared.Models.SolutionStatus.InQueue,
@@ -44,7 +52,7 @@ namespace Olympiad.Services
                 dbContext.Entry(solution).State = EntityState.Detached;
                 queueChecker.PutInQueue(solution.Id);
             }
-            return saved;
+            return solutionViews.Count;
         }
     }
 }

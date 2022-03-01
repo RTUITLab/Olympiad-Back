@@ -36,6 +36,10 @@ namespace Models
             builder.Entity<User>()
                 .HasIndex(u => u.StudentID)
                 .IsUnique();
+
+            builder.Entity<ExerciseDataGroup>()
+                .HasIndex(dg => new { dg.Title, dg.ExerciseId })
+                .IsUnique();
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }

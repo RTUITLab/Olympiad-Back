@@ -14,6 +14,7 @@ using Olympiad.Shared;
 using Microsoft.AspNetCore.Components.Web;
 using DiffPlex.DiffBuilder;
 using DiffPlex;
+using System.Threading.Tasks;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -26,7 +27,8 @@ Uri baseAddress;
 if (builder.HostEnvironment.IsDevelopment())
 {
     baseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl"));
-} else
+}
+else
 {
     var uriBuilder = new UriBuilder(builder.HostEnvironment.BaseAddress)
     {
@@ -36,6 +38,7 @@ if (builder.HostEnvironment.IsDevelopment())
 }
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = baseAddress });
+builder.Services.AddSingleton(new AttachmentLinkGenerator(baseAddress));
 
 builder.Services.AddAntDesign();
 
@@ -47,6 +50,7 @@ builder.Services.AddScoped<ILoginRefresh>(sp => (BrowserStorageJwtAuthentication
 
 builder.Services.AddScoped<AuthenticationStateProvider, BrowserStorageJwtAuthenticationProvider>();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AccessTokenProvider>();
 
 builder.Services.AddTransient<UserPasswordGenerator>();
 builder.Services.AddScoped<GenerateUserService>();
@@ -65,24 +69,25 @@ await builder.Build().RunAsync();
 
 void RegisterApiServices(WebAssemblyHostBuilder builder)
 {
-    var refitSettings = new RefitSettings
+    var jsonSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
     {
-        ContentSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+    });
+    void RegisterApiService<T>() where T : class
+    {
+        builder.Services.AddScoped<T>(sp => RestService.For<T>(baseAddress.ToString(), new RefitSettings
         {
-            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-            WriteIndented = true,
-        })
-    };
-    void RegisterApiService<T>() where T: class
-    {
-        builder.Services.AddScoped<T>(sp => RestService.For<T>(sp.GetRequiredService<HttpClient>(), refitSettings));
+            ContentSerializer = jsonSerializer,
+            AuthorizationHeaderValueGetter = () => Task.FromResult(sp.GetRequiredService<AccessTokenProvider>().AccessToken ?? "")
+        }));
     }
-    
+
     RegisterApiService<IControlPanelApiService>();
-    
+
     RegisterApiService<IChallengesApi>();
     RegisterApiService<IExercisesApi>();
     RegisterApiService<ISolutionsApi>();
-    
+
     RegisterApiService<IRolesApi>();
 }

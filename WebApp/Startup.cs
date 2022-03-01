@@ -29,6 +29,9 @@ using System.Security.Claims;
 using Olympiad.Services.Authorization;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using Amazon.S3;
+using WebApp.Services.Attachments;
 
 namespace WebApp
 {
@@ -52,6 +55,7 @@ namespace WebApp
             services.Configure<DefaultChallengeSettings>(Configuration.GetSection(nameof(DefaultChallengeSettings)));
             services.Configure<RabbitMqQueueSettings>(Configuration.GetSection(nameof(RabbitMqQueueSettings)));
             services.Configure<ExecutorSettings>(Configuration.GetSection(nameof(ExecutorSettings)));
+            services.Configure<S3StorageSettings>(Configuration.GetSection(nameof(S3StorageSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
                 services
@@ -59,7 +63,6 @@ namespace WebApp
                         options.UseInMemoryDatabase("local"));
             else
                 services
-                .AddEntityFrameworkNpgsql()
                 .AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
 
@@ -135,14 +138,14 @@ namespace WebApp
 
             // add identity
             services.AddIdentity<User, IdentityRole<Guid>>(o =>
-             {
-                 // configure identity options
-                 o.Password.RequireDigit = false;
-                 o.Password.RequireLowercase = false;
-                 o.Password.RequireUppercase = false;
-                 o.Password.RequireNonAlphanumeric = false;
-                 o.Password.RequiredLength = 6;
-             })
+            {
+                // configure identity options
+                o.Password.RequireDigit = false;
+                o.Password.RequireLowercase = false;
+                o.Password.RequireUppercase = false;
+                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequiredLength = 6;
+            })
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
 
@@ -181,14 +184,36 @@ namespace WebApp
             services.AddSingleton<IQueueChecker, RabbitMQQueue>();
             services.AddTransient<UserPasswordGenerator>();
 
+            AddS3AttachmentStorage(services);
+
             AddConfigurationServices(services);
 
             if (Configuration.GetValue<bool>("USE_CHECKING_RESTART"))
                 services.AddHostedService<RestartCheckingService>();
 
-            services.AddSpaStaticFiles(conf => conf.RootPath = "wwwroot");
             services.AddSignalR();
             services.AddTransient<NotifyUsersService>();
+        }
+
+        private static void AddS3AttachmentStorage(IServiceCollection services)
+        {
+            services.AddSingleton(sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<S3StorageSettings>>().Value;
+                AmazonS3Config configsS3 = new AmazonS3Config()
+                {
+                    ServiceURL = options.ServiceUrl,
+                    ForcePathStyle = options.ForcePathStyle
+                };
+
+                var s3client = new AmazonS3Client(
+                    options.AccessKeyId,
+                    options.SecretAccessKey,
+                    configsS3
+                );
+                return s3client;
+            });
+            services.AddSingleton<IAttachmentsService, S3AttachmentsService>();
         }
 
         private void AddConfigurationServices(IServiceCollection services)
@@ -207,6 +232,7 @@ namespace WebApp
             {
                 RegisterService<DefaultUsersTokensPrinter>();
             }
+            RegisterService<S3Initializer>();
             services.AddSingleton(sp => new ConfigureAllService.ServicesList(configureTypes));
             services.AddHostedService<ConfigureAllService>();
         }
@@ -251,8 +277,6 @@ namespace WebApp
                 ep.MapControllers();
                 ep.MapHub<SolutionStatusHub>("/api/hubs/solutionStatus");
             });
-            app.UseSpaStaticFiles();
-            app.UseSpa(spa => { });
         }
 
 

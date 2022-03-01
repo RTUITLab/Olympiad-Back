@@ -7,7 +7,7 @@
 {
     <Skeleton Active />
 }
-else @if (solutionCheckGroups?.Count == 0)
+else if (solutionCheckGroups?.Count == 0)
 {
     <Alert Type="@AlertType.Info">
         Небыло произведено ни одной проверки решения
@@ -62,7 +62,7 @@ else
     [Parameter]
     public Guid SolutionId { get; set; }
 
-    private List<Wrapper>? solutionCheckGroups { get; set; }
+    private List<Wrapper>? solutionCheckGroups;
     private TestGroupOrdering testGroupOrdering = TestGroupOrdering.FailedFirst;
     private bool loading;
 

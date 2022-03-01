@@ -21,7 +21,7 @@ Scenario: get non-existent user
 Scenario: get user with incorrect id
   Given path 'api', 'account', 'some strange id'
   When method get
-  Then status 400
+  Then status 404
 
 
 

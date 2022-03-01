@@ -13,10 +13,11 @@ using Models.Checking;
 using System.Security.Claims;
 using PublicAPI.Responses.Account;
 using Models.UserModels;
-using PublicAPI.Responses.Exercises;
+using PublicAPI.Responses.ExerciseTestData;
 using PublicAPI.Responses.Challenges.Analytics;
 using PublicAPI.Responses.Solutions.Analytics;
 using WebApp.Controllers;
+using PublicAPI.Responses.ExercisesTestData;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -89,9 +90,9 @@ namespace WebApp.Formatting.ResponseMappers
                                     .Count()))
                 .ForMember(a => a.InvitedCount, map => map.MapFrom(c => c.UsersToChallenges.Count()));
 
-
+            CreateMap<ExerciseDataGroup, ExercisesTestDataGroupResponse>()
+                .ForMember(etdgr => etdgr.TestCases, map => map.MapFrom(edg => edg.ExerciseDatas));
             CreateMap<ExerciseData, ExerciseDataResponse>();
-            CreateMap<ExerciseData, ExerciseDataCompactResponse>();
 
             CreateMap<SolutionCheck, SolutionCheckResponse>();
 

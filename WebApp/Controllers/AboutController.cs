@@ -11,6 +11,7 @@ namespace WebApp.Controllers
     [AllowAnonymous]
     public class AboutController : ControllerBase
     {
+        [HttpGet]
         public ActionResult<AboutResponse> Get([FromServices] IConfiguration configuration)
         {
             return new AboutResponse

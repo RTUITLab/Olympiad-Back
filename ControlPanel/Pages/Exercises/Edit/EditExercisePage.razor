@@ -2,14 +2,17 @@
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 
 @using Olympiad.ControlPanel.Components.MarkdownEdit
+@using Olympiad.ControlPanel.Pages.Exercises.Edit.Components
+@using PublicAPI.Responses
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
-@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.ExerciseTestData
 
-@inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
 @inject MessageService MessageService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@inject HttpClient HttpClient
 
 <PageTitle>@ExerciseName()</PageTitle>
 <PageHeader TitleTemplate="ExerciseName(SkeletonElementSize.Default)">
@@ -19,7 +22,7 @@
                 Соревнования
             </BreadcrumbItem>
             <BreadcrumbItem Href="@($"challenges/{ChallengeId}")">
-                <TextFieldSkeleton Text="@challengeResponse?.Name" />
+                <TextFieldSkeleton Text="@exerciseResponse?.Challenge.Name" />
             </BreadcrumbItem>
             <BreadcrumbItem Href="@($"challenges/{ChallengeId}/exercises")">
                 Задания
@@ -30,16 +33,23 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
 </PageHeader>
+<Row Gutter=@(8)>
+    <AntDesign.Col Xl="12" Span="24">
+        <Title Level="4">Базовые параметры</Title>
 
-@if (exerciseResponse is not null)
-{
-    <MarkdownTextArea @bind-Value="exerciseResponse.ExerciseTask">
-        <TitleTemplate>
-            <Text>@exerciseResponse.Name</Text>
-            <Text Type="@TextElementType.Secondary">Текст задания (@exerciseResponse.Challenge.Name)</Text>
-        </TitleTemplate>
-    </MarkdownTextArea>
-}
+        @if (exerciseResponse is null)
+        {
+            <Skeleton Active />
+        }
+        else
+        {
+            <EditExerciseBaseInfo @bind-Exercise="exerciseResponse" />
+        }
+    </AntDesign.Col>
+    <AntDesign.Col Xl="12" Span="24">
+        <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name"/>
+    </AntDesign.Col>
+</Row>
 
 @code {
     [Parameter]
@@ -50,28 +60,19 @@
     private RenderFragment ExerciseName(string size = SkeletonElementSize.Small)
     {
         // Return template in full body method for VS code formatter
-        return @<Template>
+        return
+    @<Template>
         <TextFieldSkeleton Text="@exerciseResponse?.Name" Size="@size" />
-    </Template>;
+    </Template>
+    ;
     }
-
-    private ChallengeResponse? challengeResponse;
     private ExerciseInfo? exerciseResponse;
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         try
         {
-            challengeResponse = await ChallengesApi.GetChallengeAsync(ChallengeId);
-        }
-        catch
-        {
-            GoToExercisesPage();
-            await MessageService.Warn("Соревнование не найдено");
-        }
-        try
-        {
-            await Task.Delay(1000);
             exerciseResponse = await ExercisesApi.GetExerciseAsync(ExerciseId);
             if (exerciseResponse.ChallengeId != ChallengeId)
             {

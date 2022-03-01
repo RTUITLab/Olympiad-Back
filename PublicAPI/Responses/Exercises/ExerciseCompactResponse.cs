@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using PublicAPI.Responses.Solutions;
 
-namespace PublicAPI.Responses.Exercises
+namespace PublicAPI.Responses.ExerciseTestData
 {
     public class ExerciseCompactResponse
     {

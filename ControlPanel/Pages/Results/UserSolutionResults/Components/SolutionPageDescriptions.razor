@@ -1,5 +1,5 @@
 ﻿@using PublicAPI.Responses.Challenges
-@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.ExerciseTestData
 @using PublicAPI.Responses.Solutions.Analytics
 @using PublicAPI.Responses.Users
 <AuthorizeView Context="userContext">
@@ -18,7 +18,7 @@
                     }
                     else
                     {
-                        <Text>@loadedChallenge.Name</Text>
+                        <AntDesign.Text>@loadedChallenge.Name</AntDesign.Text>
                     }
                 </SkeletonRowComponent>
             </DescriptionsItem>
@@ -55,7 +55,7 @@
                 <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="ExerciseInfo">
                     @if (userContext.User.IsAdmin())
                     {
-                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/{loadedExercise.Id}")">
+                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/exercises/{loadedExercise.Id}")">
                             <Button Icon="@IconType.Outline.Edit">@loadedExercise.Name</Button>
                         </NavLink>
                     }

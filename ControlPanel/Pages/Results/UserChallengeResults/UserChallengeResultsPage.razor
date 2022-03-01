@@ -4,7 +4,7 @@
 @using Microsoft.Extensions.Logging
 @using PublicAPI.Responses.Challenges
 @using PublicAPI.Responses.Challenges.Analytics
-@using PublicAPI.Responses.Exercises
+@using PublicAPI.Responses.ExerciseTestData
 @using PublicAPI.Responses.Solutions
 @using PublicAPI.Responses.Users
 @using Olympiad.ControlPanel.Pages.Results.UserChallengeResults.Components
@@ -103,7 +103,7 @@
         try
         {
             challenge = await ChallengesApi.GetOneChallengeAnalycisInfo(ChallengeId);
-            exercises = await ExercisesApi.GetExercisesWithAtteptsForUserAsync(ChallengeId, UserId);
+            exercises = await ExercisesApi.GetExercisesWithAttemptsForUserAsync(ChallengeId, UserId);
             var response = await ControlPanelApiService.GetUser(UserId);
             if (!response.IsSuccessStatusCode)
             {

@@ -10,12 +10,13 @@ using Olympiad.Shared.Models;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Options;
 using PublicAPI.Requests;
+using PublicAPI.Responses.ExercisesTestData;
 
 namespace Executor.Executers
 {
     class ExecuteWorker
     {
-        private readonly Func<Guid, Task<ExerciseData[]>> getTests;
+        private readonly Func<Guid, Task<ExerciseDataResponse[]>> getTests;
         public readonly ProgramBuilder builder;
         public readonly ProgramRunner runner;
         private readonly ILogger<ExecuteWorker> logger;
@@ -25,7 +26,7 @@ namespace Executor.Executers
         public ExecuteWorker(
             Func<Guid, SolutionStatus, Task> processSolution,
             Func<Guid, BuildLogRequest, Task> saveBuildLogs,
-            Func<Guid, Task<ExerciseData[]>> getTests,
+            Func<Guid, Task<ExerciseDataResponse[]>> getTests,
             ISolutionsBase solutionsBase,
             IDockerClient dockerClient,
             RunningSettings runningSettings,

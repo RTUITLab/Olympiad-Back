@@ -18,8 +18,18 @@ using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
-using PublicAPI.Responses.Exercises;
+using PublicAPI.Responses.ExerciseTestData;
 using System.Linq.Expressions;
+using Microsoft.Extensions.Options;
+using WebApp.Models.Settings;
+using WebApp.Services;
+using ByteSizeLib;
+using Olympiad.Shared;
+using System.ComponentModel.DataAnnotations;
+using PublicAPI.Requests.Exercises;
+using WebApp.Services.Attachments;
+using Olympiad.Services;
+using Microsoft.Extensions.Logging;
 
 namespace WebApp.Controllers.Exercises
 {
@@ -29,17 +39,35 @@ namespace WebApp.Controllers.Exercises
     public class ExercisesController : AuthorizeController
     {
         private readonly IMapper mapper;
+        private readonly ILogger<ExercisesController> logger;
         private readonly ApplicationDbContext context;
 
         public ExercisesController(
             ApplicationDbContext applicationDbContext,
             IMapper mapper,
+            ILogger<ExercisesController> logger,
             UserManager<User> userManager) : base(userManager)
         {
             context = applicationDbContext;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<Guid> CreateDefaultExerciseAsync(Guid challengeId)
+        {
+            var newExercise = new Exercise
+            {
+                ExerciseName = "NEW EXERCISE NAME",
+                ChallengeId = challengeId,
+                ExerciseTask = "FILL EXERCISE TASK"
+            };
+            context.Exercises.Add(newExercise);
+            await context.SaveChangesAsync();
+            return newExercise.ExerciseID;
+        }
 
         [HttpGet]
         public async Task<List<ExerciseForUserInfoResponse>> GetForChallenge(Guid challengeId)
@@ -67,7 +95,7 @@ namespace WebApp.Controllers.Exercises
             return exercises;
         }
 
-        [HttpGet("all/withtests")]
+        [HttpGet("all/withTests")]
         [Authorize(Roles = "Admin,ResultsViewer")]
         public async Task<List<ExerciseWithTestCasesCountResponse>> GetAllWithTestsForChallenge(Guid challengeId)
         {
@@ -80,9 +108,8 @@ namespace WebApp.Controllers.Exercises
             return exercises;
         }
 
-        [HttpGet]
-        [Route("all/{exerciseId}")]
-        [Authorize(Roles = "Admin,ResultsViewer")]
+        [HttpGet("all/{exerciseId:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ExerciseInfo> GetForAdmin(Guid exerciseId)
         {
             var exercise = await context
@@ -94,8 +121,74 @@ namespace WebApp.Controllers.Exercises
             return exercise;
         }
 
+        [HttpGet("{exerciseId:guid}/attachment")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<AttachmentResponse>>> GetAttachments(Guid exerciseId,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            if (!await context.Exercises.AnyAsync(e => e.ExerciseID == exerciseId))
+            {
+                return NotFound("Exercise not found");
+            }
+            return (await attachmentsService.GetAttachmentsForExercise(exerciseId))
+                .Select(t => new AttachmentResponse
+                {
+                    FileName = t.fileName,
+                    MimeType = t.contentType
+                })
+                .ToList();
+        }
+
+        [HttpGet("{exerciseId:guid}/attachment/upload/{fileName}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UploadFileUrlResponse>> UploadAttachment(
+            Guid exerciseId,
+            [Required] string fileName,
+            [Required] string mimeType,
+            [Required] long contentLength,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            if (!await context.Exercises.AnyAsync(e => e.ExerciseID == exerciseId))
+            {
+                return NotFound("Exercise not found");
+            }
+            var uploadSize = ByteSize.FromBytes(contentLength);
+            if (uploadSize > AttachmentLimitations.MaxAttachmentSize)
+            {
+                return BadRequest($"Maximum attachment size is {AttachmentLimitations.MaxAttachmentSize} (sent {uploadSize})");
+            }
+            return new UploadFileUrlResponse
+            {
+                Url = attachmentsService.GetUploadUrlForExercise(exerciseId, mimeType, uploadSize, fileName)
+            };
+        }
+
+        [HttpGet("{exerciseId:guid}/attachment/{fileName}")]
+        [AllowAnonymous]
+        public ActionResult GetAttachment(
+            Guid exerciseId,
+            string fileName,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            return Redirect(attachmentsService.GetUrlForExerciseAttachment(exerciseId, fileName));
+        }
+        [HttpDelete("{exerciseId:guid}/attachment/{fileName}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> DeleteAttachment(
+            Guid exerciseId,
+            string fileName,
+            [FromServices] IAttachmentsService attachmentsService)
+        {
+            if (!await context.Exercises.AnyAsync(e => e.ExerciseID == exerciseId))
+            {
+                return NotFound("Exercise not found");
+            }
+            await attachmentsService.DeleteExerciseAttachment(exerciseId, fileName);
+            return NoContent();
+        }
+
         [HttpGet]
-        [Route("{exerciseId}")]
+        [Route("{exerciseId:guid}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
             var exercise = await context
@@ -107,6 +200,40 @@ namespace WebApp.Controllers.Exercises
                 ?? throw StatusCodeException.NotFount;
 
             return exercise;
+        }
+
+        [HttpPut("{exerciseId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ExerciseInfo> UpdateExerciseBaseInfo(Guid exerciseId, UpdateExerciseRequest request)
+        {
+
+            var exercise = await context
+                               .Exercises
+                               .Where(ex => ex.ExerciseID == exerciseId)
+                               .SingleOrDefaultAsync()
+                           ?? throw StatusCodeException.NotFount;
+            exercise.ExerciseName = request.Title;
+            exercise.ExerciseTask = request.Task;
+            await context.SaveChangesAsync();
+            return await GetForAdmin(exerciseId);
+        }
+
+        [HttpPost("{exerciseId:guid}/recheck")]
+        [Authorize(Roles = "Admin")]
+        public async Task<int> RecheckExerciseSolutions(
+            [FromServices] IQueueChecker queueChecker,
+            [FromRoute] Guid exerciseId)
+        {
+            var recheckedSolutionsCount = await ReCheckService.ReCheckSolutions(
+                        context,
+                        queueChecker,
+                        db => db.Solutions.Where(s => s.ExerciseId == exerciseId),
+                        m =>
+                        {
+                            logger.LogInformation(m);
+                            return Task.CompletedTask;
+                        });
+            return recheckedSolutionsCount;
         }
 
         private Expression<Func<Exercise, bool>> AvailableExercise(Guid userId)

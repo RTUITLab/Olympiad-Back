@@ -14,6 +14,8 @@ using Olympiad.Shared.Models;
 using Models.Solutions;
 using PublicAPI.Requests;
 using PublicAPI.Responses.Solutions;
+using PublicAPI.Responses.ExercisesTestData;
+using Olympiad.Shared;
 
 namespace Executor
 {
@@ -37,9 +39,9 @@ namespace Executor
             logger.LogInformation($"user name : {options.Value.UserName}");
             client = httpClientFactory.CreateClient(DbManagerHttpClientName);
         }
-        public Task<ExerciseData[]> GetExerciseData(Guid exId)
+        public Task<ExerciseDataResponse[]> GetExerciseData(Guid exId)
         {
-            return Invoke<ExerciseData[]>($"api/ExerciseData/all/{exId}");
+            return Invoke<ExerciseDataResponse[]>($"api/ExerciseData/all/{exId}");
         }
 
         public Task SaveChanges(Guid solutionId, SolutionStatus status)
@@ -63,10 +65,9 @@ namespace Executor
 
         public async Task SaveLog(Guid solutionId, Guid testDataId, SolutionCheckRequest solutionCheck)
         {
-            if (solutionCheck.ProgramOut.Length > 500_000)
+            if (solutionCheck.ProgramOut.Length > ExerciseDataLimitations.MAX_OUT_DATA_LENGTH)
             {
-                logger.LogWarning($"Trim program out");
-                solutionCheck.ProgramOut = solutionCheck.ProgramOut.Substring(0, 500_000);
+                solutionCheck.ProgramOut = solutionCheck.ProgramOut[..ExerciseDataLimitations.MAX_OUT_DATA_LENGTH];
             }
             var jsonString = JsonConvert.SerializeObject(solutionCheck);
             var content = new StringContent(jsonString, Encoding.UTF8, "application/json");

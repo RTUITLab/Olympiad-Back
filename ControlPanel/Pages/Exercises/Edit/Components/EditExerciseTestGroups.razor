@@ -1,0 +1,348 @@
+﻿@using ByteSizeLib
+@using Microsoft.Extensions.Logging
+@using PublicAPI.Requests.Exercises
+@using PublicAPI.Responses.ExercisesTestData
+@using System.Text.Json
+
+@inject IExercisesApi ExercisesApi
+@inject IJSRuntime JS
+@inject NotificationService NotificationService
+@inject ILogger<EditExerciseTestGroups> Logger
+
+
+<Row Justify="space-between">
+    <AntDesign.Col>
+        <Title Level="4">Группы тестов</Title>
+    </AntDesign.Col>
+    <AntDesign.Col>
+        <Space Direction="DirectionVHType.Horizontal">
+            <SpaceItem>
+                <ExerciseTestGroupsFileFormatDescriptionModal @ref="helpRef" ExerciseTitle="@ExerciseTitle" />
+                <Button OnClick=@(() => helpRef?.Show()) Icon="@IconType.Outline.InfoCircle">Справка</Button>
+            </SpaceItem>
+            <SpaceItem>
+                <Dropdown Trigger="@(new Trigger[] { Trigger.Click })"
+                          OnClick='e => { Console.WriteLine("Dropdown button clicked."); }'>
+                    <Overlay>
+                        <Menu Selectable="false" Mode="MenuMode.Inline">
+                            <InputFile @ref="inputFileRef" style="display: none" OnChange="TestGroupsFilesSelected" accept=".json" />
+                            <MenuItem Title="Загрузить"
+                                      Key="upload"
+                                      Icon="@IconType.Outline.Upload"
+                                      OnClick="@(() => JS.Click(inputFileRef?.Element))"
+                                      Disabled="loading" />
+                            @if (exercisesTestDataGroups?.Any() == true)
+                            {
+                                <MenuItem Title="Скачать"
+                                      Disabled="loading"
+                                      Key="download"
+                                      Icon="@IconType.Outline.Download"
+                                      OnClick="DownloadTestGroups" />
+
+                                <MenuDivider />
+                                <Popconfirm Title="Вы действительно хотите проверить все решения этого задания? Текущие проверки будут удалены, перепроверка может занять время"
+                                        OkText="Перепроверить все решения"
+                                        CancelText="Отмена"
+                                        OnConfirm="RecheckExerciseSolutions"
+                                        Style="width: 100%">
+                                    <MenuItem Title="Перепроверить"
+                                          Key="recheck"
+                                          Style="color: #faad14; width: 100%;"
+                                          Icon="@IconType.Outline.Sync"
+                                          Disabled="loading" />
+                                </Popconfirm>
+
+                                <MenuDivider />
+                                <Popconfirm Title="Вы действительно хотите удалить все группы? Вся информация связанная с ними, в том числе и проверки, будет утеряна"
+                                        OkText="Удалить все группы"
+                                        CancelText="Отмена"
+                                        OnConfirm="DeleteAllGroups">
+                                    <MenuItem Title="Удалить все группы"
+                                          Disabled="loading"
+                                          Key="delete_all"
+                                          Style="color: #ff4d4f;"
+                                          Icon="@IconType.Outline.Delete" />
+                                </Popconfirm>
+
+                            }
+                        </Menu>
+                    </Overlay>
+                    <Unbound>
+                        <Button Loading="loading" RefBack=@context>Действия <Icon Type="@IconType.Outline.Down" /></Button>
+                    </Unbound>
+                </Dropdown>
+            </SpaceItem>
+        </Space>
+
+    </AntDesign.Col>
+</Row>
+
+@if (loading)
+{
+    <Skeleton Active />
+}
+else
+{
+    @if (exercisesTestDataGroups is null || exercisesTestDataGroups.Count < 1)
+    {
+        <Alert Type="@AlertType.Error">
+            Нет тестовых групп для автоматической проверки
+        </Alert>
+    }
+    else
+    {
+        <Table PageSize="exercisesTestDataGroups.Count"
+       HidePagination
+       DataSource="exercisesTestDataGroups"
+       Context="group">
+            <Column Field="group.Title" Title="Название">
+            </Column>
+            <Column Field="group.IsPublic" Title="Видимость">
+                <Tooltip Title=@(group.IsPublic ? "Видно пользователям при просмотре задания" : "Скрытая группа, только для проверок")>
+                    <Icon Type=@(group.IsPublic ? IconType.Outline.Eye : IconType.Outline.EyeInvisible) />
+                </Tooltip>
+            </Column>
+            <Column Field="group.Score" Title="Баллы">
+                <Text Keyboard>@group.Score</Text>
+            </Column>
+            <Column Field="group.TestCases" Title="Кейсы">
+                <TitleTemplate>
+                    <HelpTooltip>Количество тестовых кейсов</HelpTooltip>
+                    <Text>Кейсы</Text>
+                </TitleTemplate>
+                <ChildContent>
+                    <Text Keyboard>@group.TestCases.Count</Text>
+                </ChildContent>
+            </Column>
+            <ActionColumn>
+                <Popconfirm Title="Вы действительно хотите удалить группу? Вся информация связанная с ней будет утеряна"
+                    OkText="Удалить группу"
+                    CancelText="Отмена"
+                    OnConfirm=@(() => DeleteGroup(group))>
+                    <Button Danger Icon="@IconType.Outline.Delete"></Button>
+                </Popconfirm>
+            </ActionColumn>
+        </Table>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+    [Parameter]
+    public string? ExerciseTitle { get; set; }
+    [CascadingParameter]
+    public ILogsService? LogsService { get; set; }
+
+    private InputFile? inputFileRef;
+    private bool loading = true;
+    private List<ExercisesTestDataGroupResponse>? exercisesTestDataGroups;
+
+    private ExerciseTestGroupsFileFormatDescriptionModal? helpRef;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadTestGroups();
+    }
+
+    private async Task LoadTestGroups()
+    {
+        loading = true;
+        try
+        {
+            exercisesTestDataGroups = await ExercisesApi.GetTestGroupsAsync(ExerciseId);
+        }
+        finally
+        {
+            loading = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task TestGroupsFilesSelected(InputFileChangeEventArgs files)
+    {
+        var testGroups = await ExtractTestGroups(files);
+        if (testGroups is null)
+        {
+            return;
+        }
+        loading = true;
+        try
+        {
+            foreach (var group in testGroups)
+            {
+                await ExercisesApi.CreateTestGroupsAsync(ExerciseId, group);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "can't create test data group");
+            LogsService?.LogInfoObject($"Ошибка при создании тестовой группы. Подробности в консоли (F12)", ex.Message);
+            return;
+        }
+        finally
+        {
+            loading = false;
+        }
+        await LoadTestGroups();
+    }
+
+    private async Task DeleteAllGroups()
+    {
+        if (exercisesTestDataGroups is null)
+        {
+            return;
+        }
+        foreach (var group in exercisesTestDataGroups)
+        {
+            await DeleteOneGroup(group);
+        }
+        await LoadTestGroups();
+    }
+
+    private async Task DeleteGroup(ExercisesTestDataGroupResponse group)
+    {
+        await DeleteOneGroup(group);
+        await LoadTestGroups();
+    }
+
+    private async Task RecheckExerciseSolutions()
+    {
+        loading = true;
+        Task notifyTask;
+        try
+        {
+            var recheckedSolutionsCount = await ExercisesApi.RecheckExerciseSolutions(ExerciseId);
+            notifyTask = NotificationService.Open(new NotificationConfig
+                {
+                    NotificationType = recheckedSolutionsCount > 0 ? NotificationType.Success : NotificationType.Info,
+                    Message = $"Начата перепроверка решений: {recheckedSolutionsCount}"
+                });
+        }
+        finally
+        {
+            loading = false;
+        }
+        StateHasChanged();
+        await notifyTask;
+    }
+
+    private async Task DeleteOneGroup(ExercisesTestDataGroupResponse group)
+    {
+        loading = true;
+        try
+        {
+            await ExercisesApi.DeleteTestGroupsAsync(ExerciseId, group.Id);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task<List<CreateTestDataGroupRequest>?> ExtractTestGroups(InputFileChangeEventArgs files)
+    {
+        if (exercisesTestDataGroups is null)
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Нельзя загружать тесты до загрузки информации о существующих"
+                });
+            return null;
+        }
+
+        if (files.FileCount != 1)
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Можно выбрать только один файл"
+                });
+            return null;
+        }
+
+        var file = files.File;
+        var maxFileSize = ByteSize.FromMegaBytes(1);
+        if (ByteSize.FromBytes(file.Size) > maxFileSize)
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Максимальный размер файла с тестами : 1 мегабайт"
+                });
+            return null;
+        }
+
+        List<CreateTestDataGroupRequest> testGroups;
+        try
+        {
+            var temp = await JsonSerializer.DeserializeAsync<List<CreateTestDataGroupRequest>>(
+                file.OpenReadStream((long)maxFileSize.Bytes),
+                UserFileJsonOptions.Options
+            );
+            if (temp is null)
+            {
+                throw new Exception($"{nameof(JsonSerializer)} returns null");
+            }
+            testGroups = temp;
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = "Ошибка при чтении файла";
+            LogsService?.LogInfo(errorMessage, ex.Message);
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = errorMessage,
+                    Btn = LogsService?.OpenLogsButton("Открыть логи")
+                });
+            return null;
+        }
+        await JS.InvokeVoidAsync("console.log", testGroups, testGroups.Select(g => g.Title).Distinct(), exercisesTestDataGroups);
+        if (testGroups.Select(g => g.Title).Distinct().Count() != testGroups.Count ||
+            testGroups.Select(g => g.Title).Intersect(exercisesTestDataGroups.Select(g => g.Title)).Any())
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Названия групп тестов должны быть уникальны",
+                    Description = "Если есть необходимость отредактировать существующую группу - необходимо её удалить, потом загрузить новый файл, содержащий эту группу"
+                });
+            return null;
+        }
+
+        var noTestsGroup = testGroups.FirstOrDefault(g => g.Cases?.Any() != true);
+        if (noTestsGroup is not null)
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "В каждой группе должен быть как минимум один тест",
+                    Description = $"В группе {noTestsGroup.Title} нет тест-кейсов"
+                });
+            return null;
+        }
+        return testGroups;
+    }
+    private async Task DownloadTestGroups()
+    {
+        if (exercisesTestDataGroups is null)
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Невозможно скачать данные по незагруженным тестам",
+                });
+            return;
+        }
+        var userFileModel = exercisesTestDataGroups.Select(g => new CreateTestDataGroupRequest
+            {
+                Title = g.Title,
+                Score = g.Score,
+                IsPublic = g.IsPublic,
+                Cases = g.TestCases.Select(tc => new CreateTestCaseRequest
+                {
+                    In = tc.InData,
+                    Out = tc.OutData
+                }).ToList()
+            }).ToList();
+        var jsonView = JsonSerializer.Serialize(userFileModel, UserFileJsonOptions.Options);
+        await JS.DownloadFile($"{ExerciseTitle}_Tests.json", jsonView);
+    }
+}
