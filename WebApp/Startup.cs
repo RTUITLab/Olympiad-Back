@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Amazon.S3;
 using WebApp.Services.Attachments;
+using Olympiad.Services.UserSolutionsReport;
 
 namespace WebApp
 {
@@ -193,6 +194,7 @@ namespace WebApp
 
             services.AddSignalR();
             services.AddTransient<NotifyUsersService>();
+            services.AddTransient<UserSolutionsReportCreator>();
         }
 
         private static void AddS3AttachmentStorage(IServiceCollection services)

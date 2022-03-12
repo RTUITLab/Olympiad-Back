@@ -19,24 +19,30 @@
 @inject MessageService MessageService
 
 <PageTitle>@(user?.FirstName ?? $"Загрузка...") - @(challenge?.Name ?? $"Загрузка...")</PageTitle>
-<AuthorizeView Context="userContext">
-    <Authorized>
-        <PageHeader Title="@(user?.FirstName ?? $"Загрузка...")">
-            <PageHeaderBreadcrumb>
-                <Breadcrumb>
-                    <BreadcrumbItem Href="results">
-                        Результаты
-                    </BreadcrumbItem>
-                    <BreadcrumbItem Href="@($"results/{ChallengeId}")">
-                        @(challenge?.Name ?? $"Загрузка...")
-                    </BreadcrumbItem>
-                    <BreadcrumbItem>
-                        @(user?.FirstName ?? $"Загрузка...")
-                    </BreadcrumbItem>
-                </Breadcrumb>
-            </PageHeaderBreadcrumb>
-            <PageHeaderContent>
-                <Descriptions>
+<PageHeader Title="@(user?.FirstName ?? $"Загрузка...")">
+    <PageHeaderBreadcrumb>
+        <Breadcrumb>
+            <BreadcrumbItem Href="results">
+                Результаты
+            </BreadcrumbItem>
+            <BreadcrumbItem Href="@($"results/{ChallengeId}")">
+                @(challenge?.Name ?? $"Загрузка...")
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+                @(user?.FirstName ?? $"Загрузка...")
+            </BreadcrumbItem>
+        </Breadcrumb>
+    </PageHeaderBreadcrumb>
+    <PageHeaderExtra>
+        <SolutionsReportsGenerator
+            ButtonText="Создать отчет"
+            ChallengeId="ChallengeId"
+            StudentId="@user?.StudentId"/>
+    </PageHeaderExtra>
+    <PageHeaderContent>
+        <Descriptions>
+            <AuthorizeView Context="userContext">
+                <Authorized>
                     @if (userContext.User.IsAdmin())
                     {
                         <DescriptionsItem Title="Соревнование">
@@ -47,41 +53,35 @@
                             </SkeletonRowComponent>
                         </DescriptionsItem>
                     }
-                    @*<DescriptionsItem Title="Report">
-                        <ResultsViewer.Components.UserSolutionsReportCaller ButtonText="Create report about user"
-                        ChallengeId="ChallengeId"
-                        FileName="@user?.StudentId"
-                        UserStudentIds="@(new List<string> { user?.StudentId })" />
-                        </DescriptionsItem>*@
-                </Descriptions>
-            </PageHeaderContent>
-        </PageHeader>
+                </Authorized>
+            </AuthorizeView>
+        </Descriptions>
+    </PageHeaderContent>
+</PageHeader>
 
-        @if (exercises != null)
+@if (exercises != null)
+{
+    <Collapse OnChange="ReaectOnChange">
+        @foreach (var exercise in exercises)
         {
-            <Collapse OnChange="ReaectOnChange">
-                @foreach (var exercise in exercises)
-                {
-                    <Panel Key="@exercise.Id.ToString()">
-                        <HeaderTemplate>
-                            @exercise.Name <ScoreBadge Score="exercise.Score" />
-                        </HeaderTemplate>
-                        <ChildContent>
-                            <UserSolutionsList ChallengeId="ChallengeId"
-                                       ExerciseId="exercise.Id"
-                                       UserId="UserId"
-                                       @ref="solutionLists[exercise.Id]" />
-                        </ChildContent>
-                    </Panel>
-                }
-            </Collapse>
+            <Panel Key="@exercise.Id.ToString()">
+                <HeaderTemplate>
+                    @exercise.Name <ScoreBadge Score="exercise.Score" />
+                </HeaderTemplate>
+                <ChildContent>
+                    <UserSolutionsList ChallengeId="ChallengeId"
+                               ExerciseId="exercise.Id"
+                               UserId="UserId"
+                               @ref="solutionLists[exercise.Id]" />
+                </ChildContent>
+            </Panel>
         }
-        else
-        {
-            <Skeleton Active></Skeleton>
-        }
-    </Authorized>
-</AuthorizeView>
+    </Collapse>
+}
+else
+{
+    <Skeleton Active></Skeleton>
+}
 
 @code {
     [Parameter]

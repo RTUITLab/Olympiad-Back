@@ -1,0 +1,59 @@
+﻿@using Markdig
+@inject IReportsApi ReportsApi
+@inject IJSRuntime JS
+
+<Button Icon="@IconType.Outline.FileExcel"
+        Class="big-icon"
+        OnClick="() => isVisible = true"
+        Loading="IsLoading">
+    @ButtonText
+</Button>
+
+<Drawer Closable="true"
+        Visible="isVisible"
+        Placement="right"
+        Title='("Создание отчёта")'
+        Width="750">
+    <Button OnClick="Do">Gen</Button>
+</Drawer>
+
+@code {
+    [Parameter]
+    public string? ButtonText { get; set; }
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public List<string>? UserStudentIds { get; set; }
+    [Parameter]
+    public string? StudentId { get; set; }
+
+    private bool IsLoading => reportsJSModule is null;
+
+    private bool isVisible;
+
+    private static readonly MarkdownPipeline markdownPipeline
+        = new MarkdownPipelineBuilder().UsePipeTables().UsePreciseSourceLocation().UseAdvancedExtensions().Build();
+    private IJSObjectReference? reportsJSModule;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            reportsJSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/reportsCreating.js");
+            StateHasChanged();
+        }
+    }
+
+    private async Task Do()
+    {
+        if (string.IsNullOrEmpty(StudentId) || reportsJSModule is null)
+        {
+            return;
+        }
+        var response = await ReportsApi.GetReportForChallenge(ChallengeId, StudentId);
+        var html = Markdown.ToHtml(response, markdownPipeline);
+        await reportsJSModule.InvokeVoidAsync("testHtml", html);
+    }
+}

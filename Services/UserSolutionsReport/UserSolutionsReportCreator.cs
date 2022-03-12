@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Ganss.XSS;
+using Microsoft.EntityFrameworkCore;
 using Models;
 using Olympiad.Shared.Models;
 using System;
@@ -18,8 +19,16 @@ namespace Olympiad.Services.UserSolutionsReport
             ShowName = true,
             SolutionsMode = ShowSolutionsMode.OnlyBest
         };
-        private readonly ApplicationDbContext dbContext;
+        private static readonly HtmlSanitizer htmlSanitizer;
+        static UserSolutionsReportCreator()
+        {
+            htmlSanitizer = new HtmlSanitizer();
+            htmlSanitizer.AllowedAttributes.Add("class");
+            htmlSanitizer.AllowedSchemes.Add("data");
+        }
 
+
+        private readonly ApplicationDbContext dbContext;
         public UserSolutionsReportCreator(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
@@ -27,9 +36,9 @@ namespace Olympiad.Services.UserSolutionsReport
 
         public async Task<string> CreateMarkdownReport(string userStudentId, Guid challengeId, UserSolutionsReportOptions options = null)
         {
-            var user = await dbContext.Users.SingleOrDefaultAsync(u => u.StudentID == userStudentId)
+            var user = await dbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.StudentID == userStudentId)
                 ?? throw new ArgumentException($"Not found user {userStudentId}");
-            var challenge = await dbContext.Challenges.SingleOrDefaultAsync(c => c.Id == challengeId)
+            var challenge = await dbContext.Challenges.AsNoTracking().SingleOrDefaultAsync(c => c.Id == challengeId)
                 ?? throw new ArgumentException($"Not found challeng {challengeId}");
             options ??= defaultOptions;
 
@@ -44,7 +53,7 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine($"User ID | {user.Id}");
             builder.AppendLine($"Challenge ID | {challenge.Id}");
 
-            var exercises = await dbContext.Exercises
+            var exercises = await dbContext.Exercises.AsNoTracking()
                 .Where(e => e.ChallengeId == challenge.Id)
                 .Where(e => e.Solutions.Any(s => s.UserId == user.Id))
                 .OrderBy(e => e.ExerciseName)
@@ -87,6 +96,12 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine();
             return builder.ToString();
         }
+        private static string PrismLang(string lang) => lang switch
+        {
+            "pasabc" => "pascal",
+            "fpas" => "pascal",
+            _ => lang
+        };
 
         private static void RenderSolution(StringBuilder builder, Models.Solutions.Solution solution, bool showChecks)
         {
@@ -97,8 +112,8 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine($"ID|{solution.Id}");
             builder.AppendLine($"Sent|{solution.SendingTime}");
 
-            builder.AppendLine($"```{solution.Language}");
-            builder.AppendLine(HttpUtility.HtmlEncode(solution.Raw));
+            builder.AppendLine($"```{PrismLang(solution.Language)}");
+            builder.AppendLine(htmlSanitizer.Sanitize(solution.Raw));
             builder.AppendLine($"```");
             if (solution.Status != SolutionStatus.Successful && showChecks)
             {

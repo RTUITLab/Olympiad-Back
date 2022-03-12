@@ -15,6 +15,7 @@
         Visible="showSourceCode"
         Placement="right"
         Title="drawerTitle"
+        BodyStyle="padding: 0;"
         OnClose="() => showSourceCode = false">
 
     @if (loading)
@@ -23,15 +24,19 @@
     }
     else
     {
-        <AntDesign.Text Copyable CopyConfig="new TypographyCopyableConfig { Text=sourceCode }" style="overflow:auto; white-space:pre">
-            @sourceCode
-        </AntDesign.Text>
+        <pre style="margin: 0;">
+            <code Class=@($"language-{GetPrismLang(SolutionLanguage)}")>
+                @sourceCode
+            </code>
+        </pre>
     }
 </Drawer>
 
 @code {
     [Parameter]
     public Guid SolutionId { get; set; }
+    [Parameter]
+    public string? SolutionLanguage { get; set; }
     private Guid loadedSolutionId;
     [Parameter]
     public string? SolutionFileName { get; set; }
@@ -40,6 +45,24 @@
     private bool showSourceCode = false;
 
     private string? sourceCode;
+    private bool isCodeRendered = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (isCodeRendered)
+        {
+            await JS.InvokeVoidAsync("highlightAllCode");
+            isCodeRendered = false;
+        }
+    }
+
+    private string? GetPrismLang(string? lang) =>
+        lang switch {
+            "pasabc" => "pascal",
+            "fpas" => "pascal",
+            _ => lang
+        };
+
     private async Task ShowCode()
     {
         showSourceCode = true;
@@ -56,6 +79,7 @@
         {
             var localSolutionId = SolutionId;
             sourceCode = await SolutionsApi.GetSolutionSource(localSolutionId);
+            isCodeRendered = true;
             loadedSolutionId = localSolutionId;
         }
         finally

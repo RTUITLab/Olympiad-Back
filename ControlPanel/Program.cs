@@ -88,6 +88,7 @@ void RegisterApiServices(WebAssemblyHostBuilder builder)
     RegisterApiService<IChallengesApi>();
     RegisterApiService<IExercisesApi>();
     RegisterApiService<ISolutionsApi>();
+    RegisterApiService<IReportsApi>();
 
     RegisterApiService<IRolesApi>();
 }
