@@ -1,13 +1,15 @@
 ﻿@using Ganss.XSS
 @using Markdig
+@using Microsoft.Extensions.Logging
 @using Olympiad.Shared.Services
 @inject IReportsApi ReportsApi
 @inject IJSRuntime JS
+@inject ILogger<SolutionsReportsGenerator> Logger
 @inject MessageService MessageService
 
 <Button Icon="@IconType.Outline.FilePdf"
         Class="big-icon"
-        OnClick="() => isVisible = true"
+        OnClick="Open"
         Loading="IsLoading">
     @ButtonText
 </Button>
@@ -17,9 +19,25 @@
         Placement="right"
         OnClose="Close"
         Title='("Создание отчёта")'
+        BodyStyle="white-space: normal;"
         Width="750">
-        <SolutionsReportOptions @bind-ReportOptions="options" Disabled="IsLoading" />
-    <Button OnClick="Do">Gen</Button>
+    <SolutionsReportOptions @bind-ReportOptions="options" Disabled="IsLoading" />
+    <Divider />
+    @if (!string.IsNullOrEmpty(StudentId))
+    {
+        <Button OnClick="DownloadOneReport" Type="@ButtonType.Primary">Скачать отчет</Button>
+    }
+    else if (studentIds?.Any() == true)
+    {
+        <Paragraph>Будет создано отчетов: <Text Keyboard>@studentIds.Count</Text></Paragraph>
+        <Paragraph>Для сохранения множества отчётов необходимо предоставить доступ к редактированию папки на вашем компьютере. Отчеты сохранятся в неё. </Paragraph>
+        <Button>Выбрать папку для отчётов</Button>
+    }
+
+    @if (isGenerating)
+    {
+        <Progress Percent="generatingProgress" />
+    }
 </Drawer>
 
 @code {
@@ -28,17 +46,18 @@
     [Parameter]
     public Guid ChallengeId { get; set; }
     [Parameter]
-    public List<string>? UserStudentIds { get; set; }
+    public Func<Task<List<string>>>? StudentIdsLoader { get; set; }
     [Parameter]
     public string? StudentId { get; set; }
 
+    private List<string>? studentIds;
     private bool IsLoading => reportsJSModule is null || isGenerating;
 
     private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
 
     private bool isVisible;
     private bool isGenerating;
-
+    private double generatingProgress;
     static SolutionsReportsGenerator()
     {
         htmlSanitizer = new HtmlSanitizer();
@@ -63,7 +82,7 @@
         }
     }
 
-    private async Task Do()
+    private async Task DownloadOneReport()
     {
         if (string.IsNullOrEmpty(StudentId) || reportsJSModule is null || isGenerating)
         {
@@ -83,6 +102,30 @@
             isGenerating = false;
         }
     }
+
+    private async Task Open()
+    {
+        if (StudentIdsLoader  is not null)
+        {
+            isGenerating = true;
+            try
+            {
+                studentIds = await StudentIdsLoader ();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Can't student ids");
+                await MessageService.Warning("Не удалось получить список пользователей для создания отчета");
+                return;
+            }
+            finally
+            {
+                isGenerating = false;
+            }
+        }
+        isVisible = true;
+    }
+
 
     private async Task Close()
     {

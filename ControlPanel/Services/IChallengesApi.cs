@@ -17,6 +17,8 @@ public interface IChallengesApi
 
     [Get("/api/challenges/analytics")]
     public Task<List<ChallengeResponseWithAnalytics>> GetAllChallengesWithAnalyticsAsync();
+    [Get("/api/challenges/analytics/{challengeId}/participants")]
+    public Task<List<string>> GetChallengeParticipants(Guid challengeId, string? match);
     [Get("/api/challenges/analytics/{challengeId}")]
     public Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit);
     [Get("/api/challenges/analytics/{challengeId}/info")]

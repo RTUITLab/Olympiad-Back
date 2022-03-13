@@ -26,10 +26,15 @@
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
+    <PageHeaderExtra>
+        <SolutionsReportsGenerator ButtonText="Персональные отчеты"
+                                   ChallengeId="ChallengeId"
+                                   StudentIdsLoader="LoadTargetStudentIds"/>
+    </PageHeaderExtra>
 </PageHeader>
 <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
     <SpaceItem>
-        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
+        <Search Placeholder="Поиск по идентификатору, имени, email" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
     </SpaceItem>
     <SpaceItem>
         <AuthorizeView Context="userContext">
@@ -102,7 +107,7 @@
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public int PageSize { get; set; } = 50;
+    public int PageSize { get; set; } = 10;
 
     private bool loading = true;
 
@@ -129,24 +134,32 @@
 
     private async Task HandleChange()
     {
+        UpdateUrl();
+        await LoadData();
+    }
+    private void UpdateUrl()
+    {
         if (PageSize < 1)
         {
-            PageSize = 50;
+            PageSize = 10;
+        }
+        if (PageSize > 200)
+        {
+            PageSize = 200;
         }
         if (PageIndex < 1)
         {
             PageIndex = 1;
         }
-        if (PageSize > 200)
+        if (PageIndex * PageSize > (userResults?.Total ?? 0))
         {
-            PageSize = 200;
+            PageIndex = 0;
         }
         var newUrl = CalcCurrentUrl();
         if (NavigationManager.Uri != newUrl)
         {
             NavigationManager.NavigateTo(newUrl);
         }
-        await LoadData();
     }
     private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
     private async Task LoadData()
@@ -168,12 +181,18 @@
             }
             userResults = await ChallengesApi.GetUserResultsForChallenge(localChallengeId, Match, offset, limit);
             loadedChallengeId = localChallengeId;
+            UpdateUrl();
         }
         finally
         {
             loading = false;
             loadDataSemaphore.Release();
         }
+    }
+
+    private Task<List<string>> LoadTargetStudentIds()
+    {
+        return ChallengesApi.GetChallengeParticipants(ChallengeId, Match);
     }
 
     private void GoToResults()
@@ -186,7 +205,7 @@
         var queryParams = new Dictionary<string, object?>
         {
             {nameof(PageIndex), PageIndex <= 1 ? null : PageIndex},
-            {nameof(PageSize), PageSize == 50 ? null : PageSize},
+            {nameof(PageSize), PageSize == 10 ? null : PageSize},
             {nameof(Match), Match},
         };
         return NavigationManager.GetUriWithQueryParameters(queryParams);
