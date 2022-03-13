@@ -31,12 +31,12 @@
     {
         <Paragraph>Будет создано отчетов: <Text Keyboard>@studentIds.Count</Text></Paragraph>
         <Paragraph>Для сохранения множества отчётов необходимо предоставить доступ к редактированию папки на вашем компьютере. Отчеты сохранятся в неё. </Paragraph>
-        <Button>Выбрать папку для отчётов</Button>
+        <Button Loading="isGenerating" OnClick="DownloadMultiReports" Type="@ButtonType.Primary">Создать отчёты</Button>
     }
 
     @if (isGenerating)
     {
-        <Progress Percent="generatingProgress" />
+        <Progress Status="@ProgressStatus.Active" Percent="generatingProgress" />
     }
 </Drawer>
 
@@ -52,7 +52,6 @@
 
     private List<string>? studentIds;
     private bool IsLoading => reportsJSModule is null || isGenerating;
-
     private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
 
     private bool isVisible;
@@ -92,9 +91,7 @@
         isGenerating = true;
         try
         {
-            var response = await ReportsApi.GetReportForChallenge(ChallengeId, StudentId, options);
-            var html = Markdown.ToHtml(response, markdownPipeline);
-            html = htmlSanitizer.Sanitize(html);
+            var html = await LoadReportHtml(StudentId);
             await reportsJSModule.InvokeVoidAsync("createSingleReport", html, $"{StudentId}.pdf");
         }
         finally
@@ -105,12 +102,12 @@
 
     private async Task Open()
     {
-        if (StudentIdsLoader  is not null)
+        if (StudentIdsLoader is not null)
         {
             isGenerating = true;
             try
             {
-                studentIds = await StudentIdsLoader ();
+                studentIds = await StudentIdsLoader();
             }
             catch (Exception ex)
             {
@@ -123,9 +120,48 @@
                 isGenerating = false;
             }
         }
+        generatingProgress = 0;
         isVisible = true;
     }
 
+    private async Task DownloadMultiReports()
+    {
+        if (reportsJSModule is null || studentIds?.Any() != true || isGenerating)
+        {
+            return;
+        }
+        isGenerating = true;
+        try
+        {
+            await using var saver = await reportsJSModule.InvokeAsync<IJSObjectReference>("getMultiReportsSaver");
+            foreach (var (studentId, i) in studentIds.Select((s, i) => (s, i)))
+            {
+                var html = await LoadReportHtml(studentId);
+                await saver.InvokeVoidAsync("saveReport", html, $"{studentId}.pdf");
+                generatingProgress = (i * 100) / studentIds.Count;
+                StateHasChanged();
+            }
+            await saver.InvokeVoidAsync("doneSaving");
+            generatingProgress = 100;
+            StateHasChanged();
+            await MessageService.Success("Все отчеты успешно созданы!");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't get saver");
+            await MessageService.Error("Произошла ошибка при создании отчетов");
+        } finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    private async Task<string> LoadReportHtml(string studentId)
+    {
+        var response = await ReportsApi.GetReportForChallenge(ChallengeId, studentId, options);
+        var html = Markdown.ToHtml(response, markdownPipeline);
+        return htmlSanitizer.Sanitize(html);
+    }
 
     private async Task Close()
     {

@@ -74,6 +74,29 @@ export async function createSingleReport(htmlRow, fileName) {
     const reportBuffer = await createReport(htmlRow);
     window.saveAsFile(fileName || "file.pdf", reportBuffer);
 }
+
+export async function getMultiReportsSaver() {
+    const dirHandler = await window.showDirectoryPicker();
+    return new MultiReportsSaver(dirHandler);
+}
+
+class MultiReportsSaver {
+    directoryHandle;
+    constructor(directoryHandle) {
+        this.directoryHandle = directoryHandle;
+    }
+    async saveReport(htmlRow, fileName) {
+        const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
+        const reportBuffer = await createReport(htmlRow);
+        const fileStream = await fileHandle.createWritable();
+        await fileStream.write(reportBuffer);
+        await fileStream.close();
+    }
+    doneSaving() {
+        delete this.directoryHandle;
+    }
+}
+
 function createReport(htmlRow) {
     return new Promise((resolve, reject) => {
         try {

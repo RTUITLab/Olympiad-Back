@@ -130,7 +130,7 @@ namespace WebApp.Controllers.Challenges
             {
                 return solutionsSource;
             }
-            var words = (match ?? "").ToUpper().Split(' ');
+            var words = match.ToUpper().Split(' ');
             var targetSolutionsByMatchUserQuery = words.Aggregate(solutionsSource, (solutions, matcher) => solutions.Where(
                 u =>
                     u.User.FirstName.ToUpper().Contains(matcher) ||
