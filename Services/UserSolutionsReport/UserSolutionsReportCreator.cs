@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Models;
 using Olympiad.Shared.Models;
+using Olympiad.Shared.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,7 @@ namespace Olympiad.Services.UserSolutionsReport
 {
     public class UserSolutionsReportCreator
     {
-        private readonly static UserSolutionsReportOptions defaultOptions = new UserSolutionsReportOptions
-        {
-            ShowChecks = true,
-            ShowName = true,
-            SolutionsMode = ShowSolutionsMode.OnlyBest
-        };
+        private readonly static UserSolutionsReportOptions defaultOptions = UserSolutionsReportOptions.Default;
 
         private readonly ApplicationDbContext dbContext;
         public UserSolutionsReportCreator(ApplicationDbContext dbContext)

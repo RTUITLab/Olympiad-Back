@@ -70,33 +70,47 @@ function RGBAToHexA(rgba) {
     return "#" + r + g + b + (a !== "NaN" ? a : "");
 }
 
-export function testHtml(htmlRow) {
-    
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = htmlRow;
-    wrapper.style.display = "none";
-    Prism.highlightAllUnder(wrapper);
-    const childs = [...wrapper.querySelectorAll("code span.token")];
-    document.body.appendChild(wrapper);
-    for (let element of childs) {
-        const elementComputedStyles = window.getComputedStyle(element, '');
-        for (var styleKey of supportedStyles) {
-            const exportedValue = elementComputedStyles.getPropertyValue(styleKey);
-            element.style.setProperty(styleKey, exportedValue);
+export async function createSingleReport(htmlRow, fileName) {
+    const reportBuffer = await createReport(htmlRow);
+    window.saveAsFile(fileName || "file.pdf", reportBuffer);
+}
+function createReport(htmlRow) {
+    return new Promise((resolve, reject) => {
+        try {
+
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = htmlRow;
+            wrapper.style.display = "none";
+            Prism.highlightAllUnder(wrapper);
+            const childs = [...wrapper.querySelectorAll("code span.token")];
+            document.body.appendChild(wrapper);
+            for (let element of childs) {
+                const elementComputedStyles = window.getComputedStyle(element, '');
+                for (var styleKey of supportedStyles) {
+                    const exportedValue = elementComputedStyles.getPropertyValue(styleKey);
+                    element.style.setProperty(styleKey, exportedValue);
+                }
+            }
+
+            for (let code of wrapper.querySelectorAll("code")) {
+                code.style.whiteSpace = "pre-wrap";
+                code.style.fontFamily = "RobotoMono"
+            }
+
+            for (let img of wrapper.querySelectorAll("img")) {
+                img.width = "550";
+            }
+
+            htmlRow = wrapper.innerHTML.replaceAll(/rgba?\([^\)]+\)/g, RGBAToHexA);
+            wrapper.remove();
+            var documentDefinition = htmlToPdfmake(htmlRow, {
+                imagesByReference: true
+            });
+            pdfMake.createPdf(documentDefinition).getBuffer(buffer => {
+                resolve(buffer);
+            });
+        } catch (error) {
+            reject(error);
         }
-    }
-
-    for (let code of wrapper.querySelectorAll("code")) {
-        code.style.whiteSpace = "pre-wrap";
-        code.style.fontFamily = "RobotoMono"
-    }
-
-    htmlRow = wrapper.innerHTML.replaceAll(/rgba?\([^\)]+\)/g, RGBAToHexA);
-    wrapper.remove();
-    var val = htmlToPdfmake(htmlRow, {
-        imagesByReference: true
-    });
-    var dd = val;
-    console.log({ dd, htmlRow });
-    pdfMake.createPdf(dd).download();
+    })
 }

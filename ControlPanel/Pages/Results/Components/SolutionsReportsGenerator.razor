@@ -1,9 +1,11 @@
 ﻿@using Ganss.XSS
 @using Markdig
+@using Olympiad.Shared.Services
 @inject IReportsApi ReportsApi
 @inject IJSRuntime JS
+@inject MessageService MessageService
 
-<Button Icon="@IconType.Outline.FileExcel"
+<Button Icon="@IconType.Outline.FilePdf"
         Class="big-icon"
         OnClick="() => isVisible = true"
         Loading="IsLoading">
@@ -13,10 +15,11 @@
 <Drawer Closable="true"
         Visible="isVisible"
         Placement="right"
+        OnClose="Close"
         Title='("Создание отчёта")'
         Width="750">
+        <SolutionsReportOptions @bind-ReportOptions="options" Disabled="IsLoading" />
     <Button OnClick="Do">Gen</Button>
-    <Button OnClick="() => isVisible = false">Close</Button>
 </Drawer>
 
 @code {
@@ -29,9 +32,12 @@
     [Parameter]
     public string? StudentId { get; set; }
 
-    private bool IsLoading => reportsJSModule is null;
+    private bool IsLoading => reportsJSModule is null || isGenerating;
+
+    private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
 
     private bool isVisible;
+    private bool isGenerating;
 
     static SolutionsReportsGenerator()
     {
@@ -59,13 +65,32 @@
 
     private async Task Do()
     {
-        if (string.IsNullOrEmpty(StudentId) || reportsJSModule is null)
+        if (string.IsNullOrEmpty(StudentId) || reportsJSModule is null || isGenerating)
         {
+            await MessageService.Warning("Невозможно начать генерацию");
             return;
         }
-        var response = await ReportsApi.GetReportForChallenge(ChallengeId, StudentId);
-        var html = Markdown.ToHtml(response, markdownPipeline);
-        html = htmlSanitizer.Sanitize(html);
-        await reportsJSModule.InvokeVoidAsync("testHtml", html);
+        isGenerating = true;
+        try
+        {
+            var response = await ReportsApi.GetReportForChallenge(ChallengeId, StudentId, options);
+            var html = Markdown.ToHtml(response, markdownPipeline);
+            html = htmlSanitizer.Sanitize(html);
+            await reportsJSModule.InvokeVoidAsync("createSingleReport", html, $"{StudentId}.pdf");
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    private async Task Close()
+    {
+        if (IsLoading)
+        {
+            await MessageService.Warning("Идет создание отчёта");
+            return;
+        }
+        isVisible = false;
     }
 }

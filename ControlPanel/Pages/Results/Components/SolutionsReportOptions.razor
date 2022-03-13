@@ -1,0 +1,77 @@
+﻿@using Olympiad.Shared.Services
+
+<Form Model="options"
+      Layout="@FormLayout.Vertical"
+      @ref="form">
+    <FormItem Label="Отображение имени" Help="@ShowNameHelp">
+        <RadioGroup @bind-Value="@context.ShowName" Disabled="Disabled" TValue="bool" OnChange="ValueChanged">
+            <Radio RadioButton Value="@true" Disabled="Disabled">Полное имя</Radio>
+            <Radio RadioButton Value="@false" Disabled="Disabled">Только идентификатор</Radio>
+        </RadioGroup>
+    </FormItem>
+    <FormItem Label="Проверки" Help="@ShowChecksHelp">
+        <RadioGroup @bind-Value="@context.ShowChecks" Disabled="Disabled" TValue="bool" OnChange="ValueChanged">
+            <Radio RadioButton Value="@false" Disabled="Disabled">Включать только исходный код</Radio>
+            <Radio RadioButton Value="@true" Disabled="Disabled">Включать информацию о проверках для каждого теста</Radio>
+        </RadioGroup>
+    </FormItem>
+    <FormItem Label="Решения" Help="@SolutionModeHelp">
+        <RadioGroup @bind-Value="@context.SolutionsMode" Disabled="Disabled" TValue="ShowSolutionsMode" OnChange="ValueChanged">
+            <Radio RadioButton Value="@ShowSolutionsMode.OnlyBest" Disabled="Disabled">Лучшее решение</Radio>
+            <Radio RadioButton Value="@ShowSolutionsMode.AllByDescendingStatus" Disabled="Disabled">Все решения</Radio>
+        </RadioGroup>
+    </FormItem>
+</Form>
+
+
+@code {
+    [Parameter]
+    public UserSolutionsReportOptions? ReportOptions
+    {
+        get => options;
+        set
+        {
+            if (value is not null)
+            {
+                options = value;
+            }
+        }
+    }
+    [Parameter]
+    public EventCallback<UserSolutionsReportOptions> ReportOptionsChanged { get; set; }
+    [Parameter]
+    public bool Disabled { get; set; }
+    private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
+
+    private string ShowNameHelp => options.ShowName
+        ? "Будет включено полное ФИО участника"
+        : "Будет отображаться только идентификатор участника";
+    private string ShowChecksHelp => options.ShowChecks
+        ? "Будут отображены тесты, который не прошло решение"
+        : "Будет отображён только исходный код отправленного решения, без проверок";
+    private string SolutionModeHelp => options.SolutionsMode switch
+    {
+        ShowSolutionsMode.OnlyBest => "Для каждого задания будет отображено только лучшее решение",
+        ShowSolutionsMode.AllByDescendingStatus => "Будут отображены все решения, начиная с лучшего",
+        _ => "Некорректный режим"
+    };
+
+    private Form<UserSolutionsReportOptions>? form;
+    private bool needValidate;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (needValidate)
+        {
+            form?.Validate();
+            needValidate = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ValueChanged()
+    {
+        needValidate = true;
+    }
+}

@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Shared;
+using Olympiad.Shared.Services;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;

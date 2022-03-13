@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Olympiad.Services.UserSolutionsReport
+namespace Olympiad.Shared.Services
 {
     public enum ShowSolutionsMode
     {

@@ -1,4 +1,5 @@
-﻿using PublicAPI.Responses.Solutions;
+﻿using Olympiad.Shared.Services;
+using PublicAPI.Responses.Solutions;
 using PublicAPI.Responses.Solutions.Analytics;
 using Refit;
 using System;
@@ -11,5 +12,5 @@ namespace Olympiad.ControlPanel.Services;
 public interface IReportsApi
 {
     [Get("/api/reports/challenge/{challengeId}/{studentId}")]
-    Task<string> GetReportForChallenge(Guid challengeId, string studentId);
+    Task<string> GetReportForChallenge(Guid challengeId, string studentId, [Query] UserSolutionsReportOptions options);
 }
