@@ -1,4 +1,5 @@
-﻿@using Markdig
+﻿@using Ganss.XSS
+@using Markdig
 @inject IReportsApi ReportsApi
 @inject IJSRuntime JS
 
@@ -15,6 +16,7 @@
         Title='("Создание отчёта")'
         Width="750">
     <Button OnClick="Do">Gen</Button>
+    <Button OnClick="() => isVisible = false">Close</Button>
 </Drawer>
 
 @code {
@@ -31,6 +33,15 @@
 
     private bool isVisible;
 
+    static SolutionsReportsGenerator()
+    {
+        htmlSanitizer = new HtmlSanitizer();
+        htmlSanitizer.AllowedAttributes.Add("class");
+        htmlSanitizer.AllowedSchemes.Add("data");
+    }
+
+
+    private static readonly HtmlSanitizer htmlSanitizer;
     private static readonly MarkdownPipeline markdownPipeline
         = new MarkdownPipelineBuilder().UsePipeTables().UsePreciseSourceLocation().UseAdvancedExtensions().Build();
     private IJSObjectReference? reportsJSModule;
@@ -54,6 +65,7 @@
         }
         var response = await ReportsApi.GetReportForChallenge(ChallengeId, StudentId);
         var html = Markdown.ToHtml(response, markdownPipeline);
+        html = htmlSanitizer.Sanitize(html);
         await reportsJSModule.InvokeVoidAsync("testHtml", html);
     }
 }

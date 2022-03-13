@@ -19,14 +19,6 @@ namespace Olympiad.Services.UserSolutionsReport
             ShowName = true,
             SolutionsMode = ShowSolutionsMode.OnlyBest
         };
-        private static readonly HtmlSanitizer htmlSanitizer;
-        static UserSolutionsReportCreator()
-        {
-            htmlSanitizer = new HtmlSanitizer();
-            htmlSanitizer.AllowedAttributes.Add("class");
-            htmlSanitizer.AllowedSchemes.Add("data");
-        }
-
 
         private readonly ApplicationDbContext dbContext;
         public UserSolutionsReportCreator(ApplicationDbContext dbContext)
@@ -113,7 +105,7 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine($"Sent|{solution.SendingTime}");
 
             builder.AppendLine($"```{PrismLang(solution.Language)}");
-            builder.AppendLine(htmlSanitizer.Sanitize(solution.Raw));
+            builder.AppendLine(solution.Raw);
             builder.AppendLine($"```");
             if (solution.Status != SolutionStatus.Successful && showChecks)
             {
@@ -146,7 +138,7 @@ namespace Olympiad.Services.UserSolutionsReport
             string dataToShow = data;
             if (dataToShow?.Length > 250)
             {
-                dataToShow = data.Substring(0, 250);
+                dataToShow = data[..250];
             }
             if (dataToShow != null)
             {
