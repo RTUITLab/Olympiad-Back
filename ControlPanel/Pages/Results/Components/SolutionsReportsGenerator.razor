@@ -30,7 +30,12 @@
     else if (studentIds?.Any() == true)
     {
         <Paragraph>Будет создано отчетов: <Text Keyboard>@studentIds.Count</Text></Paragraph>
-        <Paragraph>Для сохранения множества отчётов необходимо предоставить доступ к редактированию папки на вашем компьютере. Отчеты сохранятся в неё. </Paragraph>
+        @if (isSaveToFileSystemSupported == true)
+        {
+            <Paragraph>Для сохранения множества отчётов необходимо предоставить доступ к редактированию папки на вашем компьютере. Отчеты сохранятся в неё. </Paragraph>
+            <Paragraph>Необходимо предоставить доступ браузеру на редактирование указанной вкладки.</Paragraph>
+        }
+
         <Button Loading="isGenerating" OnClick="DownloadMultiReports" Type="@ButtonType.Primary">Создать отчёты</Button>
     }
 
@@ -45,6 +50,8 @@
     public string? ButtonText { get; set; }
     [Parameter]
     public Guid ChallengeId { get; set; }
+    [Parameter]
+    public string ChallengeName { get; set; }
     [Parameter]
     public Func<Task<List<string>>>? StudentIdsLoader { get; set; }
     [Parameter]
@@ -69,14 +76,17 @@
     private static readonly MarkdownPipeline markdownPipeline
         = new MarkdownPipelineBuilder().UsePipeTables().UsePreciseSourceLocation().UseAdvancedExtensions().Build();
     private IJSObjectReference? reportsJSModule;
-
+    private bool? isSaveToFileSystemSupported;
+    private DotNetObjectReference<SolutionsReportsGenerator>? thisReference;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
+            thisReference = DotNetObjectReference.Create(this);
             reportsJSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/reportsCreating.js");
+            isSaveToFileSystemSupported = await reportsJSModule.InvokeAsync<bool>("isSaveToFileSystemSupported");
             StateHasChanged();
         }
     }
@@ -133,7 +143,7 @@
         isGenerating = true;
         try
         {
-            await using var saver = await reportsJSModule.InvokeAsync<IJSObjectReference>("getMultiReportsSaver");
+            await using var saver = await reportsJSModule.InvokeAsync<IJSObjectReference>("getMultiReportsSaver", ChallengeName, thisReference);
             foreach (var (studentId, i) in studentIds.Select((s, i) => (s, i)))
             {
                 var html = await LoadReportHtml(studentId);
@@ -150,10 +160,17 @@
         {
             Logger.LogWarning(ex, "Can't get saver");
             await MessageService.Error("Произошла ошибка при создании отчетов");
-        } finally
+        }
+        finally
         {
             isGenerating = false;
         }
+    }
+
+    [JSInvokable]
+    public async Task ShowUseZipFileFallback()
+    {
+        await MessageService.Info("Не удалось сохранить отчеты в файловую систему. Отчеты будут собраны в архив.");
     }
 
     private async Task<string> LoadReportHtml(string studentId)

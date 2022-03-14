@@ -35,6 +35,13 @@
       "files": [
         "fonts/RobotoMono-Regular.ttf"
       ]
+    },
+    {
+      "library": "jszip@3.7.1",
+      "destination": "wwwroot/js//lib/jszip/",
+      "files": [
+        "jszip.min.js"
+      ]
     }
   ]
 }

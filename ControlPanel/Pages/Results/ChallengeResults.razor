@@ -14,21 +14,22 @@
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
-<PageTitle>@PageTitle</PageTitle>
-<PageHeader Title="@PageTitle">
+<PageTitle>@ChallengeName</PageTitle>
+<PageHeader Title="@ChallengeName">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem Href="results">
                 Результаты
             </BreadcrumbItem>
             <BreadcrumbItem>
-                @PageTitle
+                @ChallengeName
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
         <SolutionsReportsGenerator ButtonText="Персональные отчеты"
                                    ChallengeId="ChallengeId"
+                                   ChallengeName="@ChallengeName"
                                    StudentIdsLoader="LoadTargetStudentIds"/>
     </PageHeaderExtra>
 </PageHeader>
@@ -92,7 +93,7 @@
 </Space>
 
 @code {
-    private string PageTitle => challengeResponse?.Name ?? "Загрузка...";
+    private string ChallengeName => challengeResponse?.Name ?? "Загрузка...";
 
     [Parameter]
     public Guid ChallengeId { get; set; }

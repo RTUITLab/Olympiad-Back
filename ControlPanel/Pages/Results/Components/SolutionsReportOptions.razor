@@ -44,10 +44,10 @@
     private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
 
     private string ShowNameHelp => options.ShowName
-        ? "Будет включено полное ФИО участника"
+        ? "Будет отображаться полное ФИО участника"
         : "Будет отображаться только идентификатор участника";
     private string ShowChecksHelp => options.ShowChecks
-        ? "Будут отображены тесты, который не прошло решение"
+        ? "Будут отображены тесты, которые не прошло решение"
         : "Будет отображён только исходный код отправленного решения, без проверок";
     private string SolutionModeHelp => options.SolutionsMode switch
     {

@@ -1,6 +1,7 @@
 ﻿
 import "./lib/pdfmake/pdfmake.min.js";
 import "./lib/html-to-pdfmake/browser.min.js";
+import "./lib/jszip/jszip.min.js";
 
 pdfMake.fonts = {
     Roboto: {
@@ -75,9 +76,23 @@ export async function createSingleReport(htmlRow, fileName) {
     window.saveAsFile(fileName || "file.pdf", reportBuffer);
 }
 
-export async function getMultiReportsSaver() {
-    const dirHandler = await window.showDirectoryPicker();
-    return new MultiReportsSaver(dirHandler);
+export function isSaveToFileSystemSupported() {
+    return typeof window.showDirectoryPicker === 'function';
+}
+
+export async function getMultiReportsSaver(reportsPackName, fallbackCallbackObject) {
+    if (!isSaveToFileSystemSupported()) {
+        return new ZipPacker(reportsPackName);
+    }
+    try {
+        const dirHandler = await window.showDirectoryPicker();
+        return new MultiReportsSaver(dirHandler);
+    } catch (error) {
+        console.warn("getMultiReportsSaver", error);
+        console.log("fallback to zip file logic");
+        fallbackCallbackObject.invokeMethodAsync("ShowUseZipFileFallback");
+        return new ZipPacker(reportsPackName);
+    }
 }
 
 class MultiReportsSaver {
@@ -94,6 +109,24 @@ class MultiReportsSaver {
     }
     doneSaving() {
         delete this.directoryHandle;
+    }
+}
+
+class ZipPacker {
+    zip;
+    reportsPackName;
+    constructor(reportsPackName) {
+        this.zip = new JSZip();
+        this.reportsPackName = reportsPackName;
+    }
+    async saveReport(htmlRow, fileName) {
+        const reportBuffer = await createReport(htmlRow);
+        this.zip.file(fileName, reportBuffer);
+    }
+    async doneSaving() {
+        var zipFileContent = await this.zip.generateAsync({ type: "blob" });
+        const fileName = this.reportsPackName || "reports";
+        window.saveAsFile(`${fileName}.zip`, zipFileContent);
     }
 }
 
@@ -133,6 +166,7 @@ function createReport(htmlRow) {
                 resolve(buffer);
             });
         } catch (error) {
+            console.log("createReport", error);
             reject(error);
         }
     })
