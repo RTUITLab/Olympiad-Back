@@ -54,6 +54,7 @@ builder.Services.AddScoped<AccessTokenProvider>();
 
 builder.Services.AddTransient<UserPasswordGenerator>();
 builder.Services.AddScoped<GenerateUserService>();
+builder.Services.AddScoped<ChallengeTotalReportCreator>();
 
 
 builder.Services.AddBlazoredSessionStorage();

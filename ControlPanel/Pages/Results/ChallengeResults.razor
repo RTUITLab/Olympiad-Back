@@ -14,6 +14,7 @@
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
+@inject ChallengeTotalReportCreator ChallengeTotalReportCreator
 <PageTitle>@ChallengeName</PageTitle>
 <PageHeader Title="@ChallengeName">
     <PageHeaderBreadcrumb>
@@ -30,7 +31,13 @@
         <SolutionsReportsGenerator ButtonText="Персональные отчеты"
                                    ChallengeId="ChallengeId"
                                    ChallengeName="@ChallengeName"
-                                   StudentIdsLoader="LoadTargetStudentIds"/>
+                                   StudentIdsLoader="LoadTargetStudentIds" />
+        <Button OnClick="() => ChallengeTotalReportCreator.CreateReport(ChallengeId, ChallengeName, Match)"
+                Loading="loading || ChallengeTotalReportCreator.IsCreating"
+                Icon="@IconType.Outline.FileExcel"
+                Class="big-icon">
+            Общий отчет
+        </Button>
     </PageHeaderExtra>
 </PageHeader>
 <Space Direction="DirectionVHType.Vertical" Style="width: 100%">

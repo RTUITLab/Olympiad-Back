@@ -51,7 +51,7 @@
     [Parameter]
     public Guid ChallengeId { get; set; }
     [Parameter]
-    public string ChallengeName { get; set; }
+    public string? ChallengeName { get; set; }
     [Parameter]
     public Func<Task<List<string>>>? StudentIdsLoader { get; set; }
     [Parameter]
@@ -85,7 +85,7 @@
         if (firstRender)
         {
             thisReference = DotNetObjectReference.Create(this);
-            reportsJSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/reportsCreating.js");
+            reportsJSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/pdfReportsCreating.js");
             isSaveToFileSystemSupported = await reportsJSModule.InvokeAsync<bool>("isSaveToFileSystemSupported");
             StateHasChanged();
         }

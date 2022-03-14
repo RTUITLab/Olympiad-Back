@@ -42,6 +42,13 @@
       "files": [
         "jszip.min.js"
       ]
+    },
+    {
+      "library": "exceljs@4.3.0",
+      "destination": "wwwroot/js/lib/exceljs/",
+      "files": [
+        "exceljs.min.js"
+      ]
     }
   ]
 }
