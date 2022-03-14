@@ -1,0 +1,109 @@
+﻿@using Humanizer
+@using Olympiad.Shared.Models
+@implements IAsyncDisposable
+@inject IControlPanelApiService ControlPanelApiService
+
+<Title Level="4">Статус проверки</Title>
+
+<Table DataSource="solutionCountRecords"
+       Bordered
+       HidePagination>
+    <TitleTemplate>
+        @if (@Left() == 0)
+        {
+            <AntDesign.Text>Все решения обработаны</AntDesign.Text>
+        }
+        else
+        {
+            <AntDesign.Text>Осталось проверить: @Left()</AntDesign.Text>
+        }
+    </TitleTemplate>
+    <ChildContent>
+        <Column Field="context.Key" Title="Статус" />
+        <Column Field="context.Value" Title="Количество" />
+    </ChildContent>
+    <FooterTemplate>
+        Последнее обновление информации: @lastUpdateTime.Humanize()
+    </FooterTemplate>
+</Table>
+
+
+
+@code {
+    Dictionary<SolutionStatus, int> solutionCountRecords =
+                                Enum.GetValues<SolutionStatus>()
+                                    .ToDictionary(s => s, _ => 0);
+
+
+    System.Threading.CancellationTokenSource source = new System.Threading.CancellationTokenSource();
+    Task? updateTask;
+    private static readonly TimeSpan updateInterval = TimeSpan.FromSeconds(10);
+    DateTime lastUpdateTime;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await Update();
+            updateTask = UpdateCycle(source.Token);
+        }
+    }
+
+    private int Left()
+    {
+        return
+            solutionCountRecords[SolutionStatus.InProcessing]
+            +
+            solutionCountRecords[SolutionStatus.InQueue];
+    }
+
+    private async Task UpdateCycle(System.Threading.CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (DateTime.Now - lastUpdateTime > updateInterval)
+                {
+                    await Update();
+                }
+                StateHasChanged();
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch { }
+        }
+    }
+
+    private async Task Update()
+    {
+        var dbRecords = (await ControlPanelApiService
+            .GetSolutionsStatisticsAsync())
+            .ToDictionary(s => s.SolutionStatus, v => v.Count);
+        foreach (var key in solutionCountRecords.Keys)
+        {
+            solutionCountRecords[key] = 0;
+        }
+        foreach (var dbRecord in dbRecords)
+        {
+            if (Enum.TryParse<SolutionStatus>(dbRecord.Key, out var enumKey))
+            {
+                solutionCountRecords[enumKey] = dbRecord.Value;
+            }
+        }
+        lastUpdateTime = DateTime.Now;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        source.Cancel();
+        if (updateTask != null)
+        {
+            await updateTask;
+        }
+    }
+}
