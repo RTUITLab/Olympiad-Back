@@ -132,7 +132,6 @@
         loading = true;
         try
         {
-            await JS.InvokeVoidAsync("console.log", claim);
             claims = await ControlPanelApiService.RemoveClaim(User.Id, claim.Type, claim.Value);
             newClaim = new ClaimRequest();
         }

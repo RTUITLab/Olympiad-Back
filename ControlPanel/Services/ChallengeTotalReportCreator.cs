@@ -35,7 +35,6 @@ public class ChallengeTotalReportCreator
         {
             var excelGeneratingModule = await js.InvokeAsync<IJSObjectReference>("import", "./js/excelReportsCreating.js");
             var data = await LoadAllData(challengeId, match);
-            logger.LogInformation("Loaded all items {Count}", data.Count);
             var exercises = await exercisesApi.GetExercisesAsync(challengeId);
             await excelGeneratingModule.InvokeVoidAsync("createReport", challengeName, data, exercises);
         }

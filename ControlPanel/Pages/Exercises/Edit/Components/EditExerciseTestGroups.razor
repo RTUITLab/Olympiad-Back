@@ -296,8 +296,7 @@ else
                     Btn = LogsService?.OpenLogsButton("Открыть логи")
                 });
             return null;
-        }
-        await JS.InvokeVoidAsync("console.log", testGroups, testGroups.Select(g => g.Title).Distinct(), exercisesTestDataGroups);
+        }        
         if (testGroups.Select(g => g.Title).Distinct().Count() != testGroups.Count ||
             testGroups.Select(g => g.Title).Intersect(exercisesTestDataGroups.Select(g => g.Title)).Any())
         {
