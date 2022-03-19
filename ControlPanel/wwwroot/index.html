@@ -67,8 +67,18 @@
         window.getInnerTextOfElement = function (elementReference) {
             return elementReference.innerText;
         }
+        window.highlightAllCode = function () {
+            if (!Prism) {
+                setTimeout(150, window.highlightAllCode);
+                return;
+            }
+            Prism.highlightAll();
+        }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
+    <link href="prism.css" rel="stylesheet" />
+    <script src="prism.js"></script>
+
 </body>
 
 </html>

@@ -8,6 +8,47 @@
       "files": [
         "normalize.min.css"
       ]
+    },
+    {
+      "library": "pdfmake@0.2.4",
+      "destination": "wwwroot/js/lib/pdfmake/",
+      "files": [
+        "pdfmake.min.js",
+        "fonts/Roboto/Roboto-Italic.ttf",
+        "fonts/Roboto/Roboto-Medium.ttf",
+        "fonts/Roboto/Roboto-MediumItalic.ttf",
+        "fonts/Roboto/Roboto-Regular.ttf"
+      ]
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "html-to-pdfmake@2.3.10",
+      "destination": "wwwroot/js/lib/html-to-pdfmake/",
+      "files": [
+        "browser.min.js"
+      ]
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "roboto-mono-webfont@2.0.986",
+      "destination": "wwwroot/js/lib/pdfmake/fonts/RobotoMono/",
+      "files": [
+        "fonts/RobotoMono-Regular.ttf"
+      ]
+    },
+    {
+      "library": "jszip@3.7.1",
+      "destination": "wwwroot/js//lib/jszip/",
+      "files": [
+        "jszip.min.js"
+      ]
+    },
+    {
+      "library": "exceljs@4.3.0",
+      "destination": "wwwroot/js/lib/exceljs/",
+      "files": [
+        "exceljs.min.js"
+      ]
     }
   ]
 }

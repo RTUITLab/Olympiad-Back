@@ -1,0 +1,192 @@
+﻿@using Ganss.XSS
+@using Markdig
+@using Microsoft.Extensions.Logging
+@using Olympiad.Shared.Services
+@inject IReportsApi ReportsApi
+@inject IJSRuntime JS
+@inject ILogger<SolutionsReportsGenerator> Logger
+@inject MessageService MessageService
+
+<Button Icon="@IconType.Outline.FilePdf"
+        Class="big-icon"
+        OnClick="Open"
+        Loading="IsLoading">
+    @ButtonText
+</Button>
+
+<Drawer Closable="true"
+        Visible="isVisible"
+        Placement="right"
+        OnClose="Close"
+        Title='("Создание отчёта")'
+        BodyStyle="white-space: normal;"
+        Width="750">
+    <SolutionsReportOptions @bind-ReportOptions="options" Disabled="IsLoading" />
+    <Divider />
+    @if (!string.IsNullOrEmpty(StudentId))
+    {
+        <Button OnClick="DownloadOneReport" Type="@ButtonType.Primary">Скачать отчет</Button>
+    }
+    else if (studentIds?.Any() == true)
+    {
+        <Paragraph>Будет создано отчетов: <Text Keyboard>@studentIds.Count</Text></Paragraph>
+        @if (isSaveToFileSystemSupported == true)
+        {
+            <Paragraph>Для сохранения множества отчётов необходимо предоставить доступ к редактированию папки на вашем компьютере. Отчеты сохранятся в неё. </Paragraph>
+            <Paragraph>Необходимо предоставить доступ браузеру на редактирование указанной вкладки.</Paragraph>
+        }
+
+        <Button Loading="isGenerating" OnClick="DownloadMultiReports" Type="@ButtonType.Primary">Создать отчёты</Button>
+    }
+
+    @if (isGenerating)
+    {
+        <Progress Status="@ProgressStatus.Active" Percent="generatingProgress" />
+    }
+</Drawer>
+
+@code {
+    [Parameter]
+    public string? ButtonText { get; set; }
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+    [Parameter]
+    public string? ChallengeName { get; set; }
+    [Parameter]
+    public Func<Task<List<string>>>? StudentIdsLoader { get; set; }
+    [Parameter]
+    public string? StudentId { get; set; }
+
+    private List<string>? studentIds;
+    private bool IsLoading => reportsJSModule is null || isGenerating;
+    private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
+
+    private bool isVisible;
+    private bool isGenerating;
+    private double generatingProgress;
+    static SolutionsReportsGenerator()
+    {
+        htmlSanitizer = new HtmlSanitizer();
+        htmlSanitizer.AllowedAttributes.Add("class");
+        htmlSanitizer.AllowedSchemes.Add("data");
+    }
+
+
+    private static readonly HtmlSanitizer htmlSanitizer;
+    private static readonly MarkdownPipeline markdownPipeline
+        = new MarkdownPipelineBuilder().UsePipeTables().UsePreciseSourceLocation().UseAdvancedExtensions().Build();
+    private IJSObjectReference? reportsJSModule;
+    private bool? isSaveToFileSystemSupported;
+    private DotNetObjectReference<SolutionsReportsGenerator>? thisReference;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            thisReference = DotNetObjectReference.Create(this);
+            reportsJSModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/pdfReportsCreating.js");
+            isSaveToFileSystemSupported = await reportsJSModule.InvokeAsync<bool>("isSaveToFileSystemSupported");
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadOneReport()
+    {
+        if (string.IsNullOrEmpty(StudentId) || reportsJSModule is null || isGenerating)
+        {
+            await MessageService.Warning("Невозможно начать генерацию");
+            return;
+        }
+        isGenerating = true;
+        try
+        {
+            var html = await LoadReportHtml(StudentId);
+            await reportsJSModule.InvokeVoidAsync("createSingleReport", html, $"{StudentId}.pdf");
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    private async Task Open()
+    {
+        if (StudentIdsLoader is not null)
+        {
+            isGenerating = true;
+            try
+            {
+                studentIds = await StudentIdsLoader();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Can't student ids");
+                await MessageService.Warning("Не удалось получить список пользователей для создания отчета");
+                return;
+            }
+            finally
+            {
+                isGenerating = false;
+            }
+        }
+        generatingProgress = 0;
+        isVisible = true;
+    }
+
+    private async Task DownloadMultiReports()
+    {
+        if (reportsJSModule is null || studentIds?.Any() != true || isGenerating)
+        {
+            return;
+        }
+        isGenerating = true;
+        try
+        {
+            await using var saver = await reportsJSModule.InvokeAsync<IJSObjectReference>("getMultiReportsSaver", ChallengeName, thisReference);
+            foreach (var (studentId, i) in studentIds.Select((s, i) => (s, i)))
+            {
+                var html = await LoadReportHtml(studentId);
+                await saver.InvokeVoidAsync("saveReport", html, $"{studentId}.pdf");
+                generatingProgress = (i * 100) / studentIds.Count;
+                StateHasChanged();
+            }
+            await saver.InvokeVoidAsync("doneSaving");
+            generatingProgress = 100;
+            StateHasChanged();
+            await MessageService.Success("Все отчеты успешно созданы!");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't get saver");
+            await MessageService.Error("Произошла ошибка при создании отчетов");
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    [JSInvokable]
+    public async Task ShowUseZipFileFallback()
+    {
+        await MessageService.Info("Не удалось сохранить отчеты в файловую систему. Отчеты будут собраны в архив.");
+    }
+
+    private async Task<string> LoadReportHtml(string studentId)
+    {
+        var response = await ReportsApi.GetReportForChallenge(ChallengeId, studentId, options);
+        var html = Markdown.ToHtml(response, markdownPipeline);
+        return htmlSanitizer.Sanitize(html);
+    }
+
+    private async Task Close()
+    {
+        if (IsLoading)
+        {
+            await MessageService.Warning("Идет создание отчёта");
+            return;
+        }
+        isVisible = false;
+    }
+}

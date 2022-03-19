@@ -10,6 +10,7 @@
     <PackageReference Include="OneOf" Version="3.0.205" />
     <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.0" />
+    <PackageReference Include="HtmlSanitizer" Version="7.0.473" />
   </ItemGroup>
 
   <ItemGroup>

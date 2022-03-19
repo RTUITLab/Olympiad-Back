@@ -1,0 +1,19 @@
+﻿@page "/"
+@attribute [Authorize]
+
+@using Olympiad.ControlPanel.Pages.Index.Components
+@inject ILoginRefresh LoginRefresh
+
+<PageHeader Title="Панель управления" />
+<AuthorizeView>
+    <Authorized>
+        <Alert Type="info" ShowIcon="true">
+            Данный раздел используется для управления системой. Если у вас нет доступа к разделам этого сайта - вы можете <a href="/">вернуться на сайт пользователя</a>
+        </Alert>
+
+        @if (context.User.IsResultsViewer() || context.User.IsAdmin())
+        {
+            <CheckingStatistic />
+        }
+    </Authorized>
+</AuthorizeView>

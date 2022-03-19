@@ -54,6 +54,7 @@ builder.Services.AddScoped<AccessTokenProvider>();
 
 builder.Services.AddTransient<UserPasswordGenerator>();
 builder.Services.AddScoped<GenerateUserService>();
+builder.Services.AddScoped<ChallengeTotalReportCreator>();
 
 
 builder.Services.AddBlazoredSessionStorage();
@@ -88,6 +89,7 @@ void RegisterApiServices(WebAssemblyHostBuilder builder)
     RegisterApiService<IChallengesApi>();
     RegisterApiService<IExercisesApi>();
     RegisterApiService<ISolutionsApi>();
+    RegisterApiService<IReportsApi>();
 
     RegisterApiService<IRolesApi>();
 }

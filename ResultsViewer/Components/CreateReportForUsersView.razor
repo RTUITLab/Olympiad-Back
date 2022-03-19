@@ -4,6 +4,7 @@
 @inject Microsoft.Extensions.Options.IOptions<ResultsViewer.Options.GeneratePdfOptions> PdfGenerateOptions
 @inject IJSRuntime JS
 @using Markdig
+@using Olympiad.Shared.Services
 
 <CreatePDFReportOptions @bind-ReportOptions="userSolutionsReportOptions" Disabled="loading" />
 <Button OnClick="CreateRepots" Disabled="loading">Create</Button>
@@ -42,8 +43,7 @@
     private string errorMessage;
     private int done = 0;
 
-    private Olympiad.Services.UserSolutionsReport.UserSolutionsReportOptions userSolutionsReportOptions
-        = new Olympiad.Services.UserSolutionsReport.UserSolutionsReportOptions();
+    private UserSolutionsReportOptions userSolutionsReportOptions = UserSolutionsReportOptions.Default;
 
 
     private static readonly Markdig.MarkdownPipeline pipeline = new Markdig.MarkdownPipelineBuilder()

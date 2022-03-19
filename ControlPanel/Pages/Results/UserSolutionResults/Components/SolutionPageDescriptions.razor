@@ -79,7 +79,7 @@
             </DescriptionsItem>
             <DescriptionsItem Title="Код">
                 <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
-                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" />
+                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" SolutionLanguage="@loadedSolution.Language" />
                 </SkeletonRowComponent>
             </DescriptionsItem>
         </Descriptions>

@@ -22,7 +22,6 @@ variables:
     executorServiceName: 'no'
     resultsViewerServiceName: 'no'
     controlPanelServiceName: 'no'
-    pdfPrinterServiceName: 'no'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
     deployService: true
@@ -35,7 +34,6 @@ variables:
     executorServiceName: olympiad-dev_executor
     resultsViewerServiceName: olympiad-dev_results-viewer
     controlPanelServiceName: 'olympiad-dev_control-panel'
-    pdfPrinterServiceName: olympiad-dev_pdf-printer
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
     deployService: true
@@ -48,18 +46,12 @@ variables:
     executorServiceName: olympiad_executor
     resultsViewerServiceName: olympiad_results-viewer
     controlPanelServiceName: 'olympiad_control-panel'
-    pdfPrinterServiceName: olympiad_pdf-printer
 
 
 stages:
 - stage: build
   displayName: build services
   jobs:
-  - job: build_pdf_printer
-    steps:
-    - publish: wkhtmltopdf
-      artifact: pdf-printer-build
-      displayName: pdf-printer-build
   - job: build
     strategy:
       matrix:
@@ -149,10 +141,6 @@ stages:
           workingDirectory: ./tests/e2e
           displayName: build test images
 
-        - script: docker-compose -f stack.yml pull pdf-printer
-          workingDirectory: ./tests/e2e
-          displayName: pull pdf printer (base image deleted, use cached version TODO)
-
         - script: docker-compose -f stack.yml up -d api
           workingDirectory: ./tests/e2e
           displayName: start api
@@ -197,9 +185,6 @@ stages:
         control-panel:
           imageName: rtuitlab/olympiad-control-panel
           artifactName: control-panel-build
-        #pdf-printer:
-        #  imageName: rtuitlab/olympiad-wkhtmltopdf-saas
-        #  artifactName: pdf-printer-build
     steps:
       - download: current
         artifact: $(artifactName)
@@ -346,29 +331,3 @@ stages:
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-control-panel:$(Build.BuildId) ${{variables.controlPanelServiceName}}'
                   readyTimeout: '20000'
-    #- deployment: DeployPdfPrinter
-    #  displayName: Deploy pdf printer
-    #  pool:
-    #    vmImage: 'ubuntu-latest'
-    #  environment: ${{variables.deployEnvironment}}
-    #  strategy:
-    #    runOnce:
-    #      on:
-    #        failure:
-    #          steps:
-    #            - download: none
-    #            - task: SSH@0
-    #              inputs:
-    #                sshEndpoint: 'swarm manager'
-    #                runOptions: 'commands'
-    #                commands: 'docker service rollback ${{variables.pdfPrinterServiceName}}'
-    #                readyTimeout: '20000'
-    #      deploy:
-    #        steps:
-    #          - download: none
-    #          - task: SSH@0
-    #            inputs:
-    #              sshEndpoint: 'swarm manager'
-    #              runOptions: 'commands'
-    #              commands: 'docker service update --image rtuitlab/olympiad-wkhtmltopdf-saas:$(Build.BuildId) ${{variables.pdfPrinterServiceName}}'
-    #              readyTimeout: '20000'

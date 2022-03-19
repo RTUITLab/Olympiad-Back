@@ -17,7 +17,8 @@ var resultsViewerPublishDir = "deploy/results-viewer/results-viewer-build";
 var resultsViewerProject = "ResultsViewer/ResultsViewer.csproj";
 
 var controlPanelPublishDir = "deploy/control-panel/control-panel-build";
-var controlPanelProject = "ControlPanel/ControlPanel.csproj";
+var controlPanelProjectDir = "ControlPanel";
+var controlPanelProject = controlPanelProjectDir + "/ControlPanel.csproj";
 
 Setup(ctx =>
 {
@@ -32,11 +33,17 @@ Setup(ctx =>
 Task("RestoreSolution")
    .Does(() =>
 {
+   DotNetTool("tool restore");
+
    DotNetRestore(apiProject);
    DotNetRestore(executorProject);
    DotNetRestore(adminProject);
    DotNetRestore(resultsViewerProject);
+
    DotNetRestore(controlPanelProject);
+   DotNetTool("libman restore", new DotNetToolSettings {
+      WorkingDirectory = controlPanelProjectDir
+   });
 });
 
 Task("BuildApi")
