@@ -180,7 +180,12 @@ else
         {
             Logger.LogWarning(ex, "can't create test data group");
             LogsService?.LogInfoObject($"Ошибка при создании тестовой группы. Подробности в консоли (F12)", ex.Message);
-            return;
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Ошибка при создании тестовой группы",
+                    Description = "Пожалуйста, проверьте правильность структуры файла с группами тестов",
+                    Btn = LogsService?.OpenLogsButton("Открыть логи")
+                });
         }
         finally
         {
@@ -296,7 +301,16 @@ else
                     Btn = LogsService?.OpenLogsButton("Открыть логи")
                 });
             return null;
-        }        
+        }
+        if (testGroups.Any(g => string.IsNullOrWhiteSpace(g.Title) || g.Title?.Length > ExerciseDataLimitations.MAX_GROUP_TITLE_LENGTH))
+        {
+            await NotificationService.Error(new NotificationConfig
+                {
+                    Message = "Названия тестовых групп являются обязательными.",
+                    Description = "Минимальная длина названия группы - 1 символ. Максимальная - 100 символов."
+                });
+            return null;
+        }
         if (testGroups.Select(g => g.Title).Distinct().Count() != testGroups.Count ||
             testGroups.Select(g => g.Title).Intersect(exercisesTestDataGroups.Select(g => g.Title)).Any())
         {

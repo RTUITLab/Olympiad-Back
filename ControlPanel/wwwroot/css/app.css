@@ -23,6 +23,11 @@
 .ant-dropdown-menu-item > .anticon {
     margin-right: 4px;
 }
+
+.markdown-editor li p {
+    
+}
+
 .markdown-editor img {
     max-width: 100%;
     max-height: 60vh;

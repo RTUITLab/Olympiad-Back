@@ -16,7 +16,7 @@
                 Процесс оценивания решения
             </AntDesign.Col>
             <AntDesign.Col>
-                <Button Icon="@IconType.Outline.FileText" OnClick="DownloadExample" Class="big-icon">Скачать пример</Button>
+                <Button Icon="@IconType.Outline.FileText" OnClick="DownloadExample" Class="big-icon" @ref="downloadExampleButtonRef">Скачать пример</Button>
             </AntDesign.Col>
         </Row>
     </TitleTemplate>
@@ -37,6 +37,7 @@
 
         <Title Level="4">Формат файла с тестами</Title>
         <Paragraph>Тесты могут быть загружены из <Text Keyboard>.json</Text> файла, содержащего <Text Strong>массив</Text> объектов, представляющих собой группы тестов.</Paragraph>
+        <Paragraph>Для простого редактирования вы можете скачать <Button Type="@ButtonType.Link" Style="padding: inherit" OnClick=@(async () => await JS.ScrollToElement(downloadExampleButtonRef?.Ref))>пример</Button> корректного файла.</Paragraph>
 
         <Title Level="4">Пример группы тестов</Title>
         <Paragraph Style="white-space:pre; overflow: auto;">
@@ -68,7 +69,7 @@
     @<Template></Template>
     ;
     private MarkupString groupExample;
-
+    private Button? downloadExampleButtonRef;
 
     protected override void OnInitialized()
     {

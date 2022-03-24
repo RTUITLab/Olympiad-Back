@@ -88,18 +88,15 @@
     private static readonly MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
     private static readonly HtmlSanitizer htmlSanitizer;
 
-    private List<MarkupString>? parsedRows;
+    private MarkupString parsed;
     private string? renderedValue;
     // Optimize rendering editable content
     private RenderFragment ExerciseTaskPreview =>
     @<Template>
         <div class="markdown-editor">
-            @foreach (var line in parsedRows ?? Enumerable.Empty<MarkupString>())
-                {
-                    @line
-                }
-            </div>
-        </Template>
+            @parsed
+        </div>
+    </Template>
     ;
 
     protected override void OnParametersSet()
@@ -109,7 +106,7 @@
         {
             var html = Markdown.ToHtml(Value, pipeline);
             var sanitizedHtml = htmlSanitizer.Sanitize(html);
-            parsedRows = sanitizedHtml.Split('\n').Select(r => new MarkupString(r)).ToList();
+            parsed = new MarkupString(sanitizedHtml);
             renderedValue = Value;
         }
     }

@@ -74,6 +74,9 @@
             }
             Prism.highlightAll();
         }
+        window.scrollToSpecificElement = function (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+        }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
     <link href="prism.css" rel="stylesheet" />
