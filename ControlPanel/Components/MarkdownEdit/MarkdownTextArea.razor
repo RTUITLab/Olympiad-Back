@@ -85,7 +85,7 @@
         htmlSanitizer.AllowedSchemes.Add("data");
     }
 
-    private static readonly MarkdownPipeline pipeline = new MarkdownPipelineBuilder().Build();
+    private static readonly MarkdownPipeline pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
     private static readonly HtmlSanitizer htmlSanitizer;
 
     private List<MarkupString>? parsedRows;

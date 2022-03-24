@@ -36,7 +36,7 @@
         </Paragraph>
 
         <Title Level="4">Формат файла с тестами</Title>
-        <Paragraph>Тесты могут быть загружены из <Text Keyboard>.json</Text> файла, содержащего список объектов, представляющих собой группы тестов.</Paragraph>
+        <Paragraph>Тесты могут быть загружены из <Text Keyboard>.json</Text> файла, содержащего <Text Strong>массив</Text> объектов, представляющих собой группы тестов.</Paragraph>
 
         <Title Level="4">Пример группы тестов</Title>
         <Paragraph Style="white-space:pre; overflow: auto;">
@@ -52,7 +52,7 @@
             <Text Keyboard>isPublic</Text>: булево значение, принимающее <Text Code>true</Text> если группа должна быть публичная, и видна после условия задачи, и <Text Code>false</Text> если тест не должен быть показан пользователю. Во втором случае данная группа будет использована только при проверке решения.
         </Paragraph>
         <Paragraph>
-            <Text Keyboard>cases</Text>: список тестов, на которых будет проверяться решение. Тесты состоят из строго двух полей <Text Keyboard>in</Text> и <Text Keyboard>out</Text>. Первое поле отвечает за строковый контент, который будет подан на вход <Text Type="@TextElementType.Secondary">(STDIN)</Text>  программе. Второе - за корректный вывод <Text Type="@TextElementType.Secondary">(STDOUT)</Text>, который должен получиться при работе программы.
+            <Text Keyboard>cases</Text>: массив тестов, на которых будет проверяться решение. Тесты состоят из строго двух полей <Text Keyboard>in</Text> и <Text Keyboard>out</Text>. Первое поле отвечает за строковый контент, который будет подан на вход <Text Type="@TextElementType.Secondary">(STDIN)</Text>  программе. Второе - за корректный вывод <Text Type="@TextElementType.Secondary">(STDOUT)</Text>, который должен получиться при работе программы.
             Максимальная длина сообщения на вход - <Text Code>@ExerciseDataLimitations.MAX_IN_DATA_LENGTH</Text> символов.
             Максимальная длина сообщения на выход - <Text Code>@ExerciseDataLimitations.MAX_OUT_DATA_LENGTH</Text> символов.
         </Paragraph>
