@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Models;
 using Models.Solutions;
+using PublicAPI.Requests;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
 using PublicAPI.Responses.Challenges.Analytics;
@@ -71,8 +72,7 @@ namespace WebApp.Controllers.Challenges
         public async Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(
             Guid challengeId,
             [MaxLength(100)] string match,
-            [Range(0, int.MaxValue)] int offset = 0,
-            [Range(1, 200)] int limit = 50)
+            [FromQuery] ListQueryParams listQueryParams)
         {
             using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
@@ -93,8 +93,8 @@ namespace WebApp.Controllers.Challenges
 
             var targetUsersInfo = await targetUsersInfoQuery
                 .OrderBy(u => u.Key.StudentId)
-                .Skip(offset)
-                .Take(limit)
+                .Skip(listQueryParams.Offset)
+                .Take(listQueryParams.Limit)
                 .Select(s => s.Key)
                 .ToDictionaryAsync(u => u.Id);
 
@@ -116,9 +116,9 @@ namespace WebApp.Controllers.Challenges
                 .ToList();
             return new ListResponseWithMatch<UserChallengeResultsResponse>
             {
-                Limit = limit,
+                Limit = listQueryParams.Limit,
                 Total = totalCount,
-                Offset = offset,
+                Offset = listQueryParams.Offset,
                 Match = match,
                 Data = data
             };

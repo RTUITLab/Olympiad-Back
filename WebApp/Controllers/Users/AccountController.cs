@@ -64,8 +64,7 @@ namespace WebApp.Controllers.Users
         [Authorize(Roles = "Admin")]
         public async Task<ListResponseWithMatch<UserInfoResponse>> Get(
             [MaxLength(100)] string match,
-            [Range(0, int.MaxValue)] int offset = 0,
-            [Range(1, 200)] int limit = 50)
+            [FromQuery] ListQueryParams listQuery)
         {
             var words = (match ?? "").ToUpper().Split(' ');
             var users = UserManager.Users;
@@ -77,11 +76,11 @@ namespace WebApp.Controllers.Users
             var totalCount = await users.CountAsync();
             var result = await users
                 .OrderBy(u => u.FirstName)
-                .Skip(offset)
-                .Take(limit)
+                .Skip(listQuery.Offset)
+                .Take(listQuery.Limit)
                 .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
-            return new ListResponseWithMatch<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Match = match, Data = result };
+            return new ListResponseWithMatch<UserInfoResponse> { Limit = listQuery.Limit, Total = totalCount, Offset = listQuery.Offset, Match = match, Data = result };
         }
 
         [HttpGet("{userId:guid}")]

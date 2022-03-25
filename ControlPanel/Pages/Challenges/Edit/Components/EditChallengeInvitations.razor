@@ -1,0 +1,37 @@
+﻿@inject MessageService MessageService
+@inject IChallengesApi ChallengesApi
+<Drawer Title=@($"Доступ к {ChallengeName}")
+        Visible="visible"
+        Width="1500"
+        Closable="false"
+        OnClose="Close">
+        <Button OnClick=@(() => visible = false)>Close</Button>
+
+</Drawer>
+
+
+@code {
+    [Parameter]
+    public string? ChallengeName { get; set; }
+    [Parameter]
+    public Guid ChallengeId { get; set; }
+
+    private bool visible;
+    private bool loading;
+    public async Task Show()
+    {
+        visible = true;
+        StateHasChanged();
+        await LoadInvitations();
+    }
+
+    private async Task LoadInvitations()
+    {
+        var users = await ChallengesApi.GetInvitations(ChallengeId);
+    }
+
+    private async Task Close()
+    {
+        await MessageService.Warning("Происходит обновление данных");
+    }
+}

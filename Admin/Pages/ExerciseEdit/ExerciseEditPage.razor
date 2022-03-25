@@ -97,7 +97,7 @@ else
     }
     private async Task RecheckExercise()
     {
-        await ReCheckService.ReCheckSolutions(
+        await ReCheckHelper.ReCheckSolutions(
             Service,
             QueueChecker,
             db => db.Solutions.Where(s => s.ExerciseId == ExerciseId),

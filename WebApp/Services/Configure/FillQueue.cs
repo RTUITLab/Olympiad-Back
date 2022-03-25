@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
-using Olympiad.Services;
+using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared.Models;
 using WebApp.Models.Settings;
 using WebApp.Services.Interfaces;

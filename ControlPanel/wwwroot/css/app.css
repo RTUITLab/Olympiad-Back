@@ -23,7 +23,9 @@
 .ant-dropdown-menu-item > .anticon {
     margin-right: 4px;
 }
-
+.ant-drawer-content-wrapper {
+    max-width: 95%;
+}
 .markdown-editor li p {
     
 }

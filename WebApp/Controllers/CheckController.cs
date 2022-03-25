@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
-using Olympiad.Services;
+using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared;
 using Olympiad.Shared.Extensions;
 using Olympiad.Shared.Models;

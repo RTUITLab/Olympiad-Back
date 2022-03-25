@@ -30,6 +30,7 @@ using PublicAPI.Requests.Exercises;
 using WebApp.Services.Attachments;
 using Olympiad.Services;
 using Microsoft.Extensions.Logging;
+using Olympiad.Services.SolutionCheckQueue;
 
 namespace WebApp.Controllers.Exercises
 {
@@ -224,7 +225,7 @@ namespace WebApp.Controllers.Exercises
             [FromServices] IQueueChecker queueChecker,
             [FromRoute] Guid exerciseId)
         {
-            var recheckedSolutionsCount = await ReCheckService.ReCheckSolutions(
+            var recheckedSolutionsCount = await ReCheckHelper.ReCheckSolutions(
                         context,
                         queueChecker,
                         db => db.Solutions.Where(s => s.ExerciseId == exerciseId),

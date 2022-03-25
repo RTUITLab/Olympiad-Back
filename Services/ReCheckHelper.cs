@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Models;
 using Models.Solutions;
+using Olympiad.Services.SolutionCheckQueue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Olympiad.Services
 {
-    public class ReCheckService
+    public class ReCheckHelper
     {
         /// <summary>
         /// Recheck solytions

@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Identity;
 using Olympiad.Shared.Models.Settings;
 using OpenQA.Selenium;
 using Microsoft.Extensions.Options;
-using Olympiad.Services;
 using BlazorStrap;
 using DiffPlex.DiffBuilder;
 using DiffPlex;
@@ -23,6 +22,7 @@ using Olympiad.Admin.Options;
 using Microsoft.AspNetCore.Rewrite;
 using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Services.Authorization;
+using Olympiad.Services.SolutionCheckQueue;
 
 namespace Olympiad.Admin
 {

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PublicAPI.Responses.Challenges.Analytics;
+using PublicAPI.Responses.Users;
 
 namespace Olympiad.ControlPanel.Services;
 [Headers("Authorization: Bearer")]
@@ -35,4 +36,8 @@ public interface IChallengesApi
 
     [Delete("/api/challenges/{challengeId}")]
     public Task DeleteChallengeAsync(Guid challengeId);
+
+    [Get("/api/challenges/{challengeId}/invitations")]
+    public Task<ListResponseWithMatch<UserInfoResponse>> GetInvitations(Guid challengeId);
+
 }

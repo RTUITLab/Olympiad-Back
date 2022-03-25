@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -14,7 +15,9 @@ using Models.Links;
 using Olympiad.Shared.Models;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
+using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
+using PublicAPI.Responses.Users;
 using WebApp.Models;
 
 
@@ -107,6 +110,33 @@ namespace WebApp.Controllers.Challenges
             context.Challenges.Remove(targetChallenge);
             await context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpGet("{challengeId:guid}/invitations")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ListResponse<UserInfoResponse>>> GetInvitations(
+            [FromRoute] Guid challengeId,
+            [FromQuery] ListQueryParams listQueryParams)
+        {
+            using var transaction = context.Database.BeginTransaction(IsolationLevel.RepeatableRead);
+            var queryAll = context.Challenges
+                .Where(c => c.Id == challengeId)
+                .SelectMany(c => c.UsersToChallenges)
+                .Select(u => u.User)
+                .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider);
+            var total = await queryAll.CountAsync();
+            var data = await queryAll
+                .OrderBy(u => u.FirstName)
+                .Skip(listQueryParams.Offset)
+                .Take(listQueryParams.Limit)
+                .ToListAsync();
+            return new ListResponse<UserInfoResponse>
+            {
+                Data = data,
+                Limit = listQueryParams.Limit,
+                Total = total,
+                Offset = listQueryParams.Offset
+            };
         }
 
         private IQueryable<ChallengeResponse> AvailableChallenges()

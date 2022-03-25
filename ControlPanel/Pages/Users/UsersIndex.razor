@@ -7,6 +7,7 @@
 @using PublicAPI.Responses.Users
 @using System.Text
 @using System.Threading
+@using static Olympiad.ControlPanel.Components.UsersTable
 
 @inject MessageService _message
 @inject IControlPanelApiService ControlPanelApiService
@@ -29,93 +30,54 @@
     </PageHeaderExtra>
 </PageHeader>
 
-
-<Space Direction="DirectionVHType.Vertical" Style="width: 100%">
-    <SpaceItem>
-        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
-    </SpaceItem>
-    <SpaceItem>
-        <Table DataSource="usersSource"
-               Loading="loading"
-               Total="loadedData?.Total ?? 0"
-               @bind-PageIndex="PageIndex"
-               @bind-PageSize="PageSize"
-               TItem="UserInfoResponse"
-               OnChange="HandleChange">
-
-            <Column @bind-Field="context.FirstName" Title="Имя" Sortable></Column>
-            <Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
-            <Column @bind-Field="context.Email" Sortable></Column>
-            <ActionColumn>
-                <NavLink href="@($"users/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
-            </ActionColumn>
-        </Table>
-    </SpaceItem>
-</Space>
-
-
+<UsersTable Selection="selectionModel" SelectionChanged="HandleChange" />
 
 @code {
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public string? Match { get; set; }
+    public string? Match
+    {
+        get => selectionModel.Match; set
+        {
+            selectionModel.Match = value;
+        }
+    }
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public int PageIndex { get; set; } = 1;
+    public int PageIndex
+    {
+        get => selectionModel.PageIndex; set
+        {
+            selectionModel.PageIndex = value;
+        }
+    }
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public int PageSize { get; set; } = 50;
+    public int PageSize
+    {
+        get => selectionModel.PageSize; set
+        {
+            selectionModel.PageSize = value;
+        }
+    }
+
+    private UsersSelectionModel selectionModel = new UsersSelectionModel();
 
     private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
     private ListResponseWithMatch<UserInfoResponse>? loadedData;
     private bool loading;
 
-    private async Task HandleChange()
+    private void HandleChange(UsersSelectionModel newSelectionModel)
     {
-        if (PageSize < 1) {
-            PageSize = 50;
-        }
-        if (PageIndex < 1) {
-            PageIndex = 1;
-        }
-        if (PageSize > 200)
-        {
-            PageSize = 200;
-        }
         var newUrl = CalcCurrentUrl();
         if (NavigationManager.Uri != newUrl)
         {
             NavigationManager.NavigateTo(newUrl);
         }
-        await LoadData();
-    }
-    private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
-    private async Task LoadData()
-    {
-        await loadDataSemaphore.WaitAsync();
-        loading = true;
-        try
-        {
-            var limit = PageSize < 1 ? 50 : PageSize;
-            var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
-
-            var offset = (pageIndexToLoad - 1) * limit;
-
-            if (limit == loadedData?.Limit && offset == loadedData?.Offset && Match == loadedData?.Match)
-            {
-                return;
-            }
-
-            loadedData = await ControlPanelApiService.SearchUsers(Match, limit, offset);
-        }
-        finally
-        {
-            loading = false;
-            loadDataSemaphore.Release();
-        }
+        selectionModel = newSelectionModel;
     }
 
     private string CalcCurrentUrl()
@@ -128,4 +90,4 @@
         };
         return NavigationManager.GetUriWithQueryParameters(queryParams);
     }
-}
+    }
