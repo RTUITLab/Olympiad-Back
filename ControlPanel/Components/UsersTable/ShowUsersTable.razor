@@ -1,0 +1,128 @@
+﻿@using PublicAPI.Requests
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Users
+@using System.Threading
+
+@inject IJSRuntime JS
+@typeparam TSelection where TSelection : UsersPartSelectionModel
+
+<Table DataSource="usersSource"
+       Loading="loading"
+       Total="loadedData?.Total ?? 0"
+       @bind-PageSize="usersPartSelectionModel.Limit"
+       @bind-PageIndex="PageIndex"
+       TItem="UserInfoResponse"
+       ScrollY="@TableScrollY"
+       OnChange="HandleChange">
+    <TitleTemplate>
+        Найдено: @(loadedData?.Total.ToString() ?? "Заггрузка")
+    </TitleTemplate>
+    <ChildContent>
+        <Column @bind-Field="context.StudentId" Title="Идентификатор">
+            <NavLink href="@($"users/{context.Id}")">@context.StudentId</NavLink>
+        </Column>
+        <Column @bind-Field="context.FirstName" Title="Имя"></Column>
+        <Column @bind-Field="context.Email"></Column>
+    </ChildContent>
+</Table>
+
+
+@code {
+    [Parameter]
+    public Func<TSelection, Task<ListResponseWithMatch<UserInfoResponse>>>? GetUsersFunction { get; set; }
+    [Parameter]
+    public TSelection? Selection { get; set; }
+    [Parameter]
+    public EventCallback<TSelection> SelectionChanged { get; set; }
+    [Parameter]
+    public string TableScrollY { get; set; } = "50vh";
+
+
+    private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
+    private ListResponseWithMatch<UserInfoResponse>? loadedData;
+    private bool loading;
+    private TSelection? lastLoadedSelectionModel;
+    private UsersPartSelectionModel usersPartSelectionModel = new UsersPartSelectionModel();
+
+    private int PageIndex
+    {
+        get => (usersPartSelectionModel.Offset / usersPartSelectionModel.Limit) + 1;
+        set
+        {
+            usersPartSelectionModel.Offset = usersPartSelectionModel.Limit * (value - 1);
+        }
+
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        var needLoadData = false;
+        if (Selection is not null && Selection != usersPartSelectionModel)
+        {
+            usersPartSelectionModel = Selection;
+            needLoadData = true;
+        }
+        if (Selection != lastLoadedSelectionModel)
+        {
+            needLoadData = true;
+        }
+        if (needLoadData)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task HandleChange()
+    {
+        await LoadData();
+        if (SelectionChanged.HasDelegate && Selection is not null)
+        {
+            await SelectionChanged.InvokeAsync(Selection with { Limit = usersPartSelectionModel.Limit, Offset = usersPartSelectionModel.Offset });
+        }
+    }
+
+
+    private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
+    private async Task LoadData()
+    {
+        if (GetUsersFunction is null)
+        {
+            // TODO: log warning
+            return;
+        }
+        if (loadDataSemaphore.CurrentCount == 0)
+        {
+            return;
+        }
+        await loadDataSemaphore.WaitAsync();
+        try
+        {
+            var selectionToLoad = usersPartSelectionModel as TSelection;
+            if (selectionToLoad is null)
+            {
+                return;
+            }
+            if (lastLoadedSelectionModel == selectionToLoad)
+            {
+                return;
+            }
+            loading = true;
+            StateHasChanged();
+
+            loadedData = await GetUsersFunction(selectionToLoad);
+            if (selectionToLoad.Offset >= loadedData?.Total && loadedData?.Total > 0)
+            {
+                selectionToLoad = selectionToLoad with { Offset = 0 };
+                loadedData = await GetUsersFunction(selectionToLoad);
+            }
+            lastLoadedSelectionModel = selectionToLoad with { };
+            await SelectionChanged.InvokeAsync(lastLoadedSelectionModel with { });
+        }
+        finally
+        {
+            loading = false;
+            loadDataSemaphore.Release();
+        }
+    }
+}

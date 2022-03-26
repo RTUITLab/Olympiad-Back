@@ -2,12 +2,13 @@
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 
 @using AntDesign.TableModels
+@using Olympiad.ControlPanel.Components.UsersTable
 @using Olympiad.Shared
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Users
 @using System.Text
 @using System.Threading
-@using static Olympiad.ControlPanel.Components.UsersTable
+@using static Olympiad.ControlPanel.Components.UsersTable.UsersSearchTable
 
 @inject MessageService _message
 @inject IControlPanelApiService ControlPanelApiService
@@ -30,7 +31,7 @@
     </PageHeaderExtra>
 </PageHeader>
 
-<UsersTable Selection="selectionModel" SelectionChanged="HandleChange" />
+<UsersSearchTable Selection="selectionModel" SelectionChanged="HandleChange" />
 
 @code {
 
@@ -46,11 +47,11 @@
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public int PageIndex
+    public int Offset
     {
-        get => selectionModel.PageIndex; set
+        get => selectionModel.Offset; set
         {
-            selectionModel.PageIndex = value;
+            selectionModel.Offset = value;
         }
     }
 
@@ -58,33 +59,30 @@
     [Parameter]
     public int PageSize
     {
-        get => selectionModel.PageSize; set
+        get => selectionModel.Limit; set
         {
-            selectionModel.PageSize = value;
+            selectionModel.Limit = value;
         }
     }
 
-    private UsersSelectionModel selectionModel = new UsersSelectionModel();
+    private UsersSearchModel selectionModel = new UsersSearchModel();
 
-    private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
-    private ListResponseWithMatch<UserInfoResponse>? loadedData;
-    private bool loading;
 
-    private void HandleChange(UsersSelectionModel newSelectionModel)
+    private void HandleChange(UsersSearchModel newSelectionModel)
     {
+        selectionModel = newSelectionModel;
         var newUrl = CalcCurrentUrl();
         if (NavigationManager.Uri != newUrl)
         {
             NavigationManager.NavigateTo(newUrl);
         }
-        selectionModel = newSelectionModel;
     }
 
     private string CalcCurrentUrl()
     {
         var queryParams = new Dictionary<string, object?>
         {
-            {nameof(PageIndex), PageIndex <= 1 ? null : PageIndex},
+            {nameof(Offset), Offset <= 1 ? null : Offset},
             {nameof(PageSize), PageSize == 50 ? null : PageSize},
             {nameof(Match), Match},
         };
