@@ -4,7 +4,6 @@
 @using PublicAPI.Responses.Users
 
 @inject IControlPanelApiService ControlPanelApiService
-@inject ModalService ModalService
 
 <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
     <SpaceItem>
@@ -13,13 +12,7 @@
     <SpaceItem>
         <ShowUsersTable TSelection="UsersSearchModel" Selection="Selection" SelectionChanged="HandleSelectionChanged" GetUsersFunction="GetUsers">
             <TitleTemplate>
-                @foreach (var claim in usersSelectionModel.Claims)
-                {
-                    <Tag @key="claim" Closable OnClose=@(() => RemoveClaimSearch(claim))>@claim.Type : @claim.Value</Tag>
-                }
-                <Tooltip Title=@("Искать по свойству пользователя")>
-                    <Button Icon="@IconType.Outline.Plus" Size="@ButtonSize.Small" OnClick="AddClaimSearch" />
-                </Tooltip>
+                <SelectClaimsForm Claims="usersSelectionModel.Claims" ClaimsChanged="UpdateClaims" />
             </TitleTemplate>
         </ShowUsersTable>
     </SpaceItem>
@@ -50,34 +43,17 @@
 
     private async Task UpdateSearch()
     {
-        usersSelectionModel.Match = searchText;
-        await UpdateSelectionModel(usersSelectionModel);
+        await UpdateSelectionModel(usersSelectionModel with { Match = searchText });
+    }
+
+    private async Task UpdateClaims(IReadOnlyList<ClaimRequest> claimRequests)
+    {
+        await UpdateSelectionModel(usersSelectionModel with { Claims = claimRequests });
     }
 
     private async Task HandleSelectionChanged(UsersSearchModel searchModel)
     {
         await UpdateSelectionModel(searchModel);
-    }
-
-    private async Task AddClaimSearch()
-    {
-        var selectClaimRef = await ModalService.CreateModalAsync<SelectClaimFeedback, IReadOnlyCollection<ClaimRequest>?, ClaimRequest?>(
-            new ModalOptions
-                {
-                    Title = "Выберите свойство пользователя"
-                },
-            usersSelectionModel.Claims);
-        selectClaimRef.OnOk = async r =>
-        {
-            var newClaims = usersSelectionModel.Claims.Append(r).ToList().AsReadOnly();
-            await UpdateSelectionModel(usersSelectionModel with { Claims = newClaims! });
-        };
-    }
-
-    private async Task RemoveClaimSearch(ClaimRequest claimToRemove)
-    {
-        var newClaims = (usersSelectionModel.Claims ?? Enumerable.Empty<ClaimRequest>()).Where(r => r != claimToRemove).ToList().AsReadOnly();
-        await UpdateSelectionModel(usersSelectionModel with { Claims = newClaims });
     }
 
     private Task<ListResponseWithMatch<UserInfoResponse>> GetUsers(UsersSearchModel searchModel)
