@@ -40,11 +40,11 @@
                 <Form Model="newClaim"
                       Layout="inline"
                       OnFinish="@AddClaim">
-                    <FormItem Label="Тип">
-                        <Input @bind-Value="@context.Type" @ref="typeInput" />
+                    <FormItem>
+                        <AutoComplete Width=@("30em") @bind-Value="@context.Type" @ref="typeInput" Options="AvailableClaimTypes" Placeholder="Тип" />
                     </FormItem>
-                    <FormItem Label="Значение">
-                        <Input @bind-Value="@context.Value" />
+                    <FormItem>
+                        <AutoComplete Width=@("30em") @bind-Value="@context.Value" Options="AvailableClaimValues" Placeholder="Значение" />
                     </FormItem>
                     <FormItem>
                         <Button Type="@ButtonType.Default" HtmlType="submit" Icon="@IconType.Outline.Plus" />
@@ -57,32 +57,52 @@
 </Card>
 
 @code {
-
+    private Guid? lastLoadedUserId;
     [Parameter, EditorRequired]
     public UserInfoResponse? User { get; set; }
 
     private bool loading = true;
     private List<ClaimResponseObject>? claims;
+    private Dictionary<string, List<string>>? alreadyExistingClaims;
+    private IEnumerable<ClaimResponseObject> SafeClaims => claims ?? Enumerable.Empty<ClaimResponseObject>();
+    private IEnumerable<string>? AvailableClaimTypes => alreadyExistingClaims?
+        .Select(kvp => (type: kvp.Key, valueExists: kvp.Value.Except(SafeClaims.Where(c => c.Type == kvp.Key).Select(c => c.Value)).Any()))
+        .Where(c => c.valueExists)
+        .Select(c => c.type);
+
+    private IEnumerable<string>? AvailableClaimValues =>
+        alreadyExistingClaims?.TryGetValue(newClaim.Type ?? "", out var values) == true ?
+            values.Except(SafeClaims.Where(c => c.Type == newClaim.Type).Select(c => c.Value)).ToList()
+            : Enumerable.Empty<string>();
+
 
     private ClaimRequest newClaim = new ClaimRequest();
 
-    private Input<string>? typeInput;
+    private AutoComplete<string>? typeInput;
 
     public async Task RefreshData()
     {
-        if (User == null)
+        if (User == null || lastLoadedUserId == User.Id)
         {
             return;
         }
         loading = true;
         try
         {
-            claims = await ControlPanelApiService.GetClaims(User.Id);
+            var userId = User.Id;
+            claims = await ControlPanelApiService.GetClaims(userId);
+            lastLoadedUserId = userId;
         }
         finally
         {
             loading = false;
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        alreadyExistingClaims = await ControlPanelApiService.GetAllClaims();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -118,7 +138,7 @@
             needFocus = false;
             if (typeInput != null)
             {
-                await typeInput.Focus();
+                await typeInput.InputFocus(new FocusEventArgs());
             }
         }
     }

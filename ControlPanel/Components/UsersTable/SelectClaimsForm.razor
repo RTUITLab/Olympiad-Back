@@ -20,7 +20,7 @@ else
     @if (isSelectingClaim)
     {
         <Select Size="small"
-        DataSource="@availableClaimTypes"
+        DataSource="AvailableClaimTypes"
         Value="@claimModel.Type"
         ValueChanged="UpdateAvailableValuesCollection"
         TItem="string"
@@ -29,8 +29,8 @@ else
         Style="width: 10em;" DropdownMatchSelectWidth="false" />
         @if (!string.IsNullOrEmpty(claimModel.Type))
         {
-            <Select TItemValue="string" TItem="string" Size="small" DataSource="@availableValues" Value="@claimModel.Value" ValueChanged="AddClaimSearch"
-        Style="width: 8em;" OnDropdownVisibleChange=@((v) => SelectVisibleChanged(v, claimModel.Value)) />
+            <Select TItemValue="string" TItem="string" Size="small" DataSource="AvailableClaimValues" Value="@claimModel.Value" ValueChanged="AddClaimSearch"
+        Style="width: 8em;" OnDropdownVisibleChange=@((v) => SelectVisibleChanged(v, claimModel.Value)) DropdownMatchSelectWidth="false" />
         }
     }
     else
@@ -51,11 +51,14 @@ else
     private bool isSelectingClaim;
 
     private Dictionary<string, List<string>>? allClaims;
-    private IEnumerable<string>? availableClaimTypes => allClaims?
+    private IEnumerable<string>? AvailableClaimTypes => allClaims?
         .Select(kvp => (type: kvp.Key, valueExists: kvp.Value.Except(SafeClaims.Where(c => c.Type == kvp.Key).Select(c => c.Value)).Any()))
         .Where(c => c.valueExists)
         .Select(c => c.type);
-    private List<string>? availableValues;
+    private IEnumerable<string>? AvailableClaimValues =>
+        allClaims?.TryGetValue(claimModel.Type, out var values) == true ?
+            values.Except(SafeClaims.Where(c => c.Type == claimModel.Type).Select(c => c.Value)).ToList()
+            : Enumerable.Empty<string>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,14 +83,7 @@ else
 
     private void UpdateAvailableValuesCollection(string claimType)
     {
-        JS.Log("typeset", claimModel);
         claimModel.Type = claimType;
-        if (allClaims?.ContainsKey(claimType) == true)
-        {
-            availableValues = allClaims[claimType]
-                .Except(SafeClaims.Where(c => c.Type == claimType).Select(c => c.Value))
-                .ToList();
-        }
     }
 
     private void SelectVisibleChanged(bool visible, string valueMustFilled)
