@@ -46,4 +46,7 @@ public interface IControlPanelApiService
     [Get("/api/auth/gettokenforuser/{userId}")]
     public Task<TokenResponse> GetTokenForUser(Guid userId);
 
+
+    [Get("/api/account/claims")]
+    public Task<Dictionary<string, List<string>>> GetAllClaims();
 }

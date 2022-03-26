@@ -1,0 +1,60 @@
+﻿@using PublicAPI.Requests.Account
+@inherits FeedbackComponent<IReadOnlyCollection<ClaimRequest>, ClaimRequest>
+@inject IControlPanelApiService ControlPanelApiService
+@if (claims is null)
+{
+    <Spin Spinning Style="width: 100%;" />
+}
+else if (claims.Count == 0)
+{
+    <Alert Type="@AlertType.Info" Message="Не существует свойств пользователей" />
+}
+else
+{
+    <Form Model="claimModel" Layout="@FormLayout.Vertical">
+        <FormItem Label="Тип">
+            <Select
+                DataSource="@claims.Keys"
+                @bind-Value="@context.Type"
+                OnSelectedItemChanged="UpdateAvailableValuesCollection">
+            </Select>
+        </FormItem>
+        @if (!string.IsNullOrEmpty(context.Type))
+    {
+        <FormItem Label="Значение">
+            <Select
+                DataSource="@availableValues"
+                @bind-Value="@context.Value">
+            </Select>
+        </FormItem>
+    }
+</Form>
+}
+
+@code {
+    private ClaimRequest claimModel = new ClaimRequest();
+
+    private Dictionary<string, List<string>>? claims;
+    private List<string>? availableValues;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        claims = await ControlPanelApiService.GetAllClaims();
+    }
+
+    public override async Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        await base.OnFeedbackOkAsync(args);
+        await OkCancelRefWithResult.OkAsync(claimModel);
+    }
+
+    private void UpdateAvailableValuesCollection(string claimType)
+    {
+        if (claims?.ContainsKey(claimType) == true)
+        {
+            availableValues = claims[claimType]
+                .Except(Options?.Where(c => c.Type == claimType).Select(c => c.Value) ?? Enumerable.Empty<string>())
+                .ToList();
+        }
+    }
+}

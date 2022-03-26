@@ -403,5 +403,18 @@ namespace WebApp.Controllers.Users
                 .Select(h => mapper.Map<LoginEventResponse>(h))
                 .ToList();
         }
+        
+        [Authorize(Roles = "Admin")]
+        [HttpGet("claims")]
+        public async Task<ActionResult<Dictionary<string, List<string>>>> GetClaimTypes([FromServices] ApplicationDbContext context)
+        {
+            return (await context
+                .UserClaims
+                .Select(c => new { Type = c.ClaimType, Value = c.ClaimValue })
+                .Distinct()
+                .ToListAsync())
+                .GroupBy(c => c.Type)
+                .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
+        }
     }
 }

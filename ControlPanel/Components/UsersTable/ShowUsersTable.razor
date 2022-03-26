@@ -15,7 +15,10 @@
        ScrollY="@TableScrollY"
        OnChange="HandleChange">
     <TitleTemplate>
-        Найдено: @(loadedData?.Total.ToString() ?? "Заггрузка")
+        @if (TitleTemplate is not null)
+        {
+            @TitleTemplate
+        }
     </TitleTemplate>
     <ChildContent>
         <Column @bind-Field="context.StudentId" Title="Идентификатор">
@@ -24,6 +27,9 @@
         <Column @bind-Field="context.FirstName" Title="Имя"></Column>
         <Column @bind-Field="context.Email"></Column>
     </ChildContent>
+    <FooterTemplate>
+        Найдено: <Text Keyboard>@(loadedData?.Total.ToString() ?? "Заггрузка")</Text>
+    </FooterTemplate>
 </Table>
 
 
@@ -36,7 +42,8 @@
     public EventCallback<TSelection> SelectionChanged { get; set; }
     [Parameter]
     public string TableScrollY { get; set; } = "50vh";
-
+    [Parameter]
+    public RenderFragment? TitleTemplate { get; set; }
 
     private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
     private ListResponseWithMatch<UserInfoResponse>? loadedData;
