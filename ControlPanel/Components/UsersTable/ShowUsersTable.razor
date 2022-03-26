@@ -126,6 +126,7 @@
     public async Task RefreshTable()
     {
         await LoadData(true);
+        StateHasChanged();
     }
 
     private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);

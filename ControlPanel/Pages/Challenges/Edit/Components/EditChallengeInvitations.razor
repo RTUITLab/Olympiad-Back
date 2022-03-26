@@ -45,7 +45,9 @@
                     @if (context?.Total > 1)
                     {
                         <AntDesign.Col>
-                            <Popconfirm Title="Вы уверены, что хотите закрыть доступ у всех приглашенных пользователей?" OkText="Закрыть доступ всем" CancelText="Отмена">
+                            <Popconfirm Title="Вы уверены, что хотите закрыть доступ у всех приглашенных пользователей?"
+                                    OkText="Закрыть доступ всем" CancelText="Отмена"
+                                    OnConfirm="RemoveAllUsersFromChallenge">
                                 <Button Icon="@IconType.Outline.UsergroupDelete" Class="big-icon" Danger>Закрыть доступ</Button>
                             </Popconfirm>
                         </AntDesign.Col>
@@ -53,7 +55,8 @@
                 </Row>
             </TitleTemplate>
             <UserExtra Context="user">
-                <Button Icon="@IconType.Outline.UserDelete" Danger
+                <Button OnClick=@(() => RemoveOneUser(user.Id))
+                        Icon="@IconType.Outline.UserDelete" Danger
                         Loading="user.Id == currentHandledUserId" Disabled="currentHandledUserId.HasValue && currentHandledUserId != user.Id" />
             </UserExtra>
         </ShowUsersTable>
@@ -113,8 +116,8 @@
         if (isNewUser.HasValue)
         {
             await Task.WhenAll(
-                MessageService.Success(isNewUser.Value ? "Пользователю предоставлен доступ" : "У пользователя уже был доступ"),
-                intivedUsersTableRef.RefreshTable()
+                intivedUsersTableRef.RefreshTable(),
+                MessageService.Success(isNewUser.Value ? "Пользователю предоставлен доступ" : "У пользователя уже был доступ")
             );
         }
     }
@@ -130,13 +133,13 @@
         StateHasChanged();
         try
         {
-            var invitedUIsersCount = await ChallengesApi.InviteUsers(ChallengeId, new InviteUsersRequest
+            var invitedUsersCount = await ChallengesApi.InviteUsers(ChallengeId, new InviteUsersRequest
                 {
                     Match = usersSearchModel.Match,
                     Claims = usersSearchModel.Claims.ToList()
                 });
             await Task.WhenAll(
-                ConfirmService.Show($"Приглашено пользователей: {invitedUIsersCount}", "Доступ предоставлен", ConfirmButtons.OK, ConfirmIcon.Success),
+                ConfirmService.Show($"Приглашено пользователей: {invitedUsersCount}", "Доступ предоставлен", ConfirmButtons.OK, ConfirmIcon.Success),
                 intivedUsersTableRef.RefreshTable()
             );
         }
@@ -144,6 +147,69 @@
         {
             Logger.LogWarning(ex, "Can't intite users to challenge");
             await ConfirmService.Show("Не удалось выдать доступ", "Ошибка", ConfirmButtons.OK, ConfirmIcon.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task RemoveOneUser(Guid userId)
+    {
+        if (intivedUsersTableRef is null)
+        {
+            Logger.LogError("Not found invitations table");
+            return;
+        }
+        loading = true;
+        currentHandledUserId = userId;
+        StateHasChanged();
+        bool? isNewUser = null;
+        try
+        {
+            isNewUser = await ChallengesApi.RemoveOneUser(ChallengeId, userId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't intite users to challenge");
+            await MessageService.Error("Не удалось закрыть доступ");
+        }
+        finally
+        {
+            loading = false;
+            currentHandledUserId = null;
+        }
+        StateHasChanged();
+        if (isNewUser.HasValue)
+        {
+            await Task.WhenAll(
+                intivedUsersTableRef.RefreshTable(),
+                MessageService.Success(isNewUser.Value ? "Пользователю закрыт доступ" : "Пользователя не имел доступа")
+            );
+        }
+    }
+
+    private async Task RemoveAllUsersFromChallenge()
+    {
+        if (intivedUsersTableRef is null)
+        {
+            Logger.LogError("Not found invitations table");
+            return;
+        }
+        loading = true;
+        StateHasChanged();
+        try
+        {
+            var removedUsersCount = await ChallengesApi.RemoveAllUsersFromChallenge(ChallengeId);
+            await Task.WhenAll(
+                ConfirmService.Show($"Пользователей больше не имеют доступа: {removedUsersCount}", "Доступ закрыт", ConfirmButtons.OK, ConfirmIcon.Success),
+                intivedUsersTableRef.RefreshTable()
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't intite users to challenge");
+            await ConfirmService.Show("Не удалось закрыть доступ", "Ошибка", ConfirmButtons.OK, ConfirmIcon.Error);
         }
         finally
         {

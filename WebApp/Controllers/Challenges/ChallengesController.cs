@@ -173,10 +173,16 @@ namespace WebApp.Controllers.Challenges
             }));
             var saved = await context.SaveChangesAsync();
             await transaction.CommitAsync();
-            logger.LogDebug($"Saved {saved} entities");
+            logger.LogDebug("Saved {InvitedUsersCount} entities", saved);
             return saved;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="challengeId"></param>
+        /// <param name="userId"></param>
+        /// <returns><see langword="true"/> if access successfully granted <see langword="false"/> if acceess already granted</returns>
         [HttpPost("{challengeId:guid}/invitations/{userId:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<bool>> InviteOneUserToChallenge(
@@ -185,6 +191,52 @@ namespace WebApp.Controllers.Challenges
         {
             logger.LogInformation("Adding {User} user to challenge {ChallengeId}", userId, challengeId);
             context.Add(new UserToChallenge
+            {
+                ChallengeId = challengeId,
+                UserId = userId
+            });
+            try
+            {
+                var saved = await context.SaveChangesAsync();
+                return saved == 1;
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                return false;
+            }
+        }
+
+        [HttpDelete("{challengeId:guid}/invitations")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<int>> RemoveAllUsersFromChallenge(Guid challengeId)
+        {
+            logger.LogInformation("Removing all users from {ChallengeId}", challengeId);
+
+            var invitations = await context
+                .Challenges
+                .Where(c => c.Id == challengeId)
+                .SelectMany(c => c.UsersToChallenges)
+                .ToListAsync();
+            context.RemoveRange(invitations);  
+            var saved = await context.SaveChangesAsync();
+            logger.LogDebug("Removed {DeletedUserInvitationsCount} entities", saved);
+            return saved;
+        }
+        /// <summary>
+        /// Remove one user from Challenge
+        /// </summary>
+        /// <param name="challengeId"></param>
+        /// <param name="userId"></param>
+        /// <returns><see langword="true"/> if successfully removed <see langword="false"/> if didn't have acceess</returns>
+        [HttpDelete("{challengeId:guid}/invitations/{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<bool>> RemoveOneUserFromChallenge(
+            Guid challengeId,
+            Guid userId)
+        {
+            logger.LogInformation("Remove {User} user from challenge {ChallengeId}", userId, challengeId);
+            context.Remove(new UserToChallenge
             {
                 ChallengeId = challengeId,
                 UserId = userId

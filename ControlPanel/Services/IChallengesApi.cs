@@ -45,5 +45,9 @@ public interface IChallengesApi
     public Task<int> InviteUsers(Guid challengeId, InviteUsersRequest inviteUsersRequest);
     [Post("/api/challenges/{challengeId}/invitations/{userId}")]
     public Task<bool> InviteOneUser(Guid challengeId, Guid userId);
+    [Delete("/api/challenges/{challengeId}/invitations")]
+    public Task<int> RemoveAllUsersFromChallenge(Guid challengeId);
+    [Delete("/api/challenges/{challengeId}/invitations/{userId}")]
+    public Task<bool> RemoveOneUser(Guid challengeId, Guid userId);
 
 }
