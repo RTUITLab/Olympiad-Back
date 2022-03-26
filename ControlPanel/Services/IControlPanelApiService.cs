@@ -8,6 +8,8 @@ using PublicAPI.Responses.Users;
 using Refit;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -20,7 +22,16 @@ public interface IControlPanelApiService
     public Task<List<SolutionsStatisticResponse>> GetSolutionsStatisticsAsync();
 
     [Get("/api/account")]
-    public Task<ListResponseWithMatch<UserInfoResponse>> SearchUsers(string? match, int limit, int offset);
+    [Obsolete("Use SearchUsers")]
+    public Task<ListResponseWithMatch<UserInfoResponse>> SearchUsersPrivate(string? match, int limit, int offset, string? targetClaims);
+
+    public Task<ListResponseWithMatch<UserInfoResponse>> SearchUsers(string? match, int limit, int offset, IEnumerable<ClaimRequest>? targetClaims = null)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        return SearchUsersPrivate(match, limit, offset, ClaimRequest.PackClaimsToUrl(targetClaims));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
     [Get("/api/account/{userId}")]
     public Task<ApiResponse<UserInfoResponse>> GetUser(Guid userId);
     [Put("/api/account/{userId}")]

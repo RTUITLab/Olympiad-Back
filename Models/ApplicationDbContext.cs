@@ -37,6 +37,12 @@ namespace Models
                 .HasIndex(u => u.StudentID)
                 .IsUnique();
 
+            builder.Entity<User>()
+                .HasMany(u => u.Claims)
+                .WithOne()
+                .HasForeignKey(uc => uc.UserId)
+                .IsRequired();
+
             builder.Entity<ExerciseDataGroup>()
                 .HasIndex(dg => new { dg.Title, dg.ExerciseId })
                 .IsUnique();

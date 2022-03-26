@@ -14,5 +14,6 @@ namespace Models
         public List<Solution> Solutions { get; set; }
         public List<UserToChallenge> UsersToChallenges { get; set; }
         public List<LoginEvent> LoginHistory { get; set; }
+        public ICollection<IdentityUserClaim<Guid>> Claims { get; set; }
     }
 }

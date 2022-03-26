@@ -4,6 +4,7 @@
 @using AntDesign.TableModels
 @using Olympiad.ControlPanel.Components.UsersTable
 @using Olympiad.Shared
+@using PublicAPI.Requests.Account
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Users
 @using System.Text
@@ -65,6 +66,16 @@
         }
     }
 
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? Claims
+    {
+        get => ClaimRequest.PackClaimsToUrl(selectionModel.Claims); set
+        {
+            selectionModel.Claims = (ClaimRequest.ParseClaimsFromUrl(value) ?? Enumerable.Empty<ClaimRequest>()).ToList().AsReadOnly();
+        }
+    }
+
     private UsersSearchModel selectionModel = new UsersSearchModel();
 
 
@@ -83,8 +94,9 @@
         var queryParams = new Dictionary<string, object?>
         {
             {nameof(Offset), Offset <= 1 ? null : Offset},
-            {nameof(PageSize), PageSize == 50 ? null : PageSize},
+            {nameof(PageSize), PageSize == 10 ? null : PageSize},
             {nameof(Match), Match},
+            {nameof(Claims), Claims},
         };
         return NavigationManager.GetUriWithQueryParameters(queryParams);
     }

@@ -36,6 +36,8 @@
 
     private UsersSearchModel usersSelectionModel = new UsersSearchModel();
     private string? searchText;
+
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -80,7 +82,7 @@
 
     private Task<ListResponseWithMatch<UserInfoResponse>> GetUsers(UsersSearchModel searchModel)
     {
-        return ControlPanelApiService.SearchUsers(searchModel.Match, searchModel.Limit, searchModel.Offset);
+        return ControlPanelApiService.SearchUsers(searchModel.Match, searchModel.Limit, searchModel.Offset, searchModel.Claims);
     }
 
     private async Task UpdateSelectionModel(UsersSearchModel searchModel)
@@ -93,7 +95,7 @@
 
     public record UsersSearchModel : UsersPartSelectionModel
     {
-        public IReadOnlyList<ClaimRequest> Claims { get; init; } = Enumerable.Empty<ClaimRequest>().ToList().AsReadOnly();
+        public IReadOnlyList<ClaimRequest> Claims { get; set; } = Enumerable.Empty<ClaimRequest>().ToList().AsReadOnly();
         public string? Match { get; set; }
     }
 }

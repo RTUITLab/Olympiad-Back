@@ -64,15 +64,27 @@ namespace WebApp.Controllers.Users
         [Authorize(Roles = "Admin")]
         public async Task<ListResponseWithMatch<UserInfoResponse>> Get(
             [MaxLength(100)] string match,
-            [FromQuery] ListQueryParams listQuery)
+            [FromQuery] ListQueryParams listQuery,
+            // TODO: use action filter for validating claims
+            [FromQuery] string targetClaims,
+            [FromServices] ApplicationDbContext context)
         {
+            using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
             var words = (match ?? "").ToUpper().Split(' ');
-            var users = UserManager.Users;
+            var users = UserManager.Users.AsNoTracking();
             users = words.Aggregate(users, (usersCollection, matcher) => usersCollection.Where(
                 u =>
                     u.FirstName.ToUpper().Contains(matcher) ||
                     u.Email.ToUpper().Contains(matcher) ||
                     u.StudentID.ToUpper().Contains(matcher)));
+            var claimsAsList = ClaimRequest.ParseClaimsFromUrl(targetClaims);
+            if (claimsAsList?.Any() == true)
+            {
+                foreach (var claim in claimsAsList)
+                {
+                    users = users.Where(u => u.Claims.Any(c => c.ClaimType == claim.Type && c.ClaimValue == claim.Value));
+                }
+            }
             var totalCount = await users.CountAsync();
             var result = await users
                 .OrderBy(u => u.FirstName)
@@ -403,7 +415,7 @@ namespace WebApp.Controllers.Users
                 .Select(h => mapper.Map<LoginEventResponse>(h))
                 .ToList();
         }
-        
+
         [Authorize(Roles = "Admin")]
         [HttpGet("claims")]
         public async Task<ActionResult<Dictionary<string, List<string>>>> GetClaimTypes([FromServices] ApplicationDbContext context)
