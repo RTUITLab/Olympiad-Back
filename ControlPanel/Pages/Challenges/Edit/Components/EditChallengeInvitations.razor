@@ -1,13 +1,63 @@
-﻿@inject MessageService MessageService
+﻿@using Olympiad.ControlPanel.Components.UsersTable
+@using PublicAPI.Requests.Challenges
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Users
+@using static Olympiad.ControlPanel.Components.UsersTable.UsersSearchTable
+
+@inject MessageService MessageService
 @inject IChallengesApi ChallengesApi
+@inject ConfirmService ConfirmService
+@inject ILogger<EditChallengeInvitations> Logger
 
 <Drawer Title=@($"Доступ к {ChallengeName}")
         Visible="visible"
         Width="1500"
         Closable="false"
         OnClose="Close">
-        <Button OnClick=@(() => visible = false)>Close</Button>
+    <Spin Spinning="loading">
+        <UsersSearchTable @bind-Selection="usersSearchModel" TableScrollY="20vh" TableSize="TableSize.Small">
+            <UserExtra Context="user">
+                <Button Icon="@IconType.Outline.UserAdd" Type="@ButtonType.Primary"
+                        Loading="user.Id == currentHandledUserId" Disabled="currentHandledUserId.HasValue && currentHandledUserId != user.Id"
+                        OnClick=@(() => InviteOneUser(user.Id)) />
+            </UserExtra>
+            <FooterExtra>
+                @if (context?.Total > 1)
+                {
+                    <Popconfirm Title="Вы уверены, что хотите пригласить всех найденных пользователей?"
+                            OkText="Выдать доступ всем" CancelText="Отмена"
+                            OnConfirm="InviteFoundUsers">
+                        <Button Icon="@IconType.Outline.UsergroupAdd" Class="big-icon" Type="@ButtonType.Primary">Выдать доступ</Button>
+                    </Popconfirm>
+                }
+            </FooterExtra>
+        </UsersSearchTable>
 
+        <ShowUsersTable TSelection="UsersPartSelectionModel" GetUsersFunction="LoadInvitations" CounterLabel="Имеют доступ"
+                        TableScrollY="20vh"
+                        TableSize="TableSize.Small"
+                        @ref="intivedUsersTableRef">
+            <TitleTemplate>
+                <Row Justify="space-between" Align="middle">
+                    <AntDesign.Col>
+                        Приглашенные пользователи
+                    </AntDesign.Col>
+                    @if (context?.Total > 1)
+                    {
+                        <AntDesign.Col>
+                            <Popconfirm Title="Вы уверены, что хотите закрыть доступ у всех приглашенных пользователей?" OkText="Закрыть доступ всем" CancelText="Отмена">
+                                <Button Icon="@IconType.Outline.UsergroupDelete" Class="big-icon" Danger>Закрыть доступ</Button>
+                            </Popconfirm>
+                        </AntDesign.Col>
+                    }
+                </Row>
+            </TitleTemplate>
+            <UserExtra Context="user">
+                <Button Icon="@IconType.Outline.UserDelete" Danger
+                        Loading="user.Id == currentHandledUserId" Disabled="currentHandledUserId.HasValue && currentHandledUserId != user.Id" />
+            </UserExtra>
+        </ShowUsersTable>
+    </Spin>
 </Drawer>
 
 
@@ -17,22 +67,97 @@
     [Parameter]
     public Guid ChallengeId { get; set; }
 
-    private bool visible;
+    private UsersSearchModel usersSearchModel = new UsersSearchModel();
+
+    private ShowUsersTable<UsersPartSelectionModel>? intivedUsersTableRef;
+
+    private bool visible = true;
     private bool loading;
-    public async Task Show()
+    private Guid? currentHandledUserId;
+    public void Show()
     {
         visible = true;
         StateHasChanged();
-        await LoadInvitations();
     }
 
-    private async Task LoadInvitations()
+    private Task<ListResponseWithMatch<UserInfoResponse>> LoadInvitations(UsersPartSelectionModel usersPartSelectionModel)
     {
-        var users = await ChallengesApi.GetInvitations(ChallengeId);
+        return ChallengesApi.GetInvitations(ChallengeId, usersPartSelectionModel.Offset, usersPartSelectionModel.Limit);
+    }
+    private async Task InviteOneUser(Guid userId)
+    {
+        if (intivedUsersTableRef is null)
+        {
+            Logger.LogError("Not found invitations table");
+            return;
+        }
+        loading = true;
+        currentHandledUserId = userId;
+        StateHasChanged();
+        bool? isNewUser = null;
+        try
+        {
+            isNewUser = await ChallengesApi.InviteOneUser(ChallengeId, userId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't intite users to challenge");
+            await MessageService.Error("Не удалось выдать доступ");
+        }
+        finally
+        {
+            loading = false;
+            currentHandledUserId = null;
+        }
+        StateHasChanged();
+        if (isNewUser.HasValue)
+        {
+            await Task.WhenAll(
+                MessageService.Success(isNewUser.Value ? "Пользователю предоставлен доступ" : "У пользователя уже был доступ"),
+                intivedUsersTableRef.RefreshTable()
+            );
+        }
+    }
+
+    private async Task InviteFoundUsers()
+    {
+        if (intivedUsersTableRef is null)
+        {
+            Logger.LogError("Not found invitations table");
+            return;
+        }
+        loading = true;
+        StateHasChanged();
+        try
+        {
+            var invitedUIsersCount = await ChallengesApi.InviteUsers(ChallengeId, new InviteUsersRequest
+                {
+                    Match = usersSearchModel.Match,
+                    Claims = usersSearchModel.Claims.ToList()
+                });
+            await Task.WhenAll(
+                ConfirmService.Show($"Приглашено пользователей: {invitedUIsersCount}", "Доступ предоставлен", ConfirmButtons.OK, ConfirmIcon.Success),
+                intivedUsersTableRef.RefreshTable()
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't intite users to challenge");
+            await ConfirmService.Show("Не удалось выдать доступ", "Ошибка", ConfirmButtons.OK, ConfirmIcon.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
     }
 
     private async Task Close()
     {
-        await MessageService.Warning("Происходит обновление данных");
+        if (loading)
+        {
+            await MessageService.Warning("Происходит обновление данных");
+            return;
+        }
+        visible = false;
     }
 }

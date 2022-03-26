@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using Amazon.Runtime.Internal.Util;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Models;
 using Models.Exercises;
 using Models.Links;
+using Npgsql;
 using Olympiad.Shared.Models;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
@@ -19,7 +22,7 @@ using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
 using PublicAPI.Responses.Users;
 using WebApp.Models;
-
+using WebApp.Services;
 
 namespace WebApp.Controllers.Challenges
 {
@@ -30,15 +33,17 @@ namespace WebApp.Controllers.Challenges
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly ILogger<ChallengesController> logger;
 
         public ChallengesController(
             UserManager<User> userManager,
             ApplicationDbContext context,
-            IMapper mapper
-            ) : base(userManager)
+            IMapper mapper,
+            ILogger<ChallengesController> logger) : base(userManager)
         {
             this.context = context;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -137,6 +142,63 @@ namespace WebApp.Controllers.Challenges
                 Total = total,
                 Offset = listQueryParams.Offset
             };
+        }
+
+
+        [HttpPost("{challengeId:guid}/invitations")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<int>> InviteUsersToChallenge(
+            Guid challengeId,
+            InviteUsersRequest inviteUsersRequest)
+        {
+            var transaction = context.Database.BeginTransaction(IsolationLevel.RepeatableRead);
+            var targetUserIds = await context.Users
+                .FindByMatch(inviteUsersRequest.Match)
+                .FindByClaims(inviteUsersRequest.Claims)
+                .Select(u => u.Id)
+                .ToListAsync();
+            var alreadyInvitedUserIds = await context
+                .Challenges
+                .Where(c => c.Id == challengeId)
+                .SelectMany(c => c.UsersToChallenges)
+                .Select(i => i.UserId)
+                .ToListAsync();
+
+            var targetIds = targetUserIds.Except(alreadyInvitedUserIds).ToList();
+            logger.LogInformation("Adding {UsersCount} users to challenge {ChallengeId}", targetUserIds, challengeId);
+            context.AddRange(targetIds.Select(id => new UserToChallenge
+            {
+                ChallengeId = challengeId,
+                UserId = id
+            }));
+            var saved = await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            logger.LogDebug($"Saved {saved} entities");
+            return saved;
+        }
+
+        [HttpPost("{challengeId:guid}/invitations/{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<bool>> InviteOneUserToChallenge(
+            Guid challengeId,
+            Guid userId)
+        {
+            logger.LogInformation("Adding {User} user to challenge {ChallengeId}", userId, challengeId);
+            context.Add(new UserToChallenge
+            {
+                ChallengeId = challengeId,
+                UserId = userId
+            });
+            try
+            {
+                var saved = await context.SaveChangesAsync();
+                return saved == 1;
+            }
+            catch (DbUpdateException ex)
+                when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                return false;
+            }
         }
 
         private IQueryable<ChallengeResponse> AvailableChallenges()

@@ -10,7 +10,14 @@
         <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@searchText" OnSearch="UpdateSearch" />
     </SpaceItem>
     <SpaceItem>
-        <ShowUsersTable TSelection="UsersSearchModel" Selection="Selection" SelectionChanged="HandleSelectionChanged" GetUsersFunction="GetUsers">
+        <ShowUsersTable TSelection="UsersSearchModel"
+                        Selection="usersSelectionModel"
+                        SelectionChanged="HandleSelectionChanged"
+                        GetUsersFunction="GetUsers"
+                        TableScrollY="@TableScrollY"
+                        TableSize="TableSize"
+                        UserExtra="UserExtra"
+                        FooterExtra="FooterExtra">
             <TitleTemplate>
                 <SelectClaimsForm Claims="usersSelectionModel.Claims" ClaimsChanged="UpdateClaims" />
             </TitleTemplate>
@@ -26,6 +33,14 @@
     public UsersSearchModel? Selection { get; set; }
     [Parameter]
     public EventCallback<UsersSearchModel> SelectionChanged { get; set; }
+    [Parameter]
+    public string? TableScrollY { get; set; }
+    [Parameter]
+    public TableSize? TableSize { get; set; } = TableSize.Middle;
+    [Parameter]
+    public RenderFragment<UserInfoResponse>? UserExtra { get; set; }
+    [Parameter]
+    public RenderFragment<ListResponseWithMatch<UserInfoResponse>?>? FooterExtra { get; set; }
 
     private UsersSearchModel usersSelectionModel = new UsersSearchModel();
     private string? searchText;
@@ -63,6 +78,7 @@
 
     private async Task UpdateSelectionModel(UsersSearchModel searchModel)
     {
+        usersSelectionModel = searchModel;
         if (SelectionChanged.HasDelegate)
         {
             await SelectionChanged.InvokeAsync(searchModel);

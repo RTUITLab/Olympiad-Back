@@ -31,6 +31,7 @@ using PublicAPI.Requests.Account;
 using OneOf;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Models.Links;
+using WebApp.Services;
 
 namespace WebApp.Controllers.Users
 {
@@ -70,21 +71,13 @@ namespace WebApp.Controllers.Users
             [FromServices] ApplicationDbContext context)
         {
             using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
-            var words = (match ?? "").ToUpper().Split(' ');
-            var users = UserManager.Users.AsNoTracking();
-            users = words.Aggregate(users, (usersCollection, matcher) => usersCollection.Where(
-                u =>
-                    u.FirstName.ToUpper().Contains(matcher) ||
-                    u.Email.ToUpper().Contains(matcher) ||
-                    u.StudentID.ToUpper().Contains(matcher)));
             var claimsAsList = ClaimRequest.ParseClaimsFromUrl(targetClaims);
-            if (claimsAsList?.Any() == true)
-            {
-                foreach (var claim in claimsAsList)
-                {
-                    users = users.Where(u => u.Claims.Any(c => c.ClaimType == claim.Type && c.ClaimValue == claim.Value));
-                }
-            }
+
+            var users = UserManager.Users
+                .AsNoTracking()
+                .FindByMatch(match)
+                .FindByClaims(claimsAsList);
+
             var totalCount = await users.CountAsync();
             var result = await users
                 .OrderBy(u => u.FirstName)

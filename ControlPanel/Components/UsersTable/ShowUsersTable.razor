@@ -1,10 +1,12 @@
-﻿@using PublicAPI.Requests
+﻿@typeparam TSelection where TSelection : UsersPartSelectionModel
+@using PublicAPI.Requests
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Users
 @using System.Threading
 
 @inject IJSRuntime JS
-@typeparam TSelection where TSelection : UsersPartSelectionModel
+@inject MessageService MessageService
+@inject ILogger<ShowUsersTable<TSelection>> Logger
 
 <Table DataSource="usersSource"
        Loading="loading"
@@ -13,11 +15,13 @@
        @bind-PageIndex="PageIndex"
        TItem="UserInfoResponse"
        ScrollY="@TableScrollY"
-       OnChange="HandleChange">
+       OnChange="HandleChange"
+       Bordered
+       Size="TableSize">
     <TitleTemplate>
         @if (TitleTemplate is not null)
         {
-            @TitleTemplate
+            @TitleTemplate(loadedData)
         }
     </TitleTemplate>
     <ChildContent>
@@ -26,9 +30,25 @@
         </Column>
         <Column @bind-Field="context.FirstName" Title="Имя"></Column>
         <Column @bind-Field="context.Email"></Column>
+        @if (UserExtra is not null)
+        {
+            <ActionColumn Width="5em">
+                @UserExtra(context)
+            </ActionColumn>
+        }
     </ChildContent>
     <FooterTemplate>
-        Найдено: <Text Keyboard>@(loadedData?.Total.ToString() ?? "Заггрузка")</Text>
+        <Row Justify="space-between" Align="center">
+            <AntDesign.Col>
+                @CounterLabel: <Text Keyboard>@(loadedData?.Total.ToString() ?? "Загрузка")</Text>
+            </AntDesign.Col>
+            @if (FooterExtra is not null)
+            {
+                <AntDesign.Col>
+                    @FooterExtra(loadedData)
+                </AntDesign.Col>
+            }
+        </Row>
     </FooterTemplate>
 </Table>
 
@@ -43,7 +63,16 @@
     [Parameter]
     public string TableScrollY { get; set; } = "50vh";
     [Parameter]
-    public RenderFragment? TitleTemplate { get; set; }
+    public TableSize? TableSize { get; set; } = TableSize.Middle;
+    [Parameter]
+    public RenderFragment<ListResponseWithMatch<UserInfoResponse>?>? TitleTemplate { get; set; }
+    [Parameter]
+    public RenderFragment<UserInfoResponse>? UserExtra { get; set; }
+    [Parameter]
+    public RenderFragment<ListResponseWithMatch<UserInfoResponse>?>? FooterExtra { get; set; }
+
+    [Parameter]
+    public string CounterLabel { get; set; } = "Найдено";
 
     private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
     private ListResponseWithMatch<UserInfoResponse>? loadedData;
@@ -64,6 +93,7 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        await JS.Log("on parameter set");
         var needLoadData = false;
         if (Selection is not null && Selection != usersPartSelectionModel)
         {
@@ -74,6 +104,11 @@
         {
             needLoadData = true;
         }
+        if (lastLoadedSelectionModel is null)
+        {
+            needLoadData = true;
+        }
+        await JS.Log("on parameter set", needLoadData);
         if (needLoadData)
         {
             await LoadData();
@@ -88,18 +123,23 @@
             await SelectionChanged.InvokeAsync(Selection with { Limit = usersPartSelectionModel.Limit, Offset = usersPartSelectionModel.Offset });
         }
     }
-
+    public async Task RefreshTable()
+    {
+        await LoadData(true);
+    }
 
     private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
-    private async Task LoadData()
+    private async Task LoadData(bool force = false)
     {
         if (GetUsersFunction is null)
         {
-            // TODO: log warning
+            Logger.LogWarning("No {Function}", nameof(GetUsersFunction));
+            await MessageService.Warning("Неверное использование компонента.");
             return;
         }
         if (loadDataSemaphore.CurrentCount == 0)
         {
+            Logger.LogWarning("Semaphore collision");
             return;
         }
         await loadDataSemaphore.WaitAsync();
@@ -108,9 +148,10 @@
             var selectionToLoad = usersPartSelectionModel as TSelection;
             if (selectionToLoad is null)
             {
+                Logger.LogWarning("No selection to load. TargetType: {TargetType} FoundType {FoundType}", typeof(TSelection).Name, usersPartSelectionModel?.GetType().Name);
                 return;
             }
-            if (lastLoadedSelectionModel == selectionToLoad)
+            if (lastLoadedSelectionModel == selectionToLoad && !force)
             {
                 return;
             }

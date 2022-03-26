@@ -9,6 +9,10 @@ public static class JSExtensions
     {
         return jsRuntime.InvokeVoidAsync("console.log", data);
     }
+    public static ValueTask Warn(this IJSRuntime jsRuntime, params object?[]? data)
+    {
+        return jsRuntime.InvokeVoidAsync("console.warn", data);
+    }
     public static ValueTask OpenLinkInNewTab(this IJSRuntime jsRuntime, string url)
     {
         return jsRuntime.InvokeVoidAsync("openLinkInNewTab", url);
