@@ -44,9 +44,11 @@
 
     private async Task ApplyClaims()
     {
+        var errorsCount = 0;
         foreach (var row in claimRows!)
         {
-            try {
+            try
+            {
                 LogsService!.LogInfo(row.ToString());
                 var targetUsers = await ControlPanelApiService.SearchUsers(row.StudentId, 100, 0);
                 var oneUser = targetUsers.Data.SingleOrDefault(u => u.StudentId == row.StudentId);
@@ -61,13 +63,21 @@
                     });
                 row.Status = RowStatus.Ok;
                 StateHasChanged();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 row.Status = RowStatus.Error;
                 Logger.LogWarning(ex, "Can't add claim");
                 LogsService!.LogInfoObject(ex.Message);
+                errorsCount++;
             }
         }
+        await NotificationService.Info(new NotificationConfig
+            {
+                Duration = -1,
+                Message = "Загрузка окончена",
+                Description = $"Ошибок - {errorsCount} из {claimRows!.Count}"
+            });
     }
 
 
