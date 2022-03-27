@@ -1,0 +1,84 @@
+﻿@page "/users/temp_bulk"
+@inject NotificationService NotificationService
+@inject ILogger<TempBulkUpdateUsers> Logger
+@inject IControlPanelApiService ControlPanelApiService
+
+<TextArea Rows="70" @bind-Value="content" Style="width: 100%">
+
+</TextArea>
+<Button OnClick="Read">Read</Button>
+<Table Bordered DataSource="claimRows">
+    <Column Field="context.StudentId" Title="Идентификатор" />
+    <Column Field="context.ClaimType" Title="Тип" />
+    <Column Field="context.ClaimValue" Title="Значение" />
+    <Column Field="context.Status" Title="Статус" />
+</Table>
+<Button OnClick="ApplyClaims">Применить</Button>
+
+@code {
+    private string? content;
+    private List<UserClaimRow>? claimRows;
+
+    [CascadingParameter]
+    public ILogsService? LogsService { get; set; }
+
+    private async Task Read()
+    {
+        try
+        {
+            claimRows = content!.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(row => row.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries))
+                .Select(row => new UserClaimRow(row[0], row[1], row[2]))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't read text");
+            await NotificationService.Warning(new NotificationConfig
+                {
+                    Message = ex.GetType().Name,
+                    Description = ex.Message
+                });
+        }
+    }
+
+    private async Task ApplyClaims()
+    {
+        foreach (var row in claimRows!)
+        {
+            try {
+                LogsService!.LogInfo(row.ToString());
+                var targetUsers = await ControlPanelApiService.SearchUsers(row.StudentId, 100, 0);
+                var oneUser = targetUsers.Data.SingleOrDefault(u => u.StudentId == row.StudentId);
+                if (oneUser is null)
+                {
+                    throw new Exception("User not found");
+                }
+                await ControlPanelApiService.AddClaim(oneUser.Id, new PublicAPI.Requests.Account.ClaimRequest
+                    {
+                        Type = row.ClaimType,
+                        Value = row.ClaimValue
+                    });
+                row.Status = RowStatus.Ok;
+                StateHasChanged();
+            } catch (Exception ex)
+            {
+                row.Status = RowStatus.Error;
+                Logger.LogWarning(ex, "Can't add claim");
+                LogsService!.LogInfoObject(ex.Message);
+            }
+        }
+    }
+
+
+    private record UserClaimRow(string StudentId, string ClaimType, string ClaimValue)
+    {
+        public RowStatus Status { get; set; }
+    }
+    private enum RowStatus
+    {
+        Wait,
+        Ok,
+        Error
+    }
+}
