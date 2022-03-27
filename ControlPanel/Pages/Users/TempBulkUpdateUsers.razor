@@ -28,7 +28,7 @@
         {
             claimRows = content!.Split('\n', StringSplitOptions.RemoveEmptyEntries)
                 .Select(row => row.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries))
-                .Select(row => new UserClaimRow(row[0], row[1], row[2]))
+                .Select(row => new UserClaimRow(row[0], row[1], row[1] == "Name" ? row[2].Replace('_',' ') : row[2]))
                 .ToList();
         }
         catch (Exception ex)
@@ -56,11 +56,22 @@
                 {
                     throw new Exception("User not found");
                 }
-                await ControlPanelApiService.AddClaim(oneUser.Id, new PublicAPI.Requests.Account.ClaimRequest
-                    {
-                        Type = row.ClaimType,
-                        Value = row.ClaimValue
-                    });
+                if (row.ClaimType == "Name")
+                {
+                    await ControlPanelApiService.UpdateUserInfo(oneUser.Id, new PublicAPI.Requests.UpdateAccountInfoRequest
+                        {
+                            StudentId = oneUser.StudentId,
+                            FirstName = row.ClaimValue
+                        });
+                }
+                else
+                {
+                    await ControlPanelApiService.AddClaim(oneUser.Id, new PublicAPI.Requests.Account.ClaimRequest
+                        {
+                            Type = row.ClaimType,
+                            Value = row.ClaimValue
+                        });
+                }
                 row.Status = RowStatus.Ok;
                 StateHasChanged();
             }
