@@ -49,9 +49,23 @@ namespace WebApp.Controllers.Challenges
         [HttpGet]
         public Task<List<ChallengeResponse>> GetAsync()
         {
-            return AvailableChallenges().OrderBy(c => c.Name).ToListAsync();
+            return context.Challenges
+                .AvailableChallenges(UserId)
+                .OrderBy(c => c.Name)
+                .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
+        [HttpGet("forUser/{userId:guid}")]
+        [Authorize(Roles = "Admin")]
+        public Task<List<ChallengeResponse>> GetAsync(Guid userId)
+        {
+            return context.Challenges
+                .AvailableChallenges(userId)
+                .OrderBy(c => c.Name)
+                .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .ToListAsync();
+        }
 
         [HttpGet("all")]
         [Authorize(Roles = "Admin")]
@@ -67,9 +81,16 @@ namespace WebApp.Controllers.Challenges
         [HttpGet("{id:guid}")]
         public async Task<ChallengeResponse> Get(Guid id)
         {
-            return await AvailableChallenges()
-                        .Where(c => c.Id == id)
-                        .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
+            var challengesList = context.Challenges
+                .OrderBy(c => c.Name)
+                .Where(c => c.Id == id);
+            if (!IsAdmin)
+            {
+                challengesList = challengesList.AvailableChallenges(UserId);
+            }
+            return await challengesList
+                .ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync() ?? throw StatusCodeException.NotFount;
         }
 
 
@@ -251,20 +272,6 @@ namespace WebApp.Controllers.Challenges
             {
                 return false;
             }
-        }
-
-        private IQueryable<ChallengeResponse> AvailableChallenges()
-        {
-            IQueryable<Challenge> query = context.Challenges;
-            if (!IsAdmin)
-            {
-                query = query.Where(c =>
-                    c.ChallengeAccessType == ChallengeAccessType.Public ||
-                    c.UsersToChallenges.Any(utc => utc.UserId == UserId)
-                );
-            }
-
-            return query.ProjectTo<ChallengeResponse>(mapper.ConfigurationProvider);
         }
     }
 }

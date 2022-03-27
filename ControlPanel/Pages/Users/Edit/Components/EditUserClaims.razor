@@ -14,7 +14,6 @@
         <Tooltip Title="@("Могут быть использованы для массового добавления к соревнованиям")">
             <Icon Type="@IconType.Outline.InfoCircle" />
         </Tooltip>
-        <Button Type="@ButtonType.Default" Icon="@IconType.Outline.Reload" OnClick="RefreshData" />
     </TitleTemplate>
 
     <ChildContent>
@@ -23,13 +22,15 @@
                HidePagination="@(claims?.Count <= 10)">
             <ChildContent>
                 <Column @bind-Field="@context.Type" Title="Тип">
-                    @if (context.Type == DefaultClaims.NeedResetPassword.Type && context.Value == DefaultClaims.NeedResetPassword.Value)
-                    {
-                        <Tooltip Title="@("Пользователь еще не сменил сгенерированный пароль")">
-                            <Icon Type="@IconType.Outline.InfoCircle" Style="margin-right: 1em;" />
-                        </Tooltip>
-                    }
-                    @context.Type
+                    <Text>
+                        @if (context.Type == DefaultClaims.NeedResetPassword.Type && context.Value == DefaultClaims.NeedResetPassword.Value)
+                        {
+                            <Tooltip Title="@("Пользователь еще не сменил сгенерированный пароль")">
+                                <Icon Type="@IconType.Outline.InfoCircle" />
+                            </Tooltip>
+                        }
+                        @context.Type
+                    </Text>
                 </Column>
                 <Column @bind-Field="context.Value" Title="Значение" />
                 <ActionColumn>
@@ -59,7 +60,7 @@
 @code {
     private Guid? lastLoadedUserId;
     [Parameter, EditorRequired]
-    public UserInfoResponse? User { get; set; }
+    public Guid UserId { get; set; }
 
     private bool loading = true;
     private List<ClaimResponseObject>? claims;
@@ -80,16 +81,16 @@
 
     private AutoComplete<string>? typeInput;
 
-    public async Task RefreshData()
+    public async Task RefreshData(bool force = false)
     {
-        if (User == null || lastLoadedUserId == User.Id)
+        if (lastLoadedUserId == UserId && !force)
         {
             return;
         }
         loading = true;
         try
         {
-            var userId = User.Id;
+            var userId = UserId;
             claims = await ControlPanelApiService.GetClaims(userId);
             lastLoadedUserId = userId;
         }
@@ -97,6 +98,7 @@
         {
             loading = false;
         }
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
@@ -113,14 +115,10 @@
 
     private async Task AddClaim()
     {
-        if (User == null)
-        {
-            return;
-        }
         loading = true;
         try
         {
-            claims = await ControlPanelApiService.AddClaim(User.Id, newClaim);
+            claims = await ControlPanelApiService.AddClaim(UserId, newClaim);
             newClaim = new ClaimRequest();
             needFocus = true; // Send signal to OnAfterRenderAsync for change focus
         }
@@ -145,14 +143,10 @@
 
     private async Task RemoveClaim(ClaimResponseObject claim)
     {
-        if (User == null)
-        {
-            return;
-        }
         loading = true;
         try
         {
-            claims = await ControlPanelApiService.RemoveClaim(User.Id, claim.Type, claim.Value);
+            claims = await ControlPanelApiService.RemoveClaim(UserId, claim.Type, claim.Value);
             newClaim = new ClaimRequest();
         }
         finally

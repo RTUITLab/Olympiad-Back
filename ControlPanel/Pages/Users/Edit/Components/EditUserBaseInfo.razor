@@ -4,24 +4,26 @@
 @inject IControlPanelApiService ControlPanelApiService
 @inject MessageService _message
 
-
-<Form Model="userModel"
-      LabelColSpan="8"
-      WrapperColSpan="16"
-      Loading="saving"
-      OnFinish="SaveBaseInfo">
-    <FormItem Label="Идентификатор" Required>
-        <Input @bind-Value="@context.StudentId" />
-    </FormItem>
-    <FormItem Label="Имя" Required>
-        <Input @bind-Value="@context.FirstName" />
-    </FormItem>
-    <FormItem WrapperColOffset="8" WrapperColSpan="16">
-        <Button Type="@ButtonType.Primary" HtmlType="submit">
-            Сохранить базовые параметры
-        </Button>
-    </FormItem>
-</Form>
+<Card Title="Информация пользователя" Loading="User is null">
+    <Form Model="userModel"
+          LabelColSpan="8"
+          WrapperColSpan="16"
+          Loading="saving"
+          OnFinish="SaveBaseInfo"
+          Layout="@FormLayout.Vertical">
+        <FormItem Label="Идентификатор" Required>
+            <Input @bind-Value="@context.StudentId" />
+        </FormItem>
+        <FormItem Label="Имя" Required>
+            <Input @bind-Value="@context.FirstName" />
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Сохранить
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
 @code {
 
     [Parameter]

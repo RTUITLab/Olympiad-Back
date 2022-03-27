@@ -1,5 +1,9 @@
 ﻿using Models;
+using Models.Exercises;
+using Olympiad.Shared.Models;
 using PublicAPI.Requests.Account;
+using PublicAPI.Responses.Challenges;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +35,14 @@ namespace WebApp.Services
                 }
             }
             return users;
+        }
+
+        public static IQueryable<Challenge> AvailableChallenges(this IQueryable<Challenge> challenges, Guid userId)
+        {
+            return challenges.Where(c =>
+                c.ChallengeAccessType == ChallengeAccessType.Public ||
+                c.UsersToChallenges.Any(utc => utc.UserId == userId)
+            );
         }
     }
 }

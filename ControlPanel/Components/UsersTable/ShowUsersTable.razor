@@ -93,7 +93,6 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await JS.Log("on parameter set");
         var needLoadData = false;
         if (Selection is not null && Selection != usersPartSelectionModel)
         {
@@ -108,7 +107,6 @@
         {
             needLoadData = true;
         }
-        await JS.Log("on parameter set", needLoadData);
         if (needLoadData)
         {
             await LoadData();

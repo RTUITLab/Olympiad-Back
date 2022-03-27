@@ -15,7 +15,7 @@
         Closable="false"
         OnClose="Close">
     <Spin Spinning="loading">
-        <UsersSearchTable @bind-Selection="usersSearchModel" TableScrollY="20vh" TableSize="TableSize.Small">
+        <UsersSearchTable @bind-Selection="usersSearchModel" TableScrollY="23vh" TableSize="TableSize.Small">
             <UserExtra Context="user">
                 <Button Icon="@IconType.Outline.UserAdd" Type="@ButtonType.Primary"
                         Loading="user.Id == currentHandledUserId" Disabled="currentHandledUserId.HasValue && currentHandledUserId != user.Id"
@@ -34,7 +34,7 @@
         </UsersSearchTable>
 
         <ShowUsersTable TSelection="UsersPartSelectionModel" GetUsersFunction="LoadInvitations" CounterLabel="Имеют доступ"
-                        TableScrollY="20vh"
+                        TableScrollY="23vh"
                         TableSize="TableSize.Small"
                         @ref="intivedUsersTableRef">
             <TitleTemplate>
@@ -74,7 +74,7 @@
 
     private ShowUsersTable<UsersPartSelectionModel>? intivedUsersTableRef;
 
-    private bool visible = true;
+    private bool visible;
     private bool loading;
     private Guid? currentHandledUserId;
     public void Show()
