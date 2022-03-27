@@ -3,26 +3,36 @@
 
 @using PublicAPI.Responses.Challenges
 @using Olympiad.ControlPanel.Pages.Challenges.Edit.Components
+@using Olympiad.Shared.Models
 
 @inject MessageService MessageService
 @inject NavigationManager NavigationManager
 @inject IChallengesApi ChallengesApi
 @inject IJSRuntime JS
-<PageTitle>@PageTitle</PageTitle>
-<PageHeader Title="@PageTitle">
+
+
+<PageTitle>@ChallengeName</PageTitle>
+<PageHeader Title="@ChallengeName">
     <PageHeaderBreadcrumb>
         <Breadcrumb>
             <BreadcrumbItem Href="challenges">
                 Соревнования
             </BreadcrumbItem>
             <BreadcrumbItem>
-                @PageTitle
+                @ChallengeName
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
         @if (challengeResponse != null)
         {
+            @if (challengeResponse.ChallengeAccessType == ChallengeAccessType.Private)
+            {
+                <Button Icon="@IconType.Outline.UserSwitch" OnClick="OpenInvitationsEditComponent">Управление доступом</Button>
+                <EditChallengeInvitations ChallengeName="@ChallengeName"
+                                  ChallengeId="ChallengeId"
+                                  @ref="editChallengeInvitationsRef" />
+            }
             <NavLink href="@($"challenges/{ChallengeId}/exercises")">
                 <Button Icon="@IconType.Outline.Reconciliation">Задания</Button>
             </NavLink>
@@ -41,10 +51,11 @@
     public Guid ChallengeId { get; set; }
 
 
-    private string PageTitle => challengeResponse?.Name ?? "Загрузка...";
+    private string ChallengeName => challengeResponse?.Name ?? "Загрузка...";
 
     private ChallengeResponse? challengeResponse;
 
+    private EditChallengeInvitations? editChallengeInvitationsRef;
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -56,6 +67,14 @@
         {
             GoToChallenges();
             await MessageService.Warn("Соревнование не найдено");
+        }
+    }
+
+    private void OpenInvitationsEditComponent()
+    {
+        if (editChallengeInvitationsRef is not null)
+        {
+            editChallengeInvitationsRef.Show();
         }
     }
 

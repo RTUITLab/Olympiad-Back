@@ -1,0 +1,126 @@
+﻿@using Olympiad.Shared.Models
+@using PublicAPI.Responses.Challenges
+
+@inject IChallengesApi ChallengesApi
+@inject MessageService MessageService
+@inject ILogger<EditUserChallengesAccess> Logger
+
+<Card Loading="firstLoading" Title="Доступные соревнования">
+    <AntList DataSource="hasAccessTo" Bordered Loading="loading">
+        <ChildContent>
+            <ListItem>
+                <Tooltip Title="@context.ChallengeAccessType.ToRussian()">
+                    <Icon Type="@context.ChallengeAccessType.IconType()" />
+                    <a href="@Routes.Challenges.ChallengeEdit(context.Id)">@context.Name</a>
+                </Tooltip>
+                @if (context.ChallengeAccessType == ChallengeAccessType.Private)
+                {
+                    <Tooltip Title=@("Закрыть доступ")>
+                        <Button Icon="@IconType.Outline.UserDelete" Danger OnClick=@(() => RemoveUserFromChallenge(context)) />
+                    </Tooltip>
+                }
+            </ListItem>
+        </ChildContent>
+        <LoadMore>
+            @if (challengesToInvite.Any())
+            {
+                <Select Placeholder="Выберите соревнование для приглашения"
+                    DataSource="challengesToInvite" TItem="ChallengeResponse" TItemValue="ChallengeResponse"
+                    ValueChanged="InviteUserToChallenge">
+                    <ItemTemplate>
+                        @context.Name
+                    </ItemTemplate>
+                </Select>
+            }
+        </LoadMore>
+    </AntList>
+</Card>
+@code {
+    [Parameter, EditorRequired]
+    public Guid UserId { get; set; }
+
+
+    private bool firstLoading = true;
+    private bool loading = true;
+
+    private List<ChallengeResponse>? allChallenges;
+    private List<ChallengeResponse>? hasAccessTo;
+    private IEnumerable<ChallengeResponse> challengesToInvite => (allChallenges ?? Enumerable.Empty<ChallengeResponse>())
+        .Where(c => c.ChallengeAccessType == ChallengeAccessType.Private)
+        .ExceptBy((hasAccessTo ?? Enumerable.Empty<ChallengeResponse>()).Select(c => c.Id), c => c.Id);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        allChallenges = await ChallengesApi.GetAllChallengesAsync();
+        await LoadState();
+    }
+    private async Task LoadState()
+    {
+        loading = true;
+        try
+        {
+            hasAccessTo = await ChallengesApi.GetChallengesForUser(UserId);
+        }
+        finally
+        {
+            loading = false;
+            firstLoading = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task RemoveUserFromChallenge(ChallengeResponse targetChallenge)
+    {
+        loading = true;
+        bool? removed = null;
+        try
+        {
+            removed = await ChallengesApi.RemoveOneUser(targetChallenge.Id, UserId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't remove user from challenge");
+            await MessageService.Error("Не удалось закрыть доступ к соревнованию");
+        }
+        finally
+        {
+            loading = false;
+        }
+        if (removed.HasValue)
+        {
+            await Task.WhenAll(
+                LoadState(),
+                MessageService.Success(removed.Value ? "Закрыт доступ к соревнованию" : "Доступа к соревнованию небыло")
+            );
+        }
+    }
+
+    private async Task InviteUserToChallenge(ChallengeResponse targetChallenge)
+    {
+        loading = true;
+        bool? invited = null;
+        try
+        {
+            invited = await ChallengesApi.InviteOneUser(targetChallenge.Id, UserId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't invite user to challenge");
+            await MessageService.Error("Не удалось пригласить пользователя");
+        }
+        finally
+        {
+            loading = false;
+        }
+        if (invited.HasValue)
+        {
+            await Task.WhenAll(
+                LoadState(),
+                MessageService.Success(invited.Value ? "Предоставлен доступ к соревнованию" : "Доступ к соревнованию уже был")
+            );
+        }
+    }
+
+
+}

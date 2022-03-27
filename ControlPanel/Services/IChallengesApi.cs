@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PublicAPI.Responses.Challenges.Analytics;
+using PublicAPI.Responses.Users;
+using PublicAPI.Requests;
 
 namespace Olympiad.ControlPanel.Services;
 [Headers("Authorization: Bearer")]
@@ -14,6 +16,8 @@ public interface IChallengesApi
     [Get("/api/challenges/all")]
     public Task<List<ChallengeResponse>> GetAllChallengesAsync();
 
+    [Get("/api/challenges/forUser/{userId}")]
+    public Task<List<ChallengeResponse>> GetChallengesForUser(Guid userId);
 
     [Get("/api/challenges/analytics")]
     public Task<List<ChallengeResponseWithAnalytics>> GetAllChallengesWithAnalyticsAsync();
@@ -35,4 +39,17 @@ public interface IChallengesApi
 
     [Delete("/api/challenges/{challengeId}")]
     public Task DeleteChallengeAsync(Guid challengeId);
+
+    [Get("/api/challenges/{challengeId}/invitations")]
+    public Task<ListResponseWithMatch<UserInfoResponse>> GetInvitations(Guid challengeId, int offset, int limit);
+
+    [Post("/api/challenges/{challengeId}/invitations")]
+    public Task<int> InviteUsers(Guid challengeId, InviteUsersRequest inviteUsersRequest);
+    [Post("/api/challenges/{challengeId}/invitations/{userId}")]
+    public Task<bool> InviteOneUser(Guid challengeId, Guid userId);
+    [Delete("/api/challenges/{challengeId}/invitations")]
+    public Task<int> RemoveAllUsersFromChallenge(Guid challengeId);
+    [Delete("/api/challenges/{challengeId}/invitations/{userId}")]
+    public Task<bool> RemoveOneUser(Guid challengeId, Guid userId);
+
 }

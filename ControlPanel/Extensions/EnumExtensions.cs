@@ -2,7 +2,7 @@
 
 namespace Olympiad.ControlPanel.Extensions
 {
-    public static class SolutionStatusExtensions
+    public static class EnumExtensions
     {
         public static string ToRussian(this SolutionStatus solutionStatus)
         {
@@ -19,5 +19,18 @@ namespace Olympiad.ControlPanel.Extensions
                 _ => "Некорректный статус",
             };
         }
+        public static string ToRussian(this ChallengeAccessType challengeAccessType) => challengeAccessType switch
+        {
+            ChallengeAccessType.Private => "По приглашениям",
+            ChallengeAccessType.Public => "Публичное",
+            _ => "Некорректное значение"
+        };
+
+        public static string IconType(this ChallengeAccessType challengeAccessType) => challengeAccessType switch
+        {
+            ChallengeAccessType.Private => AntDesign.IconType.Outline.EyeInvisible,
+            ChallengeAccessType.Public => AntDesign.IconType.Outline.Eye,
+            _ => AntDesign.IconType.Outline.Warning
+        };
     }
 }

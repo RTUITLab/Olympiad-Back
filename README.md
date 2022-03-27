@@ -59,9 +59,10 @@ First, install .Net Core 3.1
     "RecaptchaSettings": {
         "SecretKey": "PRIVATE token got when creating reCAPCTCHA v2"
 	},
-    "USE_DEBUG_EMAIL_SENDER": true|false // if true email messages will be printed to console
-    "USE_DEBUG_RECAPTCHA_VERIFIER": true|false //if true recaptcha always will be valid,
-    "USE_CHECKING_RESTART": true|false // if true, solutions the check of which has started more than 2 minutes ago would be placed in the queue again.
+    "USE_DEBUG_EMAIL_SENDER": true|false, // if true email messages will be printed to console
+    "USE_DEBUG_RECAPTCHA_VERIFIER": true|false, // if true recaptcha always will be valid
+    "USE_CHECKING_RESTART": true|false // if true, solutions the check of which has started more than 2 minutes ago would be placed in the queue again
+    "USE_MOCK_QUEUE": true|false // if true, mock queue service will be used. If false - rabbitmq queue
 }
 ```
 

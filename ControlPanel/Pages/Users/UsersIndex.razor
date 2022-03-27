@@ -2,11 +2,14 @@
 @attribute [Authorize(Roles = RoleNames.ADMIN)]
 
 @using AntDesign.TableModels
+@using Olympiad.ControlPanel.Components.UsersTable
 @using Olympiad.Shared
+@using PublicAPI.Requests.Account
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Users
 @using System.Text
 @using System.Threading
+@using static Olympiad.ControlPanel.Components.UsersTable.UsersSearchTable
 
 @inject MessageService _message
 @inject IControlPanelApiService ControlPanelApiService
@@ -29,92 +32,60 @@
     </PageHeaderExtra>
 </PageHeader>
 
-
-<Space Direction="DirectionVHType.Vertical" Style="width: 100%">
-    <SpaceItem>
-        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
-    </SpaceItem>
-    <SpaceItem>
-        <Table DataSource="usersSource"
-               Loading="loading"
-               Total="loadedData?.Total ?? 0"
-               @bind-PageIndex="PageIndex"
-               @bind-PageSize="PageSize"
-               TItem="UserInfoResponse"
-               OnChange="HandleChange">
-
-            <Column @bind-Field="context.FirstName" Title="Имя" Sortable></Column>
-            <Column @bind-Field="context.StudentId" Title="Идентификатор" Sortable></Column>
-            <Column @bind-Field="context.Email" Sortable></Column>
-            <ActionColumn>
-                <NavLink href="@($"users/{context.Id}")"><Button Icon="@IconType.Outline.Edit"></Button></NavLink>
-            </ActionColumn>
-        </Table>
-    </SpaceItem>
-</Space>
-
-
+<UsersSearchTable Selection="selectionModel" SelectionChanged="HandleChange" />
 
 @code {
 
     [SupplyParameterFromQuery]
     [Parameter]
-    public string? Match { get; set; }
-
-    [SupplyParameterFromQuery]
-    [Parameter]
-    public int PageIndex { get; set; } = 1;
-
-    [SupplyParameterFromQuery]
-    [Parameter]
-    public int PageSize { get; set; } = 50;
-
-    private IEnumerable<UserInfoResponse>? usersSource => loadedData?.Data;
-    private ListResponseWithMatch<UserInfoResponse>? loadedData;
-    private bool loading;
-
-    private async Task HandleChange()
+    public string? Match
     {
-        if (PageSize < 1) {
-            PageSize = 50;
-        }
-        if (PageIndex < 1) {
-            PageIndex = 1;
-        }
-        if (PageSize > 200)
+        get => selectionModel.Match; set
         {
-            PageSize = 200;
+            selectionModel.Match = value;
         }
+    }
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int Offset
+    {
+        get => selectionModel.Offset; set
+        {
+            selectionModel.Offset = value;
+        }
+    }
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public int PageSize
+    {
+        get => selectionModel.Limit; set
+        {
+            selectionModel.Limit = value;
+        }
+    }
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? Claims
+    {
+        get => ClaimRequest.PackClaimsToUrl(selectionModel.Claims); set
+        {
+            selectionModel.Claims = (ClaimRequest.ParseClaimsFromUrl(value) ?? Enumerable.Empty<ClaimRequest>()).ToList().AsReadOnly();
+        }
+    }
+
+    private UsersSearchModel selectionModel = new UsersSearchModel();
+
+
+    private void HandleChange(UsersSearchModel newSelectionModel)
+    {
+        selectionModel = newSelectionModel;
         var newUrl = CalcCurrentUrl();
         if (NavigationManager.Uri != newUrl)
         {
             NavigationManager.NavigateTo(newUrl);
-        }
-        await LoadData();
-    }
-    private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
-    private async Task LoadData()
-    {
-        await loadDataSemaphore.WaitAsync();
-        loading = true;
-        try
-        {
-            var limit = PageSize < 1 ? 50 : PageSize;
-            var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
-
-            var offset = (pageIndexToLoad - 1) * limit;
-
-            if (limit == loadedData?.Limit && offset == loadedData?.Offset && Match == loadedData?.Match)
-            {
-                return;
-            }
-
-            loadedData = await ControlPanelApiService.SearchUsers(Match, limit, offset);
-        }
-        finally
-        {
-            loading = false;
-            loadDataSemaphore.Release();
         }
     }
 
@@ -122,10 +93,11 @@
     {
         var queryParams = new Dictionary<string, object?>
         {
-            {nameof(PageIndex), PageIndex <= 1 ? null : PageIndex},
-            {nameof(PageSize), PageSize == 50 ? null : PageSize},
+            {nameof(Offset), Offset <= 1 ? null : Offset},
+            {nameof(PageSize), PageSize == 10 ? null : PageSize},
             {nameof(Match), Match},
+            {nameof(Claims), Claims},
         };
         return NavigationManager.GetUriWithQueryParameters(queryParams);
     }
-}
+    }

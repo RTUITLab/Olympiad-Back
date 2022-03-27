@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Olympiad.Services
+namespace Olympiad.Services.SolutionCheckQueue
 {
     public class RabbitMQQueue : IQueueChecker, IDisposable
     {
@@ -20,7 +20,8 @@ namespace Olympiad.Services
             IOptions<RabbitMqQueueSettings> options,
             ILogger<RabbitMQQueue> logger)
         {
-            var factory = new ConnectionFactory() { 
+            var factory = new ConnectionFactory()
+            {
                 ClientProvidedName = options.Value.ClientProvidedName,
                 Uri = new Uri(options.Value.Uri)
             };

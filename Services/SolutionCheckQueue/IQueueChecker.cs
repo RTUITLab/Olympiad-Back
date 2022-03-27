@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Olympiad.Services
+namespace Olympiad.Services.SolutionCheckQueue
 {
     public interface IQueueChecker
     {

@@ -4,7 +4,7 @@
 @using Olympiad.ControlPanel.Pages.Users.Edit.Components
 @using PublicAPI.Responses.Users
 
-@inject MessageService _message
+@inject MessageService MessageService
 @inject NavigationManager NavigationManager
 @inject IControlPanelApiService ControlPanelApiService
 @inject IJSRuntime JS
@@ -22,26 +22,44 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        <LoginAsUserButton UserId="UserId" />
-        <GenerateNewPasswordButton UserId="UserId" PasswordChanged="@(() => {editUserClaims?.RefreshData(); })" />
-        <Button Type="@ButtonType.Dashed" Danger OnClick=ShowDeleteModal>Удалить аккаунт</Button>
+        <GenerateNewPasswordModal UserId="UserId"
+                                  PasswordChanged="@(() => {editUserClaims?.RefreshData(force: true); })"
+                                  @ref="generateNewPasswordModalRef" />
+        <Dropdown Trigger="actionsTrigger" ComplexAutoCloseAndVisible @ref="actionsRef">
+            <Overlay>
+                <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
+                    <MenuItem Title="Войти под пользователем" Icon="@IconType.Outline.Login" OnClick="LoginAsUser" />
+                    <MenuItem Title="Скопировать ссылку для входа" Icon="@IconType.Outline.Copy" OnClick="CopyUrlToClipboard" />
+                    <MenuDivider />
+                    <MenuItem Title="Новый пароль" Icon="@IconType.Outline.Key" OnClick="() => generateNewPasswordModalRef!.ShowModal()" />
+                    <MenuDivider />
+                    <MenuItem Title="Удалить аккаунт" Icon="@IconType.Outline.Delete" Style="color: #ff4d4f;" OnClick="ShowDeleteModal" />
+                </Menu>
+            </Overlay>
+            <ChildContent>
+                <Button>Действия <Icon Type="@IconType.Outline.Down" /></Button>
+            </ChildContent>
+        </Dropdown>
     </PageHeaderExtra>
 </PageHeader>
 <DeleteUserConfirmationModal @ref=deleteModal />
 
-@if (userInfo != null)
-{
-    <Row Gutter="20">
-        <AntDesign.Col Xs=24 Md=16>
-            <EditUserBaseInfo @bind-User=userInfo />
-            <EditUserRoles UserId="UserId" />
-            <EditUserClaims User="userInfo" @ref="editUserClaims" />
-        </AntDesign.Col>
-        <AntDesign.Col Xs=24 Md=8>
-            <UserLoginsHistory UserId="UserId"/>
-        </AntDesign.Col>
-    </Row>
-}
+<Row Gutter="(16, 16)">
+    <AntDesign.Col Xs=24 Md=12>
+        <EditUserBaseInfo @bind-User=userInfo />
+    </AntDesign.Col>
+    <AntDesign.Col Xs=24 Md=12>
+        <EditUserChallengesAccess UserId="UserId" />
+    </AntDesign.Col>
+    <AntDesign.Col Xs=24 Md=12>
+        <EditUserRoles UserId="UserId" />
+    </AntDesign.Col>
+    <AntDesign.Col Xs=24 Md=12>
+        <EditUserClaims UserId="UserId" @ref="editUserClaims" />
+    </AntDesign.Col>
+</Row>
+<UserLoginsHistory UserId="UserId" />
+
 
 
 @code {
@@ -53,6 +71,12 @@
     private DeleteUserConfirmationModal? deleteModal;
     private EditUserClaims? editUserClaims;
     private UserInfoResponse? userInfo;
+
+    private bool isLoadingLoginAsUser;
+
+    private static readonly Trigger[] actionsTrigger = new Trigger[] { Trigger.Click };
+    private Dropdown? actionsRef;
+    private GenerateNewPasswordModal? generateNewPasswordModalRef;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -72,4 +96,39 @@
     {
         deleteModal?.Show(userInfo!);
     }
+
+    private async Task LoginAsUser()
+    {
+        await DoActionWithLink(link => JS.OpenLinkInNewTab(link));
+    }
+    private async Task CopyUrlToClipboard()
+    {
+        await DoActionWithLink(async link =>
+        {
+            var success = await JS.CopyTextToClipboard(link);
+            await MessageService.Open(new MessageConfig
+                {
+                    Type = success ? MessageType.Success : MessageType.Warning,
+                    Content = success ? "Ссылка для входа скопирована" : "Невозможно скопировать ссылку"
+                });
+        });
+    }
+
+    private async Task DoActionWithLink(Func<string, ValueTask> action)
+    {
+        isLoadingLoginAsUser = true;
+        string? link = null;
+        try
+        {
+            var tokenInfo = await ControlPanelApiService.GetTokenForUser(UserId);
+            var baseAddress = new Uri(NavigationManager.BaseUri).GetLeftPart(UriPartial.Authority);
+            link = $"{baseAddress}/#{tokenInfo.Token}";
+        }
+        finally
+        {
+            isLoadingLoginAsUser = false;
+        }
+        await action(link);
+    }
+
     }

@@ -1,0 +1,111 @@
+﻿@using PublicAPI.Requests.Account
+
+@inject IControlPanelApiService ControlPanelApiService
+@inject IJSRuntime JS
+
+@if (allClaims is null)
+{
+    <SkeletonElement Type="input" Size="@SkeletonElementSize.Small" Active Style="width:150px" />
+}
+else if (allClaims.Count == 0)
+{
+    <Alert Type="@AlertType.Info" Message="Не существует свойств пользователей" />
+}
+else
+{
+    @foreach (var claim in SafeClaims)
+    {
+        <Tag @key="claim" Closable OnClose=@(() => RemoveClaimSearch(claim))>@claim.Type : @claim.Value</Tag>
+    }
+    @if (isSelectingClaim)
+    {
+        <Select Size="small"
+        DataSource="AvailableClaimTypes"
+        Value="@claimModel.Type"
+        ValueChanged="UpdateAvailableValuesCollection"
+        TItem="string"
+        TItemValue="string"
+        OnDropdownVisibleChange=@((v) => SelectVisibleChanged(v, claimModel.Type))
+        Style="width: 10em;" DropdownMatchSelectWidth="false" />
+        @if (!string.IsNullOrEmpty(claimModel.Type))
+        {
+            <Select TItemValue="string" TItem="string" Size="small" DataSource="AvailableClaimValues" Value="@claimModel.Value" ValueChanged="AddClaimSearch"
+        Style="width: 8em;" OnDropdownVisibleChange=@((v) => SelectVisibleChanged(v, claimModel.Value)) DropdownMatchSelectWidth="false" />
+        }
+    }
+    else
+    {
+        <Tag OnClick=@(() => isSelectingClaim = !isSelectingClaim)><Icon Type="@IconType.Outline.Plus" /> Искать по свойству</Tag>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public IReadOnlyList<ClaimRequest>? Claims { get; set; }
+    [Parameter]
+    public EventCallback<IReadOnlyList<ClaimRequest>> ClaimsChanged { get; set; }
+
+    private IEnumerable<ClaimRequest> SafeClaims => Claims ?? Enumerable.Empty<ClaimRequest>();
+    private ClaimRequest claimModel = new ClaimRequest();
+    private bool isSelectingClaim;
+
+    private Dictionary<string, List<string>>? allClaims;
+    private IEnumerable<string>? AvailableClaimTypes => allClaims?
+        .Select(kvp => (type: kvp.Key, valueExists: kvp.Value.Except(SafeClaims.Where(c => c.Type == kvp.Key).Select(c => c.Value)).Any()))
+        .Where(c => c.valueExists)
+        .Select(c => c.type);
+    private IEnumerable<string>? AvailableClaimValues =>
+        allClaims?.TryGetValue(claimModel.Type, out var values) == true ?
+            values.Except(SafeClaims.Where(c => c.Type == claimModel.Type).Select(c => c.Value)).ToList()
+            : Enumerable.Empty<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        allClaims = await ControlPanelApiService.GetAllClaims();
+    }
+
+
+    private async Task AddClaimSearch(string claimValue)
+    {
+        claimModel.Value = claimValue;
+        var newClaims = SafeClaims.Append(claimModel).ToList().AsReadOnly();
+        ClearInput();
+        await UpdateClaims(newClaims);
+    }
+
+    private async Task RemoveClaimSearch(ClaimRequest claimToRemove)
+    {
+        var newClaims = SafeClaims.Where(r => r != claimToRemove).ToList().AsReadOnly();
+        await UpdateClaims(newClaims);
+    }
+
+    private void UpdateAvailableValuesCollection(string claimType)
+    {
+        claimModel.Type = claimType;
+    }
+
+    private void SelectVisibleChanged(bool visible, string valueMustFilled)
+    {
+        if (!visible && string.IsNullOrEmpty(valueMustFilled))
+        {
+            ClearInput();
+        }
+    }
+
+    private void ClearInput()
+    {
+        claimModel = new ClaimRequest();
+        isSelectingClaim = false;
+        StateHasChanged();
+    }
+
+    private async Task UpdateClaims(IReadOnlyList<ClaimRequest> claimRequests)
+    {
+        if (ClaimsChanged.HasDelegate)
+        {
+            await ClaimsChanged.InvokeAsync(claimRequests);
+        }
+    }
+}

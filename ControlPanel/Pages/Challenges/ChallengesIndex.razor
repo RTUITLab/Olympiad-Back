@@ -27,22 +27,19 @@
        HidePagination>
 
     <Column @bind-Field="context.Name" Title="Название" Sortable>
-        <NavLink href="@($"challenges/{context.Id}")">@context.Name</NavLink>
+        <NavLink href="@Routes.Challenges.ChallengeEdit(context.Id)">@context.Name</NavLink>
     </Column>
     <Column @bind-Field="context.ChallengeAccessType" Title="Публичность" Sortable>
         <Text>
-            @(context.ChallengeAccessType switch {
-            ChallengeAccessType.Public => "Публичное",
-            ChallengeAccessType.Private => "По приглашениям",
-            _ => "Некорректное значение"
-            })
+            <Icon Type="@context.ChallengeAccessType.IconType()" />
+            @context.ChallengeAccessType.ToRussian()
         </Text>
     </Column>
     <Column @bind-Field="context.StartTime" Title="Начало" Sortable>
-        <PrettyDateTimeOffset  DateTimeOffset="context.StartTime"/>
+        <PrettyDateTimeOffset DateTimeOffset="context.StartTime" />
     </Column>
     <Column @bind-Field="context.EndTime" Title="Конец" Sortable>
-        <PrettyDateTimeOffset  DateTimeOffset="context.EndTime"/>
+        <PrettyDateTimeOffset DateTimeOffset="context.EndTime" />
     </Column>
 </Table>
 

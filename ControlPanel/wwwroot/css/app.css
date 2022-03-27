@@ -16,14 +16,26 @@
         right: 0.75rem;
         top: 0.5rem;
     }
-.ant-btn.big-icon > .anticon {
+.big-icon .anticon {
     font-size: 1.2em;
+}
+
+.buttons-menu .ant-menu-title-content {
+    width: 100%;
+}
+.buttons-menu button {
+    width: 100%;
 }
 
 .ant-dropdown-menu-item > .anticon {
     margin-right: 4px;
 }
-
+.buttons-menu li.ant-dropdown-menu-item {
+    padding-right: 24px;
+}
+.ant-drawer-content-wrapper {
+    max-width: 95%;
+}
 .markdown-editor li p {
     
 }

@@ -23,7 +23,6 @@ using Microsoft.OpenApi.Models;
 using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
 using WebApp.Formatting;
-using Olympiad.Services;
 using Olympiad.Shared;
 using System.Security.Claims;
 using Olympiad.Services.Authorization;
@@ -33,6 +32,7 @@ using Microsoft.Extensions.Options;
 using Amazon.S3;
 using WebApp.Services.Attachments;
 using Olympiad.Services.UserSolutionsReport;
+using Olympiad.Services.SolutionCheckQueue;
 
 namespace WebApp
 {
@@ -181,8 +181,14 @@ namespace WebApp
                 services.AddHttpClient(HttpRecaptchaVerifier.HttpClientName, client => client.BaseAddress = new Uri("https://www.google.com/recaptcha/api/siteverify"));
                 services.AddTransient<IRecaptchaVerifier, HttpRecaptchaVerifier>();
             }
-
-            services.AddSingleton<IQueueChecker, RabbitMQQueue>();
+            if (Configuration.GetValue<bool>("USE_MOCK_QUEUE"))
+            {
+                services.AddSingleton<IQueueChecker, DebugMockQueueChecker>();
+            }
+            else
+            {
+                services.AddSingleton<IQueueChecker, RabbitMQQueue>();
+            }
             services.AddTransient<UserPasswordGenerator>();
 
             AddS3AttachmentStorage(services);

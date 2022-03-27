@@ -5,18 +5,17 @@
 @inject IRolesApi RolesApi
 @inject MessageService _message
 
-<Card Title="Роли">
+<Card Title="Роли" Loading="firstLoading">
     <Form Model="rolesModel"
-          LabelColSpan="8"
-          WrapperColSpan="16"
           Loading="loading">
         @foreach (var (roleModel, presenting) in context.Roles.Select(m => (model: m, presenting: HumanName(m.RoleName))))
         {
-            <FormItem Label="@(presenting.title)">
-                <Checkbox @bind-Value="@roleModel.Contains"
+            <FormItem Help="@presenting.description">
+                <Switch @bind-Value="@roleModel.Contains"
                       Disabled="@(!presenting.enabled)"
-                      CheckedChange="@((v) => ChangeRole(roleModel.RoleName, v))" />
-                <HelpTooltip Text="@presenting.description" />
+                      OnChange="@((v) => ChangeRole(roleModel.RoleName, v))"
+                      CheckedChildren="@presenting.title"
+                      UnCheckedChildren="@presenting.title"/>
             </FormItem>
         }
     </Form>
@@ -25,15 +24,19 @@
 
 @code {
     private RolesModel rolesModel = new();
+    private bool firstLoading = true;
     private bool loading = true;
     [Parameter]
     public Guid UserId { get; set; }
 
-
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    private AuthenticationState? authState;
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         await LoadData();
+        authState = await authenticationStateTask;
     }
 
     private async Task LoadData()
@@ -47,6 +50,7 @@
         finally
         {
             loading = false;
+            firstLoading = false;
         }
         StateHasChanged();
     }
@@ -75,8 +79,8 @@
 
     private (string title, string description, bool enabled) HumanName(string roleName) => roleName switch
     {
-        RoleNames.USER => ("Пользователь", "Может принимать участия в соревнованиях, отправлять решения", true),
-        RoleNames.ADMIN => ("Администратор", "Имеет полный доступ к системе, может редактировать все сущности", true),
+        RoleNames.USER => ("Пользователь", "Может принимать участия в соревнованиях, отправлять решения", authState?.User.Id() != UserId),
+        RoleNames.ADMIN => ("Администратор", "Имеет полный доступ к системе, может редактировать все сущности", authState?.User.Id() != UserId),
         RoleNames.RESULTS_VIEWER => ("Смотритель результатов", "Имеет доступ к просмотру результатов соревнований, решений студентов", true),
         RoleNames.EXECUTOR => ("Проверятор", "Служебная роль для сервисов, выполняющих автоматическую проверку. Назначается системным администратором", false),
         _ => ("Некорректное название роли", $"Требуемая для анализа роль не определена >{roleName}<", false)

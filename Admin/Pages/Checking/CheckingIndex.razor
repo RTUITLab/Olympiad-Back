@@ -1,4 +1,5 @@
 ﻿@page "/checking"
+@using Olympiad.Services.SolutionCheckQueue
 
 @inherits OwningComponentBase<ApplicationDbContext>
 
@@ -124,7 +125,7 @@
     private async Task RecheckSolutions(Func<ApplicationDbContext, IQueryable<Models.Solutions.Solution>> solutionsSelector)
     {
         await DoInSync(() =>
-            ReCheckService.ReCheckSolutions(
+            ReCheckHelper.ReCheckSolutions(
                 Service,
                 QueueChecker,
                 solutionsSelector,

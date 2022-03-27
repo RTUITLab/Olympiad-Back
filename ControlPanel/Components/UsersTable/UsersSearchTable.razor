@@ -1,0 +1,93 @@
+﻿@using PublicAPI.Requests
+@using PublicAPI.Requests.Account
+@using PublicAPI.Responses
+@using PublicAPI.Responses.Users
+
+@inject IControlPanelApiService ControlPanelApiService
+
+<Space Direction="DirectionVHType.Vertical" Style="width: 100%">
+    <SpaceItem>
+        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@searchText" OnSearch="UpdateSearch" />
+    </SpaceItem>
+    <SpaceItem>
+        <ShowUsersTable TSelection="UsersSearchModel"
+                        Selection="usersSelectionModel"
+                        SelectionChanged="HandleSelectionChanged"
+                        GetUsersFunction="GetUsers"
+                        TableScrollY="@TableScrollY"
+                        TableSize="TableSize"
+                        UserExtra="UserExtra"
+                        FooterExtra="FooterExtra">
+            <TitleTemplate>
+                <SelectClaimsForm Claims="usersSelectionModel.Claims" ClaimsChanged="UpdateClaims" />
+            </TitleTemplate>
+        </ShowUsersTable>
+    </SpaceItem>
+</Space>
+
+
+
+@code {
+
+    [Parameter]
+    public UsersSearchModel? Selection { get; set; }
+    [Parameter]
+    public EventCallback<UsersSearchModel> SelectionChanged { get; set; }
+    [Parameter]
+    public string? TableScrollY { get; set; }
+    [Parameter]
+    public TableSize? TableSize { get; set; } = TableSize.Middle;
+    [Parameter]
+    public RenderFragment<UserInfoResponse>? UserExtra { get; set; }
+    [Parameter]
+    public RenderFragment<ListResponseWithMatch<UserInfoResponse>?>? FooterExtra { get; set; }
+
+    private UsersSearchModel usersSelectionModel = new UsersSearchModel();
+    private string? searchText;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (Selection is not null && Selection != usersSelectionModel)
+        {
+            usersSelectionModel = Selection;
+        }
+        searchText = usersSelectionModel.Match;
+    }
+
+    private async Task UpdateSearch()
+    {
+        await UpdateSelectionModel(usersSelectionModel with { Match = searchText });
+    }
+
+    private async Task UpdateClaims(IReadOnlyList<ClaimRequest> claimRequests)
+    {
+        await UpdateSelectionModel(usersSelectionModel with { Claims = claimRequests });
+    }
+
+    private async Task HandleSelectionChanged(UsersSearchModel searchModel)
+    {
+        await UpdateSelectionModel(searchModel);
+    }
+
+    private Task<ListResponseWithMatch<UserInfoResponse>> GetUsers(UsersSearchModel searchModel)
+    {
+        return ControlPanelApiService.SearchUsers(searchModel.Match, searchModel.Limit, searchModel.Offset, searchModel.Claims);
+    }
+
+    private async Task UpdateSelectionModel(UsersSearchModel searchModel)
+    {
+        usersSelectionModel = searchModel;
+        if (SelectionChanged.HasDelegate)
+        {
+            await SelectionChanged.InvokeAsync(searchModel);
+        }
+    }
+
+    public record UsersSearchModel : UsersPartSelectionModel
+    {
+        public IReadOnlyList<ClaimRequest> Claims { get; set; } = Enumerable.Empty<ClaimRequest>().ToList().AsReadOnly();
+        public string? Match { get; set; }
+    }
+}

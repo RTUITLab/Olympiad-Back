@@ -31,6 +31,7 @@ using PublicAPI.Requests.Account;
 using OneOf;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Models.Links;
+using WebApp.Services;
 
 namespace WebApp.Controllers.Users
 {
@@ -64,24 +65,27 @@ namespace WebApp.Controllers.Users
         [Authorize(Roles = "Admin")]
         public async Task<ListResponseWithMatch<UserInfoResponse>> Get(
             [MaxLength(100)] string match,
-            [Range(0, int.MaxValue)] int offset = 0,
-            [Range(1, 200)] int limit = 50)
+            [FromQuery] ListQueryParams listQuery,
+            // TODO: use action filter for validating claims
+            [FromQuery] string targetClaims,
+            [FromServices] ApplicationDbContext context)
         {
-            var words = (match ?? "").ToUpper().Split(' ');
-            var users = UserManager.Users;
-            users = words.Aggregate(users, (usersCollection, matcher) => usersCollection.Where(
-                u =>
-                    u.FirstName.ToUpper().Contains(matcher) ||
-                    u.Email.ToUpper().Contains(matcher) ||
-                    u.StudentID.ToUpper().Contains(matcher)));
+            using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
+            var claimsAsList = ClaimRequest.ParseClaimsFromUrl(targetClaims);
+
+            var users = UserManager.Users
+                .AsNoTracking()
+                .FindByMatch(match)
+                .FindByClaims(claimsAsList);
+
             var totalCount = await users.CountAsync();
             var result = await users
                 .OrderBy(u => u.FirstName)
-                .Skip(offset)
-                .Take(limit)
+                .Skip(listQuery.Offset)
+                .Take(listQuery.Limit)
                 .ProjectTo<UserInfoResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
-            return new ListResponseWithMatch<UserInfoResponse> { Limit = limit, Total = totalCount, Offset = offset, Match = match, Data = result };
+            return new ListResponseWithMatch<UserInfoResponse> { Limit = listQuery.Limit, Total = totalCount, Offset = listQuery.Offset, Match = match, Data = result };
         }
 
         [HttpGet("{userId:guid}")]
@@ -403,6 +407,19 @@ namespace WebApp.Controllers.Users
                 .OrderByDescending(h => h.LoginTime)
                 .Select(h => mapper.Map<LoginEventResponse>(h))
                 .ToList();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("claims")]
+        public async Task<ActionResult<Dictionary<string, List<string>>>> GetClaimTypes([FromServices] ApplicationDbContext context)
+        {
+            return (await context
+                .UserClaims
+                .Select(c => new { Type = c.ClaimType, Value = c.ClaimValue })
+                .Distinct()
+                .ToListAsync())
+                .GroupBy(c => c.Type)
+                .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
         }
     }
 }
