@@ -391,22 +391,15 @@ namespace WebApp.Controllers.Users
 
         [Authorize(Roles = "Admin")]
         [HttpGet("{userId:guid}/loginEvents")]
-        public async Task<ActionResult<List<LoginEventResponse>>> GetLoginEvents(Guid userId)
+        public async Task<ActionResult<List<LoginEventResponse>>> GetLoginEvents(Guid userId, 
+            [FromServices] ApplicationDbContext dbContext)
         {
-            var targetUser = await UserManager
-                .Users
-                .Include(u => u.LoginHistory)
-                .SingleOrDefaultAsync(u => u.Id == userId);
-            if (targetUser == null)
-            {
-                return NotFound("User not found");
-            }
-
-            return targetUser
-                .LoginHistory
+            return await dbContext.LoginEvents
+                .Where(le => le.UserId == userId)
                 .OrderByDescending(h => h.LoginTime)
+                .Take(30)
                 .Select(h => mapper.Map<LoginEventResponse>(h))
-                .ToList();
+                .ToListAsync();
         }
 
         [Authorize(Roles = "Admin")]
