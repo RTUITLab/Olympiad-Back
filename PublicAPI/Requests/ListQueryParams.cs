@@ -9,7 +9,7 @@ namespace PublicAPI.Requests
     {
         [Range(0, int.MaxValue)]
         public int Offset { get; set; }
-        [Range(1, 200)]
+        [Range(1, 100)]
         public int Limit { get; set; } = 50;
     }
 }

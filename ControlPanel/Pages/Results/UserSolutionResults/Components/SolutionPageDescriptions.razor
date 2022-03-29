@@ -5,7 +5,7 @@
 <AuthorizeView Context="userContext">
     <Authorized>
         <Descriptions Bordered
-                      Column="descriptionsColumn"
+                      Column="DescriptionsHelpers.AdaptiveColumns"
                       Size="@DescriptionsSize.Small"
                       Layout="@DescriptionsLayout.Horizontal">
             <DescriptionsItem Title="Соревнование">
@@ -94,13 +94,4 @@
     private UserInfoResponse? user => solution?.User;
 
     private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.FileExtension}";
-
-    private Dictionary<string, int> descriptionsColumn = new Dictionary<string, int> {
-            { BreakpointType.Xxl.ToString(), 3 },
-            { BreakpointType.Xl.ToString(), 3},
-            { BreakpointType.Lg.ToString(), 2},
-            { BreakpointType.Md.ToString(), 1},
-            { BreakpointType.Sm.ToString(), 1},
-            { BreakpointType.Xs.ToString(), 1}
-        };
 }

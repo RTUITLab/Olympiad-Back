@@ -32,6 +32,7 @@ using OneOf;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Models.Links;
 using WebApp.Services;
+using WebApp.Formatting;
 
 namespace WebApp.Controllers.Users
 {
@@ -66,17 +67,15 @@ namespace WebApp.Controllers.Users
         public async Task<ListResponseWithMatch<UserInfoResponse>> Get(
             [MaxLength(100)] string match,
             [FromQuery] ListQueryParams listQuery,
-            // TODO: use action filter for validating claims
-            [FromQuery] string targetClaims,
+            [FromQuery, ModelBinder(typeof(ClaimRequestBinder))] IEnumerable<ClaimRequest> targetClaims,
             [FromServices] ApplicationDbContext context)
         {
             using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
-            var claimsAsList = ClaimRequest.ParseClaimsFromUrl(targetClaims);
 
             var users = UserManager.Users
                 .AsNoTracking()
                 .FindByMatch(match)
-                .FindByClaims(claimsAsList);
+                .FindByClaims(targetClaims);
 
             var totalCount = await users.CountAsync();
             var result = await users
