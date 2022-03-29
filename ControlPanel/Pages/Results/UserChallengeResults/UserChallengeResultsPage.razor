@@ -34,10 +34,15 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        <SolutionsReportsGenerator
-            ButtonText="Персональный отчет"
-            ChallengeId="ChallengeId"
-            StudentId="@user?.StudentId"/>
+        <SolutionsReportsGenerator @ref="solutionsReportsGeneratorRef"
+                                   ChallengeId="ChallengeId"
+                                   StudentId="@user?.StudentId" />
+        <Button Icon="@IconType.Outline.FilePdf"
+                Class="big-icon"
+                OnClick="CreatePersonalReport"
+                Loading=@(solutionsReportsGeneratorRef?.IsLoading == true)>
+            Персональный отчет
+        </Button>
     </PageHeaderExtra>
     <PageHeaderContent>
         <Descriptions>
@@ -95,7 +100,7 @@ else
 
     private Dictionary<Guid, UserSolutionsList> solutionLists = new();
 
-
+    private SolutionsReportsGenerator? solutionsReportsGeneratorRef;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -129,5 +134,14 @@ else
                 await list.TriggerOpen();
             }
         }
+    }
+
+    private async Task CreatePersonalReport()
+    {
+        if (solutionsReportsGeneratorRef is null)
+        {
+            return;
+        }
+        await solutionsReportsGeneratorRef.Open();
     }
 }

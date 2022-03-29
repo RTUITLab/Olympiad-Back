@@ -25,7 +25,7 @@
         <GenerateNewPasswordModal UserId="UserId"
                                   PasswordChanged="@(() => {editUserClaims?.RefreshData(force: true); })"
                                   @ref="generateNewPasswordModalRef" />
-        <Dropdown Trigger="actionsTrigger" @ref="actionsRef">
+        <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger" @ref="actionsRef">
             <Overlay>
                 <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
                     <MenuItem Title="Войти под пользователем" Icon="@IconType.Outline.Login" OnClick="LoginAsUser" />
@@ -74,7 +74,6 @@
 
     private bool isLoadingLoginAsUser;
 
-    private static readonly Trigger[] actionsTrigger = new Trigger[] { Trigger.Click };
     private Dropdown? actionsRef;
     private GenerateNewPasswordModal? generateNewPasswordModalRef;
 
