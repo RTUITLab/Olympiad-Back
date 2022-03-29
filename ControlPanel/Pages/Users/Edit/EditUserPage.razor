@@ -25,7 +25,7 @@
         <GenerateNewPasswordModal UserId="UserId"
                                   PasswordChanged="@(() => {editUserClaims?.RefreshData(force: true); })"
                                   @ref="generateNewPasswordModalRef" />
-        <Dropdown Trigger="actionsTrigger" ComplexAutoCloseAndVisible @ref="actionsRef">
+        <Dropdown Trigger="actionsTrigger" @ref="actionsRef">
             <Overlay>
                 <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
                     <MenuItem Title="Войти под пользователем" Icon="@IconType.Outline.Login" OnClick="LoginAsUser" />

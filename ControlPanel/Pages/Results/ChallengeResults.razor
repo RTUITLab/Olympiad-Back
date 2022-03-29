@@ -33,7 +33,7 @@
                                    ChallengeName="@ChallengeName"
                                    StudentIdsLoader="LoadTargetStudentIds" />
         <Button OnClick="() => ChallengeTotalReportCreator.CreateReport(ChallengeId, ChallengeName, Match)"
-                Loading="loading || ChallengeTotalReportCreator.IsCreating"
+                Loading="ChallengeTotalReportCreator.IsCreating"
                 Icon="@IconType.Outline.FileExcel"
                 Class="big-icon">
             Общий отчет
@@ -60,7 +60,8 @@
                        @bind-PageSize="PageSize"
                        TItem="UserChallengeResultsResponse"
                        OnChange="HandleChange"
-                       ScrollX="@((exercises.Count * 130).ToString())">
+                       ScrollX="@((exercises.Count * 130).ToString())"
+                       ScrollY="50vh" Style="color: red;">
                         <ChildContent>
 
                             <Column Title="Имя" TData="string" Fixed="left" Width="150">
@@ -92,6 +93,11 @@
                             }
 
                         </ChildContent>
+                        <FooterTemplate>
+                            Найдено: <SkeletonRowComponent TData="string" Data="@(loading ? null as string : userResults?.Total.ToString())">
+                                <Text Keyboard>@context</Text>
+                            </SkeletonRowComponent>
+                        </FooterTemplate>
                     </Table>
                 }
             </Authorized>
@@ -151,17 +157,18 @@
         {
             PageSize = 10;
         }
-        if (PageSize > 200)
+        if (PageSize > 100)
         {
-            PageSize = 200;
+            PageSize = 100;
+        }
+        if ((PageIndex - 1) * PageSize > (userResults?.Total ?? 0))
+        {
+            Console.WriteLine(new { PageIndex, PageSize, userResults?.Total });
+            PageIndex = 1;
         }
         if (PageIndex < 1)
         {
             PageIndex = 1;
-        }
-        if (PageIndex * PageSize > (userResults?.Total ?? 0))
-        {
-            PageIndex = 0;
         }
         var newUrl = CalcCurrentUrl();
         if (NavigationManager.Uri != newUrl)
