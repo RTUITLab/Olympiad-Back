@@ -18,9 +18,7 @@ variables:
     deployEnvironment: 'no'
     imageTags: 'no'
     apiServiceName: 'no'
-    adminServiceName: 'no'
     executorServiceName: 'no'
-    resultsViewerServiceName: 'no'
     controlPanelServiceName: 'no'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/tags/develop') }}:
     buildImage: true
@@ -30,9 +28,7 @@ variables:
       $(Build.BuildId)
       develop
     apiServiceName: olympiad-dev_api
-    adminServiceName: olympiad-dev_admin
     executorServiceName: olympiad-dev_executor
-    resultsViewerServiceName: olympiad-dev_results-viewer
     controlPanelServiceName: 'olympiad-dev_control-panel'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     buildImage: true
@@ -42,9 +38,7 @@ variables:
       $(Build.BuildId)
       latest
     apiServiceName: olympiad_api
-    adminServiceName: olympiad_admin
     executorServiceName: olympiad_executor
-    resultsViewerServiceName: olympiad_results-viewer
     controlPanelServiceName: 'olympiad_control-panel'
 
 
@@ -59,18 +53,10 @@ stages:
           cakeTarget: PublishApi
           publishPath: deploy/api
           artifactName: api-build
-        admin:
-          cakeTarget: PublishAdmin
-          publishPath: deploy/admin
-          artifactName: admin-build
         executor:
           cakeTarget: PublishExecutor
           publishPath: deploy/executor
           artifactName: executor-build
-        results-viewer:
-          cakeTarget: PublishResultsViewer
-          publishPath: deploy/results-viewer
-          artifactName: results-viewer-build
         control-panel:
           cakeTarget: PublishControlPanel
           publishPath: deploy/control-panel
@@ -111,18 +97,6 @@ stages:
             buildType: 'current'
             targetPath: 'deploy/executor'
         - task: DownloadPipelineArtifact@2
-          displayName: download admin build
-          inputs:
-            artifactName: 'admin-build'
-            buildType: 'current'
-            targetPath: 'deploy/admin'
-        - task: DownloadPipelineArtifact@2
-          displayName: download results-viewer build
-          inputs:
-            artifactName: 'results-viewer-build'
-            buildType: 'current'
-            targetPath: 'deploy/results-viewer'
-        - task: DownloadPipelineArtifact@2
           displayName: download control-panel build
           inputs:
             artifactName: 'control-panel-build'
@@ -137,7 +111,7 @@ stages:
             OLYMPIAD_PRIVATE_REGISTRY_LOGIN: $(registryLogin)
             OLYMPIAD_PRIVATE_REGISTRY_PASSWORD: $(registryPassword)
 
-        - script: docker-compose -f stack.yml build api admin results-viewer control-panel executor
+        - script: docker-compose -f stack.yml build api control-panel executor
           workingDirectory: ./tests/e2e
           displayName: build test images
 
@@ -173,15 +147,9 @@ stages:
         api:
           imageName: rtuitlab/olympiad-api
           artifactName: api-build
-        admin:
-          imageName: rtuitlab/olympiad-admin
-          artifactName: admin-build
         executor:
           imageName: rtuitlab/olympiad-executor
           artifactName: executor-build
-        results-viewer:
-          imageName: rtuitlab/olympiad-results-viewer
-          artifactName: results-viewer-build
         control-panel:
           imageName: rtuitlab/olympiad-control-panel
           artifactName: control-panel-build
@@ -227,32 +195,6 @@ stages:
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) ${{variables.apiServiceName}}'
                   readyTimeout: '20000'
-    - deployment: DeployAdmin
-      displayName: Deploy admin
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
-      strategy:
-        runOnce:
-          on:
-            failure:
-              steps:
-                - download: none
-                - task: SSH@0
-                  inputs:
-                    sshEndpoint: 'swarm manager'
-                    runOptions: 'commands'
-                    commands: 'docker service rollback ${{variables.adminServiceName}}'
-                    readyTimeout: '20000'
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-admin:$(Build.BuildId) ${{variables.adminServiceName}}'
-                  readyTimeout: '20000'
     - deployment: DeployExecutor
       displayName: Deploy executor
       pool:
@@ -278,32 +220,6 @@ stages:
                   sshEndpoint: 'swarm manager'
                   runOptions: 'commands'
                   commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) ${{variables.executorServiceName}}'
-                  readyTimeout: '20000'
-    - deployment: DeployResultsViewer
-      displayName: Deploy results viewer
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
-      strategy:
-        runOnce:
-          on:
-            failure:
-              steps:
-                - download: none
-                - task: SSH@0
-                  inputs:
-                    sshEndpoint: 'swarm manager'
-                    runOptions: 'commands'
-                    commands: 'docker service rollback ${{variables.resultsViewerServiceName}}'
-                    readyTimeout: '20000'
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-results-viewer:$(Build.BuildId) ${{variables.resultsViewerServiceName}}'
                   readyTimeout: '20000'
     - deployment: DeployControlPanel
       displayName: Deploy control panel

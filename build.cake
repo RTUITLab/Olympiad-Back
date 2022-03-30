@@ -10,12 +10,6 @@ var apiTestsDir = "tests/e2e/api";
 var executorPublishDir = "deploy/executor/executor-build";
 var executorProject = "Executor/Executor.csproj";
 
-var adminPublishDir = "deploy/admin/admin-build";
-var adminProject = "Admin/Admin.csproj";
-
-var resultsViewerPublishDir = "deploy/results-viewer/results-viewer-build";
-var resultsViewerProject = "ResultsViewer/ResultsViewer.csproj";
-
 var controlPanelPublishDir = "deploy/control-panel/control-panel-build";
 var controlPanelProjectDir = "ControlPanel";
 var controlPanelProject = controlPanelProjectDir + "/ControlPanel.csproj";
@@ -24,8 +18,6 @@ Setup(ctx =>
 {
    CleanDirectory(apiPublishDir);
    CleanDirectory(executorPublishDir);
-   CleanDirectory(adminPublishDir);
-   CleanDirectory(resultsViewerPublishDir);
    CleanDirectory(controlPanelPublishDir);
 });
 
@@ -37,8 +29,6 @@ Task("RestoreSolution")
 
    DotNetRestore(apiProject);
    DotNetRestore(executorProject);
-   DotNetRestore(adminProject);
-   DotNetRestore(resultsViewerProject);
 
    DotNetRestore(controlPanelProject);
    DotNetTool("libman restore", new DotNetToolSettings {
@@ -108,52 +98,6 @@ Task("PublishExecutor")
    DotNetPublish(executorProject, settings);
 });
 
-Task("BuildAdmin")
-   .IsDependentOn("RestoreSolution")
-   .Does(() =>
-{
-   var settings = new DotNetBuildSettings {
-      Configuration = configuration
-   };
-   DotNetBuild(adminProject, settings);
-});
-
-Task("PublishAdmin")
-   .IsDependentOn("BuildAdmin")
-   .Does(() =>
-{
-   var settings = new DotNetPublishSettings
-   {
-      Configuration = configuration,
-      OutputDirectory = adminPublishDir
-   };
-
-   DotNetPublish(adminProject, settings);
-});
-
-Task("BuildResultsViewer")
-   .IsDependentOn("RestoreSolution")
-   .Does(() =>
-{
-   var settings = new DotNetBuildSettings {
-      Configuration = configuration
-   };
-   DotNetBuild(resultsViewerProject, settings);
-});
-
-Task("PublishResultsViewer")
-   .IsDependentOn("BuildResultsViewer")
-   .Does(() =>
-{
-   var settings = new DotNetPublishSettings
-   {
-      Configuration = configuration,
-      OutputDirectory = resultsViewerPublishDir
-   };
-
-   DotNetPublish(resultsViewerProject, settings);
-});
-
 Task("BuildControlPanel")
    .IsDependentOn("RestoreSolution")
    .Does(() =>
@@ -180,8 +124,6 @@ Task("PublishControlPanel")
 Task("PublishAll")
    .IsDependentOn("PublishApi")
    .IsDependentOn("PublishExecutor")
-   .IsDependentOn("PublishAdmin")
-   .IsDependentOn("PublishResultsViewer")
    .IsDependentOn("PublishControlPanel")
    .Does(() =>
 {
