@@ -7,13 +7,6 @@
 @inject ILogger<SolutionsReportsGenerator> Logger
 @inject MessageService MessageService
 
-<Button Icon="@IconType.Outline.FilePdf"
-        Class="big-icon"
-        OnClick="Open"
-        Loading="IsLoading">
-    @ButtonText
-</Button>
-
 <Drawer Closable="true"
         Visible="isVisible"
         Placement="right"
@@ -47,8 +40,6 @@
 
 @code {
     [Parameter]
-    public string? ButtonText { get; set; }
-    [Parameter]
     public Guid ChallengeId { get; set; }
     [Parameter]
     public string? ChallengeName { get; set; }
@@ -56,9 +47,9 @@
     public Func<Task<List<string>>>? StudentIdsLoader { get; set; }
     [Parameter]
     public string? StudentId { get; set; }
+    public bool IsLoading => reportsJSModule is null || isGenerating;
 
     private List<string>? studentIds;
-    private bool IsLoading => reportsJSModule is null || isGenerating;
     private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
 
     private bool isVisible;
@@ -110,7 +101,7 @@
         }
     }
 
-    private async Task Open()
+    public async Task Open()
     {
         if (StudentIdsLoader is not null)
         {

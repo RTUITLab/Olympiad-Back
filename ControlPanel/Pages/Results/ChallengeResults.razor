@@ -2,6 +2,7 @@
 @attribute [Authorize(Roles = RoleNames.RESULTS_VIEWER)]
 
 
+@using PublicAPI.Requests.Account
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Challenges
 @using Olympiad.ControlPanel.Pages.Challenges.Edit.Components
@@ -28,74 +29,94 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        <SolutionsReportsGenerator ButtonText="Персональные отчеты"
+        <SolutionsReportsGenerator @ref="solutionsReportGeneratorRef"
                                    ChallengeId="ChallengeId"
                                    ChallengeName="@ChallengeName"
                                    StudentIdsLoader="LoadTargetStudentIds" />
-        <Button OnClick="() => ChallengeTotalReportCreator.CreateReport(ChallengeId, ChallengeName, Match)"
-                Loading="loading || ChallengeTotalReportCreator.IsCreating"
-                Icon="@IconType.Outline.FileExcel"
-                Class="big-icon">
-            Общий отчет
-        </Button>
+        <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger" @ref="actionsRef">
+            <Overlay>
+                <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
+                    <MenuItem Title="Персональные отчёты" Icon="@IconType.Outline.FilePdf" OnClick="CreatePersonalReports" />
+                    <MenuItem Title="Общий отчет" Icon="@IconType.Outline.FileExcel" OnClick="CreateTotalReport" />
+                </Menu>
+            </Overlay>
+            <ChildContent>
+                <Button Icon="@IconType.Outline.Download">Загрузки <Icon Type="@IconType.Outline.Down" /></Button>
+            </ChildContent>
+        </Dropdown>
     </PageHeaderExtra>
+    <PageHeaderContent>
+        <Descriptions Column="DescriptionsHelpers.AdaptiveColumns">
+            <DescriptionsItem Title="Имеют доступ">
+                <TextFieldSkeleton Text="@challengeResponse?.HasAccessCountPretty()" />
+            </DescriptionsItem>
+            <DescriptionsItem Title="Приступили к выполнению">
+                <TextFieldSkeleton Text="@challengeResponse?.StartedExecutionCount.ToString()" />
+            </DescriptionsItem>
+        </Descriptions>
+    </PageHeaderContent>
 </PageHeader>
 <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
     <SpaceItem>
         <Search Placeholder="Поиск по идентификатору, имени, email" EnterButton="true" @bind-Value="@Match" OnSearch="HandleChange" />
     </SpaceItem>
     <SpaceItem>
-        <AuthorizeView Context="userContext">
-            <Authorized>
-                @if (exercises is null)
-                {
-                    <Skeleton Active />
-                }
-                else
-                {
-                    <Table DataSource="userResults?.Data"
-                       Loading="loading"
-                       Total="userResults?.Total ?? 0"
-                       @bind-PageIndex="PageIndex"
-                       @bind-PageSize="PageSize"
-                       TItem="UserChallengeResultsResponse"
-                       OnChange="HandleChange"
-                       ScrollX="@((exercises.Count * 130).ToString())">
-                        <ChildContent>
+        @if (exercises is null)
+        {
+            <Skeleton Active />
+        }
+        else
+        {
+            <Table DataSource="userResults?.Data"
+               Loading="loading"
+               Total="userResults?.Total ?? 0"
+               @bind-PageIndex="PageIndex"
+               @bind-PageSize="PageSize"
+               TItem="UserChallengeResultsResponse"
+               OnChange="HandleChange"
+               ScrollX="@((exercises.Count * 130).ToString())"
+               ScrollY="35vh">
+                <TitleTemplate>
+                    <SelectClaimsForm Claims="claims" ClaimsChanged="ClaimsChanged" />
+                </TitleTemplate>
+                <ChildContent>
 
-                            <Column Title="Имя" TData="string" Fixed="left" Width="150">
-                                <NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.FirstName</NavLink>
-                            </Column>
-                            @foreach (var exercise in exercises ?? Enumerable.Empty<ExerciseCompactResponse>())
+                    <Column Title="Имя" TData="string" Fixed="left" Width="150">
+                        <NavLink href="@($"results/{ChallengeId}/user/{context.User.Id}")">@context.User.FirstName</NavLink>
+                    </Column>
+                    @foreach (var exercise in exercises)
+                    {
+                        <Column TData="string" Width="130" Title="@($"{exercise.Name} ({exercise.Score})")">
+                            @if (context.Scores.TryGetValue(exercise.Id.ToString(), out var score) && score.HasValue)
                             {
-                                <Column TData="string" Width="130" Title="@($"{exercise.Name} ({exercise.Score})")">
-                                    @if (context.Scores.TryGetValue(exercise.Id.ToString(), out var score) && score.HasValue)
-                                    {
-                                        @score
-                                    }
-                                    else
-                                    {
-                                        <Text>—</Text>
-                                    }
-                                </Column>
+                                @score
                             }
-                            <Column Title="Идентификатор" TData="string" Width="120" Fixed="right">@context.User.StudentId</Column>
-                            <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
-
-                            @if (userContext.User.IsAdmin())
+                            else
                             {
-                                <ActionColumn Width="100" Fixed="right">
-                                    <NavLink href="@($"users/{context.User.Id}")">
-                                        <Button Icon="@IconType.Outline.User" />
-                                    </NavLink>
-                                </ActionColumn>
+                                <Text>—</Text>
                             }
+                        </Column>
+                    }
+                    <Column Title="Идентификатор" TData="string" Width="120" Fixed="right">@context.User.StudentId</Column>
+                    <Column Title="Баллы" Field="context.TotalScore" Width="100" Fixed="right" />
 
-                        </ChildContent>
-                    </Table>
-                }
-            </Authorized>
-        </AuthorizeView>
+                    @if (IsAdmin)
+                    {
+                        <ActionColumn Width="100" Fixed="right">
+                            <NavLink href="@($"users/{context.User.Id}")">
+                                <Button Icon="@IconType.Outline.User" />
+                            </NavLink>
+                        </ActionColumn>
+                    }
+
+                </ChildContent>
+                <FooterTemplate>
+                    Найдено: <SkeletonRowComponent TData="string" Data="@(loading ? null as string : userResults?.Total.ToString())">
+                        <Text Keyboard>@context</Text>
+                    </SkeletonRowComponent>
+                </FooterTemplate>
+            </Table>
+        }
     </SpaceItem>
 </Space>
 
@@ -116,6 +137,25 @@
     [SupplyParameterFromQuery]
     [Parameter]
     public int PageSize { get; set; } = 10;
+
+    private IReadOnlyList<ClaimRequest> claims = Enumerable.Empty<ClaimRequest>().ToList().AsReadOnly();
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? Claims
+    {
+        get => ClaimRequest.PackClaimsToUrl(claims);
+        set
+        {
+            claims = (ClaimRequest.ParseClaimsFromUrl(value) ?? Enumerable.Empty<ClaimRequest>()).ToList().AsReadOnly();
+        }
+    }
+
+    [CascadingParameter]
+    public Task<AuthenticationState>? AuthStateTask { get; set; }
+    private bool IsAdmin => AuthStateTask?.Status == TaskStatus.RanToCompletion && AuthStateTask.Result.User.IsAdmin();
+
+    private Dropdown? actionsRef;
+    private SolutionsReportsGenerator? solutionsReportGeneratorRef;
 
     private bool loading = true;
 
@@ -139,29 +179,35 @@
         }
     }
 
-
+    private async Task ClaimsChanged(IReadOnlyList<ClaimRequest> newClaims)
+    {
+        claims = newClaims;
+        await HandleChange();
+    }
     private async Task HandleChange()
     {
         UpdateUrl();
         await LoadData();
     }
+
     private void UpdateUrl()
     {
         if (PageSize < 1)
         {
             PageSize = 10;
         }
-        if (PageSize > 200)
+        if (PageSize > 100)
         {
-            PageSize = 200;
+            PageSize = 100;
+        }
+        if ((PageIndex - 1) * PageSize > (userResults?.Total ?? 0))
+        {
+            Console.WriteLine(new { PageIndex, PageSize, userResults?.Total });
+            PageIndex = 1;
         }
         if (PageIndex < 1)
         {
             PageIndex = 1;
-        }
-        if (PageIndex * PageSize > (userResults?.Total ?? 0))
-        {
-            PageIndex = 0;
         }
         var newUrl = CalcCurrentUrl();
         if (NavigationManager.Uri != newUrl)
@@ -170,6 +216,7 @@
         }
     }
     private SemaphoreSlim loadDataSemaphore = new SemaphoreSlim(1, 1);
+    private IReadOnlyList<ClaimRequest>? loadedClaims;
     private async Task LoadData()
     {
         await loadDataSemaphore.WaitAsync();
@@ -180,15 +227,18 @@
             var pageIndexToLoad = PageIndex < 1 ? 1 : PageIndex;
             var offset = (pageIndexToLoad - 1) * limit;
             var localChallengeId = ChallengeId;
+            var claimsToLoad = claims;
             if (loadedChallengeId == localChallengeId &&
                 Match == userResults?.Match &&
                 offset == userResults?.Offset &&
-                limit == userResults?.Limit)
+                limit == userResults?.Limit &&
+                claims.SequenceEqual(loadedClaims ?? Enumerable.Empty<ClaimRequest>()))
             {
                 return;
             }
-            userResults = await ChallengesApi.GetUserResultsForChallenge(localChallengeId, Match, offset, limit);
+            userResults = await ChallengesApi.GetUserResultsForChallenge(localChallengeId, Match, offset, limit, claimsToLoad);
             loadedChallengeId = localChallengeId;
+            loadedClaims = claimsToLoad;
             UpdateUrl();
         }
         finally
@@ -198,9 +248,29 @@
         }
     }
 
+    private async Task CreatePersonalReports()
+    {
+        if (solutionsReportGeneratorRef is null)
+        {
+            return;
+        }
+        await solutionsReportGeneratorRef.Open();
+    }
+    private async Task CreateTotalReport()
+    {
+        try
+        {
+            await ChallengeTotalReportCreator.CreateReport(ChallengeId, ChallengeName, Match, claims);
+        }
+        catch
+        {
+            await MessageService.Error("Произошла ошибка при создании персональных отчётов");
+        }
+    }
+
     private Task<List<string>> LoadTargetStudentIds()
     {
-        return ChallengesApi.GetChallengeParticipants(ChallengeId, Match);
+        return ChallengesApi.GetChallengeParticipants(ChallengeId, Match, claims);
     }
 
     private void GoToResults()
@@ -215,6 +285,7 @@
             {nameof(PageIndex), PageIndex <= 1 ? null : PageIndex},
             {nameof(PageSize), PageSize == 10 ? null : PageSize},
             {nameof(Match), Match},
+            {nameof(Claims), Claims},
         };
         return NavigationManager.GetUriWithQueryParameters(queryParams);
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using PublicAPI.Requests.Account;
 using PublicAPI.Responses.Challenges.Analytics;
 using System;
 using System.Collections.Generic;
@@ -28,15 +29,19 @@ public class ChallengeTotalReportCreator
         this.logger = logger;
     }
 
-    public async Task CreateReport(Guid challengeId, string challengeName, string? match)
+    public async Task CreateReport(Guid challengeId, string challengeName, string? match, IEnumerable<ClaimRequest> claims)
     {
         IsCreating = true;
         try
         {
             var excelGeneratingModule = await js.InvokeAsync<IJSObjectReference>("import", "./js/excelReportsCreating.js");
-            var data = await LoadAllData(challengeId, match);
+            var data = await LoadAllData(challengeId, match, claims);
             var exercises = await exercisesApi.GetExercisesAsync(challengeId);
             await excelGeneratingModule.InvokeVoidAsync("createReport", challengeName, data, exercises);
+        } catch (Exception ex)
+        {
+            logger.LogError(ex, "Can't create report");
+            throw;
         }
         finally
         {
@@ -44,7 +49,7 @@ public class ChallengeTotalReportCreator
         }
     }
 
-    private async Task<List<UserChallengeResultsResponse>> LoadAllData(Guid challengeId, string? match)
+    private async Task<List<UserChallengeResultsResponse>> LoadAllData(Guid challengeId, string? match, IEnumerable<ClaimRequest> claims)
     {
         int offset = 0;
         int total;
@@ -52,7 +57,7 @@ public class ChallengeTotalReportCreator
         var alldata = new Dictionary<Guid, UserChallengeResultsResponse>();
         do
         {
-            var response = await challengesApi.GetUserResultsForChallenge(challengeId, match, offset, pageSize);
+            var response = await challengesApi.GetUserResultsForChallenge(challengeId, match, offset, pageSize, claims);
             total = response.Total;
             offset += response.Data.Count;
             foreach (var item in response.Data)

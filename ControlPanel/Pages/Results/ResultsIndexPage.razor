@@ -30,11 +30,7 @@
         </Column>
         <Column @bind-Field="context.InvitedCount" Title="Имеют доступ">
             <Text>
-                @(context.ChallengeAccessType switch {
-                ChallengeAccessType.Public => "Все пользователи",
-                ChallengeAccessType.Private => context.InvitedCount.ToString(),
-                _ => "Неверное значение"
-                })
+                @context.HasAccessCountPretty()
             </Text>
         </Column>
         <Column @bind-Field="context.StartedExecutionCount" Title="Приступили к выполнению" />

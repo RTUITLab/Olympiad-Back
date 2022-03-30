@@ -7,7 +7,7 @@
 
 <Space Direction="DirectionVHType.Vertical" Style="width: 100%">
     <SpaceItem>
-        <Search Placeholder="Поиск" EnterButton="true" @bind-Value="@searchText" OnSearch="UpdateSearch" />
+        <Search Placeholder="Поиск по идентификатору, имени, email" EnterButton="true" @bind-Value="@searchText" OnSearch="UpdateSearch" />
     </SpaceItem>
     <SpaceItem>
         <ShowUsersTable TSelection="UsersSearchModel"
@@ -36,7 +36,7 @@
     [Parameter]
     public string? TableScrollY { get; set; }
     [Parameter]
-    public TableSize? TableSize { get; set; } = TableSize.Middle;
+    public TableSize? TableSize { get; set; }
     [Parameter]
     public RenderFragment<UserInfoResponse>? UserExtra { get; set; }
     [Parameter]

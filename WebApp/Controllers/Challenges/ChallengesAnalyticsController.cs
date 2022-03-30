@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Models;
 using Models.Solutions;
 using PublicAPI.Requests;
+using PublicAPI.Requests.Account;
 using PublicAPI.Responses;
 using PublicAPI.Responses.Challenges;
 using PublicAPI.Responses.Challenges.Analytics;
@@ -17,6 +18,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApp.Formatting;
+using WebApp.Services;
 
 namespace WebApp.Controllers.Challenges
 {
@@ -59,12 +62,16 @@ namespace WebApp.Controllers.Challenges
         }
 
         [HttpGet("{challengeId:guid}/participants")]
-        public async Task<List<string>> GetChallengeParticipants(Guid challengeId, [MaxLength(100)] string match)
+        public async Task<List<string>> GetChallengeParticipants(
+            Guid challengeId,
+            [MaxLength(100)] string match,
+            [FromQuery, ModelBinder(typeof(ClaimRequestBinder))] IEnumerable<ClaimRequest> targetClaims)
         {
-            return await SelectSolutionsByUserMatch(match, 
-                                context.Solutions.Where(s => s.Exercise.ChallengeId == challengeId))
-                .Select(s => s.User.StudentID)
-                .Distinct()
+            return await context.Users
+                .Where(u => u.Solutions.Any(s => s.Exercise.ChallengeId == challengeId))
+                .FindByMatch(match)
+                .FindByClaims(targetClaims)
+                .Select(u => u.StudentID)
                 .ToListAsync();
         }
 
@@ -72,33 +79,32 @@ namespace WebApp.Controllers.Challenges
         public async Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(
             Guid challengeId,
             [MaxLength(100)] string match,
+            [FromQuery, ModelBinder(typeof(ClaimRequestBinder))] IEnumerable<ClaimRequest> targetClaims,
             [FromQuery] ListQueryParams listQueryParams)
         {
             using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
-            var targetSolutionsForChallengeQuery = context
-                .Solutions
-                .Where(s => s.Exercise.ChallengeId == challengeId);
-            var targetSolutionsByMatchUserQuery = 
-                SelectSolutionsByUserMatch(match, targetSolutionsForChallengeQuery);
-
-            var targetUsersInfoQuery = targetSolutionsByMatchUserQuery
-                .GroupBy(s => new UserChallengeResultsResponse.UserView
-                {
-                    Id = s.UserId,
-                    StudentId = s.User.StudentID,
-                    FirstName = s.User.FirstName
-                });
+            var targetUsersInfoQuery = context.Users
+                .Where(u => u.Solutions.Any(s => s.Exercise.ChallengeId == challengeId))
+                .FindByMatch(match)
+                .FindByClaims(targetClaims);
             var totalCount = await targetUsersInfoQuery.CountAsync();
 
             var targetUsersInfo = await targetUsersInfoQuery
-                .OrderBy(u => u.Key.StudentId)
+                .OrderBy(u => u.StudentID)
                 .Skip(listQueryParams.Offset)
                 .Take(listQueryParams.Limit)
-                .Select(s => s.Key)
+                .Select(u => new UserChallengeResultsResponse.UserView
+                {
+                    Id = u.Id,
+                    StudentId = u.StudentID,
+                    FirstName = u.FirstName
+                })
                 .ToDictionaryAsync(u => u.Id);
 
-            var byExerciseInfo = (await targetSolutionsForChallengeQuery
+            var byExerciseInfo = (await context
+                .Solutions
+                .Where(s => s.Exercise.ChallengeId == challengeId)
                 .Where(s => targetUsersInfo.Keys.Contains(s.UserId))
                 .GroupBy(s => new { s.ExerciseId, s.UserId })
                 .Select(g => new { g.Key.UserId, g.Key.ExerciseId, Score = g.Max(s => s.TotalScore) })
@@ -122,21 +128,6 @@ namespace WebApp.Controllers.Challenges
                 Match = match,
                 Data = data
             };
-        }
-
-        private static IQueryable<Solution> SelectSolutionsByUserMatch(string match, IQueryable<Solution> solutionsSource)
-        {
-            if (string.IsNullOrWhiteSpace(match))
-            {
-                return solutionsSource;
-            }
-            var words = match.ToUpper().Split(' ');
-            var targetSolutionsByMatchUserQuery = words.Aggregate(solutionsSource, (solutions, matcher) => solutions.Where(
-                u =>
-                    u.User.FirstName.ToUpper().Contains(matcher) ||
-                    u.User.Email.ToUpper().Contains(matcher) ||
-                    u.User.StudentID.ToUpper().Contains(matcher)));
-            return targetSolutionsByMatchUserQuery;
         }
     }
 }

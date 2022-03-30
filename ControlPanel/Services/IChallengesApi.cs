@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using PublicAPI.Responses.Challenges.Analytics;
 using PublicAPI.Responses.Users;
 using PublicAPI.Requests;
+using PublicAPI.Requests.Account;
 
 namespace Olympiad.ControlPanel.Services;
 [Headers("Authorization: Bearer")]
@@ -21,10 +22,30 @@ public interface IChallengesApi
 
     [Get("/api/challenges/analytics")]
     public Task<List<ChallengeResponseWithAnalytics>> GetAllChallengesWithAnalyticsAsync();
+    
     [Get("/api/challenges/analytics/{challengeId}/participants")]
-    public Task<List<string>> GetChallengeParticipants(Guid challengeId, string? match);
+    [Obsolete("Use GetUserResultsForChallenge")]
+    public Task<List<string>> GetChallengeParticipantsPrivate(Guid challengeId, string? match, string? targetClaims);
+    public Task<List<string>> GetChallengeParticipants(Guid challengeId, string? match, IEnumerable<ClaimRequest> targetClaims)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        return GetChallengeParticipantsPrivate(challengeId, match, ClaimRequest.PackClaimsToUrl(targetClaims));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+    
     [Get("/api/challenges/analytics/{challengeId}")]
-    public Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit);
+    [Obsolete("Use GetUserResultsForChallenge")]
+    public Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallengePrivate(Guid challengeId, string? match, int offset, int limit, string? targetClaims);
+
+    public Task<ListResponseWithMatch<UserChallengeResultsResponse>> GetUserResultsForChallenge(Guid challengeId, string? match, int offset, int limit, IEnumerable<ClaimRequest> targetClaims)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        return GetUserResultsForChallengePrivate(challengeId, match, offset, limit, ClaimRequest.PackClaimsToUrl(targetClaims));
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
+
     [Get("/api/challenges/analytics/{challengeId}/info")]
     public Task<ChallengeResponseWithAnalytics> GetOneChallengeAnalycisInfo(Guid challengeId);
 
