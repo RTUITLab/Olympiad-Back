@@ -32,14 +32,14 @@ Scenario: search with incorrect limit
 
 Scenario: search with max limit
   Given path 'api/account'
-  And param limit = 200
+  And param limit = 100
   When method get
   Then status 200
 
 
 Scenario: search with one more than max limit
   Given path 'api/account'
-  And param limit = 201
+  And param limit = 101
   When method get
   Then status 400
 
