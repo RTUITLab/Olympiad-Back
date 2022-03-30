@@ -1,6 +1,6 @@
 ﻿using Olympiad.Shared.Models;
 using PublicAPI.Responses;
-using PublicAPI.Responses.ExerciseTestData;
+using PublicAPI.Responses.Exercises;
 using PublicAPI.Responses.Solutions;
 using System;
 using System.Collections.Generic;

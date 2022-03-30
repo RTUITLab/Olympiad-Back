@@ -13,12 +13,12 @@ using Models.Checking;
 using System.Security.Claims;
 using PublicAPI.Responses.Account;
 using Models.UserModels;
-using PublicAPI.Responses.ExerciseTestData;
 using PublicAPI.Responses.Challenges.Analytics;
 using PublicAPI.Responses.Solutions.Analytics;
 using WebApp.Controllers;
 using PublicAPI.Responses.ExercisesTestData;
 using Olympiad.Shared;
+using PublicAPI.Responses.Exercises;
 
 namespace WebApp.Formatting.ResponseMappers
 {

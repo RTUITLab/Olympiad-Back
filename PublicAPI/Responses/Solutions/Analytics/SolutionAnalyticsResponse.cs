@@ -1,4 +1,4 @@
-﻿using PublicAPI.Responses.ExerciseTestData;
+﻿using PublicAPI.Responses.Exercises;
 using PublicAPI.Responses.Users;
 using System;
 using System.Collections.Generic;

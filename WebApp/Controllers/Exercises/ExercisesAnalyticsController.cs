@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models;
-using PublicAPI.Responses.ExerciseTestData;
+using PublicAPI.Responses.Exercises;
 using System;
 using System.Collections.Generic;
 using System.Linq;

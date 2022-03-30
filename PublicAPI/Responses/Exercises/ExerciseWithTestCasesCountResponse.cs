@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace PublicAPI.Responses.ExerciseTestData
+namespace PublicAPI.Responses.Exercises
 {
     public class ExerciseWithTestCasesCountResponse : ExerciseCompactResponse
     {

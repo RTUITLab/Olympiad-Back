@@ -18,7 +18,6 @@ using PublicAPI.Responses;
 using WebApp.Models;
 using PublicAPI.Requests;
 using AutoMapper.QueryableExtensions;
-using PublicAPI.Responses.ExerciseTestData;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Options;
 using WebApp.Models.Settings;
@@ -31,6 +30,7 @@ using WebApp.Services.Attachments;
 using Olympiad.Services;
 using Microsoft.Extensions.Logging;
 using Olympiad.Services.SolutionCheckQueue;
+using PublicAPI.Responses.Exercises;
 
 namespace WebApp.Controllers.Exercises
 {

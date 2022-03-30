@@ -12,6 +12,9 @@ namespace Models.Exercises
         public string ExerciseName { get; set; }
         public string ExerciseTask { get; set; }
 
+        [Column(TypeName = "jsonb")]
+        public ExerciseRestrictions Restrictions { get; set; }
+
         public Guid ChallengeId { get; set; }
         public Challenge Challenge { get; set; }
 
