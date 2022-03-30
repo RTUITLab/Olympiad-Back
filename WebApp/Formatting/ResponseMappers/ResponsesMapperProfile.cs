@@ -18,6 +18,7 @@ using PublicAPI.Responses.Challenges.Analytics;
 using PublicAPI.Responses.Solutions.Analytics;
 using WebApp.Controllers;
 using PublicAPI.Responses.ExercisesTestData;
+using Olympiad.Shared;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -71,9 +72,8 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<Solution, SolutionAnalyticCompactResponse>()
                 .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
             CreateMap<Solution, SolutionAnalyticsResponse>()
-                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore))
-                .ForMember(r => r.FileExtension, map => map.MapFrom(s => CheckController.GetExtensionsForLanguage(s.Language)))
-                .ForMember(r => r.FileExtension, map => map.MapAtRuntime());
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
+
 
             CreateMap<SolutionBuildLog, BuildLogAnalyticsResponse>();
 

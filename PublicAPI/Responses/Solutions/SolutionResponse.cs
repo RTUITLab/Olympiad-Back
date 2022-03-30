@@ -1,4 +1,5 @@
-﻿using Olympiad.Shared.Models;
+﻿using Olympiad.Shared;
+using Olympiad.Shared.Models;
 using System;
 
 namespace PublicAPI.Responses.Solutions

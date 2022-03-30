@@ -48,7 +48,7 @@
             </DescriptionsItem>
             <DescriptionsItem Title="Язык">
                 <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
-                    <Text Code>@loadedSolution.Language</Text>
+                    <Text Code>@loadedSolution.Language.Name</Text>
                 </SkeletonRowComponent>
             </DescriptionsItem>
             <DescriptionsItem Title="Задание">
@@ -79,7 +79,7 @@
             </DescriptionsItem>
             <DescriptionsItem Title="Код">
                 <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
-                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" SolutionLanguage="@loadedSolution.Language" />
+                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" PrismLanguage="@loadedSolution.Language.PrismLang" />
                 </SkeletonRowComponent>
             </DescriptionsItem>
         </Descriptions>
@@ -93,5 +93,5 @@
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
 
-    private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.FileExtension}";
+    private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.Language.FileExtension}";
 }

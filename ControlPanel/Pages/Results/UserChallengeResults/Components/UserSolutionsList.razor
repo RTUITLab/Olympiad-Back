@@ -1,4 +1,4 @@
-﻿@using PublicAPI.Responses.Solutions
+@using PublicAPI.Responses.Solutions
 @using System.Threading
 @using PublicAPI.Responses.Solutions.Analytics
 
@@ -16,7 +16,7 @@ else
                 <Text>
                     <ScoreBadge Score="context.Score" /> |
                     @context.Status.ToRussian() |
-                    <Text Code>@context.Language</Text>  |
+                    <Text Code>@context.Language.Name</Text>  |
                     <PrettyDateTimeOffset DateTimeOffset="@context.SendingTime" />
                 </Text>
             </NavLink>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Models.Checking;
 using Models.Exercises;
+using Olympiad.Shared;
 using Olympiad.Shared.Models;
 
 namespace Models.Solutions
@@ -10,7 +11,7 @@ namespace Models.Solutions
     public class Solution
     {
         public Guid Id { get; set; }
-        public string Language { get; set; }
+        public ProgramRuntime Language { get; set; }
         public string Raw { get; set; }
         public Guid UserId { get; set; }
         public User User { get; set; }

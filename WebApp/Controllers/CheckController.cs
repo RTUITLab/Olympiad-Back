@@ -136,7 +136,7 @@ namespace WebApp.Controllers
             Solution solution = new Solution()
             {
                 Raw = fileBody,
-                Language = language,
+                Language = ProgramRuntime.FromValue(language),
                 ExerciseId = exerciseId,
                 UserId = authorId,
                 Status = SolutionStatus.InQueue,
@@ -242,22 +242,8 @@ namespace WebApp.Controllers
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
-            return File(solutionContent, "application/octet-stream", $"Program{GetExtensionsForLanguage(solution.Language)}");
-        }
-        [Obsolete("Extract that method to some shared library")]
-        public static string GetExtensionsForLanguage(string language)
-        {
-            return language switch
-            {
-                "java" => ".java",
-                "csharp" => ".cs",
-                "pasabc" => ".pas",
-                "c" => ".c",
-                "cpp" => ".cpp",
-                "python" => ".py",
-                "js" => ".js",
-                _ => ".txt",
-            };
+            
+            return File(solutionContent, "application/octet-stream", $"Program{ProgramRuntime.GetFileExtensionForRuntime(solution.Language)}"); 
         }
     }
 }
