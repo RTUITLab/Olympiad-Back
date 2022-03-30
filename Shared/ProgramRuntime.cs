@@ -33,5 +33,10 @@ namespace Olympiad.Shared
         protected ProgramRuntime() : this("unknown", "unknown", ".txt") { }
         public static string GetFileExtensionForRuntime(string runtime)
             => TryFromValue(runtime, out var found) ? found.FileExtension : ".txt";
+
+        public override string ToString()
+        {
+            return Value;
+        }
     }
 }
