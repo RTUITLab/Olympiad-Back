@@ -113,12 +113,20 @@ namespace WebApp.Controllers.Exercises
         [Authorize(Roles = "Admin")]
         public async Task<ExerciseInfo> GetForAdmin(Guid exerciseId)
         {
+            using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
             var exercise = await context
                 .Exercises
                 .Where(ex => ex.ExerciseID == exerciseId)
                 .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
+            // TODO: incorrect jsonb mapping, hand made
+            var restrictions = await context
+                .Exercises
+                .Where(ex => ex.ExerciseID == exerciseId)
+                .Select(ex => ex.Restrictions)
+                .SingleAsync();
+            exercise.Restrictions = mapper.Map<ExerciseRestrictionsResponse>(restrictions);
             return exercise;
         }
 
@@ -215,6 +223,12 @@ namespace WebApp.Controllers.Exercises
                            ?? throw StatusCodeException.NotFount;
             exercise.ExerciseName = request.Title;
             exercise.ExerciseTask = request.Task;
+            
+            exercise.Restrictions ??= new ExerciseRestrictions();
+            exercise.Restrictions.Code ??= new CodeRestrictions();
+            exercise.Restrictions.Code.AllowedRuntimes = request.AllowedRuntimes.Select(r => r.Value).ToList();
+            // TODO: can't check property is changed, hand made
+            context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
             await context.SaveChangesAsync();
             return await GetForAdmin(exerciseId);
         }

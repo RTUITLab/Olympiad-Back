@@ -6,7 +6,7 @@
 @using PublicAPI.Responses.Challenges
 @using Humanizer
 @using PublicAPI.Responses
-@using PublicAPI.Responses.ExerciseTestData
+@using PublicAPI.Responses.Exercises
 
 @inject IExercisesApi ExercisesApi
 @inject ILogger<EditExerciseBaseInfo> Logger
@@ -22,7 +22,7 @@
       OnFinish="UpdateBaseInfo"
       Layout="horizontal">
     <FormItem Label="Название" Required>
-        <Input @bind-Value="@context.Title"/>
+        <Input @bind-Value="@context.Title" />
     </FormItem>
     <FormItem Label="Задание">
         <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
@@ -34,6 +34,19 @@
                 </TitleTemplate>
             </MarkdownTextArea>
         </CascadingValue>
+    </FormItem>
+    <FormItem Label="Платформы">
+        <CheckboxGroup @bind-Value="selectedRuntimes">
+            <Row>
+                @foreach (var runtime in ProgramRuntime.List)
+                {
+                    <AntDesign.Col Xl="8" Sm=12 Xs="24">
+                        <Checkbox Label="@runtime.Value">@runtime.Name</Checkbox>
+                    </AntDesign.Col>
+                }
+            </Row>
+
+        </CheckboxGroup>
     </FormItem>
     <FormItem WrapperColOffset="8" WrapperColSpan="16">
         <Button Type="@ButtonType.Primary" HtmlType="submit">
@@ -49,6 +62,17 @@
 
     [Parameter]
     public EventCallback<ExerciseInfo> ExerciseChanged { get; set; }
+
+    private string[] selectedRuntimes
+    {
+        get => (exerciseModel?.AllowedRuntimes?.Select(r => r.Value) ?? Enumerable.Empty<string>()).ToArray();
+        set
+        {
+            exerciseModel.AllowedRuntimes = (value ?? Enumerable.Empty<string>())
+                .Select(ProgramRuntime.FromValue)
+                .ToList();
+        }
+    }
 
     private readonly UpdateExerciseRequest exerciseModel = new();
     private ExerciseAttachmentsProvider? attachmentsProvider;
@@ -68,8 +92,9 @@
         }
         exerciseModel.Title = Exercise.Name;
         exerciseModel.Task = Exercise.ExerciseTask;
+        var allowedRuntimes = Exercise.Restrictions?.Code?.AllowedRuntimes;
+        exerciseModel.AllowedRuntimes = allowedRuntimes ?? ProgramRuntime.List.ToList();
     }
-
 
     private async Task UpdateBaseInfo()
     {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Olympiad.Shared;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,8 +9,9 @@ namespace PublicAPI.Responses.Exercises
     {
         public CodeRestrictionsResponse Code { get; set; }
     }
+
     public class CodeRestrictionsResponse
     {
-        public string[] AllowedLangs { get; set; }
+        public List<ProgramRuntime> AllowedRuntimes { get; set; }
     }
 }

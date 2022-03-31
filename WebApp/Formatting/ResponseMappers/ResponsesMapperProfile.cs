@@ -19,6 +19,7 @@ using WebApp.Controllers;
 using PublicAPI.Responses.ExercisesTestData;
 using Olympiad.Shared;
 using PublicAPI.Responses.Exercises;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -42,11 +43,14 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<ExerciseCompactInternalModel, ExerciseForUserInfoResponse>()
                 .ForMember(ecim => ecim.Status, map => map.MapFrom(ecr => ecr.GetStatus()))
                 .ForMember(ecim => ecim.HiddenStatus, map => map.MapFrom(ecr => ecr.GetHiddenStatus()));
-
+            CreateMap<string, ProgramRuntime>().ConvertUsing(ProgramRuntime.FromValue);
+            CreateMap<ExerciseRestrictions, ExerciseRestrictionsResponse>();
+            CreateMap<CodeRestrictions, CodeRestrictionsResponse>();
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
+                .ForMember(r => r.Restrictions, map => map.Ignore());
 
             CreateMap<Exercise, ExerciseCompactResponse>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))

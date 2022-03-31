@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Olympiad.Shared;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,6 +11,6 @@ namespace Models.Exercises
     }
     public class CodeRestrictions
     {
-        public string[] AllowedLangs { get; set; }
+        public List<string> AllowedRuntimes { get; set; }
     }
 }

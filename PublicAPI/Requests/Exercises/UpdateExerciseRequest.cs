@@ -14,5 +14,6 @@ namespace PublicAPI.Requests.Exercises
         [Required]
         [MaxLength(ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH)]
         public string Task { get; set; }
+        public List<ProgramRuntime> AllowedRuntimes { get; set; }
     }
 }
