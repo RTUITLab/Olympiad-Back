@@ -24,6 +24,7 @@ using PublicAPI.Responses.Solutions;
 using WebApp.Extensions;
 using WebApp.Models;
 using WebApp.Services.Interfaces;
+using WebApp.Services.Solutions;
 
 namespace WebApp.Controllers
 {
@@ -33,18 +34,21 @@ namespace WebApp.Controllers
     public class CheckController : AuthorizeController
     {
         private readonly ApplicationDbContext context;
+        private readonly ISolutionsService solutionsService;
         private readonly IQueueChecker queue;
         private readonly IMapper mapper;
         private readonly ILogger<CheckController> logger;
 
         public CheckController(
             ApplicationDbContext context,
+            ISolutionsService solutionsService,
             IQueueChecker queue,
             UserManager<User> userManager,
             IMapper mapper,
             ILogger<CheckController> logger) : base(userManager)
         {
             this.context = context;
+            this.solutionsService = solutionsService;
             this.queue = queue;
             this.mapper = mapper;
             this.logger = logger;
@@ -97,65 +101,44 @@ namespace WebApp.Controllers
         }
         private async Task<ActionResult<SolutionResponse>> AddSolutionFromStringRaw(string fileBody, string language, Guid exerciseId, Guid authorId, bool isAdmin = false)
         {
-            if (!await context.Exercises.AnyAsync(
-                e => e.ExerciseID == exerciseId &&
-                (e.Challenge.StartTime == null || e.Challenge.StartTime <= Now) &&
-                (e.Challenge.EndTime == null || e.Challenge.EndTime >= Now)))
+            if (!ProgramRuntime.TryFromValue(language, out var runtime))
             {
-                throw StatusCodeException.Conflict("Not found started challenge and exercise");
+                return BadRequest("Incorrect target runtime (language)");
             }
-
-            if (!isAdmin)
+            try
             {
-                var lastSendingDate = (await context
-                    .Solutions
-                    .Where(s => s.UserId == authorId)
-                    .Where(s => s.ExerciseId == exerciseId)
-                    .Select(s => s.SendingTime)
-                    .ToListAsync())
-                    .DefaultIfEmpty(DateTimeOffset.MinValue)
-                    .Max();
-
-                if ((Now - lastSendingDate) < TimeSpan.FromMinutes(1))
+                var checks = isAdmin ? default :
+                    ISolutionsService.PostSolutionChecks.AlreadySent |
+                    ISolutionsService.PostSolutionChecks.ChallengeAvailable |
+                    ISolutionsService.PostSolutionChecks.TooManyPost |
+                    ISolutionsService.PostSolutionChecks.ExerciseRuntimeRestrictions;
+                var postedSolution = await solutionsService.PostSolution(fileBody, runtime, exerciseId, authorId, checks);
+                return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(postedSolution));
+            }
+            catch (ISolutionsService.AlreadySentException)
+            {
+                return Conflict("Solution already sent");
+            }
+            catch (ISolutionsService.ChallengeNotAvailableException)
+            {
+                return Forbid("Target challenge not available");
+            }
+            catch (ISolutionsService.TooManyPostException tre)
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, tre.Message);
+            }
+            catch (ISolutionsService.ExerciseRuntimesRestrictionException erex)
+            {
+                return Conflict(new
                 {
-                    throw StatusCodeException.TooManyRequests;
-                }
-
-                var oldSolution = await context
-                    .Solutions
-                    .Where(s => s.UserId == authorId)
-                    .Where(s => s.Raw == fileBody)
-                    .Where(s => s.ExerciseId == exerciseId)
-                    .FirstOrDefaultAsync();
-                if (oldSolution != null)
-                {
-                    return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(oldSolution));
-                }
+                    Message = "exercise restrinctions conflict",
+                    AllowedRuntimes = erex.AllowerRuntimes
+                });
             }
-
-            Solution solution = new Solution()
+            catch (ISolutionsService.NotFoundEntityException nfe)
             {
-                Raw = fileBody,
-                Language = ProgramRuntime.FromValue(language),
-                ExerciseId = exerciseId,
-                UserId = authorId,
-                Status = SolutionStatus.InQueue,
-                SendingTime = DateTimeOffset.UtcNow
-            };
-
-            await context.Solutions.AddAsync(solution);
-            await context.SaveChangesAsync();
-            if (await context.TestData.AnyAsync(td => td.ExerciseDataGroup.ExerciseId == exerciseId))
-            {
-                logger.LogInformation($"Put solution {solution.Id} to test queue");
-                queue.PutInQueue(solution.Id);
+                return NotFound(nfe.Message);
             }
-            else
-            {
-                logger.LogWarning($"No exercise data for {solution.Id}, no put to test queue");
-            }
-
-            return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
         }
 
         [HttpGet]
@@ -233,7 +216,7 @@ namespace WebApp.Controllers
                 .Where(s => s.Id == solutionId);
 
             if (!IsAdmin && !User.IsResultsViewer())
-            { 
+            {
                 solutions = solutions.Where(s => s.UserId == UserId);
             }
 
@@ -242,8 +225,8 @@ namespace WebApp.Controllers
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
-            
-            return File(solutionContent, "application/octet-stream", $"Program{ProgramRuntime.GetFileExtensionForRuntime(solution.Language)}"); 
+
+            return File(solutionContent, "application/octet-stream", $"Program{ProgramRuntime.GetFileExtensionForRuntime(solution.Language)}");
         }
     }
 }

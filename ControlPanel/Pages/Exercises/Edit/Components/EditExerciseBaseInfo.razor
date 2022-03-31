@@ -35,7 +35,7 @@
             </MarkdownTextArea>
         </CascadingValue>
     </FormItem>
-    <FormItem Label="Платформы">
+    <FormItem Label="Платформы" Required>
         <CheckboxGroup @bind-Value="selectedRuntimes">
             <Row>
                 @foreach (var runtime in ProgramRuntime.List)
@@ -100,6 +100,11 @@
     {
         if (Exercise is null)
         {
+            return;
+        }
+        if (!exerciseModel.AllowedRuntimes.Any())
+        {
+            await MessageService.Warning("Необходимо выбрать как минимум одну платформу");
             return;
         }
         saving = true;

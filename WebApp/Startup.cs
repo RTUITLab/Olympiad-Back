@@ -34,6 +34,7 @@ using WebApp.Services.Attachments;
 using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Services.SolutionCheckQueue;
 using Ardalis.SmartEnum.SystemTextJson;
+using WebApp.Services.Solutions;
 
 namespace WebApp
 {
@@ -192,7 +193,7 @@ namespace WebApp
                 services.AddSingleton<IQueueChecker, RabbitMQQueue>();
             }
             services.AddTransient<UserPasswordGenerator>();
-
+            services.AddScoped<ISolutionsService, SolutionsService>();
             AddS3AttachmentStorage(services);
 
             AddConfigurationServices(services);

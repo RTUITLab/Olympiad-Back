@@ -63,7 +63,14 @@ namespace WebApp.Controllers.Exercises
             {
                 ExerciseName = "NEW EXERCISE NAME",
                 ChallengeId = challengeId,
-                ExerciseTask = "FILL EXERCISE TASK"
+                ExerciseTask = "FILL EXERCISE TASK",
+                Restrictions = new ExerciseRestrictions
+                {
+                    Code = new CodeRestrictions
+                    {
+                        AllowedRuntimes = ProgramRuntime.List.Select(l => l.Value).ToList()
+                    }
+                }
             };
             context.Exercises.Add(newExercise);
             await context.SaveChangesAsync();
@@ -109,25 +116,18 @@ namespace WebApp.Controllers.Exercises
             return exercises;
         }
 
+        [HttpGet]
+        [Route("{exerciseId:guid}")]
+        public async Task<ExerciseInfo> Get(Guid exerciseId)
+        {
+            return await GetExercise(exerciseId, AvailableExercise(UserId));
+        }
+
         [HttpGet("all/{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<ExerciseInfo> GetForAdmin(Guid exerciseId)
         {
-            using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
-            var exercise = await context
-                .Exercises
-                .Where(ex => ex.ExerciseID == exerciseId)
-                .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync()
-                ?? throw StatusCodeException.NotFount;
-            // TODO: incorrect jsonb mapping, hand made
-            var restrictions = await context
-                .Exercises
-                .Where(ex => ex.ExerciseID == exerciseId)
-                .Select(ex => ex.Restrictions)
-                .SingleAsync();
-            exercise.Restrictions = mapper.Map<ExerciseRestrictionsResponse>(restrictions);
-            return exercise;
+            return await GetExercise(exerciseId, null);
         }
 
         [HttpGet("{exerciseId:guid}/attachment")]
@@ -196,24 +196,33 @@ namespace WebApp.Controllers.Exercises
             return NoContent();
         }
 
-        [HttpGet]
-        [Route("{exerciseId:guid}")]
-        public async Task<ExerciseInfo> Get(Guid exerciseId)
+
+        private async Task<ExerciseInfo> GetExercise(Guid exerciseId,  Expression<Func<Exercise, bool>> exerciseFilter)
         {
-            var exercise = await context
+            var targetExerciseQuery = context
                 .Exercises
-                .Where(ex => ex.ExerciseID == exerciseId)
-                .Where(AvailableExercise(UserId))
+                .Where(ex => ex.ExerciseID == exerciseId);
+            if (exerciseFilter != null)
+            {
+                targetExerciseQuery = targetExerciseQuery.Where(exerciseFilter);
+            }
+            var exerciseInfo = await targetExerciseQuery
                 .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
-
-            return exercise;
+            // TODO: incorrect jsonb mapping, hand made
+            var restrictions = await context
+                .Exercises
+                .Where(ex => ex.ExerciseID == exerciseId)
+                .Select(ex => ex.Restrictions)
+                .SingleAsync();
+            exerciseInfo.Restrictions = mapper.Map<ExerciseRestrictionsResponse>(restrictions);
+            return exerciseInfo;
         }
 
         [HttpPut("{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ExerciseInfo> UpdateExerciseBaseInfo(Guid exerciseId, UpdateExerciseRequest request)
+        public async Task<ActionResult<ExerciseInfo>> UpdateExerciseBaseInfo(Guid exerciseId, UpdateExerciseRequest request)
         {
 
             var exercise = await context
@@ -227,6 +236,10 @@ namespace WebApp.Controllers.Exercises
             exercise.Restrictions ??= new ExerciseRestrictions();
             exercise.Restrictions.Code ??= new CodeRestrictions();
             exercise.Restrictions.Code.AllowedRuntimes = request.AllowedRuntimes.Select(r => r.Value).ToList();
+            if (!exercise.Restrictions.Code.AllowedRuntimes.Any())
+            {
+                return Conflict("Can't update exercise wuthout allowed runtimes");
+            }
             // TODO: can't check property is changed, hand made
             context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
             await context.SaveChangesAsync();
