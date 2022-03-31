@@ -8,14 +8,14 @@ namespace Olympiad.Shared
 {
     public class ProgramRuntime : SmartEnum<ProgramRuntime, string>
     {
-        public static ProgramRuntime Java = new ProgramRuntime("Java", "java", ".java");
-        public static ProgramRuntime CSharp = new ProgramRuntime("C#", "csharp", ".cs");
-        public static ProgramRuntime PasAbc = new ProgramRuntime("Pascal ABC", "pasabc", ".pas", "pascal");
-        public static ProgramRuntime FreePas = new ProgramRuntime("Free pascal", "fpas", ".pas", "pascal");
-        public static ProgramRuntime C = new ProgramRuntime("C", "c", ".c");
-        public static ProgramRuntime Cpp = new ProgramRuntime("C++", "cpp", ".cpp");
-        public static ProgramRuntime Js = new ProgramRuntime("JS", "js", ".js");
-        public static ProgramRuntime Python = new ProgramRuntime("Python", "python", ".py");
+        public static readonly ProgramRuntime Java = new ProgramRuntime("Java", "java", ".java");
+        public static readonly ProgramRuntime CSharp = new ProgramRuntime("C#", "csharp", ".cs");
+        public static readonly ProgramRuntime PasAbc = new ProgramRuntime("Pascal ABC", "pasabc", ".pas", "pascal");
+        public static readonly ProgramRuntime FreePas = new ProgramRuntime("Free pascal", "fpas", ".pas", "pascal");
+        public static readonly ProgramRuntime C = new ProgramRuntime("C", "c", ".c");
+        public static readonly ProgramRuntime Cpp = new ProgramRuntime("C++", "cpp", ".cpp");
+        public static readonly ProgramRuntime Js = new ProgramRuntime("JS", "js", ".js");
+        public static readonly ProgramRuntime Python = new ProgramRuntime("Python", "python", ".py");
 
         /// <summary>
         /// File extension for solution file

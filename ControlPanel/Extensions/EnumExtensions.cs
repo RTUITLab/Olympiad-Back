@@ -32,5 +32,14 @@ namespace Olympiad.ControlPanel.Extensions
             ChallengeAccessType.Public => AntDesign.IconType.Outline.Eye,
             _ => AntDesign.IconType.Outline.Warning
         };
+
+        public static string ToRussian(this ExerciseType exerciseType) =>
+            exerciseType == ExerciseType.Code ? "Програмный код" :
+            exerciseType == ExerciseType.Docs ? "Документы" :
+            AntDesign.IconType.Outline.FileUnknown;
+        public static string IconType(this ExerciseType exerciseType) =>
+            exerciseType == ExerciseType.Code ? AntDesign.IconType.Outline.Code :
+            exerciseType == ExerciseType.Docs ? AntDesign.IconType.Outline.FileZip :
+            AntDesign.IconType.Outline.FileUnknown;
     }
 }

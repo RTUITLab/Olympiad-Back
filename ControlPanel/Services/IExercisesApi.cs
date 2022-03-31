@@ -16,7 +16,7 @@ public interface IExercisesApi
 {
 
     [Post("/api/exercises")]
-    public Task<Guid> CreateExerciseAsync(Guid challengeId);
+    public Task<Guid> CreateExerciseAsync(ExerciseCreateRequest createRequest);
 
     [Get("/api/exercises/all")]
     public Task<List<ExerciseCompactResponse>> GetExercisesAsync(Guid challengeId);

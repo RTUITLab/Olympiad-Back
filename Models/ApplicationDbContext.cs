@@ -8,6 +8,7 @@ using Models.Links;
 using Models.Solutions;
 using Models.UserModels;
 using Olympiad.Shared;
+using Olympiad.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -53,6 +54,9 @@ namespace Models
                 .Property(s => s.Language)
                 .HasConversion(r => r.Value, r => ProgramRuntime.FromValue(r));
 
+            builder.Entity<Exercise>()
+                .Property(s => s.Type)
+                .HasConversion(t => t.Value, t => ExerciseType.FromValue(t));
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }

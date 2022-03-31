@@ -16,6 +16,7 @@ using DiffPlex.DiffBuilder;
 using DiffPlex;
 using System.Threading.Tasks;
 using Ardalis.SmartEnum.SystemTextJson;
+using Olympiad.Shared.Models;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -77,6 +78,7 @@ void RegisterApiServices(WebAssemblyHostBuilder builder)
         WriteIndented = true,
     };
     options.Converters.Add(new SmartEnumValueConverter<ProgramRuntime, string>());
+    options.Converters.Add(new SmartEnumValueConverter<ExerciseType, int>());
     var jsonSerializer = new SystemTextJsonContentSerializer(options);
     void RegisterApiService<T>() where T : class
     {

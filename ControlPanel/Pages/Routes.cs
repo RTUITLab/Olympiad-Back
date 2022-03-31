@@ -12,4 +12,8 @@ public static class Routes
     {
         public static string ChallengeEdit(Guid challengeId) => $"challenges/{challengeId}";
     }
+    public static class Exercises
+    {
+        public static string ExerciseEdit(Guid challengeId, Guid exerciseId) => $"challenges/{challengeId}/exercises/{exerciseId}";
+    }
 }

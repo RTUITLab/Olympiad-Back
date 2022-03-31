@@ -57,21 +57,21 @@ namespace WebApp.Controllers.Exercises
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<Guid> CreateDefaultExerciseAsync(Guid challengeId)
+        public async Task<Guid> CreateDefaultExerciseAsync([FromBody] ExerciseCreateRequest createRequest)
         {
             var newExercise = new Exercise
             {
                 ExerciseName = "NEW EXERCISE NAME",
-                ChallengeId = challengeId,
+                ChallengeId = createRequest.ChallengeId,
                 ExerciseTask = "FILL EXERCISE TASK",
-                Restrictions = new ExerciseRestrictions
-                {
-                    Code = new CodeRestrictions
-                    {
-                        AllowedRuntimes = ProgramRuntime.List.Select(l => l.Value).ToList()
-                    }
-                }
+                Restrictions = new ExerciseRestrictions(),
+                Type = createRequest.Type
             };
+            createRequest.Type
+                .When(ExerciseType.Code).Then(() => newExercise.Restrictions.Code = new CodeRestrictions
+                {
+                    AllowedRuntimes = ProgramRuntime.List.Select(l => l.Value).ToList()
+                });
             context.Exercises.Add(newExercise);
             await context.SaveChangesAsync();
             return newExercise.ExerciseID;
@@ -197,7 +197,7 @@ namespace WebApp.Controllers.Exercises
         }
 
 
-        private async Task<ExerciseInfo> GetExercise(Guid exerciseId,  Expression<Func<Exercise, bool>> exerciseFilter)
+        private async Task<ExerciseInfo> GetExercise(Guid exerciseId, Expression<Func<Exercise, bool>> exerciseFilter)
         {
             var targetExerciseQuery = context
                 .Exercises
@@ -232,16 +232,23 @@ namespace WebApp.Controllers.Exercises
                            ?? throw StatusCodeException.NotFount;
             exercise.ExerciseName = request.Title;
             exercise.ExerciseTask = request.Task;
-            
+
             exercise.Restrictions ??= new ExerciseRestrictions();
-            exercise.Restrictions.Code ??= new CodeRestrictions();
-            exercise.Restrictions.Code.AllowedRuntimes = request.AllowedRuntimes.Select(r => r.Value).ToList();
-            if (!exercise.Restrictions.Code.AllowedRuntimes.Any())
+            if (exercise.Type == ExerciseType.Code)
             {
-                return Conflict("Can't update exercise wuthout allowed runtimes");
+                exercise.Restrictions.Code ??= new CodeRestrictions();
+                exercise.Restrictions.Code.AllowedRuntimes = request.AllowedRuntimes.Select(r => r.Value).ToList();
+                if (!exercise.Restrictions.Code.AllowedRuntimes.Any())
+                {
+                    return Conflict("Can't update exercise wuthout allowed runtimes");
+                }
+                // TODO: can't check property is changed, hand made
+                context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
+            } else if (exercise.Type == ExerciseType.Docs)
+            {
+                // TODO: implement get
+                logger.LogError("NOT IMPLEMENT RESTRICTIONS");
             }
-            // TODO: can't check property is changed, hand made
-            context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
             await context.SaveChangesAsync();
             return await GetForAdmin(exerciseId);
         }

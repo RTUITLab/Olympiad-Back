@@ -4,11 +4,14 @@
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
 @using PublicAPI.Responses.Exercises
+@using Olympiad.ControlPanel.Pages.Exercises.ExercisesForChallengeList.Components
 
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
 @inject MessageService MessageService
 @inject NavigationManager NavigationManager
+@inject ILogger<ExercisesForChallengeIndex> Logger
+@inject ModalService ModalService
 
 <PageTitle>@ChallengeName | Задания</PageTitle>
 <PageHeader Title="Задания" Subtitle="@ChallengeName">
@@ -26,7 +29,8 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        <NewExerciseButton ChallengeId="ChallengeId" />
+        @*<NewExerciseButton ChallengeId="ChallengeId" />*@
+        <Button OnClick="CreateExercise">Создать</Button>
     </PageHeaderExtra>
 </PageHeader>
 
@@ -38,7 +42,12 @@
        HidePagination
        Context="exercise">
     <Column @bind-Field="exercise.Name" Title="Название" Sortable>
-        <NavLink href="@($"challenges/{ChallengeId}/exercises/{exercise.Id}")">@exercise.Name</NavLink>
+        <NavLink href="@($"challenges/{ChallengeId}/exercises/{exercise.Id}")">
+            @exercise.Name
+            <Tooltip Title="@exercise.Type.ToRussian()">
+                <Icon Type="@exercise.Type.IconType()" />
+            </Tooltip>
+        </NavLink>
     </Column>
     <Column @bind-Field="exercise.TestCasesCount" Title="Количество тестов" Sortable>
         <TitleTemplate>
@@ -90,15 +99,33 @@
                 .ThenBy(e => e.Name)
                 .ToList();
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogWarning(ex, "can't get exercises");
             GoToChallengePage();
             await MessageService.Warn("Не удалось получить список заданий");
         }
     }
+    private async Task CreateExercise()
+    {
+        var options = new ConfirmOptions()
+            {
+                Title = "Новое задание",
+            };
+        var confirmRef = await ModalService.CreateConfirmAsync<CreateExerciseFeedback, Guid, Guid>(options, ChallengeId);
+
+        Logger.LogInformation($"returns " + confirmRef);
+        confirmRef.OnOk = (createdExerciseId) =>
+        {
+            NavigationManager.NavigateTo(Routes.Exercises.ExerciseEdit(ChallengeId, createdExerciseId));
+            MessageService.Success("Задание создано");
+            return Task.CompletedTask;
+        };
+    }
+
 
     private void GoToChallengePage()
     {
-        NavigationManager.NavigateTo($"challenges/{ChallengeId}");
+        NavigationManager.NavigateTo(Routes.Challenges.ChallengeEdit(ChallengeId));
     }
 }
