@@ -17,6 +17,8 @@ public interface IExercisesApi
 
     [Post("/api/exercises")]
     public Task<Guid> CreateExerciseAsync(ExerciseCreateRequest createRequest);
+    [Delete("/api/exercises/{exerciseId}")]
+    public Task DeleteExerciseAsync(Guid exerciseId);
 
     [Get("/api/exercises/all")]
     public Task<List<ExerciseCompactResponse>> GetExercisesAsync(Guid challengeId);

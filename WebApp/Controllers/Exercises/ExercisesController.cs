@@ -130,6 +130,21 @@ namespace WebApp.Controllers.Exercises
             return await GetExercise(exerciseId, null);
         }
 
+        [HttpDelete]
+        [Authorize(Roles = "Admin")]
+        [Route("{exerciseId:guid}")]
+        public async Task<ActionResult> Delete(Guid exerciseId)
+        {
+            var targetExercise = await context.Exercises.FindAsync(exerciseId);
+            if (targetExercise == null)
+            {
+                return NotFound();
+            }
+            context.Exercises.Remove(targetExercise);
+            await context.SaveChangesAsync();
+            return new EmptyResult();
+        }
+
         [HttpGet("{exerciseId:guid}/attachment")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<AttachmentResponse>>> GetAttachments(Guid exerciseId,

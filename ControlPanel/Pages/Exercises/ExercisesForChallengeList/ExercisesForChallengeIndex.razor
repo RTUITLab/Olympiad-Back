@@ -43,33 +43,42 @@
        Context="exercise">
     <Column @bind-Field="exercise.Name" Title="Название" Sortable>
         <NavLink href="@($"challenges/{ChallengeId}/exercises/{exercise.Id}")">
-            @exercise.Name
             <Tooltip Title="@exercise.Type.ToRussian()">
                 <Icon Type="@exercise.Type.IconType()" />
             </Tooltip>
+            @exercise.Name
         </NavLink>
     </Column>
-    <Column @bind-Field="exercise.TestCasesCount" Title="Количество тестов" Sortable>
+    <Column @bind-Field="exercise.Score" Title="Баллы" Sortable></Column>
+    <Column @bind-Field="exercise.TestCasesCount" Title="Количество тестов">
         <TitleTemplate>
             <Text>Тесты</Text>
             <HelpTooltip>Количество тестов для задания</HelpTooltip>
         </TitleTemplate>
         <ChildContent>
-            @if (exercise.TestCasesCount == 0)
+            @if (exercise.Type == ExerciseType.Code)
             {
-                <Alert Type="@AlertType.Error" Message="Не представлено тестов для проверки" />
-            }
-            else if (exercise.TestCasesCount < 2)
-            {
-                <Alert Type="@AlertType.Warning" Message="@($"Мало тестов для проверки ({exercise.TestCasesCount})")" />
+                if (exercise.TestCasesCount == 0)
+                {
+                    <Alert Type="@AlertType.Error" Message="Не представлено тестов для проверки" />
+                }
+                else if (exercise.TestCasesCount < 2)
+                {
+                    <Alert Type="@AlertType.Warning" Message="@($"Мало тестов для проверки ({exercise.TestCasesCount})")" />
+                }
+                else
+                {
+                    @exercise.TestCasesCount
+                }
             }
             else
             {
-                @exercise.TestCasesCount
+                <Tooltip Title=@("Ручная проверка")>
+                    –
+                </Tooltip>
             }
         </ChildContent>
     </Column>
-    <Column @bind-Field="exercise.Score" Title="Баллы" Sortable></Column>
 </Table>
 
 @code {

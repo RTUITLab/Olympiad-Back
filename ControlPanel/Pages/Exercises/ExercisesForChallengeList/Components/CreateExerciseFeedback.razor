@@ -13,6 +13,9 @@
 <Paragraph>
     Необходимо выбрать тип задания
 </Paragraph>
+<Paragraph>
+    <Text Type="@TextElementType.Warning">Тип задания невозможно изменить после создания</Text>
+</Paragraph>
 
 <RadioGroup @bind-Value="type" Class="big-icon">
     @foreach (var type in ExerciseType.List)
