@@ -1,0 +1,80 @@
+﻿@using PublicAPI.Responses.Exercises
+@inherits FeedbackComponent<DocumentRestrictionResponse, DocumentRestrictionResponse>
+
+@inject ILogger<EditOneDocumentRestrictionFeedback> Logger
+@inject MessageService MessageService
+
+<Form Model="editableRestrictionsResponse"
+      Layout="@FormLayout.Vertical"
+      @ref="formRef"
+      OnFinish="() => OkAsync(new ModalClosingEventArgs{  })"
+>
+    <FormItem Required Label="Название" Help="Название документа для загрузки">
+        <AntDesign.Input @bind-Value="context.Title"/>
+    </FormItem>
+    <FormItem Label="Описание" Help="Краткое описание документа">
+        <AntDesign.Input @bind-Value="context.Description" />
+    </FormItem>
+    <FormItem Label="Размер" Help="Максимальный размер в мегабайтах">
+        <AntDesign.InputNumber TValue="double" @bind-Value="EditableSizeInMegabytes" Min="0.1" Max="50" DefaultValue="0.1" />
+    </FormItem>
+    <FormItem Label="Расширения" Help="Допустимые расширения файлов для загрузки" ValidateStatus="context.AllowedExtensions?.Any() == true ? FormValidateStatus.Error : FormValidateStatus.Default">
+        <EditExtensionsList @bind-Extensions="context.AllowedExtensions"/>
+    </FormItem>
+</Form>
+
+@code {
+    private Form<DocumentRestrictionResponse>? formRef;
+    private double EditableSizeInMegabytes
+    {
+        get => editableRestrictionsResponse.MaxSize.MegaBytes;
+        set
+        {
+            editableRestrictionsResponse.MaxSize = ByteSizeLib.ByteSize.FromMegaBytes(value);
+        }
+    }
+
+    private DocumentRestrictionResponse editableRestrictionsResponse = new DocumentRestrictionResponse();
+    private DocumentRestrictionResponse latestOption;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (latestOption != Options && Options is not null)
+        {
+            editableRestrictionsResponse = new DocumentRestrictionResponse
+                {
+                    Title = Options.Title,
+                    Description = Options.Description,
+                    AllowedExtensions = (Options.AllowedExtensions ?? Enumerable.Empty<string>()).ToList(),
+                    MaxSize = Options.MaxSize
+                };
+        }
+        latestOption = Options;
+    }
+
+    public override async Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (formRef is null)
+        {
+            args.Cancel = true;
+            return;
+        }
+        if (!formRef.Validate())
+        {
+            await MessageService.Warning("Заполните все необходимые поля");
+            args.Cancel = true;
+            return;
+        }
+        try
+        {
+            await base.OkCancelRefWithResult!.OnOk(editableRestrictionsResponse);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't add restrictions");
+            await base.OkCancelRefWithResult!.OnCancel(Options);
+        }
+        await base.OnFeedbackOkAsync(args);
+    }
+}

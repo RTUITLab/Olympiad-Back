@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace WebApp.Formatting
+namespace Olympiad.Shared.JsonConverters
 {
     public class TimeSpanConverter : JsonConverter<TimeSpan>
     {

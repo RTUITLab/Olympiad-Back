@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ByteSizeLib;
 using Models;
 using Models.Checking;
 using Models.Exercises;
@@ -30,7 +31,10 @@ namespace WebApp.ViewModels.Mappings
 
 
             CreateMap<ProgramRuntime, string>().ConstructUsing(pr => pr.Value);
+            CreateMap<ByteSize, double>().ConstructUsing(pr => pr.Bytes);
             CreateMap<UpdateCodeRestrictionsRequest, CodeRestrictions>();
+            CreateMap<DocumentRestrictionRequest, DocumentRestriction>();
+            CreateMap<UpdateDocsRestrictionsRequest, DocsRestrictions>();
         }
     }
 }

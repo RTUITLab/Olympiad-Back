@@ -32,9 +32,8 @@ using Amazon.S3;
 using WebApp.Services.Attachments;
 using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Services.SolutionCheckQueue;
-using Ardalis.SmartEnum.SystemTextJson;
 using WebApp.Services.Solutions;
-using Olympiad.Shared.Models;
+using Olympiad.Shared.JsonConverters;
 
 namespace WebApp
 {
@@ -157,10 +156,7 @@ namespace WebApp
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
-                    options.JsonSerializerOptions.Converters.Add(new TimeSpanConverter());
-                    options.JsonSerializerOptions.Converters.Add(new SmartEnumValueConverter<ProgramRuntime, string>());
-                    options.JsonSerializerOptions.Converters.Add(new SmartEnumValueConverter<ExerciseType, int>());
+                    options.JsonSerializerOptions.Converters.AddCustomConverters();
                 });
 
             services.AddSwaggerGen(c =>

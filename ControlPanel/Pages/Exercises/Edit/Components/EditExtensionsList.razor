@@ -1,0 +1,59 @@
+﻿@inject MessageService MessageService
+
+@foreach (var extension in (Extensions ?? Enumerable.Empty<string>()))
+{
+    <Tag Closable OnClose="() => RemoveExtension(extension) ">@extension</Tag>
+}
+@if (!adding)
+{
+    <Tag OnClick="StartEditing"><Icon Type="@IconType.Outline.Plus"/></Tag>
+}
+else
+{
+    <AntDesign.Input @bind-Value="newExtension" AutoFocus OnPressEnter="DoneEditing" OnBlur="DoneEditing"/>
+}
+@code {
+    [Parameter]
+    public List<string>? Extensions { get; set; }
+    [Parameter]
+    public EventCallback<List<string>> ExtensionsChanged { get; set; }
+
+    private bool adding;
+    private string newExtension = ".";
+
+    private void StartEditing()
+    {
+        newExtension = ".";
+        adding = true;
+    }
+
+    private async Task DoneEditing()
+    {
+        adding = false;
+        newExtension = newExtension.Trim();
+        if (!newExtension.StartsWith("."))
+        {
+            await MessageService.Warning("Расширение должно начинаться с точки");
+            return;
+        }
+        if (newExtension.Length == 1)
+        {
+            await MessageService.Warning("Необходимо указать расширение файла");
+            return;
+        }
+
+        Extensions ??= new List<string>();
+        Extensions.RemoveAll(m => m == newExtension);
+        Extensions.Add(newExtension);
+    }
+
+    private async Task RemoveExtension(string extension)
+    {
+        Extensions ??= new List<string>();
+        Extensions.Remove(extension);
+        if (ExtensionsChanged.HasDelegate)
+        {
+            await ExtensionsChanged.InvokeAsync(Extensions);
+        }
+    }
+}

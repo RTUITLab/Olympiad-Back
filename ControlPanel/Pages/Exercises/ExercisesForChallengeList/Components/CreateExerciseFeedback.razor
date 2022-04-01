@@ -1,11 +1,12 @@
 ﻿@using Olympiad.Shared.Models
 @using PublicAPI.Requests.Exercises
 
+@inherits FeedbackComponent<Guid, Guid>
+
 @inject IExercisesApi ExercisesApi
 @inject ILogger<CreateExerciseFeedback> Logger
 
 
-@inherits FeedbackComponent<Guid, Guid>
 
 <Alert Type="@AlertType.Info">
     Будет создано задание с параметрами по умолчанию для дальнейшей настройки

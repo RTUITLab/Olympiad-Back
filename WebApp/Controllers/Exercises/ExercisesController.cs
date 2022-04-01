@@ -71,6 +71,10 @@ namespace WebApp.Controllers.Exercises
                 .When(ExerciseType.Code).Then(() => newExercise.Restrictions.Code = new CodeRestrictions
                 {
                     AllowedRuntimes = ProgramRuntime.List.Select(l => l.Value).ToList()
+                })
+                .When(ExerciseType.Docs).Then(() => newExercise.Restrictions.Docs = new DocsRestrictions
+                {
+                    Documents = new List<DocumentRestriction>()
                 });
             context.Exercises.Add(newExercise);
             await context.SaveChangesAsync();
@@ -280,6 +284,34 @@ namespace WebApp.Controllers.Exercises
 
             await context.SaveChangesAsync();
             return mapper.Map<CodeRestrictionsResponse>(exercise.Restrictions.Code);
+        }
+
+        [HttpPut("{exerciseId:guid}/restrictions/docs")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<DocsRestrictions>> UpdateExerciseDocsRestrictions(Guid exerciseId, UpdateDocsRestrictionsRequest request)
+        {
+
+            var exercise = await context
+                               .Exercises
+                               .Where(ex => ex.ExerciseID == exerciseId)
+                               .SingleOrDefaultAsync();
+            if (exercise is null)
+            {
+                return NotFound("Not found exercise");
+            }
+            if (exercise.Type != ExerciseType.Docs)
+            {
+                return Conflict("Can't change docs restrictions for non docs exercise");
+            }
+
+            exercise.Restrictions ??= new ExerciseRestrictions();
+            exercise.Restrictions.Docs = mapper.Map<DocsRestrictions>(request);
+
+            // TODO: can't check property is changed, hand made
+            context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
+
+            await context.SaveChangesAsync();
+            return mapper.Map<DocsRestrictions>(exercise.Restrictions.Docs);
         }
 
         [HttpPost("{exerciseId:guid}/recheck")]

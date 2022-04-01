@@ -40,7 +40,7 @@
         </Popconfirm>
     </PageHeaderExtra>
 </PageHeader>
-<Row Gutter=@(8)>
+<Row Gutter=@((8, 8))>
     <AntDesign.Col Xl="12" Span="24">
         <EditExerciseBaseInfo @bind-Exercise="exerciseResponse" />
     </AntDesign.Col>
@@ -52,7 +52,7 @@
         }
         else if (exerciseResponse?.Type == ExerciseType.Docs)
         {
-            <Alert>В процессе реализации</Alert>
+            <EditExerciseDocsRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse.Restrictions.Docs"/>
         }
         else if (exerciseResponse is null)
         {

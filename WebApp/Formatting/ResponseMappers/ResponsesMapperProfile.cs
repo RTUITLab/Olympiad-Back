@@ -20,6 +20,7 @@ using PublicAPI.Responses.ExercisesTestData;
 using Olympiad.Shared;
 using PublicAPI.Responses.Exercises;
 using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+using ByteSizeLib;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -44,8 +45,14 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(ecim => ecim.Status, map => map.MapFrom(ecr => ecr.GetStatus()))
                 .ForMember(ecim => ecim.HiddenStatus, map => map.MapFrom(ecr => ecr.GetHiddenStatus()));
             CreateMap<string, ProgramRuntime>().ConvertUsing(ProgramRuntime.FromValue);
+            
             CreateMap<ExerciseRestrictions, ExerciseRestrictionsResponse>();
             CreateMap<CodeRestrictions, CodeRestrictionsResponse>();
+            
+            CreateMap<double, ByteSize>().ConstructUsing(pr => ByteSize.FromBytes(pr));
+            CreateMap<DocsRestrictions, DocsRestrictionsResponse>();
+            CreateMap<DocumentRestriction, DocumentRestrictionResponse>();
+            
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))

@@ -5,23 +5,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace PublicAPI.Responses.Exercises
+namespace PublicAPI.Requests.Exercises
 {
-    public class ExerciseRestrictionsResponse
+    public class UpdateDocsRestrictionsRequest
     {
-        public CodeRestrictionsResponse Code { get; set; }
-        public DocsRestrictionsResponse Docs { get; set; }
+        [Required]
+        [MinLength(1)]
+        public List<DocumentRestrictionRequest> Documents { get; set; }
     }
-
-    public class CodeRestrictionsResponse
-    {
-        public List<ProgramRuntime> AllowedRuntimes { get; set; }
-    }
-    public class DocsRestrictionsResponse
-    {
-        public List<DocumentRestrictionResponse> Documents { get; set; }
-    }
-    public class DocumentRestrictionResponse
+    public class DocumentRestrictionRequest
     {
         [Required]
         [MinLength(1)]
@@ -36,7 +28,7 @@ namespace PublicAPI.Responses.Exercises
         /// <summary>
         /// Document description for user
         /// </summary>
-        [MaxLength(100)] 
+        [MaxLength(100)]
         public string Description { get; set; }
     }
 }
