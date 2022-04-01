@@ -18,17 +18,18 @@
         <HeaderTemplate>
             <Badge Count="@attachments?.Count"
                    Style="background-color: #8c8c8c;"
-                   Offset="(20, 8)">
+                   Offset="(20, 8)"
+                   ShowZero>
                 Файлы
                 @if (loading)
                 {
-                    <Badge Status="processing"/>
+                    <Badge Status="processing" />
                 }
             </Badge>
         </HeaderTemplate>
         <ExtraTemplate>
             <Button Icon="@IconType.Outline.Plus" Style="height: 1.5em;" OnClick="() => JS.Click(uploadAttachmentRef?.Element)"></Button>
-            <InputFile @ref="uploadAttachmentRef" style="display: none" OnChange="UploadFileSelected"/>
+            <InputFile @ref="uploadAttachmentRef" style="display: none" OnChange="UploadFileSelected" />
         </ExtraTemplate>
         <ChildContent>
             <AntList DataSource="attachments"
@@ -38,7 +39,7 @@
                 <ListItem>
                     <ChildContent>
                         <Text Ellipsis>
-                            <Icon Type="@GetIconType(attachment)"/>
+                            <Icon Type="@GetIconType(attachment)" />
                             <Text Style="font-size: 12px">
                                 <a href="@AttachmentsProvider?.GetAttachmentUrl(attachment.FileName)" target="_blank">@attachment.FileName</a>
                             </Text>
@@ -58,7 +59,7 @@
                             </Overlay>
                             <ChildContent>
                                 <Tooltip Title="@("Скопировать markdown для использования в разметке")">
-                                    <Icon Type="@IconType.Outline.Copy"/>
+                                    <Icon Type="@IconType.Outline.Copy" />
                                 </Tooltip>
                             </ChildContent>
                         </DropdownButton>
@@ -86,41 +87,41 @@
     {
         return attachmentResponse switch
         {
-            var (fileName, _) when fileName.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase) 
+            var (fileName, _) when fileName.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FilePdf,
             var (fileName, _) when fileName.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase) ||
-                                   fileName.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase) 
+                                   fileName.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FileJpg,
-            var (fileName, _) when fileName.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase) 
+            var (fileName, _) when fileName.EndsWith(".gif", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FileGif,
             var (fileName, _) when fileName.EndsWith(".xlsx", StringComparison.InvariantCultureIgnoreCase)
                                    || fileName.EndsWith(".xls", StringComparison.InvariantCultureIgnoreCase)
                                    || fileName.EndsWith(".xlsb", StringComparison.InvariantCultureIgnoreCase)
-                                   || fileName.EndsWith(".xlsm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".xlsm", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FileExcel,
             var (fileName, _) when fileName.EndsWith(".docx", StringComparison.InvariantCultureIgnoreCase)
                                    || fileName.EndsWith(".doc", StringComparison.InvariantCultureIgnoreCase)
                                    || fileName.EndsWith(".docm", StringComparison.InvariantCultureIgnoreCase)
                                    || fileName.EndsWith(".dotx", StringComparison.InvariantCultureIgnoreCase)
-                                   || fileName.EndsWith(".dotm", StringComparison.InvariantCultureIgnoreCase) 
+                                   || fileName.EndsWith(".dotm", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FileWord,
             var (fileName, _) when fileName.EndsWith(".md", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FileMarkdown,
-            var (fileName, _) when fileName.EndsWith(".pptx", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".ppt", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".pptm", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".potm", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".potx", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".ppam", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".ppsx", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".ppsm", StringComparison.InvariantCultureIgnoreCase) 
-                                   || fileName.EndsWith(".pps", StringComparison.InvariantCultureIgnoreCase) 
+            var (fileName, _) when fileName.EndsWith(".pptx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".ppt", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".pptm", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".potm", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".potx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".ppam", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".ppsx", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".ppsm", StringComparison.InvariantCultureIgnoreCase)
+                                   || fileName.EndsWith(".pps", StringComparison.InvariantCultureIgnoreCase)
                 => IconType.Outline.FilePpt,
             var (_, mimeType) when mimeType.StartsWith("text") => IconType.Outline.FileText,
             var (_, mimeType) when mimeType.StartsWith("image") => IconType.Outline.FileImage,
             var (_, mimeType) when mimeType.StartsWith("video") => IconType.Outline.VideoCamera,
             _ => IconType.Outline.File
-            };
+        };
     }
 
 
@@ -157,21 +158,21 @@
         if (fileSize > AttachmentLimitations.MaxAttachmentSize)
         {
             await NotificationService.Open(new NotificationConfig
-            {
-                Message = "Слишком большой файл",
-                Description = $"{files.File.Name} Слишком большой ({fileSize:0.##}). Максимально возможный размер файла: {AttachmentLimitations.MaxAttachmentSize:0.##}",
-                NotificationType = NotificationType.Error
-            });
+                {
+                    Message = "Слишком большой файл",
+                    Description = $"{files.File.Name} Слишком большой ({fileSize:0.##}). Максимально возможный размер файла: {AttachmentLimitations.MaxAttachmentSize:0.##}",
+                    NotificationType = NotificationType.Error
+                });
             return;
         }
         if (string.IsNullOrEmpty(files.File.ContentType))
         {
             await NotificationService.Open(new NotificationConfig
-            {
-                Message = "Неподдерживаемый файл",
-                Description = $"Данный формат ({System.IO.Path.GetExtension(files.File.Name)} {files.File.ContentType}) файлов на данный момент не поддерживается",
-                NotificationType = NotificationType.Warning
-            });
+                {
+                    Message = "Неподдерживаемый файл",
+                    Description = $"Данный формат ({System.IO.Path.GetExtension(files.File.Name)} {files.File.ContentType}) файлов на данный момент не поддерживается",
+                    NotificationType = NotificationType.Warning
+                });
             return;
         }
         if (AttachmentsProvider is null)

@@ -249,23 +249,37 @@ namespace WebApp.Controllers.Exercises
             exercise.ExerciseTask = request.Task;
 
             exercise.Restrictions ??= new ExerciseRestrictions();
-            if (exercise.Type == ExerciseType.Code)
-            {
-                exercise.Restrictions.Code ??= new CodeRestrictions();
-                exercise.Restrictions.Code.AllowedRuntimes = request.AllowedRuntimes.Select(r => r.Value).ToList();
-                if (!exercise.Restrictions.Code.AllowedRuntimes.Any())
-                {
-                    return Conflict("Can't update exercise wuthout allowed runtimes");
-                }
-                // TODO: can't check property is changed, hand made
-                context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
-            } else if (exercise.Type == ExerciseType.Docs)
-            {
-                // TODO: implement get
-                logger.LogError("NOT IMPLEMENT RESTRICTIONS");
-            }
             await context.SaveChangesAsync();
             return await GetForAdmin(exerciseId);
+        }
+
+
+        [HttpPut("{exerciseId:guid}/restrictions/code")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<CodeRestrictionsResponse>> UpdateExerciseCodeRestrictions(Guid exerciseId, UpdateCodeRestrictionsRequest request)
+        {
+
+            var exercise = await context
+                               .Exercises
+                               .Where(ex => ex.ExerciseID == exerciseId)
+                               .SingleOrDefaultAsync();
+            if (exercise is null)
+            {
+                return NotFound("Not found exercise");
+            }
+            if (exercise.Type != ExerciseType.Code)
+            {
+                return Conflict("Can't change code restrictions for non code exercise");
+            }
+
+            exercise.Restrictions ??= new ExerciseRestrictions();
+            exercise.Restrictions.Code = mapper.Map<CodeRestrictions>(request);
+
+            // TODO: can't check property is changed, hand made
+            context.Entry(exercise).Property(e => e.Restrictions).IsModified = true;
+
+            await context.SaveChangesAsync();
+            return mapper.Map<CodeRestrictionsResponse>(exercise.Restrictions.Code);
         }
 
         [HttpPost("{exerciseId:guid}/recheck")]

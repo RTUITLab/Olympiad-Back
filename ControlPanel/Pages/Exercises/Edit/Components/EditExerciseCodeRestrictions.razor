@@ -1,0 +1,84 @@
+﻿@using PublicAPI.Responses.Exercises
+@using PublicAPI.Requests.Exercises
+
+@inject MessageService MessageService
+@inject IExercisesApi ExercisesApi
+@inject ILogger<EditExerciseCodeRestrictions> Logger
+
+<Card Title="Платформы" Loading="Restrictions is null">
+    <Spin Spinning="loading">
+        <CheckboxGroup @bind-Value="selectedRuntimes">
+            <Row>
+                @foreach (var runtime in ProgramRuntime.List)
+                {
+                    <AntDesign.Col Xl="8" Sm=12 Xs="24">
+                        <Checkbox Label="@runtime.Value">@runtime.Name</Checkbox>
+                    </AntDesign.Col>
+                }
+            </Row>
+        </CheckboxGroup>
+        <Button Type="@ButtonType.Primary" OnClick="UpdateAllowedRuntimes" Style="margin-top: 8px;">Сохранить</Button>
+    </Spin>
+</Card>
+@code {
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+    [Parameter]
+    public CodeRestrictionsResponse? Restrictions { get; set; }
+    [Parameter]
+    public EventCallback<CodeRestrictionsResponse> RestrictionsChanged { get; set; }
+
+    private bool loading = false;
+
+    private string[] selectedRuntimes
+    {
+        get => (Restrictions?.AllowedRuntimes?.Select(r => r.Value) ?? Enumerable.Empty<string>()).ToArray();
+        set
+        {
+            Restrictions ??= new CodeRestrictionsResponse();
+            Restrictions.AllowedRuntimes = (value ?? Enumerable.Empty<string>())
+                .Select(ProgramRuntime.FromValue)
+                .ToList();
+        }
+    }
+
+    private async Task UpdateAllowedRuntimes()
+    {
+        if (Restrictions?.AllowedRuntimes?.Any() != true)
+        {
+            await MessageService.Warning("Необходимо выбрать как минимум одну платформу");
+            return;
+        }
+        loading = true;
+        var request = new UpdateCodeRestrictionsRequest
+            {
+                AllowedRuntimes = Restrictions?.AllowedRuntimes
+            };
+        var success = false;
+        try
+        {
+            Restrictions = await ExercisesApi.UpdateExerciseCodeRestrictions(ExerciseId, request);
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't update code restrictions");
+            await MessageService.Warning("Необходимо выбрать как минимум одну платформу");
+            return;
+        }
+        finally
+        {
+            loading = false;
+        }
+        StateHasChanged();
+        if (RestrictionsChanged.HasDelegate)
+        {
+            await RestrictionsChanged.InvokeAsync(Restrictions);
+        }
+        if (success)
+        {
+            await MessageService.Success("Ограничения обновлены");
+        }
+
+    }
+}

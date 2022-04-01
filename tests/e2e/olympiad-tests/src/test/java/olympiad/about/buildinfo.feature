@@ -4,7 +4,7 @@ Background:
   * url baseUrl
 
 
-Scenario:
+Scenario: Returns string build info
   Given path 'api', 'about'
   When method get
   Then status 200

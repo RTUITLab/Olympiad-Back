@@ -47,6 +47,7 @@ namespace WebApp.Services.Configure
                 {
                     ExerciseName = ex.Title,
                     ExerciseTask = ex.Description,
+                    Type = ExerciseType.Code,
                     ExerciseDataGroups = new List<ExerciseDataGroup>
                     {
                         new ExerciseDataGroup

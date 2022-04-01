@@ -14,46 +14,33 @@
 @inject IJSRuntime JS
 @inject AttachmentLinkGenerator AttachmentLinkGenerator
 
-
-<Form Model="exerciseModel"
-      LabelColSpan="4"
-      WrapperColSpan="20"
-      Loading="saving"
-      OnFinish="UpdateBaseInfo"
-      Layout="horizontal">
-    <FormItem Label="Название" Required>
-        <Input @bind-Value="@context.Title" />
-    </FormItem>
-    <FormItem Label="Задание">
-        <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
-            <MarkdownTextArea @bind-Value="exerciseModel.Task"
-                              MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH">
-                <TitleTemplate>
-                    <Text>@exerciseModel.Title</Text>
-                    <Text Type="@TextElementType.Secondary">Текст задания (@Exercise?.Challenge.Name)</Text>
-                </TitleTemplate>
-            </MarkdownTextArea>
-        </CascadingValue>
-    </FormItem>
-    <FormItem Label="Платформы" Required>
-        <CheckboxGroup @bind-Value="selectedRuntimes">
-            <Row>
-                @foreach (var runtime in ProgramRuntime.List)
-                {
-                    <AntDesign.Col Xl="8" Sm=12 Xs="24">
-                        <Checkbox Label="@runtime.Value">@runtime.Name</Checkbox>
-                    </AntDesign.Col>
-                }
-            </Row>
-
-        </CheckboxGroup>
-    </FormItem>
-    <FormItem WrapperColOffset="8" WrapperColSpan="16">
-        <Button Type="@ButtonType.Primary" HtmlType="submit">
-            Сохранить базовые параметры
-        </Button>
-    </FormItem>
-</Form>
+<Card Title="Базовые параметры" Loading="Exercise is null">
+    <Form Model="exerciseModel"
+          Loading="saving"
+          OnFinish="UpdateBaseInfo"
+          Layout="@FormLayout.Vertical">
+        <FormItem Label="Название" Required>
+            <Input @bind-Value="@context.Title" />
+        </FormItem>
+        <FormItem Label="Задание" Required>
+            <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
+                <MarkdownTextArea @bind-Value="exerciseModel.Task"
+                                  MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH"
+                                  Label="Задание">
+                    <TitleTemplate>
+                        <Text>@exerciseModel.Title</Text>
+                        <Text Type="@TextElementType.Secondary">Текст задания (@Exercise?.Challenge.Name)</Text>
+                    </TitleTemplate>
+                </MarkdownTextArea>
+            </CascadingValue>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Сохранить базовые параметры
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
 
 @code {
 
@@ -63,16 +50,7 @@
     [Parameter]
     public EventCallback<ExerciseInfo> ExerciseChanged { get; set; }
 
-    private string[] selectedRuntimes
-    {
-        get => (exerciseModel?.AllowedRuntimes?.Select(r => r.Value) ?? Enumerable.Empty<string>()).ToArray();
-        set
-        {
-            exerciseModel.AllowedRuntimes = (value ?? Enumerable.Empty<string>())
-                .Select(ProgramRuntime.FromValue)
-                .ToList();
-        }
-    }
+
 
     private readonly UpdateExerciseRequest exerciseModel = new();
     private ExerciseAttachmentsProvider? attachmentsProvider;
@@ -92,8 +70,6 @@
         }
         exerciseModel.Title = Exercise.Name;
         exerciseModel.Task = Exercise.ExerciseTask;
-        var allowedRuntimes = Exercise.Restrictions?.Code?.AllowedRuntimes;
-        exerciseModel.AllowedRuntimes = allowedRuntimes ?? ProgramRuntime.List.ToList();
     }
 
     private async Task UpdateBaseInfo()
@@ -102,16 +78,13 @@
         {
             return;
         }
-        if (!exerciseModel.AllowedRuntimes.Any())
-        {
-            await MessageService.Warning("Необходимо выбрать как минимум одну платформу");
-            return;
-        }
         saving = true;
+        var success = false;
         try
         {
             var updateExercise = await ExercisesApi.UpdateExercise(Exercise.Id, exerciseModel);
             await ExerciseChanged.InvokeAsync(updateExercise);
+            success = true;
         }
         catch (Exception ex)
         {
@@ -121,6 +94,9 @@
         finally
         {
             saving = false;
+        }
+        if (success) {
+            MessageService.Success("Информация обновлена");
         }
     }
     private class ExerciseAttachmentsProvider : IAttachmentsProvider

@@ -202,7 +202,6 @@
         }
         if ((PageIndex - 1) * PageSize > (userResults?.Total ?? 0))
         {
-            Console.WriteLine(new { PageIndex, PageSize, userResults?.Total });
             PageIndex = 1;
         }
         if (PageIndex < 1)

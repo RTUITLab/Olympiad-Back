@@ -138,7 +138,6 @@
         }
         if (loadDataSemaphore.CurrentCount == 0)
         {
-            Logger.LogWarning("Semaphore collision");
             return;
         }
         await loadDataSemaphore.WaitAsync();

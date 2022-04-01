@@ -42,19 +42,25 @@
 </PageHeader>
 <Row Gutter=@(8)>
     <AntDesign.Col Xl="12" Span="24">
-        <Title Level="4">Базовые параметры</Title>
-
-        @if (exerciseResponse is null)
+        <EditExerciseBaseInfo @bind-Exercise="exerciseResponse" />
+    </AntDesign.Col>
+    <AntDesign.Col Xl="12" Span="24">
+        @if (exerciseResponse?.Type == ExerciseType.Code)
         {
-            <Skeleton Active />
+            <EditExerciseCodeRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse?.Restrictions?.Code" />
+            <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name" Style="margin-top: 8px;"/>
+        }
+        else if (exerciseResponse?.Type == ExerciseType.Docs)
+        {
+            <Alert>В процессе реализации</Alert>
+        }
+        else if (exerciseResponse is null)
+        {
         }
         else
         {
-            <EditExerciseBaseInfo @bind-Exercise="exerciseResponse" />
+            <Alert>Неподдерживаемый тип задания</Alert>
         }
-    </AntDesign.Col>
-    <AntDesign.Col Xl="12" Span="24">
-        <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name" />
     </AntDesign.Col>
 </Row>
 

@@ -122,8 +122,6 @@
                 Title = "Новое задание",
             };
         var confirmRef = await ModalService.CreateConfirmAsync<CreateExerciseFeedback, Guid, Guid>(options, ChallengeId);
-
-        Logger.LogInformation($"returns " + confirmRef);
         confirmRef.OnOk = (createdExerciseId) =>
         {
             NavigationManager.NavigateTo(Routes.Exercises.ExerciseEdit(ChallengeId, createdExerciseId));

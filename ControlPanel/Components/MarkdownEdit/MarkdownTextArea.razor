@@ -1,42 +1,44 @@
 @using Ganss.XSS
 @using Markdig
-<Tabs DefaultActiveKey="area" @bind-ActiveKey="activeTab" Type="@TabType.Card" OnChange="OnChangeTab">
-    <TabPane Key="area">
-        <TabTemplate>
-            <Tooltip Title="@("Редактирование")">
-                <Icon Type="@IconType.Outline.Edit" Style="margin-right: 0;" />
-            </Tooltip>
-        </TabTemplate>
-        <ChildContent>
-            <TextArea MinRows="5"
-                      MaxRows="25"
-                      ShowCount
-                      MaxLength="MaxLength"
-                      AutoSize
-                      @bind-Value="@Value"
-                      OnChange="UpdateValue" />
-        </ChildContent>
-    </TabPane>
-    <TabPane Key="view">
-        <TabTemplate>
-            <Tooltip Title="@("Предпросмотр")">
-                <Icon Type="@IconType.Outline.Eye" Style="margin-right: 0;" />
-            </Tooltip>
-        </TabTemplate>
-        <ChildContent>
-            <Card>
-                @ExerciseTaskPreview
-            </Card>
-        </ChildContent>
-    </TabPane>
-    <TabPane Key="modal">
-        <TabTemplate>
-            <Tooltip Title="@("Открыть редактор")">
-                <Icon Type="@IconType.Outline.Form" Style="margin-right: 0;" />
-            </Tooltip>
-        </TabTemplate>
-    </TabPane>
-</Tabs>
+<Card>
+    <CardTabs>
+        <Tabs DefaultActiveKey="area" @bind-ActiveKey="activeTab" TabBarStyle="color: red;" OnChange="OnChangeTab">
+            <TabPane Key="area">
+                <TabTemplate>
+                    <Tooltip Title="@("Редактирование")" Placement="Placement.Bottom">
+                        <Icon Type="@IconType.Outline.Edit" Style="margin-right: 0; width: 3em;" />
+                    </Tooltip>
+                </TabTemplate>
+                <ChildContent>
+                    <TextArea MinRows="5"
+                              MaxRows="25"
+                              ShowCount
+                              MaxLength="MaxLength"
+                              AutoSize
+                              @bind-Value="@Value"
+                              OnChange="UpdateValue" />
+                </ChildContent>
+            </TabPane>
+            <TabPane Key="view">
+                <TabTemplate>
+                    <Tooltip Title="@("Предпросмотр")" Placement="Placement.Bottom">
+                        <Icon Type="@IconType.Outline.Eye" Style="margin-right: 0; width: 3em;" />
+                    </Tooltip>
+                </TabTemplate>
+                <ChildContent>
+                    @ExerciseTaskPreview
+                </ChildContent>
+            </TabPane>
+            <TabPane Key="modal">
+                <TabTemplate>
+                    <Tooltip Title="@("Открыть редактор")" Placement="Placement.Bottom">
+                        <Icon Type="@IconType.Outline.Form" Style="margin-right: 0; width: 3em;" />
+                    </Tooltip>
+                </TabTemplate>
+            </TabPane>
+        </Tabs>
+    </CardTabs>
+</Card>
 <CascadingValue Value="ExerciseTaskPreview" Name="@(nameof(ExerciseTaskPreview))">
     <MarkdownEditorModal Content="@Value"
                          MaxLength="MaxLength"
@@ -64,6 +66,8 @@
     /// </summary>
     [Parameter]
     public RenderFragment? TitleTemplate { get; set; }
+    [Parameter]
+    public string Label { get; set; }
 
     private void OnChangeTab(string newKey)
     {

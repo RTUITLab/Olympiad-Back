@@ -42,7 +42,9 @@ public interface IExercisesApi
     
     [Put("/api/exercises/{exerciseId}")]
     Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
-    
+    [Put("/api/exercises/{exerciseId}/restrictions/code")]
+    Task<CodeRestrictionsResponse> UpdateExerciseCodeRestrictions(Guid exerciseId, UpdateCodeRestrictionsRequest updateRequest);
+
     [Get("/api/exercises/{exerciseId}/testGroups")]
     Task<List<ExercisesTestDataGroupResponse>> GetTestGroupsAsync(Guid exerciseId);
     
