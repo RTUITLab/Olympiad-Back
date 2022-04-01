@@ -36,6 +36,8 @@ namespace WebApp.Services.Configure
         {
             var solutionsToQueue = await dbContext
                 .Solutions
+                .Where(s => s.Exercise.Type == ExerciseType.Code)
+                .Where(s => s.Exercise.ExerciseDataGroups.Any())
                 .Where(s => s.Status == SolutionStatus.InQueue)
                 .Select(s => s.Id)
                 .ToListAsync();

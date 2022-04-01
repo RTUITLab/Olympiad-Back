@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,11 @@ using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared;
 using Olympiad.Shared.Extensions;
 using Olympiad.Shared.Models;
+using PublicAPI.Requests.Solutions;
 using PublicAPI.Responses.Solutions;
 using WebApp.Extensions;
 using WebApp.Models;
+using WebApp.Services.Attachments;
 using WebApp.Services.Interfaces;
 using WebApp.Services.Solutions;
 
@@ -35,40 +38,35 @@ namespace WebApp.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly ISolutionsService solutionsService;
-        private readonly IQueueChecker queue;
         private readonly IMapper mapper;
         private readonly ILogger<CheckController> logger;
 
         public CheckController(
             ApplicationDbContext context,
             ISolutionsService solutionsService,
-            IQueueChecker queue,
             UserManager<User> userManager,
             IMapper mapper,
             ILogger<CheckController> logger) : base(userManager)
         {
             this.context = context;
             this.solutionsService = solutionsService;
-            this.queue = queue;
             this.mapper = mapper;
             this.logger = logger;
         }
 
-        [HttpPost]
-        [Route("{language}/{exerciseId}")]
+        [HttpPost("code/{exerciseId}/")]
         public async Task<ActionResult<SolutionResponse>> Post(IFormFile file, string language, Guid exerciseId)
         {
             return await AddSolutionFromFile(file, language, exerciseId, UserId);
         }
-        [HttpPost]
         [Authorize(Roles = "Admin")]
-        [Route("{language}/{exerciseId}/{authorId}")]
+        [HttpPost("code/{exerciseId}/{language}/{authorId}")]
         public async Task<ActionResult<SolutionResponse>> AdminPost(IFormFile file, string language, Guid exerciseId, Guid authorId)
         {
             return await AddSolutionFromFile(file, language, exerciseId, authorId, true);
         }
         [Authorize(Roles = "Admin")]
-        [HttpPost("rawstring/{language}/{exerciseId}/{authorId}")]
+        [HttpPost("code/{exerciseId}/{language}/{authorId}/rawstring")]
         public async Task<ActionResult<SolutionResponse>> AdminPost(
             [FromBody] string raw, string language, Guid exerciseId, Guid authorId)
         {
@@ -107,17 +105,11 @@ namespace WebApp.Controllers
             }
             try
             {
-                var checks = isAdmin ? default :
-                    ISolutionsService.PostSolutionChecks.AlreadySent |
-                    ISolutionsService.PostSolutionChecks.ChallengeAvailable |
-                    ISolutionsService.PostSolutionChecks.TooManyPost |
-                    ISolutionsService.PostSolutionChecks.ExerciseRuntimeRestrictions;
-                var postedSolution = await solutionsService.PostSolution(fileBody, runtime, exerciseId, authorId, checks);
+                var checks = isAdmin ?
+                    ISolutionsService.CodeSolutionChecks.None :
+                    ISolutionsService.CodeSolutionChecks.All;
+                var postedSolution = await solutionsService.PostCodeSolution(fileBody, runtime, exerciseId, authorId, checks);
                 return mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(postedSolution));
-            }
-            catch (ISolutionsService.AlreadySentException)
-            {
-                return Conflict("Solution already sent");
             }
             catch (ISolutionsService.ChallengeNotAvailableException)
             {
@@ -126,6 +118,10 @@ namespace WebApp.Controllers
             catch (ISolutionsService.TooManyPostException tre)
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests, tre.Message);
+            }
+            catch (ISolutionsService.AlreadySentException)
+            {
+                return Conflict("Solution already sent");
             }
             catch (ISolutionsService.ExerciseRuntimesRestrictionException erex)
             {
@@ -140,6 +136,40 @@ namespace WebApp.Controllers
                 return NotFound(nfe.Message);
             }
         }
+
+
+
+        [HttpPost("docs/{exerciseId}")]
+        public async Task<ActionResult<CreatedDocsExerciseSolutionResponse>> PostDocsSolution(
+            Guid exerciseId,
+            [FromBody] DocsExerciseSolutionRequest request)
+        {
+            try
+            {
+                var result = await solutionsService.PostDocsSolution(exerciseId, UserId, request.Files, ISolutionsService.CodeSolutionChecks.All);
+                var solutionResponse = mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(result.solution));
+                // TODO: handmade
+                solutionResponse.Documents = result.solution.DocumentsResult.Files.Select(mapper.Map<SolutionDocumentResponse>).ToList();
+                return new CreatedDocsExerciseSolutionResponse
+                {
+                    Solution = solutionResponse,
+                    UploadUrls = result.uploadUrls
+                };
+            }
+            catch (ISolutionsService.ChallengeNotAvailableException)
+            {
+                return Forbid("Target challenge not available");
+            }
+            catch (ISolutionsService.TooManyPostException tre)
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, tre.Message);
+            }
+            catch (ISolutionsService.IncorrectFilesException)
+            {
+                return Conflict("Incorrect files");
+            }
+        }
+
 
         [HttpGet]
         public async Task<List<SolutionResponse>> Get()
@@ -157,19 +187,29 @@ namespace WebApp.Controllers
         [HttpGet("forExercise")]
         public async Task<List<SolutionResponse>> GetForExercise(Guid exerciseId)
         {
+            using var transaction = context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
             var solutionResonses = await context
                .Solutions
                .Where(s => s.UserId == UserId)
                .Where(s => s.ExerciseId == exerciseId)
+               .OrderBy(s => s.SendingTime)
                .ProjectTo<SolutionInternalModel>(mapper.ConfigurationProvider)
                .ToListAsync();
+            // TODO: handmade jsonb work
+            var solutionDocs = await context
+                .Solutions
+                .Where(s => s.UserId == UserId)
+                .Where(s => s.ExerciseId == exerciseId)
+                .OrderBy(s => s.SendingTime)
+                .Select(s => s.DocumentsResult)
+                .ToListAsync();
             return solutionResonses
                 .Select(sim => mapper.Map<SolutionResponse>(sim))
+                .Zip(solutionDocs, (sim, docs) => { sim.Documents = docs?.Files?.Select(mapper.Map<SolutionDocumentResponse>).ToList(); return sim; })
                 .ToList();
         }
 
-        [HttpGet]
-        [Route("{solutionId:guid}")]
+        [HttpGet("{solutionId:guid}")]
         public async Task<SolutionResponse> Get(Guid solutionId)
         {
             var solutionInternal = await context
@@ -180,6 +220,12 @@ namespace WebApp.Controllers
                 ?? throw StatusCodeException.NotFount;
 
             return mapper.Map<SolutionResponse>(solutionInternal);
+        }
+        [AllowAnonymous]
+        [HttpGet("{solutionId:guid}/document/{fileName}")]
+        public async Task<ActionResult> Get(Guid solutionId, string fileName, [FromServices] IAttachmentsService attachmentsService)
+        {
+            return Redirect(attachmentsService.GetUrlForSolutionDocument(solutionId, fileName));
         }
 
         [HttpGet]
@@ -221,9 +267,13 @@ namespace WebApp.Controllers
             }
 
             var solution = await solutions
-                .Select(s => new { s.Language, s.Raw })
+                .Select(s => new { s.Language, s.Raw, ExerciseType = s.Exercise.Type })
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
+            if (solution.ExerciseType != ExerciseType.Code)
+            {
+                return BadRequest("Can't get solution raw for not code type exercise");
+            }
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
 
             return File(solutionContent, "application/octet-stream", $"Program{ProgramRuntime.GetFileExtensionForRuntime(solution.Language)}");

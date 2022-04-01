@@ -236,6 +236,19 @@ namespace WebApp.Controllers.Exercises
                 .Select(ex => ex.Restrictions)
                 .SingleAsync();
             exerciseInfo.Restrictions = mapper.Map<ExerciseRestrictionsResponse>(restrictions);
+            if (exerciseInfo.Restrictions is null)
+            {
+                exerciseInfo.Restrictions = new ExerciseRestrictionsResponse();
+                exerciseInfo.Type
+                    .When(ExerciseType.Code).Then(() => exerciseInfo.Restrictions.Code = new CodeRestrictionsResponse
+                    {
+                        AllowedRuntimes = ProgramRuntime.List.ToList()
+                    })
+                    .When(ExerciseType.Docs).Then(() => exerciseInfo.Restrictions.Docs = new DocsRestrictionsResponse
+                    {
+                        Documents = new List<DocumentRestrictionResponse>()
+                    });
+            }
             return exerciseInfo;
         }
 
@@ -323,7 +336,9 @@ namespace WebApp.Controllers.Exercises
             var recheckedSolutionsCount = await ReCheckHelper.ReCheckSolutions(
                         context,
                         queueChecker,
-                        db => db.Solutions.Where(s => s.ExerciseId == exerciseId),
+                        db => db.Solutions
+                            .Where(s => s.Exercise.Type == ExerciseType.Code)
+                            .Where(s => s.ExerciseId == exerciseId),
                         m =>
                         {
                             logger.LogInformation(m);

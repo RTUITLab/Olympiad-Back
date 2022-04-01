@@ -74,12 +74,15 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
             CreateMap<User, UserInfoResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
-
+            
+            CreateMap<SolutionFile, SolutionDocumentResponse>();
             CreateMap<Solution, SolutionInternalModel>()
                 .ForMember(sim => sim.ChallengeViewMode, map => map.MapFrom(s => s.Exercise.Challenge.ViewMode));
+
             CreateMap<SolutionInternalModel, SolutionResponse>()
                 .ForMember(sr => sr.Status, map => map.MapFrom(sim => sim.GetStatus()))
-                .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()));
+                .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()))
+                .ForMember(sr => sr.Documents, map => map.Ignore());
             CreateMap<Solution, SolutionAnalyticCompactResponse>()
                 .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
             CreateMap<Solution, SolutionAnalyticsResponse>()

@@ -1,5 +1,6 @@
 ﻿using Models.Solutions;
 using Olympiad.Shared;
+using PublicAPI.Requests.Solutions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -8,15 +9,20 @@ namespace WebApp.Services.Solutions
 {
     public interface ISolutionsService
     {
-        Task<Solution> PostSolution(string fileBody, ProgramRuntime runtime, Guid exerciseId, Guid authorId, PostSolutionChecks postSolutionChecks = PostSolutionChecks.AlreadySent | PostSolutionChecks.TooManyPost);
+        Task<Solution> PostCodeSolution(string fileBody, ProgramRuntime runtime, Guid exerciseId, Guid authorId, CodeSolutionChecks postSolutionChecks = CodeSolutionChecks.CodeAlreadySent | CodeSolutionChecks.TooManyPost);
+        Task<(Solution solution, string[] uploadUrls)> PostDocsSolution(Guid exerciseId, Guid authorId, List<SolutionDocumentRequest> files, CodeSolutionChecks solutionChecks);
 
         [Flags]
-        public enum PostSolutionChecks
+        public enum CodeSolutionChecks
         {
-            ChallengeAvailable = 0b0001,
-            TooManyPost = 0b0010,
-            AlreadySent = 0b0100,
-            ExerciseRuntimeRestrictions = 0b1000,
+            None = 0b00000,
+            ChallengeAvailable = 0b00001,
+            TooManyPost = 0b00010,
+            CodeAlreadySent = 0b00100,
+            CodeExerciseRuntimeRestrictions = 0b01000,
+            DocsFilesIsCorrect = 0b10000,
+
+            All = ~None
         }
 
         public class NotFoundEntityException : Exception { public NotFoundEntityException(string entityName) : base("Not found entity: " + entityName) { } }
@@ -34,5 +40,7 @@ namespace WebApp.Services.Solutions
                 AllowerRuntimes = allowedRuntimes;
             }
         }
+
+        public class IncorrectFilesException : Exception { public IncorrectFilesException() { } }
     }
 }

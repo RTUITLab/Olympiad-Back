@@ -1,6 +1,7 @@
 ﻿using Olympiad.Shared;
 using Olympiad.Shared.Models;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Solutions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

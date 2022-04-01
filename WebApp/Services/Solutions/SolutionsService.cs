@@ -6,9 +6,13 @@ using Models.Solutions;
 using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared;
 using Olympiad.Shared.Models;
+using PublicAPI.Requests.Solutions;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using WebApp.Services.Attachments;
 
 namespace WebApp.Services.Solutions
 {
@@ -16,31 +20,81 @@ namespace WebApp.Services.Solutions
     {
         private readonly ApplicationDbContext context;
         private readonly IQueueChecker queueChecker;
+        private readonly IAttachmentsService attachmentsService;
         private readonly ILogger<SolutionsService> logger;
         private static readonly TimeSpan onePerTimePostLimit = TimeSpan.FromMinutes(1);
-        public SolutionsService(ApplicationDbContext context, IQueueChecker queueChecker, ILogger<SolutionsService> logger)
+        public SolutionsService(
+            ApplicationDbContext context, 
+            IQueueChecker queueChecker, 
+            IAttachmentsService attachmentsService,
+            ILogger<SolutionsService> logger)
         {
             this.context = context;
             this.queueChecker = queueChecker;
+            this.attachmentsService = attachmentsService;
             this.logger = logger;
         }
-        public async Task<Solution> PostSolution(string fileBody, ProgramRuntime runtime, Guid exerciseId, Guid authorId, ISolutionsService.PostSolutionChecks solutionChecks)
+
+        public async Task<(Solution solution, string[] uploadUrls)> PostDocsSolution(Guid exerciseId, Guid authorId, List<SolutionDocumentRequest> files, ISolutionsService.CodeSolutionChecks solutionChecks)
         {
             var now = DateTimeOffset.UtcNow;
-            if (solutionChecks.HasFlag(ISolutionsService.PostSolutionChecks.ChallengeAvailable))
+            await HandleGeneralChecks(exerciseId, authorId, solutionChecks, now);
+
+            
+            if (solutionChecks.HasFlag(ISolutionsService.CodeSolutionChecks.DocsFilesIsCorrect))
             {
-                await CheckChallengeAvailable(exerciseId, authorId, now);
+                await CheckFielsCorrect(exerciseId, files);
             }
-            if (solutionChecks.HasFlag(ISolutionsService.PostSolutionChecks.TooManyPost))
+            Solution solution = new Solution()
             {
-                await CheckTooManyRequests(exerciseId, authorId, now);
+                ExerciseId = exerciseId,
+                UserId = authorId,
+                Status = SolutionStatus.InQueue,
+                SendingTime = now,
+                DocumentsResult = new SolutionDocuments
+                {
+                    Files = files.Select(d => new SolutionFile
+                    {
+                        Name = d.Name,
+                        MimeType = d.MimeType,
+                        Size = d.Size.Bytes
+                    })
+                    .ToList()
+                }
+            };
+            context.Solutions.Add(solution);
+            
+            await context.SaveChangesAsync();
+
+            var uploadUrls = files.Select(d => attachmentsService.GetUploadUrlForSolutionDocument(solution.Id, d.MimeType, d.Size, d.Name)).ToArray();
+            return (solution, uploadUrls);
+        }
+
+        private async Task CheckFielsCorrect(Guid exerciseId, List<SolutionDocumentRequest> files)
+        {
+            var targetExercise = await context
+                .Exercises
+                .AsNoTracking()
+                .SingleOrDefaultAsync(e => e.ExerciseID == exerciseId);
+            if (targetExercise.Restrictions?.Docs?.Documents?.Count != files.Count ||
+                targetExercise.Restrictions.Docs.Documents
+                    .Zip(files, (expect, fromUser) => expect.MaxSize >= fromUser.Size.Bytes && expect.AllowedExtensions.Contains(Path.GetExtension(fromUser.Name)))
+                    .Any(success => !success))
+            {
+                throw new ISolutionsService.IncorrectFilesException();
             }
-            if (solutionChecks.HasFlag(ISolutionsService.PostSolutionChecks.AlreadySent))
+
+        }
+
+        public async Task<Solution> PostCodeSolution(string fileBody, ProgramRuntime runtime, Guid exerciseId, Guid authorId, ISolutionsService.CodeSolutionChecks solutionChecks)
+        {
+            var now = DateTimeOffset.UtcNow;
+            await HandleGeneralChecks(exerciseId, authorId, solutionChecks, now);
+            if (solutionChecks.HasFlag(ISolutionsService.CodeSolutionChecks.CodeAlreadySent))
             {
                 await CheckAlreadySent(fileBody, exerciseId, authorId);
             }
-
-            if (solutionChecks.HasFlag(ISolutionsService.PostSolutionChecks.ExerciseRuntimeRestrictions))
+            if (solutionChecks.HasFlag(ISolutionsService.CodeSolutionChecks.CodeExerciseRuntimeRestrictions))
             {
                 await CheckExerciseRuntime(exerciseId, runtime);
             }
@@ -68,6 +122,18 @@ namespace WebApp.Services.Solutions
                 logger.LogWarning("No exercise data for {SolutionId}, no put to test queue", solution.Id);
             }
             return solution;
+        }
+
+        private async Task HandleGeneralChecks(Guid exerciseId, Guid authorId, ISolutionsService.CodeSolutionChecks solutionChecks, DateTimeOffset now)
+        {
+            if (solutionChecks.HasFlag(ISolutionsService.CodeSolutionChecks.ChallengeAvailable))
+            {
+                await CheckChallengeAvailable(exerciseId, authorId, now);
+            }
+            if (solutionChecks.HasFlag(ISolutionsService.CodeSolutionChecks.TooManyPost))
+            {
+                await CheckTooManyRequests(exerciseId, authorId, now);
+            }
         }
 
         private async Task CheckExerciseRuntime(Guid exerciseId, ProgramRuntime programRuntime)
