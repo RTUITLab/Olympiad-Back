@@ -13,11 +13,14 @@ using Models.Checking;
 using System.Security.Claims;
 using PublicAPI.Responses.Account;
 using Models.UserModels;
-using PublicAPI.Responses.ExerciseTestData;
 using PublicAPI.Responses.Challenges.Analytics;
 using PublicAPI.Responses.Solutions.Analytics;
 using WebApp.Controllers;
 using PublicAPI.Responses.ExercisesTestData;
+using Olympiad.Shared;
+using PublicAPI.Responses.Exercises;
+using Microsoft.EntityFrameworkCore.Diagnostics.Internal;
+using ByteSizeLib;
 
 namespace WebApp.Formatting.ResponseMappers
 {
@@ -41,11 +44,20 @@ namespace WebApp.Formatting.ResponseMappers
             CreateMap<ExerciseCompactInternalModel, ExerciseForUserInfoResponse>()
                 .ForMember(ecim => ecim.Status, map => map.MapFrom(ecr => ecr.GetStatus()))
                 .ForMember(ecim => ecim.HiddenStatus, map => map.MapFrom(ecr => ecr.GetHiddenStatus()));
-
+            CreateMap<string, ProgramRuntime>().ConvertUsing(ProgramRuntime.FromValue);
+            
+            CreateMap<ExerciseRestrictions, ExerciseRestrictionsResponse>();
+            CreateMap<CodeRestrictions, CodeRestrictionsResponse>();
+            
+            CreateMap<double, ByteSize>().ConstructUsing(pr => ByteSize.FromBytes(pr));
+            CreateMap<DocsRestrictions, DocsRestrictionsResponse>();
+            CreateMap<DocumentRestriction, DocumentRestrictionResponse>();
+            
             CreateMap<Exercise, ExerciseInfo>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
-                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
+                .ForMember(r => r.Restrictions, map => map.Ignore());
 
             CreateMap<Exercise, ExerciseCompactResponse>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
@@ -62,18 +74,21 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
             CreateMap<User, UserInfoResponse>()
                 .ForMember(r => r.StudentId, map => map.MapFrom(u => u.StudentID));
-
+            
+            CreateMap<SolutionFile, SolutionDocumentResponse>();
             CreateMap<Solution, SolutionInternalModel>()
                 .ForMember(sim => sim.ChallengeViewMode, map => map.MapFrom(s => s.Exercise.Challenge.ViewMode));
+
             CreateMap<SolutionInternalModel, SolutionResponse>()
                 .ForMember(sr => sr.Status, map => map.MapFrom(sim => sim.GetStatus()))
-                .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()));
+                .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()))
+                .ForMember(sr => sr.Documents, map => map.Ignore());
             CreateMap<Solution, SolutionAnalyticCompactResponse>()
-                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
-            CreateMap<Solution, SolutionAnalyticsResponse>()
                 .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore))
-                .ForMember(r => r.FileExtension, map => map.MapFrom(s => CheckController.GetExtensionsForLanguage(s.Language)))
-                .ForMember(r => r.FileExtension, map => map.MapAtRuntime());
+                .ForMember(r => r.ExerciseType, map => map.MapFrom(s => s.Exercise.Type));
+            CreateMap<Solution, SolutionAnalyticsResponse>()
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
+
 
             CreateMap<SolutionBuildLog, BuildLogAnalyticsResponse>();
 

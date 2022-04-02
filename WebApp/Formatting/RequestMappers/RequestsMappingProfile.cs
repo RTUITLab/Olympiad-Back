@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using ByteSizeLib;
 using Models;
 using Models.Checking;
 using Models.Exercises;
+using Olympiad.Shared;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Requests.Exercises;
@@ -26,6 +28,13 @@ namespace WebApp.ViewModels.Mappings
                 .ForMember(ed => ed.OutData, map => map.MapFrom(cr => cr.Out));
             CreateMap<CreateTestDataGroupRequest, ExerciseDataGroup>()
                 .ForMember(edg => edg.ExerciseDatas, map => map.MapFrom(edg => edg.Cases));
+
+
+            CreateMap<ProgramRuntime, string>().ConstructUsing(pr => pr.Value);
+            CreateMap<ByteSize, double>().ConstructUsing(pr => pr.Bytes);
+            CreateMap<UpdateCodeRestrictionsRequest, CodeRestrictions>();
+            CreateMap<DocumentRestrictionRequest, DocumentRestriction>();
+            CreateMap<UpdateDocsRestrictionsRequest, DocsRestrictions>();
         }
     }
 }

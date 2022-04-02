@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Components.Web;
 using DiffPlex.DiffBuilder;
 using DiffPlex;
 using System.Threading.Tasks;
+using Ardalis.SmartEnum.SystemTextJson;
+using Olympiad.Shared.JsonConverters;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -70,11 +72,13 @@ await builder.Build().RunAsync();
 
 void RegisterApiServices(WebAssemblyHostBuilder builder)
 {
-    var jsonSerializer = new SystemTextJsonContentSerializer(new System.Text.Json.JsonSerializerOptions
+    var options = new System.Text.Json.JsonSerializerOptions
     {
         PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
         WriteIndented = true,
-    });
+    };
+    options.Converters.AddCustomConverters();
+    var jsonSerializer = new SystemTextJsonContentSerializer(options);
     void RegisterApiService<T>() where T : class
     {
         builder.Services.AddScoped<T>(sp => RestService.For<T>(baseAddress.ToString(), new RefitSettings

@@ -4,7 +4,7 @@
 @using Microsoft.Extensions.Logging
 @using Olympiad.Shared.Models
 @using PublicAPI.Responses.Challenges
-@using PublicAPI.Responses.ExerciseTestData
+@using PublicAPI.Responses.Exercises
 @using PublicAPI.Responses.Solutions.Analytics
 @using PublicAPI.Responses.Users
 @using Olympiad.ControlPanel.Pages.Results.UserSolutionResults.Components
@@ -38,8 +38,14 @@
                 <SolutionPageDescriptions solution="solution" />
             </PageHeaderContent>
         </PageHeader>
-        <SolutionResultsTabs SolutionId="SolutionId"
+        @if (exercise?.Type == ExerciseType.Code)
+        {
+            <SolutionResultsTabs SolutionId="SolutionId"
                              BuildLogsAccent="@(solution?.Status <= SolutionStatus.CompileError)" />
+        } else if (exercise?.Type == ExerciseType.Docs)
+        {
+            <DocsSolutionResultsTable SolutionId="SolutionId"/>
+        }
     </Authorized>
 </AuthorizeView>
 

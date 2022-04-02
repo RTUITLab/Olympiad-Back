@@ -22,38 +22,6 @@ services:
             options:
                 max-size: "200k"
                 max-file: "10"
-    admin:
-        environment:
-            - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
-            - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
-            - GenerateSettings__Domain=${GENERATE_USER_EMAIL_DOMAIN? Place domain to generate users email GENERATE_USER_EMAIL_DOMAIN}
-            - RabbitMqQueueSettings__Uri=${RABBITMQ_URI?pass rabbitmq connection uri RABBITMQ_URI}
-        deploy:
-            replicas: 1
-            resources:
-                limits:
-                    cpus: "0.5"
-                    memory: 400M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
-    results-viewer:
-        environment:
-            - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
-            - GeneratePdfOptions__PrintUrl=/results-viewer/pdfprint
-        deploy:
-            replicas: 1
-            resources:
-                limits:
-                    cpus: "0.5"
-                    memory: 400M
-        logging:
-            driver: "json-file"
-            options:
-                max-size: "200k"
-                max-file: "10"
     executor:
         environment:
             - StartSettings__PrivateDockerRegistry__Address=${OLYMPIAD_PRIVATE_REGISTRY_ADDRESS?pass olympiad private registry address OLYMPIAD_PRIVATE_REGISTRY_ADDRESS}

@@ -1,5 +1,7 @@
-﻿using Olympiad.Shared.Models;
+﻿using Olympiad.Shared;
+using Olympiad.Shared.Models;
 using System;
+using System.Collections.Generic;
 
 namespace PublicAPI.Responses.Solutions
 {
@@ -14,5 +16,6 @@ namespace PublicAPI.Responses.Solutions
         public DateTimeOffset SendingTime { get; set; }
         public DateTimeOffset? StartCheckingTime { get; set; }
         public DateTimeOffset? CheckedTime { get; set; }
+        public List<SolutionDocumentResponse> Documents { get; set; }
     }
 }

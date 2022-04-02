@@ -1,5 +1,4 @@
 ﻿using DocumentFormat.OpenXml.Office2010.ExcelAc;
-using PublicAPI.Responses.ExerciseTestData;
 using Refit;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +7,7 @@ using System.IO;
 using PublicAPI.Requests.Exercises;
 using PublicAPI.Responses;
 using PublicAPI.Responses.ExercisesTestData;
+using PublicAPI.Responses.Exercises;
 
 namespace Olympiad.ControlPanel.Services;
 
@@ -16,7 +16,9 @@ public interface IExercisesApi
 {
 
     [Post("/api/exercises")]
-    public Task<Guid> CreateExerciseAsync(Guid challengeId);
+    public Task<Guid> CreateExerciseAsync(ExerciseCreateRequest createRequest);
+    [Delete("/api/exercises/{exerciseId}")]
+    public Task DeleteExerciseAsync(Guid exerciseId);
 
     [Get("/api/exercises/all")]
     public Task<List<ExerciseCompactResponse>> GetExercisesAsync(Guid challengeId);
@@ -38,9 +40,15 @@ public interface IExercisesApi
     [Get("/api/exercises/analytics/withAttempt")]
     public Task<List<ExerciseCompactResponse>> GetExercisesWithAttemptsForUserAsync(Guid challengeId, Guid userId);
     
+
     [Put("/api/exercises/{exerciseId}")]
     Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
-    
+    [Put("/api/exercises/{exerciseId}/restrictions/code")]
+    Task<CodeRestrictionsResponse> UpdateExerciseCodeRestrictions(Guid exerciseId, UpdateCodeRestrictionsRequest updateRequest);
+    [Put("/api/exercises/{exerciseId}/restrictions/docs")]
+    Task<DocsRestrictionsResponse> UpdateExerciseDocsRestrictions(Guid exerciseId, UpdateDocsRestrictionsRequest updateRequest);
+
+
     [Get("/api/exercises/{exerciseId}/testGroups")]
     Task<List<ExercisesTestDataGroupResponse>> GetTestGroupsAsync(Guid exerciseId);
     

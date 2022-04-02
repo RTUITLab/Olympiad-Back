@@ -25,7 +25,7 @@
     else
     {
         <pre style="margin: 0; height: 100%;">
-            <code Class=@($"language-{GetPrismLang(SolutionLanguage)}")>
+            <code class=@($"language-{PrismLanguage}")>
                 @sourceCode
             </code>
         </pre>
@@ -36,7 +36,7 @@
     [Parameter]
     public Guid SolutionId { get; set; }
     [Parameter]
-    public string? SolutionLanguage { get; set; }
+    public string? PrismLanguage { get; set; }
     private Guid loadedSolutionId;
     [Parameter]
     public string? SolutionFileName { get; set; }
@@ -55,13 +55,6 @@
             isCodeRendered = false;
         }
     }
-
-    private string? GetPrismLang(string? lang) =>
-        lang switch {
-            "pasabc" => "pascal",
-            "fpas" => "pascal",
-            _ => lang
-        };
 
     private async Task ShowCode()
     {

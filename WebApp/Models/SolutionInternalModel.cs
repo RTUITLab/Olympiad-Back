@@ -1,5 +1,7 @@
-﻿using Olympiad.Shared.Models;
+﻿using Olympiad.Shared;
+using Olympiad.Shared.Models;
 using PublicAPI.Responses;
+using PublicAPI.Responses.Solutions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +12,7 @@ namespace WebApp.Models
     public class SolutionInternalModel
     {
         public Guid Id { get; set; }
-        public string Language { get; set; }
+        public ProgramRuntime Language { get; set; }
         public Guid UserId { get; set; }
         public Guid ExerciseId { get; set; }
         public SolutionStatus Status { get; set; }

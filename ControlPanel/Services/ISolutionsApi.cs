@@ -19,6 +19,8 @@ public interface ISolutionsApi
 
     [Get("/api/solutions/analytics/{solutionId}/testGroupResults")]
     Task<List<SolutionTestGroupResulResponse>> GetTestGroupResults(Guid solutionId);
+    [Get("/api/solutions/analytics/{solutionId}/sentFiles")]
+    Task<List<SolutionDocumentResponse>> GetSolutionDocuments(Guid solutionId);
     [Get("/api/solutions/analytics/{solutionId}/checksForDataGroup")]
     Task<List<SolutionCheckResponse>> GetChecksForDataGroup(Guid solutionId, Guid testDataGroupId);
 

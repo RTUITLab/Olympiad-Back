@@ -16,22 +16,27 @@ using Microsoft.Extensions.Options;
 using Executor.Models.Settings;
 using PublicAPI.Requests;
 using System.Text.Json;
+using Olympiad.Shared;
 
 namespace Executor.Executers.Build
 {
     class ProgramBuilder
     {
-        private readonly Dictionary<string, BuildProperty> buildProperties = new Dictionary<string, BuildProperty>
+        private readonly Dictionary<ProgramRuntime, BuildProperty> buildProperties = new Dictionary<ProgramRuntime, BuildProperty>
         {
-            { "c", new ContainsInLogsProperty { ProgramFileName = "Program.c", BuildFailedCondition = "error" } },
-            { "cpp", new ContainsInLogsProperty { ProgramFileName = "Program.cpp", BuildFailedCondition = "error" } },
-            { "csharp", new ContainsInLogsProperty { ProgramFileName = "Program.cs", BuildFailedCondition = "Build FAILED" } },
-            { "java", new ContainsInLogsProperty { ProgramFileName = "Main.java", BuildFailedCondition = "error" } },
-            { "pasabc", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "Compile errors:" } },
-            { "python", new ContainsInLogsProperty { ProgramFileName = "Program.py", BuildFailedCondition = "error" } },
-            { "js", new ContainsInLogsProperty { ProgramFileName = "Program.js", BuildFailedCondition = "error" } },
-            { "fpas", new ContainsInLogsProperty { ProgramFileName = "Program.pas", BuildFailedCondition = "error" } },
+            { ProgramRuntime.C, new ContainsInLogsProperty { BuildFailedCondition = "error" } },
+            { ProgramRuntime.Cpp, new ContainsInLogsProperty { BuildFailedCondition = "error" } },
+            { ProgramRuntime.CSharp, new ContainsInLogsProperty { BuildFailedCondition = "Build FAILED" } },
+            { ProgramRuntime.Java, new ContainsInLogsProperty { BuildFailedCondition = "error" } },
+            { ProgramRuntime.PasAbc, new ContainsInLogsProperty { BuildFailedCondition = "Compile errors:" } },
+            { ProgramRuntime.Python, new ContainsInLogsProperty { BuildFailedCondition = "error" } },
+            { ProgramRuntime.Js, new ContainsInLogsProperty { BuildFailedCondition = "error" } },
+            { ProgramRuntime.FreePas, new ContainsInLogsProperty { BuildFailedCondition = "error" } },
         };
+
+        private string GetFileNameForRuntime(ProgramRuntime programRuntime) =>
+            programRuntime == ProgramRuntime.Java ? "Main.java"
+            : $"Program{programRuntime.FileExtension}";
 
         private readonly Func<Guid, SolutionStatus, Task> processSolution;
         private readonly Func<Guid, BuildLogRequest, Task> saveBuildLogs;
@@ -117,7 +122,7 @@ namespace Executor.Executers.Build
             }
         }
 
-        protected async Task<(bool, string)> BuidSource(Guid solutionId, string lang, string raw)
+        protected async Task<(bool, string)> BuidSource(Guid solutionId, ProgramRuntime lang, string raw)
         {
             if (string.IsNullOrWhiteSpace(raw))
             {
@@ -129,7 +134,7 @@ namespace Executor.Executers.Build
             var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
             logger.LogDebug($"new dir is {sourceDir.FullName}");
 
-            await PrepareBuildFiles(lang, raw, buildProperty, sourceDir);
+            await PrepareBuildFiles(lang, raw, GetFileNameForRuntime(lang), sourceDir);
 
             var buildLogs = await BuildImageAsync($"solution:{solutionId}", sourceDir.FullName);
             sourceDir.Delete(true);
@@ -137,9 +142,10 @@ namespace Executor.Executers.Build
             return (!buildProperty.IsCompilationFailed(buildLogs), buildLogs);
         }
 
-        private async Task PrepareBuildFiles(string lang, string raw, BuildProperty buildProperty, DirectoryInfo sourceDir)
+        private async Task PrepareBuildFiles(string lang, string raw, string fileName, DirectoryInfo sourceDir)
         {
-            await File.WriteAllTextAsync(Path.Combine(sourceDir.FullName, buildProperty.ProgramFileName), raw, new UTF8Encoding(false));
+            var programFileName = Path.Combine(sourceDir.FullName, fileName);
+            await File.WriteAllTextAsync(programFileName, raw, new UTF8Encoding(false));
             var dockerFile = await File.ReadAllLinesAsync(Path.Combine(Directory.GetCurrentDirectory(), "Executers", "Build", "DockerFiles", $"DockerFile-{lang}"));
             if (startOptions.PrivateDockerRegistry != null)
             {

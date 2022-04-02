@@ -63,8 +63,18 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine($"## {exercise.ExerciseName}");
             builder.AppendLine(exercise.ExerciseTask);
             builder.AppendLine();
+            if (exercise.Type == ExerciseType.Docs)
+            {
+                builder.AppendLine("Documents exercise solution does not supported");
+                return builder.ToString();
+            }
+            if (exercise.Type != ExerciseType.Code)
+            {
+                builder.AppendLine("Incorrect exercise type");
+                return builder.ToString();
+            }
 
-            var solutionsForExercise = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
+                var solutionsForExercise = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
             switch (options.SolutionsMode)
             {
                 case ShowSolutionsMode.AllByDescendingStatus:
@@ -84,23 +94,17 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine();
             return builder.ToString();
         }
-        private static string PrismLang(string lang) => lang switch
-        {
-            "pasabc" => "pascal",
-            "fpas" => "pascal",
-            _ => lang
-        };
 
         private static void RenderSolution(StringBuilder builder, Models.Solutions.Solution solution, bool showChecks)
         {
             builder.AppendLine($"Field|Value");
             builder.AppendLine($"-|-");
-            builder.AppendLine($"Lang|{solution.Language}");
+            builder.AppendLine($"Lang|{solution.Language.Name}");
             builder.AppendLine($"Status|{solution.Status}");
             builder.AppendLine($"ID|{solution.Id}");
             builder.AppendLine($"Sent|{solution.SendingTime}");
 
-            builder.AppendLine($"```{PrismLang(solution.Language)}");
+            builder.AppendLine($"```{solution.Language.PrismLang}");
             builder.AppendLine(solution.Raw);
             builder.AppendLine($"```");
             if (solution.Status != SolutionStatus.Successful && showChecks)

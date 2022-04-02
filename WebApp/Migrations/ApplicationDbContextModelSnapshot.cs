@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Models;
+using Models.Exercises;
+using Models.Solutions;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace WebApp.Migrations
@@ -16,7 +18,7 @@ namespace WebApp.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.13")
+                .HasAnnotation("ProductVersion", "5.0.15")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -276,10 +278,20 @@ namespace WebApp.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ExerciseName")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("ExerciseTask")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(20000)
+                        .HasColumnType("character varying(20000)");
+
+                    b.Property<ExerciseRestrictions>("Restrictions")
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("ExerciseID");
 
@@ -367,6 +379,9 @@ namespace WebApp.Migrations
 
                     b.Property<DateTimeOffset?>("CheckedTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<SolutionDocuments>("DocumentsResult")
+                        .HasColumnType("jsonb");
 
                     b.Property<Guid>("ExerciseId")
                         .HasColumnType("uuid");
@@ -512,7 +527,7 @@ namespace WebApp.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("Models.User", null)
-                        .WithMany()
+                        .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -691,6 +706,8 @@ namespace WebApp.Migrations
 
             modelBuilder.Entity("Models.User", b =>
                 {
+                    b.Navigation("Claims");
+
                     b.Navigation("LoginHistory");
 
                     b.Navigation("Solutions");

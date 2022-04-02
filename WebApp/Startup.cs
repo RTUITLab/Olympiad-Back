@@ -26,13 +26,14 @@ using WebApp.Formatting;
 using Olympiad.Shared;
 using System.Security.Claims;
 using Olympiad.Services.Authorization;
-using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Amazon.S3;
 using WebApp.Services.Attachments;
 using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Services.SolutionCheckQueue;
+using WebApp.Services.Solutions;
+using Olympiad.Shared.JsonConverters;
 
 namespace WebApp
 {
@@ -155,8 +156,7 @@ namespace WebApp
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
-                    options.JsonSerializerOptions.Converters.Add(new TimeSpanConverter());
+                    options.JsonSerializerOptions.Converters.AddCustomConverters();
                 });
 
             services.AddSwaggerGen(c =>
@@ -190,7 +190,7 @@ namespace WebApp
                 services.AddSingleton<IQueueChecker, RabbitMQQueue>();
             }
             services.AddTransient<UserPasswordGenerator>();
-
+            services.AddScoped<ISolutionsService, SolutionsService>();
             AddS3AttachmentStorage(services);
 
             AddConfigurationServices(services);

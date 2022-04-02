@@ -1,7 +1,8 @@
 ﻿@using PublicAPI.Responses.Challenges
-@using PublicAPI.Responses.ExerciseTestData
+@using PublicAPI.Responses.Exercises
 @using PublicAPI.Responses.Solutions.Analytics
 @using PublicAPI.Responses.Users
+@using Olympiad.Shared.Models
 <AuthorizeView Context="userContext">
     <Authorized>
         <Descriptions Bordered
@@ -46,11 +47,14 @@
                     <PrettyDateTimeOffset DateTimeOffset="loadedSolution.SendingTime" />
                 </SkeletonRowComponent>
             </DescriptionsItem>
-            <DescriptionsItem Title="Язык">
-                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
-                    <Text Code>@loadedSolution.Language</Text>
-                </SkeletonRowComponent>
-            </DescriptionsItem>
+            @if (exercise?.Type == ExerciseType.Code)
+            {
+                <DescriptionsItem Title="Язык">
+                    <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                        <Text Code>@loadedSolution.Language.Name</Text>
+                    </SkeletonRowComponent>
+                </DescriptionsItem>
+            }
             <DescriptionsItem Title="Задание">
                 <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="ExerciseInfo">
                     @if (userContext.User.IsAdmin())
@@ -68,8 +72,13 @@
             <DescriptionsItem Title="Баллы">
                 <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
                     <ScoreBadge Score="loadedSolution.Score" Hint="Баллов получено" />
-                    /
-                    <ScoreBadge Score="loadedSolution.Exercise.Score" Hint="Возможно" />
+                    @if (exercise?.Type == ExerciseType.Code)
+                    {
+                        <AntDesign.Text>
+                            /
+                            <ScoreBadge Score="loadedSolution.Exercise.Score" Hint="Возможно" />
+                        </AntDesign.Text>
+                    }
                 </SkeletonRowComponent>
             </DescriptionsItem>
             <DescriptionsItem Title="Статус">
@@ -77,11 +86,14 @@
                     @loadedSolution.Status.ToRussian()
                 </SkeletonRowComponent>
             </DescriptionsItem>
-            <DescriptionsItem Title="Код">
-                <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
-                    <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" SolutionLanguage="@loadedSolution.Language" />
-                </SkeletonRowComponent>
-            </DescriptionsItem>
+            @if (exercise?.Type == ExerciseType.Code)
+            {
+                <DescriptionsItem Title="Код">
+                    <SkeletonRowComponent Data="solution" Context="loadedSolution" TData="SolutionAnalyticsResponse">
+                        <ShowCodeButton SolutionId="loadedSolution.Id" SolutionFileName="@SolutionFileName" PrismLanguage="@loadedSolution.Language.PrismLang" />
+                    </SkeletonRowComponent>
+                </DescriptionsItem>
+            }
         </Descriptions>
     </Authorized>
 </AuthorizeView>
@@ -93,5 +105,5 @@
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
 
-    private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.FileExtension}";
+    private string? SolutionFileName => solution == null ? null : $"{solution.User.FirstName}_{solution.Exercise.Name}_{solution.SendingTime:yy.MM.dd HH mm zz}{solution.Language.FileExtension}";
 }

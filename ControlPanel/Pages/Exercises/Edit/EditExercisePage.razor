@@ -6,13 +6,14 @@
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Challenges
 @using Olympiad.Shared.Models
-@using PublicAPI.Responses.ExerciseTestData
+@using PublicAPI.Responses.Exercises
 
 @inject IExercisesApi ExercisesApi
 @inject MessageService MessageService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject HttpClient HttpClient
+@inject ILogger<EditExercisePage> Logger
 
 <PageTitle>@ExerciseName()</PageTitle>
 <PageHeader TitleTemplate="ExerciseName(SkeletonElementSize.Default)">
@@ -32,22 +33,34 @@
             </BreadcrumbItem>
         </Breadcrumb>
     </PageHeaderBreadcrumb>
+    <PageHeaderExtra>
+        <Popconfirm Title="Вы действительно хотите удалить задание?" OkText="Удалить задание" CancelText="Отмена"
+                    OnConfirm="DeleteExercise">
+            <Button Type="@ButtonType.Dashed" Danger Icon="@IconType.Outline.Delete" />
+        </Popconfirm>
+    </PageHeaderExtra>
 </PageHeader>
-<Row Gutter=@(8)>
+<Row Gutter=@((8, 8))>
     <AntDesign.Col Xl="12" Span="24">
-        <Title Level="4">Базовые параметры</Title>
-
-        @if (exerciseResponse is null)
+        <EditExerciseBaseInfo @bind-Exercise="exerciseResponse" />
+    </AntDesign.Col>
+    <AntDesign.Col Xl="12" Span="24">
+        @if (exerciseResponse?.Type == ExerciseType.Code)
         {
-            <Skeleton Active />
+            <EditExerciseCodeRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse?.Restrictions?.Code" />
+            <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name" Style="margin-top: 8px;"/>
+        }
+        else if (exerciseResponse?.Type == ExerciseType.Docs)
+        {
+            <EditExerciseDocsRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse.Restrictions.Docs"/>
+        }
+        else if (exerciseResponse is null)
+        {
         }
         else
         {
-            <EditExerciseBaseInfo @bind-Exercise="exerciseResponse" />
+            <Alert>Неподдерживаемый тип задания</Alert>
         }
-    </AntDesign.Col>
-    <AntDesign.Col Xl="12" Span="24">
-        <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name"/>
     </AntDesign.Col>
 </Row>
 
@@ -87,8 +100,23 @@
         }
     }
 
+    private async Task DeleteExercise()
+    {
+        try
+        {
+            await ExercisesApi.DeleteExerciseAsync(ExerciseId);
+            GoToExercisesPage();
+            await MessageService.Info("Задание удалено");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't delete exercise");
+            await MessageService.Warning("Не удалось удалить задание");
+        }
+    }
+
     private void GoToExercisesPage()
     {
-        NavigationManager.NavigateTo($"challenges/{ChallengeId}/exercises");
+        NavigationManager.NavigateTo(Routes.Challenges.Exercises(ChallengeId));
     }
 }

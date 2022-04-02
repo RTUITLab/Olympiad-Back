@@ -9,12 +9,8 @@
 @inject NotificationService NotificationService
 @inject ILogger<EditExerciseTestGroups> Logger
 
-
-<Row Justify="space-between">
-    <AntDesign.Col>
-        <Title Level="4">Группы тестов</Title>
-    </AntDesign.Col>
-    <AntDesign.Col>
+<Card Title="Группы тестов" Loading="loading" Style="@Style">
+    <Extra>
         <Space Direction="DirectionVHType.Horizontal">
             <SpaceItem>
                 <ExerciseTestGroupsFileFormatDescriptionModal @ref="helpRef" ExerciseTitle="@ExerciseTitle" />
@@ -22,7 +18,7 @@
             </SpaceItem>
             <SpaceItem>
                 <Dropdown Trigger="@(new Trigger[] { Trigger.Click })">
-                    <Overlay>
+                    <Overlay>   
                         <Menu Selectable="false" Mode="MenuMode.Inline" Class="buttons-menu big-icon">
                             <InputFile @ref="inputFileRef" style="display: none" OnChange="TestGroupsFilesSelected" accept=".json" />
                             <MenuItem Title="Загрузить"
@@ -72,58 +68,51 @@
                 </Dropdown>
             </SpaceItem>
         </Space>
-
-    </AntDesign.Col>
-</Row>
-
-@if (loading)
-{
-    <Skeleton Active />
-}
-else
-{
-    @if (exercisesTestDataGroups is null || exercisesTestDataGroups.Count < 1)
-    {
-        <Alert Type="@AlertType.Error">
-            Нет тестовых групп для автоматической проверки
-        </Alert>
-    }
-    else
-    {
-        <Table PageSize="exercisesTestDataGroups.Count"
-       HidePagination
-       DataSource="exercisesTestDataGroups"
-       Context="group">
-            <Column Field="group.Title" Title="Название">
-            </Column>
-            <Column Field="group.IsPublic" Title="Видимость">
-                <Tooltip Title=@(group.IsPublic ? "Видно пользователям при просмотре задания" : "Скрытая группа, только для проверок")>
-                    <Icon Type=@(group.IsPublic ? IconType.Outline.Eye : IconType.Outline.EyeInvisible) />
-                </Tooltip>
-            </Column>
-            <Column Field="group.Score" Title="Баллы">
-                <Text Keyboard>@group.Score</Text>
-            </Column>
-            <Column Field="group.TestCases" Title="Кейсы">
-                <TitleTemplate>
-                    <HelpTooltip>Количество тестовых кейсов</HelpTooltip>
-                    <Text>Кейсы</Text>
-                </TitleTemplate>
-                <ChildContent>
-                    <Text Keyboard>@group.TestCases.Count</Text>
-                </ChildContent>
-            </Column>
-            <ActionColumn>
-                <Popconfirm Title="Вы действительно хотите удалить группу? Вся информация связанная с ней будет утеряна"
-                    OkText="Удалить группу"
-                    CancelText="Отмена"
-                    OnConfirm=@(() => DeleteGroup(group))>
-                    <Button Danger Icon="@IconType.Outline.Delete"></Button>
-                </Popconfirm>
-            </ActionColumn>
-        </Table>
-    }
-}
+    </Extra>
+    <ChildContent>
+        @if (exercisesTestDataGroups is null || exercisesTestDataGroups.Count < 1)
+        {
+            <Alert Type="@AlertType.Error">
+                Нет тестовых групп для автоматической проверки
+            </Alert>
+        }
+        else
+        {
+            <Table PageSize="exercisesTestDataGroups.Count"
+               HidePagination
+               DataSource="exercisesTestDataGroups"
+               Context="group">
+                <Column Field="group.Title" Title="Название">
+                </Column>
+                <Column Field="group.IsPublic" Title="Видимость">
+                    <Tooltip Title=@(group.IsPublic ? "Видно пользователям при просмотре задания" : "Скрытая группа, только для проверок")>
+                        <Icon Type=@(group.IsPublic ? IconType.Outline.Eye : IconType.Outline.EyeInvisible) />
+                    </Tooltip>
+                </Column>
+                <Column Field="group.Score" Title="Баллы">
+                    <Text Keyboard>@group.Score</Text>
+                </Column>
+                <Column Field="group.TestCases" Title="Кейсы">
+                    <TitleTemplate>
+                        <HelpTooltip>Количество тестовых кейсов</HelpTooltip>
+                        <Text>Кейсы</Text>
+                    </TitleTemplate>
+                    <ChildContent>
+                        <Text Keyboard>@group.TestCases.Count</Text>
+                    </ChildContent>
+                </Column>
+                <ActionColumn>
+                    <Popconfirm Title="Вы действительно хотите удалить группу? Вся информация связанная с ней будет утеряна"
+                            OkText="Удалить группу"
+                            CancelText="Отмена"
+                            OnConfirm=@(() => DeleteGroup(group))>
+                        <Button Danger Icon="@IconType.Outline.Delete"></Button>
+                    </Popconfirm>
+                </ActionColumn>
+            </Table>
+        }
+    </ChildContent>
+</Card>
 
 @code {
 
@@ -131,6 +120,8 @@ else
     public Guid ExerciseId { get; set; }
     [Parameter]
     public string? ExerciseTitle { get; set; }
+    [Parameter]
+    public string? Style { get; set; }
     [CascadingParameter]
     public ILogsService? LogsService { get; set; }
 
@@ -293,6 +284,7 @@ else
         catch (Exception ex)
         {
             var errorMessage = "Ошибка при чтении файла";
+            Logger.LogWarning(ex, "error while reading file");
             LogsService?.LogInfo(errorMessage, ex.Message);
             await NotificationService.Error(new NotificationConfig
                 {

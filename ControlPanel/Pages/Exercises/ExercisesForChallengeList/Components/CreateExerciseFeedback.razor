@@ -1,0 +1,71 @@
+﻿@using Olympiad.Shared.Models
+@using PublicAPI.Requests.Exercises
+
+@inherits FeedbackComponent<Guid, Guid>
+
+@inject IExercisesApi ExercisesApi
+@inject ILogger<CreateExerciseFeedback> Logger
+
+
+
+<Alert Type="@AlertType.Info">
+    Будет создано задание с параметрами по умолчанию для дальнейшей настройки
+</Alert>
+<Paragraph>
+    Необходимо выбрать тип задания
+</Paragraph>
+<Paragraph>
+    <Text Type="@TextElementType.Warning">Тип задания невозможно изменить после создания</Text>
+</Paragraph>
+
+<RadioGroup @bind-Value="type" Class="big-icon">
+    @foreach (var type in ExerciseType.List)
+    {
+        <Radio RadioButton Value="@type"><Icon Type="@type.IconType()" /> @type.ToRussian()</Radio>
+    }
+</RadioGroup>
+@if (type == ExerciseType.Code)
+{
+    <Paragraph>Задание на написание программы (автоматическая проверка по тестам)</Paragraph>
+}
+else if (type == ExerciseType.Docs)
+{
+    <Paragraph>Задание на отправку произвольных документов (ручная проверка)</Paragraph>
+}
+else
+{
+    <Alert ShowIcon="true" Type="@AlertType.Warning">Некорректный тип задания</Alert>
+}
+@code {
+
+    private ExerciseType type = ExerciseType.Code;
+
+    public override async Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (FeedbackRef is ConfirmRef confirmRef)
+        {
+            confirmRef.Config.OkButtonProps.Loading = true;
+            await confirmRef.UpdateConfigAsync();
+        }
+        else if (FeedbackRef is ModalRef modalRef)
+        {
+            modalRef.Config.ConfirmLoading = true;
+            await modalRef.UpdateConfigAsync();
+        }
+        try
+        {
+            var newExerciseId = await ExercisesApi.CreateExerciseAsync(new ExerciseCreateRequest
+                {
+                    ChallengeId = Options,
+                    Type = type
+                });
+            await base.OkCancelRefWithResult!.OnOk(newExerciseId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't create exercise");
+            await base.OkCancelRefWithResult!.OnCancel(Options);
+        }
+        await base.OnFeedbackOkAsync(args);
+    }
+}

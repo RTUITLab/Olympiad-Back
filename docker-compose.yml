@@ -3,10 +3,6 @@ version: "3.8"
 services:
     api:
         image: rtuitlab/olympiad-api:${OLYMPIAD_SERVICE_TAG-latest}
-    admin:
-        image: rtuitlab/olympiad-admin:${OLYMPIAD_SERVICE_TAG-latest}
-    results-viewer:
-        image: rtuitlab/olympiad-results-viewer:${OLYMPIAD_SERVICE_TAG-latest}
     control-panel:
         image: rtuitlab/olympiad-control-panel:${OLYMPIAD_SERVICE_TAG-latest}
     executor:

@@ -6,7 +6,7 @@
 @using PublicAPI.Responses.Challenges
 @using Humanizer
 @using PublicAPI.Responses
-@using PublicAPI.Responses.ExerciseTestData
+@using PublicAPI.Responses.Exercises
 
 @inject IExercisesApi ExercisesApi
 @inject ILogger<EditExerciseBaseInfo> Logger
@@ -14,33 +14,33 @@
 @inject IJSRuntime JS
 @inject AttachmentLinkGenerator AttachmentLinkGenerator
 
-
-<Form Model="exerciseModel"
-      LabelColSpan="4"
-      WrapperColSpan="20"
-      Loading="saving"
-      OnFinish="UpdateBaseInfo"
-      Layout="horizontal">
-    <FormItem Label="Название" Required>
-        <Input @bind-Value="@context.Title"/>
-    </FormItem>
-    <FormItem Label="Задание">
-        <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
-            <MarkdownTextArea @bind-Value="exerciseModel.Task"
-                              MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH">
-                <TitleTemplate>
-                    <Text>@exerciseModel.Title</Text>
-                    <Text Type="@TextElementType.Secondary">Текст задания (@Exercise?.Challenge.Name)</Text>
-                </TitleTemplate>
-            </MarkdownTextArea>
-        </CascadingValue>
-    </FormItem>
-    <FormItem WrapperColOffset="8" WrapperColSpan="16">
-        <Button Type="@ButtonType.Primary" HtmlType="submit">
-            Сохранить базовые параметры
-        </Button>
-    </FormItem>
-</Form>
+<Card Title="Базовые параметры" Loading="Exercise is null">
+    <Form Model="exerciseModel"
+          Loading="saving"
+          OnFinish="UpdateBaseInfo"
+          Layout="@FormLayout.Vertical">
+        <FormItem Label="Название" Required>
+            <Input @bind-Value="@context.Title" />
+        </FormItem>
+        <FormItem Label="Задание" Required>
+            <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
+                <MarkdownTextArea @bind-Value="exerciseModel.Task"
+                                  MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH"
+                                  Label="Задание">
+                    <TitleTemplate>
+                        <Text>@exerciseModel.Title</Text>
+                        <Text Type="@TextElementType.Secondary">Текст задания (@Exercise?.Challenge.Name)</Text>
+                    </TitleTemplate>
+                </MarkdownTextArea>
+            </CascadingValue>
+        </FormItem>
+        <FormItem>
+            <Button Type="@ButtonType.Primary" HtmlType="submit">
+                Сохранить базовые параметры
+            </Button>
+        </FormItem>
+    </Form>
+</Card>
 
 @code {
 
@@ -49,6 +49,8 @@
 
     [Parameter]
     public EventCallback<ExerciseInfo> ExerciseChanged { get; set; }
+
+
 
     private readonly UpdateExerciseRequest exerciseModel = new();
     private ExerciseAttachmentsProvider? attachmentsProvider;
@@ -70,7 +72,6 @@
         exerciseModel.Task = Exercise.ExerciseTask;
     }
 
-
     private async Task UpdateBaseInfo()
     {
         if (Exercise is null)
@@ -78,10 +79,12 @@
             return;
         }
         saving = true;
+        var success = false;
         try
         {
             var updateExercise = await ExercisesApi.UpdateExercise(Exercise.Id, exerciseModel);
             await ExerciseChanged.InvokeAsync(updateExercise);
+            success = true;
         }
         catch (Exception ex)
         {
@@ -91,6 +94,9 @@
         finally
         {
             saving = false;
+        }
+        if (success) {
+            MessageService.Success("Информация обновлена");
         }
     }
     private class ExerciseAttachmentsProvider : IAttachmentsProvider

@@ -166,7 +166,7 @@ function createReport(htmlRow) {
                 resolve(buffer);
             });
         } catch (error) {
-            console.log("createReport", error);
+            console.error("createReport", error);
             reject(error);
         }
     })

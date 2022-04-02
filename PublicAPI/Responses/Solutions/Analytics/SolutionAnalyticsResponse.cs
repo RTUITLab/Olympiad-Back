@@ -1,4 +1,4 @@
-﻿using PublicAPI.Responses.ExerciseTestData;
+﻿using PublicAPI.Responses.Exercises;
 using PublicAPI.Responses.Users;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,5 @@ namespace PublicAPI.Responses.Solutions.Analytics
     {
         public ExerciseInfo Exercise { get; set; }
         public UserInfoResponse User { get; set; }
-        public string FileExtension { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace WebApp.Services.Attachments
             var url = await s3Client.ListObjectsV2Async(new ListObjectsV2Request
             {
                 BucketName = options.BucketName,
-                Prefix = ExerciseAttachmentsKey(exerciseId)
+                Prefix = ExercisesAttachmentsKey(exerciseId)
             });
             var targetObjects = url.S3Objects
                 .Where(o => !string.IsNullOrEmpty(Path.GetFileName(o.Key)))
@@ -75,9 +75,36 @@ namespace WebApp.Services.Attachments
 
         public string GetUrlForExerciseAttachment(Guid exerciseId, string fileName)
         {
-            return $"{options.ServiceUrl}/{options.BucketName}/{ExerciseAttachmentsKey(exerciseId)}/{Uri.EscapeDataString(fileName)}";
+            return $"{options.ServiceUrl}/{options.BucketName}/{ExercisesAttachmentsKey(exerciseId)}/{Uri.EscapeDataString(fileName)}";
         }
-        private string ExerciseAttachmentKey(Guid exerciseId, string fileName) => $"{ExerciseAttachmentsKey(exerciseId)}/{fileName}";
-        private string ExerciseAttachmentsKey(Guid exerciseId) => $"exercises/{exerciseId}";
+        private string ExercisesAttachmentsKey(Guid exerciseId) => $"exercises/{exerciseId}";
+        private string ExerciseAttachmentKey(Guid exerciseId, string fileName) => $"{ExercisesAttachmentsKey(exerciseId)}/{fileName}";
+
+        private string SolutionDocumentsKey(Guid solutionId) => $"solutions/{solutionId}/documents";
+        private string SolutionDocumentKey(Guid solutionId, string fileName) => $"{SolutionDocumentsKey(solutionId)}/{fileName}";
+
+
+        public string GetUploadUrlForSolutionDocument(Guid solutionId, string contentType, ByteSize uploadSize, string fileName)
+        {
+            var getUrlRequest = new GetPreSignedUrlRequest
+            {
+                BucketName = options.BucketName,
+                Key = SolutionDocumentKey(solutionId, fileName),
+                Protocol = options.ServiceUrl.StartsWith("https") ? Protocol.HTTPS : Protocol.HTTP,
+                Expires = DateTime.UtcNow.Add(TimeSpan.FromHours(1)),
+                Verb = HttpVerb.PUT
+            };
+            // Set public access to object
+            getUrlRequest.Headers["x-amz-acl"] = "public-read";
+            getUrlRequest.Headers["Content-Length"] = ((long)uploadSize.Bytes).ToString();
+            getUrlRequest.ContentType = contentType;
+
+            return s3Client.GetPreSignedURL(getUrlRequest);
+        }
+
+        public string GetUrlForSolutionDocument(Guid solutionId, string fileName)
+        {
+            return $"{options.ServiceUrl}/{options.BucketName}/{SolutionDocumentsKey(solutionId)}/{Uri.EscapeDataString(fileName)}";
+        }
     }
 }

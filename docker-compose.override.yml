@@ -15,22 +15,6 @@ services:
             - postgres
             - rabbitmq
             - s3
-    admin:
-        build: ${BACK_CONTEXT:-.}/deploy/admin
-        ports:
-            - 5503:5503
-        environment:
-           - ASPNETCORE_ENVIRONMENT=Development
-           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
-           - RabbitMqQueueSettings__Uri=amqp://rabbitmq-user:password@rabbitmq:5672
-        restart: on-failure
-    results-viewer:
-        build: ${BACK_CONTEXT:-.}/deploy/results-viewer
-        ports:
-            - 5504:5504
-        environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
     control-panel:
         build: ${BACK_CONTEXT:-.}/deploy/control-panel
         ports:

@@ -16,8 +16,9 @@
         Width="750">
     <SolutionsReportOptions @bind-ReportOptions="options" Disabled="IsLoading" />
     <Divider />
-    @if (!string.IsNullOrEmpty(StudentId))
+    @if (!string.IsNullOrEmpty(SingleUserId))
     {
+        <Paragraph>Будет создан отчет о пользователе: <Text Keyboard>@SingleUserId</Text></Paragraph>
         <Button OnClick="DownloadOneReport" Type="@ButtonType.Primary">Скачать отчет</Button>
     }
     else if (studentIds?.Any() == true)
@@ -26,7 +27,7 @@
         @if (isSaveToFileSystemSupported == true)
         {
             <Paragraph>Для сохранения множества отчётов необходимо предоставить доступ к редактированию папки на вашем компьютере. Отчеты сохранятся в неё. </Paragraph>
-            <Paragraph>Необходимо предоставить доступ браузеру на редактирование указанной вкладки.</Paragraph>
+            <Paragraph>Необходимо предоставить доступ браузеру на редактирование выбранной папки.</Paragraph>
         }
 
         <Button Loading="isGenerating" OnClick="DownloadMultiReports" Type="@ButtonType.Primary">Создать отчёты</Button>
@@ -50,6 +51,8 @@
     public bool IsLoading => reportsJSModule is null || isGenerating;
 
     private List<string>? studentIds;
+
+    private string? SingleUserId => StudentId ?? (studentIds?.Count == 1 ? studentIds.Single() : null);
     private UserSolutionsReportOptions options = UserSolutionsReportOptions.Default;
 
     private bool isVisible;
@@ -84,7 +87,7 @@
 
     private async Task DownloadOneReport()
     {
-        if (string.IsNullOrEmpty(StudentId) || reportsJSModule is null || isGenerating)
+        if (string.IsNullOrEmpty(SingleUserId) || reportsJSModule is null || isGenerating)
         {
             await MessageService.Warning("Невозможно начать генерацию");
             return;
@@ -92,8 +95,8 @@
         isGenerating = true;
         try
         {
-            var html = await LoadReportHtml(StudentId);
-            await reportsJSModule.InvokeVoidAsync("createSingleReport", html, $"{StudentId}.pdf");
+            var html = await LoadReportHtml(SingleUserId);
+            await reportsJSModule.InvokeVoidAsync("createSingleReport", html, $"{SingleUserId}.pdf");
         }
         finally
         {
@@ -123,6 +126,7 @@
         }
         generatingProgress = 0;
         isVisible = true;
+        StateHasChanged();
     }
 
     private async Task DownloadMultiReports()

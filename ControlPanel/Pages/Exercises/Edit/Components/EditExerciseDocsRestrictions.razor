@@ -1,0 +1,145 @@
+﻿@using PublicAPI.Responses.Exercises
+@using PublicAPI.Requests.Exercises
+
+@inject MessageService MessageService
+@inject ModalService ModalService
+@inject ILogger<EditExerciseDocsRestrictions> Logger
+@inject IExercisesApi ExercisesApi
+
+<Card Title="Документы для загрузки" Loading="Restrictions is null">
+    <Spin Spinning="loading">
+
+        @if (Restrictions?.Documents?.Any() != true)
+        {
+            <Alert Type="@AlertType.Error">Не представлено документов для загрузки</Alert>
+        }
+        <Table DataSource="Restrictions?.Documents"
+               PageSize="Restrictions?.Documents?.Count ?? 0"
+               HidePagination
+               Bordered
+               Size="@TableSize.Middle">
+            <TitleTemplate>
+                Пользователь должен будет загрузить документов: <Text Keyboard>@Restrictions?.Documents?.Count</Text>
+            </TitleTemplate>
+            <ChildContent>
+                <Column Field="context.Title" Title="Название" />
+                <Column Field="context.Description" Title="Описание" />
+                <Column Field="context.MaxSize" Title="Максимальный размер" />
+                <Column Field="context.AllowedExtensions" Title="Расширения">
+                    @foreach (var extension in (context.AllowedExtensions ?? Enumerable.Empty<string>()))
+                    {
+                        <Tag>@extension</Tag>
+                    }
+                </Column>
+                <ActionColumn>
+                    <Button Icon="@IconType.Outline.Edit" OnClick="() => EditDocumentRestriction(context)" />
+                    <Button Icon="@IconType.Outline.Delete" Danger OnClick="() => RemoveDocumentRestriction(context)" />
+                </ActionColumn>
+            </ChildContent>
+            <FooterTemplate>
+                <Button OnClick="AddDocumentRestriction" Icon="@IconType.Outline.Plus">Добавить файл</Button>
+            </FooterTemplate>
+        </Table>
+        <Button Type="@ButtonType.Primary" OnClick="SaveDocumentDestrictions">Сохранить</Button>
+    </Spin>
+</Card>
+
+@code {
+    [Parameter]
+    public Guid ExerciseId { get; set; }
+    [Parameter]
+    public DocsRestrictionsResponse? Restrictions { get; set; }
+    [Parameter]
+    public EventCallback<DocsRestrictionsResponse> RestrictionsChanged { get; set; }
+
+    private bool loading;
+
+    private async Task AddDocumentRestriction()
+    {
+        var options = new ConfirmOptions
+            {
+                Title = "Добавление ограничения"
+            };
+        var confirmRef = await ModalService
+        .CreateConfirmAsync<EditOneDocumentRestrictionFeedback, DocumentRestrictionResponse, DocumentRestrictionResponse>(options, new DocumentRestrictionResponse());
+        confirmRef.OnOk = added =>
+        {
+            Restrictions ??= new DocsRestrictionsResponse();
+            Restrictions.Documents ??= new List<DocumentRestrictionResponse>();
+            Restrictions.Documents.Add(added);
+            StateHasChanged();
+            return Task.CompletedTask;
+        };
+    }
+    private async Task EditDocumentRestriction(DocumentRestrictionResponse documentRestriction)
+    {
+        var options = new ConfirmOptions
+            {
+                Title = "Редактирование ограничения"
+            };
+        var confirmRef = await ModalService
+        .CreateConfirmAsync<EditOneDocumentRestrictionFeedback, DocumentRestrictionResponse, DocumentRestrictionResponse>(options, documentRestriction);
+        confirmRef.OnOk = updated =>
+        {
+            Restrictions ??= new DocsRestrictionsResponse();
+            Restrictions.Documents ??= new List<DocumentRestrictionResponse>();
+            Restrictions.Documents.Remove(documentRestriction);
+            Restrictions.Documents.Add(updated);
+            StateHasChanged();
+            return Task.CompletedTask;
+        };
+    }
+
+    private void RemoveDocumentRestriction(DocumentRestrictionResponse documentRestriction)
+    {
+        Restrictions ??= new DocsRestrictionsResponse();
+        Restrictions.Documents ??= new List<DocumentRestrictionResponse>();
+        Restrictions.Documents.Remove(documentRestriction);
+    }
+
+    private async Task SaveDocumentDestrictions()
+    {
+        if (Restrictions?.Documents?.Any() != true)
+        {
+            await MessageService.Error("Необходимо указать как минимум один документ для загрузки");
+            return;
+        }
+        loading = true;
+        bool success = false;
+        try
+        {
+            Restrictions = await ExercisesApi.UpdateExerciseDocsRestrictions(ExerciseId, new UpdateDocsRestrictionsRequest
+                {
+                    Documents = Restrictions.Documents
+                        .Select(d => new DocumentRestrictionRequest
+                        {
+                            Title = d.Title,
+                            Description = d.Description,
+                            AllowedExtensions = d.AllowedExtensions,
+                            MaxSize = d.MaxSize
+                        })
+                        .ToList()
+
+                });
+            if (RestrictionsChanged.HasDelegate)
+            {
+                await RestrictionsChanged.InvokeAsync(Restrictions);
+            }
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't save docs restrictions");
+            await MessageService.Warning("Не удалось сохранить ограничения");
+        }
+        finally
+        {
+            loading = false;
+        }
+        if (success)
+        {
+            await MessageService.Success("Ограничения обновлены");
+        }
+    }
+
+}

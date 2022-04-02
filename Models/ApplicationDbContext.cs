@@ -7,6 +7,8 @@ using Models.Exercises;
 using Models.Links;
 using Models.Solutions;
 using Models.UserModels;
+using Olympiad.Shared;
+using Olympiad.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,6 +24,7 @@ namespace Models
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
             builder.Entity<UserToChallenge>()
                 .HasKey(utc => new { utc.ChallengeId, utc.UserId });
             builder.Entity<UserToChallenge>()
@@ -46,6 +49,14 @@ namespace Models
             builder.Entity<ExerciseDataGroup>()
                 .HasIndex(dg => new { dg.Title, dg.ExerciseId })
                 .IsUnique();
+
+            builder.Entity<Solution>()
+                .Property(s => s.Language)
+                .HasConversion(r => r.Value, r => ProgramRuntime.FromValue(r));
+
+            builder.Entity<Exercise>()
+                .Property(s => s.Type)
+                .HasConversion(t => t.Value, t => ExerciseType.FromValue(t));
         }
         public DbSet<User> Students { get; set; }
         public DbSet<Challenge> Challenges { get; set; }
