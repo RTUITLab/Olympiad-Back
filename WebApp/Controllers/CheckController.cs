@@ -223,7 +223,7 @@ namespace WebApp.Controllers
         }
         [AllowAnonymous]
         [HttpGet("{solutionId:guid}/document/{fileName}")]
-        public async Task<ActionResult> Get(Guid solutionId, string fileName, [FromServices] IAttachmentsService attachmentsService)
+        public ActionResult Get(Guid solutionId, string fileName, [FromServices] IAttachmentsService attachmentsService)
         {
             return Redirect(attachmentsService.GetUrlForSolutionDocument(solutionId, fileName));
         }
