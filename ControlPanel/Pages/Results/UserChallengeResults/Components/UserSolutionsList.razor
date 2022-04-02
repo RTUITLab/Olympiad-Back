@@ -1,6 +1,7 @@
 @using PublicAPI.Responses.Solutions
 @using System.Threading
 @using PublicAPI.Responses.Solutions.Analytics
+@using Olympiad.Shared.Models
 
 @inject ISolutionsApi SolutionsApi
 
@@ -13,15 +14,25 @@ else
     <AntList Bordered DataSource="solutions.OrderByDescending(s => s.Score)">
         <ListItem>
             <NavLink href="@($"results/{ChallengeId}/user/{UserId}/solution/{context.Id}")">
-                <Text>
+                @if (context.ExerciseType == ExerciseType.Code)
+            {
+                <AntDesign.Text>
                     <ScoreBadge Score="context.Score" /> |
                     @context.Status.ToRussian() |
-                    <Text Code>@context.Language.Name</Text>  |
+                    <Text Code>@context.Language.Name</Text> |
                     <PrettyDateTimeOffset DateTimeOffset="@context.SendingTime" />
-                </Text>
-            </NavLink>
-        </ListItem>
-    </AntList>
+                </AntDesign.Text>
+            }
+            else if (context.ExerciseType == ExerciseType.Docs)
+            {
+                <AntDesign.Text>
+                    @context.Status.ToRussian() |
+                    <PrettyDateTimeOffset DateTimeOffset="@context.SendingTime" />
+                </AntDesign.Text>
+            }
+        </NavLink>
+    </ListItem>
+</AntList>
 }
 
 @code {

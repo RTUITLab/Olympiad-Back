@@ -84,7 +84,8 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(sr => sr.HiddenStatus, map => map.MapFrom(sim => sim.GetHiddenStatus()))
                 .ForMember(sr => sr.Documents, map => map.Ignore());
             CreateMap<Solution, SolutionAnalyticCompactResponse>()
-                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
+                .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore))
+                .ForMember(r => r.ExerciseType, map => map.MapFrom(s => s.Exercise.Type));
             CreateMap<Solution, SolutionAnalyticsResponse>()
                 .ForMember(r => r.Score, map => map.MapFrom(s => s.TotalScore));
 

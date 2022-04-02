@@ -38,8 +38,14 @@
                 <SolutionPageDescriptions solution="solution" />
             </PageHeaderContent>
         </PageHeader>
-        <SolutionResultsTabs SolutionId="SolutionId"
+        @if (exercise?.Type == ExerciseType.Code)
+        {
+            <SolutionResultsTabs SolutionId="SolutionId"
                              BuildLogsAccent="@(solution?.Status <= SolutionStatus.CompileError)" />
+        } else if (exercise?.Type == ExerciseType.Docs)
+        {
+            <DocsSolutionResultsTable SolutionId="SolutionId"/>
+        }
     </Authorized>
 </AuthorizeView>
 

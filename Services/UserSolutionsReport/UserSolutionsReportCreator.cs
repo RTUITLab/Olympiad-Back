@@ -63,8 +63,18 @@ namespace Olympiad.Services.UserSolutionsReport
             builder.AppendLine($"## {exercise.ExerciseName}");
             builder.AppendLine(exercise.ExerciseTask);
             builder.AppendLine();
+            if (exercise.Type == ExerciseType.Docs)
+            {
+                builder.AppendLine("Documents exercise solution does not supported");
+                return builder.ToString();
+            }
+            if (exercise.Type != ExerciseType.Code)
+            {
+                builder.AppendLine("Incorrect exercise type");
+                return builder.ToString();
+            }
 
-            var solutionsForExercise = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
+                var solutionsForExercise = await LoadSolutionsForExercise(exercise.ExerciseID, user.Id);
             switch (options.SolutionsMode)
             {
                 case ShowSolutionsMode.AllByDescendingStatus:

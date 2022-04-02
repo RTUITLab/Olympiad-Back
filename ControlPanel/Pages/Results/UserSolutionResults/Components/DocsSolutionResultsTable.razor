@@ -1,0 +1,48 @@
+﻿@using PublicAPI.Responses.Solutions
+
+@inject ISolutionsApi SolutionsApi
+@inject AttachmentLinkGenerator AttachmentLinkGenerator
+@inject MessageService MessageService
+@inject ILogger<DocsSolutionResultsTable> Logger
+
+
+<AntList DataSource="documents" Bordered>
+    <Header>
+        Отправленные документы
+    </Header>
+    <ChildContent>
+        <ListItem>
+            <Tooltip Title="@context.MimeType">
+                <a href="@AttachmentLinkGenerator.GetSolutionSentDocumentLink(SolutionId, context.Name)" target="_blank">@context.Name</a>
+            </Tooltip>
+            <Text Keyboard>@context.Size</Text>
+        </ListItem>
+    </ChildContent>
+</AntList>
+
+@code {
+    [Parameter]
+    public Guid SolutionId { get; set; }
+
+    private bool loading;
+    private List<SolutionDocumentResponse>? documents;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        loading = true;
+        try
+        {
+            documents = await SolutionsApi.GetSolutionDocuments(SolutionId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "can't load solution documents");
+            await MessageService.Error("Не удалось загрузить отправленные документы");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

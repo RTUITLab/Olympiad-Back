@@ -15,5 +15,6 @@ namespace PublicAPI.Responses.Solutions.Analytics
         public DateTimeOffset SendingTime { get; set; }
         public SolutionStatus Status { get; set; }
         public int? Score { get; set; }
+        public ExerciseType ExerciseType { get; set; }
     }
 }

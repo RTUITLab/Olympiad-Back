@@ -284,6 +284,7 @@
         catch (Exception ex)
         {
             var errorMessage = "Ошибка при чтении файла";
+            Logger.LogWarning(ex, "error while reading file");
             LogsService?.LogInfo(errorMessage, ex.Message);
             await NotificationService.Error(new NotificationConfig
                 {

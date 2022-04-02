@@ -109,6 +109,22 @@ namespace WebApp.Controllers.Solutions
                 .ToListAsync();
             return allChecks;
         }
+
+        [HttpGet("{solutionId:guid}/sentFiles")]
+        public async Task<ActionResult<List<SolutionDocumentResponse>>> GetSolutionDocuments(Guid solutionId)
+        {
+            var targetFiles = await context.Solutions
+                .Where(s => s.Id == solutionId)
+                .Select(s => s.DocumentsResult)
+                .SingleOrDefaultAsync();
+            if (targetFiles is null)
+            {
+                return NotFound("not found solution");
+            }
+            return targetFiles?.Files.Select(f => mapper.Map<SolutionDocumentResponse>(f)).ToList();
+        }
+
+
         [HttpGet("{solutionId:guid}/checksForDataGroup")]
         public async Task<List<SolutionCheckResponse>> GetChecksForDataGroup(Guid solutionId, Guid testDataGroupId)
         {
