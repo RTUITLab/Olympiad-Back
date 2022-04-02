@@ -54,7 +54,7 @@ namespace WebApp.Controllers
             this.logger = logger;
         }
 
-        [HttpPost("code/{exerciseId}/")]
+        [HttpPost("code/{exerciseId}/{language}")]
         public async Task<ActionResult<SolutionResponse>> Post(IFormFile file, string language, Guid exerciseId)
         {
             return await AddSolutionFromFile(file, language, exerciseId, UserId);
