@@ -17,6 +17,11 @@
                     <Icon Type="@IconType.Outline.Flag" />
                     Соревнования
                 </MenuItem>
+                <Divider Text="ПредПроф" Orientation="left" />
+                <MenuItem Key="tempPredProf" RouterLink="tempPredProf" RouterMatch="NavLinkMatch.Prefix">
+                    <Icon Type="@IconType.Outline.Aim" />
+                    Оператор
+                </MenuItem>
             }
             @if (context.User.IsResultsViewer())
             {

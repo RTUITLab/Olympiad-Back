@@ -1,0 +1,116 @@
+﻿@page "/tempPredProf"
+@attribute [Authorize(Roles = RoleNames.ADMIN)]
+
+
+@using Olympiad.ControlPanel.Components.UsersTable
+@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Users
+
+
+@inject IChallengesApi ChallengesApi
+@inject IJSRuntime JS
+@inject IControlPanelApiService ControlPanelApiService
+@inject MessageService MessageService
+@inject ILogger<TempPredProfIndex> Logger
+
+<Paragraph>
+    1. Выберите соревнование, в котором должен участвовать человек
+</Paragraph>
+<Select Placeholder="Выберите соревнование для приглашения"
+        @bind-Value="selectedChallenge"
+        DataSource="allChallenges" TItem="ChallengeResponse" TItemValue="ChallengeResponse">
+    <ItemTemplate>
+        @context.Name
+    </ItemTemplate>
+    <LabelTemplate>
+        @context.Name
+    </LabelTemplate>
+</Select>
+@if (selectedChallenge is not null)
+{
+    <Paragraph>
+        2. Выберите время, когда он должен начать работу
+    </Paragraph>
+    <Select Placeholder="Время начала"
+        @bind-Value="selectedTimeSlot"
+        DataSource="timeSplots" TItem="TimeOnly" TItemValue="TimeOnly">
+    </Select>
+}
+@if (selectedTimeSlot != default)
+{
+    <Paragraph>
+        3. Найдите нужного человека, и нажмике кнопку "Выдать доступ"
+    </Paragraph>
+    <Paragraph>
+        Распечатайте открывшуюся страницу, на которой будут находиться его персональные логин и пароль
+    </Paragraph>
+    <UsersSearchTable>
+        <UserExtra>
+            <Button Type="@ButtonType.Primary" OnClick="() => GiveAccess(context)">Выдать доступ</Button>
+        </UserExtra>
+    </UsersSearchTable>
+}
+
+
+@code {
+    private List<ChallengeResponse>? allChallenges;
+    private ChallengeResponse? selectedChallenge;
+    private TimeOnly selectedTimeSlot;
+    private TimeOnly defultTime;
+
+    private bool loading = true;
+
+    private static readonly TimeOnly[] timeSplots = new TimeOnly[]{
+        TimeOnly.FromTimeSpan(TimeSpan.FromHours(10)),
+        TimeOnly.FromTimeSpan(TimeSpan.FromHours(13)),
+        TimeOnly.FromTimeSpan(TimeSpan.FromHours(16)),
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        loading = true;
+        try
+        {
+            allChallenges = await ChallengesApi.GetAllChallengesAsync();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+    private async Task GiveAccess(UserInfoResponse userInfo)
+    {
+        loading = true;
+        try
+        {
+            await ChallengesApi.InviteOneUser(selectedChallenge!.Id, userInfo.Id);
+            MessageService.Success($"Выдан доступ для {userInfo.FirstName} к соревнованию {selectedChallenge.Name}");
+            await ControlPanelApiService.AddClaim(userInfo.Id, new PublicAPI.Requests.Account.ClaimRequest
+                {
+                    Type = "ПредПроф время начала",
+                    Value = selectedTimeSlot.ToString()
+                });
+            MessageService.Success($"Записано время участия на {selectedTimeSlot}");
+            var newUserPassword = (await ControlPanelApiService.GenerateNewPasswordForUser(userInfo.Id)).NewPassword;
+            MessageService.Success($"Установлен пароль {newUserPassword}");
+            var innerHtml = GetHtml(userInfo.StudentId, newUserPassword);
+            await JS.InvokeVoidAsync("printTestFunc", innerHtml);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+    private string GetHtml(string studentId, string password)
+    {
+        return $@"<style> * {{ margin: 0; }} strong \{{ letter-spacing: 0.1em; display: block; }} </style>
+    <p>Сайт:</p>
+    <strong>olympiad.rtuitlab.ru</strong>
+    <p>Логин:</p>
+    <strong>{studentId}</strong>
+    <p>Пароль:</p>
+    <strong>{password}</strong>
+";
+    }
+}

@@ -77,6 +77,23 @@
         window.scrollToSpecificElement = function (element) {
             element.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
         }
+        window.getInnerHtml = function (element) {
+            return element.innerHTML;
+        }
+        window.printTestFunc = function (innerHtml) {
+            var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+
+            mywindow.document.write('<html><head><title>' + document.title + '</title>');
+            mywindow.document.write('</head><body >');
+            mywindow.document.write(innerHtml);
+            mywindow.document.write('<script type="text/javascript">window.onafterprint = function () { window.close(); }; window.onload =function() { console.log(window.print()); };<\/script>');
+            mywindow.document.write('</bo' + 'dy><' + '/html>');
+
+            mywindow.document.close(); // necessary for IE >= 10
+            mywindow.focus(); // necessary for IE >= 10*/
+
+            return true;
+        }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
     <link href="prism.css" rel="stylesheet" />
