@@ -31,6 +31,7 @@ using Olympiad.Services;
 using Microsoft.Extensions.Logging;
 using Olympiad.Services.SolutionCheckQueue;
 using PublicAPI.Responses.Exercises;
+using Npgsql;
 
 namespace WebApp.Controllers.Exercises
 {
@@ -267,6 +268,28 @@ namespace WebApp.Controllers.Exercises
 
             exercise.Restrictions ??= new ExerciseRestrictions();
             await context.SaveChangesAsync();
+            return await GetForAdmin(exerciseId);
+        }
+
+        [HttpPut("{exerciseId:guid}/transferToChallenge")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ExerciseInfo>> TransferToChallenge(Guid exerciseId, Guid targetChallengeId)
+        {
+            var targetExercise = await context.Exercises.FindAsync(exerciseId);
+            if (targetExercise is null)
+            {
+                return NotFound("exercise not found");
+            }
+            targetExercise.ChallengeId = targetChallengeId;
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateException dbEx) when (dbEx.InnerException is PostgresException pex && pex.SqlState == PostgresErrorCodes.ForeignKeyViolation)
+            {
+                logger.LogWarning(dbEx, "Can't change challenge to {ChallengeId} for exercise {ExerciseId}", targetChallengeId, exerciseId);
+                return NotFound("Challenge not found");
+            }
             return await GetForAdmin(exerciseId);
         }
 

@@ -43,6 +43,8 @@ public interface IExercisesApi
 
     [Put("/api/exercises/{exerciseId}")]
     Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
+    [Put("/api/exercises/{exerciseId}/transferToChallenge")]
+    Task<ExerciseInfo> TransferToChallenge(Guid exerciseId, Guid targetChallengeId);
     [Put("/api/exercises/{exerciseId}/restrictions/code")]
     Task<CodeRestrictionsResponse> UpdateExerciseCodeRestrictions(Guid exerciseId, UpdateCodeRestrictionsRequest updateRequest);
     [Put("/api/exercises/{exerciseId}/restrictions/docs")]

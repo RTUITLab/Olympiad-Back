@@ -7,7 +7,7 @@
 <Form Model="editableRestrictionsResponse"
       Layout="@FormLayout.Vertical"
       @ref="formRef"
-      OnFinish="() => OkAsync(new ModalClosingEventArgs{  })"
+      OnFinish="() => OnFeedbackOkAsync(new ModalClosingEventArgs{  })"
 >
     <FormItem Required Label="Название" Help="Название документа для загрузки">
         <AntDesign.Input @bind-Value="context.Title"/>
@@ -35,7 +35,7 @@
     }
 
     private DocumentRestrictionResponse editableRestrictionsResponse = new DocumentRestrictionResponse();
-    private DocumentRestrictionResponse latestOption;
+    private DocumentRestrictionResponse? latestOption;
 
     protected override void OnParametersSet()
     {

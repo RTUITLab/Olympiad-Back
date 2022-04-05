@@ -3,6 +3,7 @@
 
 
 @using Olympiad.ControlPanel.Components.UsersTable
+@using Olympiad.Shared.Models
 @using PublicAPI.Responses.Challenges
 @using PublicAPI.Responses.Users
 
@@ -18,13 +19,11 @@
 </Paragraph>
 <Select Placeholder="Выберите соревнование для приглашения"
         @bind-Value="selectedChallenge"
-        DataSource="allChallenges" TItem="ChallengeResponse" TItemValue="ChallengeResponse">
+        DataSource="allChallenges" TItem="ChallengeResponse" TItemValue="ChallengeResponse"
+        LabelName="@nameof(ChallengeResponse.Name)">
     <ItemTemplate>
         @context.Name
     </ItemTemplate>
-    <LabelTemplate>
-        @context.Name
-    </LabelTemplate>
 </Select>
 @if (selectedChallenge is not null)
 {
@@ -72,7 +71,7 @@
         loading = true;
         try
         {
-            allChallenges = await ChallengesApi.GetAllChallengesAsync();
+            allChallenges = (await ChallengesApi.GetAllChallengesAsync()).Where(c => c.ChallengeAccessType == ChallengeAccessType.Private).ToList();
         }
         finally
         {

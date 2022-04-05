@@ -1,0 +1,70 @@
+﻿@using PublicAPI.Responses.Challenges
+@using PublicAPI.Responses.Exercises
+@*
+    IN - Exercise
+    OUT - new ChallengeId
+*@
+@inherits FeedbackComponent<ExerciseInfo, Guid>
+
+@inject IChallengesApi ChallengesApi
+@inject IExercisesApi ExercisesApi
+@inject MessageService MessageService
+@inject ILogger<TransferExerciseFeedback> Logger
+
+
+<Paragraph>Вы можете перенести задание в другое соревнование, для этого выберите его из списка и подтвердите действие</Paragraph>
+<Paragraph><Text Type="@TextElementType.Warning">Обратите внимание на доступность соревнования во избежание преждевременной публикации задания</Text></Paragraph>
+
+<Select Placeholder="Выберите соревнование для приглашения"
+        @bind-Value="selectedChallenge"
+        DataSource="challenges" TItem="ChallengeResponse" TItemValue="ChallengeResponse"
+        LabelName="@nameof(ChallengeResponse.Name)">
+    <ItemTemplate>
+        @context.Name
+    </ItemTemplate>
+</Select>
+
+@code {
+
+    private List<ChallengeResponse>? challenges;
+    private ChallengeResponse? selectedChallenge;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        challenges = (await ChallengesApi.GetAllChallengesAsync()).Where(c => c.Id != Options.ChallengeId).ToList();
+    }
+
+    public override async Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (FeedbackRef is ConfirmRef confirmRef)
+        {
+            confirmRef.Config.OkButtonProps.Loading = true;
+            await confirmRef.UpdateConfigAsync();
+        }
+        else if (FeedbackRef is ModalRef modalRef)
+        {
+            modalRef.Config.ConfirmLoading = true;
+            await modalRef.UpdateConfigAsync();
+        }
+        if (selectedChallenge is null)
+        {
+            await MessageService.Warning("Выберите соревнование");
+            args.Cancel = true;
+            return;
+        }
+        try
+        {
+            var newExerciseModel = await ExercisesApi.TransferToChallenge(Options.Id, selectedChallenge.Id);
+            MessageService.ShowSuccess($"Задание '{Options.Name}' перемещено в '{selectedChallenge.Name}'");
+            await base.OkCancelRefWithResult!.OnOk(selectedChallenge.Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't transfer exercise");
+            MessageService.ShowWarning($"Не удалось переместить задание");
+            args.Cancel = true;
+            return;
+        }
+        await base.OnFeedbackOkAsync(args);
+    }
+}

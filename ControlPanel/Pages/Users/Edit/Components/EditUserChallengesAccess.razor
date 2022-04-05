@@ -26,7 +26,8 @@
             {
                 <Select Placeholder="Выберите соревнование для приглашения"
                     DataSource="challengesToInvite" TItem="ChallengeResponse" TItemValue="ChallengeResponse"
-                    ValueChanged="InviteUserToChallenge">
+                    ValueChanged="InviteUserToChallenge"
+                    LabelName="@nameof(ChallengeResponse.Name)">
                     <ItemTemplate>
                         @context.Name
                     </ItemTemplate>

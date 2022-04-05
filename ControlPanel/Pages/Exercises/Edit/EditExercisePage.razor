@@ -10,6 +10,7 @@
 
 @inject IExercisesApi ExercisesApi
 @inject MessageService MessageService
+@inject ModalService ModalService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject HttpClient HttpClient
@@ -34,10 +35,21 @@
         </Breadcrumb>
     </PageHeaderBreadcrumb>
     <PageHeaderExtra>
-        <Popconfirm Title="Вы действительно хотите удалить задание?" OkText="Удалить задание" CancelText="Отмена"
-                    OnConfirm="DeleteExercise">
-            <Button Type="@ButtonType.Dashed" Danger Icon="@IconType.Outline.Delete" />
-        </Popconfirm>
+        <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger" @ref="actionsRef">
+            <Overlay>
+                <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
+                    <MenuItem Title="Переместить задание" Icon="@IconType.Outline.Swap" OnClick="TransferExercise" />
+                    <MenuDivider />
+                    <Popconfirm Title="Вы действительно хотите удалить задание?" OkText="Удалить задание" CancelText="Отмена"
+                                OnConfirm="DeleteExercise">
+                        <MenuItem Title="Удалить" Icon="@IconType.Outline.Delete" Style="color: #ff4d4f;" />
+                    </Popconfirm>
+                </Menu>
+            </Overlay>
+            <ChildContent>
+                <Button>Действия <Icon Type="@IconType.Outline.Down" /></Button>
+            </ChildContent>
+        </Dropdown>
     </PageHeaderExtra>
 </PageHeader>
 <Row Gutter=@((8, 8))>
@@ -69,6 +81,8 @@
     public Guid ChallengeId { get; set; }
     [Parameter]
     public Guid ExerciseId { get; set; }
+
+    private Dropdown? actionsRef;
 
     private RenderFragment ExerciseName(string size = SkeletonElementSize.Small)
     {
@@ -115,8 +129,31 @@
         }
     }
 
+    private async Task TransferExercise()
+    {
+        if (exerciseResponse is null)
+        {
+            await MessageService.Warning("Нет информации о задании");
+            return;
+        }
+        var options = new ConfirmOptions
+            {
+                Title = "Перемещение задания"
+            };
+        var confirmRef = await ModalService
+            .CreateConfirmAsync<TransferExerciseFeedback, ExerciseInfo, Guid>(options, exerciseResponse);
+        confirmRef.OnOk = newChallengeId =>
+        {
+            NavigationManager.NavigateTo(Routes.Exercises.ExerciseEdit(newChallengeId, ExerciseId));
+            StateHasChanged();
+            return Task.CompletedTask;
+        };
+    }
+
     private void GoToExercisesPage()
     {
         NavigationManager.NavigateTo(Routes.Challenges.Exercises(ChallengeId));
     }
+
+    
 }
