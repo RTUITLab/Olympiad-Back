@@ -36,7 +36,9 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<DocumentRestrictionRequest, DocumentRestriction>();
             CreateMap<UpdateDocsRestrictionsRequest, DocsRestrictions>();
 
-            CreateMap<UpdateExerciseRequest, Exercise>();
+            CreateMap<UpdateExerciseRequest, Exercise>()
+                .ForMember(e => e.ExerciseName, map => map.MapFrom(uer => uer.Title))
+                .ForMember(e => e.ExerciseTask, map => map.MapFrom(uer => uer.Task));
         }
     }
 }
