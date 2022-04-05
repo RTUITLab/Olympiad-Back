@@ -93,14 +93,14 @@
     </Template>
     ;
     }
-    private ExerciseInfo? exerciseResponse;
+    private AdminExerciseInfo? exerciseResponse;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         try
         {
-            exerciseResponse = await ExercisesApi.GetExerciseAsync(ExerciseId);
+            exerciseResponse = await ExercisesApi.GetAdminExerciseAsync(ExerciseId);
             if (exerciseResponse.ChallengeId != ChallengeId)
             {
                 GoToExercisesPage();

@@ -24,7 +24,7 @@ public interface IExercisesApi
     public Task<List<AdminExerciseCompactResponse>> GetAllExercisesAsync(Guid challengeId);
 
     [Get("/api/exercises/all/{exerciseId}")]
-    public Task<ExerciseInfo> GetExerciseAsync(Guid exerciseId);
+    public Task<AdminExerciseInfo> GetAdminExerciseAsync(Guid exerciseId);
 
     [Get("/api/exercises/{exerciseId}/attachment")]
     public Task<List<AttachmentResponse>> GetExerciseAttachmentsAsync(Guid exerciseId);
@@ -42,7 +42,7 @@ public interface IExercisesApi
     
 
     [Put("/api/exercises/{exerciseId}")]
-    Task<ExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
+    Task<AdminExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
     [Put("/api/exercises/{exerciseId}/transferToChallenge")]
     Task<ExerciseInfo> TransferToChallenge(Guid exerciseId, Guid targetChallengeId);
     [Put("/api/exercises/{exerciseId}/restrictions/code")]

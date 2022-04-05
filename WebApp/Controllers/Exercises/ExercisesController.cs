@@ -125,7 +125,8 @@ namespace WebApp.Controllers.Exercises
         [Route("{exerciseId:guid}")]
         public async Task<ExerciseInfo> Get(Guid exerciseId)
         {
-            return await GetExercise(exerciseId, AvailableExercise(UserId));
+            var adminExercise = await GetExercise(exerciseId, AvailableExercise(UserId));
+            return mapper.Map<ExerciseInfo>(adminExercise);
         }
 
         [HttpGet("all/{exerciseId:guid}")]
@@ -255,7 +256,7 @@ namespace WebApp.Controllers.Exercises
 
         [HttpPut("{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ExerciseInfo>> UpdateExerciseBaseInfo(Guid exerciseId, UpdateExerciseRequest request)
+        public async Task<ActionResult<AdminExerciseInfo>> UpdateExerciseBaseInfo(Guid exerciseId, UpdateExerciseRequest request)
         {
 
             var exercise = await context

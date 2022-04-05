@@ -84,15 +84,15 @@
         try
         {
             await ChallengesApi.InviteOneUser(selectedChallenge!.Id, userInfo.Id);
-            MessageService.Success($"Выдан доступ для {userInfo.FirstName} к соревнованию {selectedChallenge.Name}");
+            MessageService.ShowSuccess($"Выдан доступ для {userInfo.FirstName} к соревнованию {selectedChallenge.Name}");
             await ControlPanelApiService.AddClaim(userInfo.Id, new PublicAPI.Requests.Account.ClaimRequest
                 {
                     Type = "ПредПроф время начала",
                     Value = selectedTimeSlot.ToString()
                 });
-            MessageService.Success($"Записано время участия на {selectedTimeSlot}");
+            MessageService.ShowSuccess($"Записано время участия на {selectedTimeSlot}");
             var newUserPassword = (await ControlPanelApiService.GenerateNewPasswordForUser(userInfo.Id)).NewPassword;
-            MessageService.Success($"Установлен пароль {newUserPassword}");
+            MessageService.ShowSuccess($"Установлен пароль {newUserPassword}");
             var innerHtml = GetHtml(userInfo.StudentId, newUserPassword);
             await JS.InvokeVoidAsync("printTestFunc", innerHtml);
         }

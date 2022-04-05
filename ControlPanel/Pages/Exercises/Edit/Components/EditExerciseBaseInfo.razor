@@ -48,10 +48,10 @@
 @code {
 
     [Parameter]
-    public ExerciseInfo? Exercise { get; set; }
+    public AdminExerciseInfo? Exercise { get; set; }
 
     [Parameter]
-    public EventCallback<ExerciseInfo> ExerciseChanged { get; set; }
+    public EventCallback<AdminExerciseInfo> ExerciseChanged { get; set; }
 
 
 
@@ -73,6 +73,7 @@
         }
         exerciseModel.Title = Exercise.Name;
         exerciseModel.Task = Exercise.ExerciseTask;
+        exerciseModel.InternalDescription = Exercise.InternalDescription;
     }
 
     private async Task UpdateBaseInfo()
