@@ -71,7 +71,10 @@
         {
             <Panel Key="@exercise.Id.ToString()">
                 <HeaderTemplate>
-                    @exercise.Name <ScoreBadge Score="exercise.Score" />
+                    <Tooltip Title="exercise.InternalDescription">
+                        @exercise.Name
+                    </Tooltip>
+                    <ScoreBadge Score="exercise.Score" />
                 </HeaderTemplate>
                 <ChildContent>
                     <UserSolutionsList ChallengeId="ChallengeId"
@@ -95,7 +98,7 @@ else
     public Guid UserId { get; set; }
 
     private ChallengeResponseWithAnalytics? challenge;
-    private List<ExerciseCompactResponse>? exercises;
+    private List<AdminExerciseCompactResponse>? exercises;
     private UserInfoResponse? user;
 
     private Dictionary<Guid, UserSolutionsList> solutionLists = new();

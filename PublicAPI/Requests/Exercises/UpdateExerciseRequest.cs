@@ -14,5 +14,7 @@ namespace PublicAPI.Requests.Exercises
         [Required]
         [MaxLength(ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH)]
         public string Task { get; set; }
+        [MaxLength(ExerciseLimitations.MAX_EXERCISE_INTERNAL_DESCRIPTION_LENGTH)]
+        public string InternalDescription { get; set; }
     }
 }

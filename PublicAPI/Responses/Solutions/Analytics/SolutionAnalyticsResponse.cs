@@ -8,7 +8,7 @@ namespace PublicAPI.Responses.Solutions.Analytics
 {
     public class SolutionAnalyticsResponse : SolutionAnalyticCompactResponse
     {
-        public ExerciseInfo Exercise { get; set; }
+        public AdminExerciseInfo Exercise { get; set; }
         public UserInfoResponse User { get; set; }
     }
 }

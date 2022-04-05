@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Models;
 using Models.Exercises;
 using Models.Solutions;
@@ -59,10 +59,23 @@ namespace WebApp.Formatting.ResponseMappers
                 .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
                 .ForMember(r => r.Restrictions, map => map.Ignore());
 
+            CreateMap<Exercise, AdminExerciseInfo>()
+                .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)))
+                .ForMember(r => r.Restrictions, map => map.Ignore());
+
+
             CreateMap<Exercise, ExerciseCompactResponse>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
                 .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
                 .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
+            CreateMap<Exercise, AdminExerciseCompactResponse>()
+                .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))
+                .ForMember(r => r.Name, map => map.MapFrom(e => e.ExerciseName))
+                .ForMember(r => r.Score, map => map.MapFrom(e => e.ExerciseDataGroups.Sum(g => g.Score)));
+
+           
 
             CreateMap<Exercise, ExerciseWithTestCasesCountResponse>()
                 .ForMember(r => r.Id, map => map.MapFrom(e => e.ExerciseID))

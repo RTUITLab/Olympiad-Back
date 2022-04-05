@@ -86,15 +86,22 @@
                     </Column>
                     @foreach (var exercise in exercises)
                     {
-                        <Column TData="string" Width="130" Title="@($"{exercise.Name} ({exercise.Score})")">
-                            @if (context.Scores.TryGetValue(exercise.Id.ToString(), out var score) && score.HasValue)
-                            {
-                                @score
-                            }
-                            else
-                            {
-                                <Text>—</Text>
-                            }
+                        <Column TData="string" Width="130">
+                            <TitleTemplate>
+                                <Tooltip Title="exercise.InternalDescription">
+                                    @exercise.Name @exercise.Score
+                                </Tooltip>
+                            </TitleTemplate>
+                            <ChildContent>
+                                @if (context.Scores.TryGetValue(exercise.Id.ToString(), out var score) && score.HasValue)
+                                {
+                                    @score
+                                }
+                                else
+                                {
+                                    <Text>—</Text>
+                                }
+                            </ChildContent>
                         </Column>
                     }
                     <Column Title="Идентификатор" TData="string" Width="120" Fixed="right">@context.User.StudentId</Column>
@@ -161,7 +168,7 @@
 
     private ChallengeResponseWithAnalytics? challengeResponse;
     private ListResponseWithMatch<UserChallengeResultsResponse>? userResults;
-    private List<ExerciseCompactResponse>? exercises;
+    private List<AdminExerciseCompactResponse>? exercises;
     private Guid loadedChallengeId;
 
     protected override async Task OnParametersSetAsync()
@@ -170,7 +177,7 @@
         try
         {
             challengeResponse = await ChallengesApi.GetOneChallengeAnalycisInfo(ChallengeId);
-            exercises = await ExercisesApi.GetExercisesAsync(ChallengeId);
+            exercises = await ExercisesApi.GetAllExercisesAsync(ChallengeId);
         }
         catch
         {

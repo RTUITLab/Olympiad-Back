@@ -97,13 +97,13 @@ namespace WebApp.Controllers.Exercises
 
         [HttpGet("all")]
         [Authorize(Roles = "Admin,ResultsViewer")]
-        public async Task<List<ExerciseCompactResponse>> GetAllForChallenge(Guid challengeId)
+        public async Task<List<AdminExerciseCompactResponse>> GetAllForChallenge(Guid challengeId)
         {
             var exercises = await context
                 .Exercises
                 .Where(e => e.ChallengeId == challengeId)
                 .OrderBy(e => e.ExerciseName)
-                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider)
+                .ProjectTo<AdminExerciseCompactResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
             return exercises;
         }
@@ -130,7 +130,7 @@ namespace WebApp.Controllers.Exercises
 
         [HttpGet("all/{exerciseId:guid}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ExerciseInfo> GetForAdmin(Guid exerciseId)
+        public async Task<AdminExerciseInfo> GetForAdmin(Guid exerciseId)
         {
             return await GetExercise(exerciseId, null);
         }
@@ -217,7 +217,7 @@ namespace WebApp.Controllers.Exercises
         }
 
 
-        private async Task<ExerciseInfo> GetExercise(Guid exerciseId, Expression<Func<Exercise, bool>> exerciseFilter)
+        private async Task<AdminExerciseInfo> GetExercise(Guid exerciseId, Expression<Func<Exercise, bool>> exerciseFilter)
         {
             var targetExerciseQuery = context
                 .Exercises
@@ -227,7 +227,7 @@ namespace WebApp.Controllers.Exercises
                 targetExerciseQuery = targetExerciseQuery.Where(exerciseFilter);
             }
             var exerciseInfo = await targetExerciseQuery
-                .ProjectTo<ExerciseInfo>(mapper.ConfigurationProvider)
+                .ProjectTo<AdminExerciseInfo>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync()
                 ?? throw StatusCodeException.NotFount;
             // TODO: incorrect jsonb mapping, hand made
@@ -263,8 +263,8 @@ namespace WebApp.Controllers.Exercises
                                .Where(ex => ex.ExerciseID == exerciseId)
                                .SingleOrDefaultAsync()
                            ?? throw StatusCodeException.NotFount;
-            exercise.ExerciseName = request.Title;
-            exercise.ExerciseTask = request.Task;
+            
+            mapper.Map(request, exercise);
 
             exercise.Restrictions ??= new ExerciseRestrictions();
             await context.SaveChangesAsync();

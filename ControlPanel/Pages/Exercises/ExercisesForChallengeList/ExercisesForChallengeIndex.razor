@@ -48,6 +48,11 @@
             </Tooltip>
             @exercise.Name
         </NavLink>
+        @if (!string.IsNullOrEmpty(exercise.InternalDescription))
+        {
+            <br/>
+            <AntDesign.Text Type="@TextElementType.Secondary">@exercise.InternalDescription</AntDesign.Text>
+        }
     </Column>
     <Column @bind-Field="exercise.Score" Title="Баллы" Sortable></Column>
     <Column @bind-Field="exercise.TestCasesCount" Title="Количество тестов">

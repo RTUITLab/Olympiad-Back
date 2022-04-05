@@ -35,6 +35,8 @@ namespace WebApp.ViewModels.Mappings
             CreateMap<UpdateCodeRestrictionsRequest, CodeRestrictions>();
             CreateMap<DocumentRestrictionRequest, DocumentRestriction>();
             CreateMap<UpdateDocsRestrictionsRequest, DocsRestrictions>();
+
+            CreateMap<UpdateExerciseRequest, Exercise>();
         }
     }
 }

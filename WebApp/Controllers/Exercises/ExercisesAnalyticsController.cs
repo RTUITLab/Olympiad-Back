@@ -31,7 +31,7 @@ namespace WebApp.Controllers.Exercises
             this.mapper = mapper;
         }
         [HttpGet("withAttempt")]
-        public async Task<List<ExerciseCompactResponse>> GetExercisesWithAtteptsForUserAsync(
+        public async Task<List<AdminExerciseCompactResponse>> GetExercisesWithAtteptsForUserAsync(
             Guid challengeId,
             Guid userId)
         {
@@ -39,7 +39,7 @@ namespace WebApp.Controllers.Exercises
                 .Where(e => e.ChallengeId == challengeId)
                 .Where(e => e.Solutions.Any(s => s.UserId == userId))
                 .OrderBy(e => e.ExerciseName)
-                .ProjectTo<ExerciseCompactResponse>(mapper.ConfigurationProvider)
+                .ProjectTo<AdminExerciseCompactResponse>(mapper.ConfigurationProvider)
                 .ToListAsync();
             return exercises;
         }

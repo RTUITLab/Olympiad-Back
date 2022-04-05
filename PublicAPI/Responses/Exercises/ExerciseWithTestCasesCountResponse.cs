@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PublicAPI.Responses.Exercises
 {
-    public class ExerciseWithTestCasesCountResponse : ExerciseCompactResponse
+    public class ExerciseWithTestCasesCountResponse : AdminExerciseCompactResponse
     {
         public int TestCasesCount { get; set; }
     }

@@ -11,5 +11,6 @@ namespace Olympiad.Shared
         /// Big body length for old base64 content, will be reduced
         /// </summary>
         public const int MAX_EXERCISE_TASK_LENGTH = 20_000;
+        public const int MAX_EXERCISE_INTERNAL_DESCRIPTION_LENGTH = 20_000;
     }
 }

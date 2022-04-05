@@ -56,12 +56,14 @@
                 </DescriptionsItem>
             }
             <DescriptionsItem Title="Задание">
-                <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="ExerciseInfo">
+                <SkeletonRowComponent Data="exercise" Context="loadedExercise" TData="AdminExerciseInfo">
                     @if (userContext.User.IsAdmin())
                     {
-                        <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/exercises/{loadedExercise.Id}")">
-                            <Button Icon="@IconType.Outline.Edit">@loadedExercise.Name</Button>
-                        </NavLink>
+                        <Tooltip Title="loadedExercise.InternalDescription">
+                            <NavLink href="@($"challenges/{loadedExercise.ChallengeId}/exercises/{loadedExercise.Id}")">
+                                <Button Icon="@IconType.Outline.Edit">@loadedExercise.Name</Button>
+                            </NavLink>
+                        </Tooltip>
                     }
                     else
                     {
@@ -101,7 +103,7 @@
 
     [Parameter]
     public SolutionAnalyticsResponse? solution { get; set; }
-    private ExerciseInfo? exercise => solution?.Exercise;
+    private AdminExerciseInfo? exercise => solution?.Exercise;
     private ChallengeResponse? challenge => exercise?.Challenge;
     private UserInfoResponse? user => solution?.User;
 

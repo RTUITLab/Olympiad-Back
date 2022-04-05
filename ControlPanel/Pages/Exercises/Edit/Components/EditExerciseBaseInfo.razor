@@ -22,6 +22,9 @@
         <FormItem Label="Название" Required>
             <Input @bind-Value="@context.Title" />
         </FormItem>
+        <FormItem Label="Описание" Required Help="Внутреннее описание, не видно пользователям">
+            <Input @bind-Value="@context.InternalDescription" />
+        </FormItem>
         <FormItem Label="Задание" Required>
             <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
                 <MarkdownTextArea @bind-Value="exerciseModel.Task"

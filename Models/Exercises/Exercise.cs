@@ -18,6 +18,11 @@ namespace Models.Exercises
         [Required]
         [MaxLength(ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH)]
         public string ExerciseTask { get; set; }
+        /// <summary>
+        /// Description for system administration, now visible to users
+        /// </summary>
+        [MaxLength(ExerciseLimitations.MAX_EXERCISE_INTERNAL_DESCRIPTION_LENGTH)]
+        public string InternalDescription { get; set; }
         [Required]
         public ExerciseType Type { get; set; }
 

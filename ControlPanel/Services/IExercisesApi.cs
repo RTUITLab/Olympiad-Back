@@ -21,7 +21,7 @@ public interface IExercisesApi
     public Task DeleteExerciseAsync(Guid exerciseId);
 
     [Get("/api/exercises/all")]
-    public Task<List<ExerciseCompactResponse>> GetExercisesAsync(Guid challengeId);
+    public Task<List<AdminExerciseCompactResponse>> GetAllExercisesAsync(Guid challengeId);
 
     [Get("/api/exercises/all/{exerciseId}")]
     public Task<ExerciseInfo> GetExerciseAsync(Guid exerciseId);
@@ -38,7 +38,7 @@ public interface IExercisesApi
     public Task<List<ExerciseWithTestCasesCountResponse>> GetExercisesWithTestsAsync(Guid challengeId);
 
     [Get("/api/exercises/analytics/withAttempt")]
-    public Task<List<ExerciseCompactResponse>> GetExercisesWithAttemptsForUserAsync(Guid challengeId, Guid userId);
+    public Task<List<AdminExerciseCompactResponse>> GetExercisesWithAttemptsForUserAsync(Guid challengeId, Guid userId);
     
 
     [Put("/api/exercises/{exerciseId}")]
