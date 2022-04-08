@@ -90,6 +90,11 @@
                     Type = "ПредПроф время начала",
                     Value = selectedTimeSlot.ToString()
                 });
+                await ControlPanelApiService.AddClaim(userInfo.Id, new PublicAPI.Requests.Account.ClaimRequest
+                {
+                    Type = "ПредПроф время регистрации",
+                    Value = DateTimeOffset.Now.ToString("O")
+                });
             MessageService.ShowSuccess($"Записано время участия на {selectedTimeSlot}");
             var newUserPassword = (await ControlPanelApiService.GenerateNewPasswordForUser(userInfo.Id)).NewPassword;
             MessageService.ShowSuccess($"Установлен пароль {newUserPassword}");
