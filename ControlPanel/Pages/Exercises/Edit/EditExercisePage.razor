@@ -39,6 +39,8 @@
             <Overlay>
                 <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
                     <MenuItem Title="Переместить задание" Icon="@IconType.Outline.Swap" OnClick="TransferExercise" />
+                    <MenuItem Title="Создать копию" Icon=@(isCloneCreating ? IconType.Outline.Loading : IconType.Outline.Copy) Disabled="isCloneCreating"
+                              OnClick="CreateClone" />
                     <MenuDivider />
                     <Popconfirm Title="Вы действительно хотите удалить задание?" OkText="Удалить задание" CancelText="Отмена"
                                 OnConfirm="DeleteExercise">
@@ -60,11 +62,11 @@
         @if (exerciseResponse?.Type == ExerciseType.Code)
         {
             <EditExerciseCodeRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse?.Restrictions?.Code" />
-            <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name" Style="margin-top: 8px;"/>
+            <EditExerciseTestGroups ExerciseId="ExerciseId" ExerciseTitle="@exerciseResponse?.Name" Style="margin-top: 8px;" />
         }
         else if (exerciseResponse?.Type == ExerciseType.Docs)
         {
-            <EditExerciseDocsRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse.Restrictions.Docs"/>
+            <EditExerciseDocsRestrictions ExerciseId="ExerciseId" Restrictions="exerciseResponse.Restrictions.Docs" />
         }
         else if (exerciseResponse is null)
         {
@@ -83,6 +85,8 @@
     public Guid ExerciseId { get; set; }
 
     private Dropdown? actionsRef;
+
+    private bool isCloneCreating;
 
     private RenderFragment ExerciseName(string size = SkeletonElementSize.Small)
     {
@@ -150,10 +154,37 @@
         };
     }
 
+    private async Task CreateClone()
+    {
+        if (exerciseResponse is null)
+        {
+            await MessageService.Warning("Нет информации о задании");
+            return;
+        }
+        isCloneCreating = true;
+        StateHasChanged();
+        try
+        {
+            var clone = await ExercisesApi.CreateClone(ExerciseId);
+            NavigationManager.NavigateTo(Routes.Exercises.ExerciseEdit(ChallengeId, clone.Id));
+
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't create exception clone");
+            MessageService.ShowWarning("Не удалось создать копию задания");
+        }
+        finally
+        {
+            isCloneCreating = false;
+        }
+
+    }
+
     private void GoToExercisesPage()
     {
         NavigationManager.NavigateTo(Routes.Challenges.Exercises(ChallengeId));
     }
 
-    
+
 }

@@ -45,6 +45,8 @@ public interface IExercisesApi
     Task<AdminExerciseInfo> UpdateExercise(Guid exerciseId, UpdateExerciseRequest exerciseModel);
     [Put("/api/exercises/{exerciseId}/transferToChallenge")]
     Task<ExerciseInfo> TransferToChallenge(Guid exerciseId, Guid targetChallengeId);
+    [Post("/api/exercises/{exerciseId}/clone")]
+    Task<ExerciseInfo> CreateClone(Guid exerciseId);
     [Put("/api/exercises/{exerciseId}/restrictions/code")]
     Task<CodeRestrictionsResponse> UpdateExerciseCodeRestrictions(Guid exerciseId, UpdateCodeRestrictionsRequest updateRequest);
     [Put("/api/exercises/{exerciseId}/restrictions/docs")]

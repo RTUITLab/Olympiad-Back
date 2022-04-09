@@ -264,7 +264,7 @@ namespace WebApp.Controllers.Exercises
                                .Where(ex => ex.ExerciseID == exerciseId)
                                .SingleOrDefaultAsync()
                            ?? throw StatusCodeException.NotFount;
-            
+
             mapper.Map(request, exercise);
 
             exercise.Restrictions ??= new ExerciseRestrictions();
@@ -292,6 +292,25 @@ namespace WebApp.Controllers.Exercises
                 return NotFound("Challenge not found");
             }
             return await GetForAdmin(exerciseId);
+        }
+
+        [HttpPost("{exerciseId:guid}/clone")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ExerciseInfo>> CreateClone(Guid exerciseId)
+        {
+            var targetExercise = await context.Exercises
+                .AsNoTracking()
+                .SingleOrDefaultAsync(e => e.ExerciseID == exerciseId);
+            if (targetExercise is null)
+            {
+                return NotFound("exercise not found");
+            }
+            targetExercise.ExerciseID = default;
+            targetExercise.ExerciseName += " clone";
+            targetExercise.ExerciseName = targetExercise.ExerciseName[..Math.Min(ExerciseLimitations.MAX_EXERCISE_TITLE_LENGTH, targetExercise.ExerciseName.Length)];
+            context.Exercises.Add(targetExercise);
+            await context.SaveChangesAsync();
+            return await GetForAdmin(targetExercise.ExerciseID);
         }
 
 
