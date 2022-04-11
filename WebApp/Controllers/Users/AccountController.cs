@@ -400,7 +400,7 @@ namespace WebApp.Controllers.Users
                 .ToListAsync();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.ADMIN + "," + RoleNames.RESULTS_VIEWER)]
         [HttpGet("claims")]
         public async Task<ActionResult<Dictionary<string, List<string>>>> GetClaimTypes([FromServices] ApplicationDbContext context)
         {

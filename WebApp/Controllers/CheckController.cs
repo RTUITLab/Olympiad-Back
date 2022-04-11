@@ -243,7 +243,7 @@ namespace WebApp.Controllers
         }
 
 
-        [Authorize(Roles = RoleNames.EXECUTOR + "," + RoleNames.ADMIN)]
+        [Authorize(Roles = RoleNames.EXECUTOR + "," + RoleNames.ADMIN + "," + RoleNames.RESULTS_VIEWER)]
         [HttpGet("statistic")]
         public Task<List<SolutionsStatisticResponse>> GetStatistic()
         {
