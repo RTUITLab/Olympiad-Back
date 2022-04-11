@@ -8,7 +8,7 @@ using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Requests.Exercises;
 
-namespace WebApp.ViewModels.Mappings
+namespace WebApp.Formatting.RequestMappers
 {
     public class RequestsMappingProfile : Profile
     {

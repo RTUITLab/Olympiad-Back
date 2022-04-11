@@ -16,6 +16,9 @@
 @inject IChallengesApi ChallengesApi
 @inject IExercisesApi ExercisesApi
 @inject ChallengeTotalReportCreator ChallengeTotalReportCreator
+@inject ModalService ModalService
+
+
 <PageTitle>@ChallengeName</PageTitle>
 <PageHeader Title="@ChallengeName">
     <PageHeaderBreadcrumb>
@@ -38,6 +41,7 @@
                 <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
                     <MenuItem Title="Персональные отчёты" Icon="@IconType.Outline.FilePdf" OnClick="CreatePersonalReports" />
                     <MenuItem Title="Общий отчет" Icon="@IconType.Outline.FileExcel" OnClick="CreateTotalReport" />
+                    <MenuItem Title="Все отправленные файлы" Icon="@IconType.Outline.FileZip" OnClick="DownloadAllSentFiles" />
                 </Menu>
             </Overlay>
             <ChildContent>
@@ -272,6 +276,21 @@
         {
             await MessageService.Error("Произошла ошибка при создании персональных отчётов");
         }
+    }
+    private async Task DownloadAllSentFiles()
+    {
+        if (challengeResponse is null)
+        {
+            MessageService.ShowWarning("Не загружены данные соревнования");
+            return;
+        }
+        var options = new ModalOptions
+            {
+                Title = "Скачивание отправленных материалов",
+                Closable = false,
+                Footer = null
+            };
+        await ModalService.CreateModalAsync<DownloadAllSentFilesFeedback, DownloadAllSentFilesParameters>(options, new DownloadAllSentFilesParameters(ChallengeId, challengeResponse.Name, LoadTargetStudentIds));
     }
 
     private Task<List<string>> LoadTargetStudentIds()

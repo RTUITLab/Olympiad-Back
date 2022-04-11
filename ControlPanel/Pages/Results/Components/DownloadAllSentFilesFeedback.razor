@@ -1,0 +1,175 @@
+﻿@using PublicAPI.Responses.Exercises
+@inherits FeedbackComponent<DownloadAllSentFilesParameters, object>
+
+@inject MessageService MessageService
+@inject IExercisesApi ExercisesApi
+@inject ISolutionsApi SolutionsApi
+@inject IControlPanelApiService ControlPanelApiService
+@inject AttachmentLinkGenerator AttachmentLinkGenerator
+@inject ILogger<DownloadAllSentFilesFeedback> Logger
+
+<Progress Percent="progress" />
+<Button Icon="@IconType.Outline.FileText" OnClick="DownloadLogs">Скачать логи</Button>
+<AntList DataSource="logs" Context="logRow" Style="max-height: 60vh; overflow: auto;">
+    <ListItem>
+        <Alert Type="@logRow.alertType" Style="width: 100%">
+            <Text Type="@logRow.textType">@logRow.message</Text>
+        </Alert>
+    </ListItem>
+</AntList>
+
+
+@code {
+    private LinkedList<(string message, string? textType, string alertType)> logs = new LinkedList<(string message, string? textType, string alertType)>();
+    private double progress;
+    private bool inProgress;
+    private System.Text.StringBuilder logsStringBuilder = new System.Text.StringBuilder();
+
+    private void AddLog(string message, string? textType, string alertType)
+    {
+        logsStringBuilder.AppendFormat("{0:yy-MM-dd HH:mm:ss} {1,12} {2}\n", DateTime.Now, alertType, message);
+        while(logs.Count > 20) {
+            logs.RemoveLast();
+        }
+        logs.AddFirst((message, textType, alertType));
+        StateHasChanged();
+    }
+    private void AddPlainLog(string message)
+        => AddLog(message, null, AlertType.Info);
+    private void AddWarningLog(string message)
+        => AddLog(message, null, AlertType.Warning);
+
+
+    private async Task DownloadLogs()
+    {
+        await Js.DownloadFile("logs.txt", logsStringBuilder.ToString());
+    }
+
+    public override Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (inProgress)
+        {
+            MessageService.ShowWarning("Происходит загрузка данных");
+            args.Cancel = true;
+        }
+        return Task.CompletedTask;
+    }
+
+    public override Task OnFeedbackCancelAsync(ModalClosingEventArgs args)
+    {
+        if (inProgress)
+        {
+            MessageService.ShowWarning("Происходит загрузка данных");
+            args.Cancel = true;
+        }
+        return Task.CompletedTask;
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        logs.Clear();
+        logsStringBuilder.Clear();
+        inProgress = true;
+        try
+        {
+            AddPlainLog("Загрузка списка пользователей");
+            var targetUserIds = await Options.StudentIdsLoader();
+            AddPlainLog($"Целевое количество пользователей: {targetUserIds.Count}");
+
+            var zipArchive = await JsZipWrapper.CreateInstance(Js);
+            await FillArchive(targetUserIds, zipArchive);
+
+            await zipArchive.Download($"{Options.ChallengeName}.zip");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't load student ids");
+            MessageService.ShowWarning("Не удалось загрузить список пользователей для скачивания материалов");
+        }
+        finally
+        {
+            inProgress = false;
+        }
+    }
+
+    private async Task FillArchive(List<string> studentIds, JsZipWrapper zip)
+    {
+        foreach (var (studentId, i) in studentIds.Select((sid, i) => (sid, i + 1)))
+        {
+            try
+            {
+                AddPlainLog($"Обработка пользователя {studentId}");
+                await DownloadAllForUser(studentId, zip);
+                progress = i * 100 / studentIds.Count;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                AddWarningLog($"Ошибка при обработке пользователя {studentId}");
+                Logger.LogWarning(ex, "Can't done user files");
+            }
+        }
+    }
+
+    private async Task DownloadAllForUser(string studentId, JsZipWrapper zip)
+    {
+        // TODO: studeitid to user id resolve endpoint
+        var user = (await ControlPanelApiService.SearchUsers(studentId, 100, 0)).Data.Single(u => u.StudentId == studentId);
+        var exercises = await ExercisesApi.GetExercisesWithAttemptsForUserAsync(Options.ChallengeId, user.Id);
+        foreach (var exercise in exercises)
+        {
+            var exerciseTitle = exercise.Name;
+            if (!string.IsNullOrEmpty(exercise.InternalDescription))
+            {
+                exerciseTitle += $" ({exercise.InternalDescription})";
+            }
+            if (!exercise.Type.IsIn(Olympiad.Shared.Models.ExerciseType.Docs, Olympiad.Shared.Models.ExerciseType.Code))
+            {
+                AddWarningLog("Неподдерживаемый тип задания для скачивания материалов");
+                continue;
+            }
+            var solutions = await SolutionsApi.GetSolutionsForExerciseAsync(exercise.Id, user.Id);
+            foreach (var solution in solutions)
+            {
+                var solutionDate = solution.SendingTime.ToString("yy-MM-dd HH:mm:ss");
+
+                if (exercise.Type == Olympiad.Shared.Models.ExerciseType.Docs)
+                {
+                    await FillDocSolutions(solution.Id, solutionDate, exerciseTitle, studentId, zip);
+                }
+                else if (exercise.Type == Olympiad.Shared.Models.ExerciseType.Code)
+                {
+                    var raw = await SolutionsApi.GetSolutionSource(solution.Id);
+                    await zip.WriteText($"{studentId}/{exerciseTitle}/{solutionDate}/Program{solution.Language.FileExtension}", raw);
+                }
+                else
+                {
+                    //
+                    continue;
+                }
+
+            }
+
+        }
+    }
+
+    private async Task FillDocSolutions(Guid solutionId, string solutionTitle, string exerciseTitle, string studentId, JsZipWrapper zip)
+    {
+        var docs = await SolutionsApi.GetSolutionDocuments(solutionId);
+        foreach (var doc in docs)
+        {
+            try
+            {
+                await zip.WriteBinaryFromLink($"{studentId}/{exerciseTitle}/{solutionTitle}/{doc.Name}", AttachmentLinkGenerator.GetSolutionSentDocumentLink(solutionId, doc.Name));
+            }
+            catch (JSException jsEx) when (jsEx.Message == "status_is_not_200")
+            {
+                AddWarningLog($"Не удалось скачать файл {doc.Name} в решении задания {exerciseTitle} от {solutionTitle}");
+            }
+        }
+
+    }
+}

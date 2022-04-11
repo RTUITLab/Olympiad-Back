@@ -27,10 +27,7 @@
         window.openLinkInNewTab = function (url) {
             open(url, '_blank');
         }
-        window.saveAsFile = (filename, fileContentArray) => {
-            blob = new Blob([fileContentArray], {
-                type: "application/octet-stream"
-            });
+        window.saveAsFileFromBlob = (filename, blob) => {
             url = window.URL.createObjectURL(blob);
             var link = document.createElement('a');
             link.style = 'display: none';
@@ -40,6 +37,12 @@
             link.click();
             link.remove();
             return url;
+        }
+        window.saveAsFile = (filename, fileContentArray) => {
+            const blob = new Blob([fileContentArray], {
+                type: "application/octet-stream"
+            });
+            return saveAsFileFromBlob(filename, blob);
         }
         window.saveUrlAsFile = function (filename, url) {
             var link = document.createElement('a');

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using WebApp.Helpers;
-using WebApp.ViewModels;
 using WebApp.Services.Interfaces;
 using PublicAPI.Requests;
 using WebApp.Services.ReCaptcha;

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
-using WebApp.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +31,7 @@ using Microsoft.Extensions.Logging;
 using Olympiad.Services.SolutionCheckQueue;
 using PublicAPI.Responses.Exercises;
 using Npgsql;
+using WebApp.Formatting.RequestMappers;
 
 namespace WebApp.Controllers.Exercises
 {

@@ -17,7 +17,7 @@ pdfMake.fonts = {
 
 // Supported styles by html-to-pdfmake library https://github.com/Aymkdn/html-to-pdfmake#css-properties-supported
 const supportedStyles = [
-    //"background-color", // compyted styles returns black
+    //"background-color", // computed styles returns black
     "border",
     "color",
     //"font-family", // Disable built in fonts

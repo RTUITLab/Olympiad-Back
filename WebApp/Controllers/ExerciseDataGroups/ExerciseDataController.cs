@@ -16,7 +16,6 @@ using Models.Exercises;
 using PublicAPI.Requests;
 using PublicAPI.Responses.ExercisesTestData;
 using WebApp.Models;
-using WebApp.ViewModels;
 
 namespace WebApp.Controllers
 {
