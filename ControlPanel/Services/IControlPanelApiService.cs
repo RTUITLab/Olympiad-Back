@@ -21,6 +21,9 @@ public interface IControlPanelApiService
     [Get("/api/check/statistic")]
     public Task<List<SolutionsStatisticResponse>> GetSolutionsStatisticsAsync();
 
+    [Get("/api/account/getIdByStudentId")]
+    public Task<Guid> GetIdByStudentId(string studentId);
+
     [Get("/api/account")]
     [Obsolete("Use SearchUsers")]
     public Task<ListResponseWithMatch<UserInfoResponse>> SearchUsersPrivate(string? match, int limit, int offset, string? targetClaims);

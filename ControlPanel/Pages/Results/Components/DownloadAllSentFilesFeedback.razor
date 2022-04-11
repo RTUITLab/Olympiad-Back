@@ -117,8 +117,8 @@
     private async Task DownloadAllForUser(string studentId, JsZipWrapper zip)
     {
         // TODO: studeitid to user id resolve endpoint
-        var user = (await ControlPanelApiService.SearchUsers(studentId, 100, 0)).Data.Single(u => u.StudentId == studentId);
-        var exercises = await ExercisesApi.GetExercisesWithAttemptsForUserAsync(Options.ChallengeId, user.Id);
+        var userId = await ControlPanelApiService.GetIdByStudentId(studentId);
+        var exercises = await ExercisesApi.GetExercisesWithAttemptsForUserAsync(Options.ChallengeId, userId);
         foreach (var exercise in exercises)
         {
             var exerciseTitle = exercise.Name;
@@ -131,7 +131,7 @@
                 AddWarningLog("Неподдерживаемый тип задания для скачивания материалов");
                 continue;
             }
-            var solutions = await SolutionsApi.GetSolutionsForExerciseAsync(exercise.Id, user.Id);
+            var solutions = await SolutionsApi.GetSolutionsForExerciseAsync(exercise.Id, userId);
             foreach (var solution in solutions)
             {
                 var solutionDate = solution.SendingTime.ToString("yy-MM-dd HH:mm:ss");

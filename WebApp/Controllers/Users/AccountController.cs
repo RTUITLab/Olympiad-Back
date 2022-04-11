@@ -412,5 +412,19 @@ namespace WebApp.Controllers.Users
                 .GroupBy(c => c.Type)
                 .ToDictionary(g => g.Key, g => g.Select(c => c.Value).ToList());
         }
+
+        [Authorize(Roles = RoleNames.ADMIN + "," + RoleNames.RESULTS_VIEWER)]
+        [HttpGet("getIdByStudentId")]
+        public async Task<ActionResult<Guid>> GetUserIdByStudentId(string studentId)
+        {
+            var targetUser = await UserManager.Users
+                .Where(u => u.StudentID == studentId)
+                .SingleOrDefaultAsync();
+            if (targetUser is null)
+            {
+                return NotFound("Not founs user with specific studentId");
+            }
+            return targetUser.Id;
+        }
     }
 }
