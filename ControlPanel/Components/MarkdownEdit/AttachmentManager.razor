@@ -165,18 +165,14 @@
                 });
             return;
         }
-        if (string.IsNullOrEmpty(files.File.ContentType))
-        {
-            await NotificationService.Open(new NotificationConfig
-                {
-                    Message = "Неподдерживаемый файл",
-                    Description = $"Данный формат ({System.IO.Path.GetExtension(files.File.Name)} {files.File.ContentType}) файлов на данный момент не поддерживается",
-                    NotificationType = NotificationType.Warning
-                });
-            return;
-        }
         if (AttachmentsProvider is null)
         {
+               await NotificationService.Open(new NotificationConfig
+                {
+                    Message = "Нет возможности работать с файлами",
+                    Description = $"Внутренняя ошибка работы системы, на данный момент невозможно работать с приложенными файлами",
+                    NotificationType = NotificationType.Error
+                });
             return;
         }
         loading = true;
