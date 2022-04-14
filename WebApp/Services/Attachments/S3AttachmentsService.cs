@@ -68,7 +68,7 @@ namespace WebApp.Services.Attachments
             // Set public access to object
             getUrlRequest.Headers["x-amz-acl"] = "public-read";
             getUrlRequest.Headers["Content-Length"] = ((long)uploadSize.Bytes).ToString();
-            getUrlRequest.ContentType = contentType;
+            getUrlRequest.ContentType = contentType ?? "binary/octet-stream";
 
             return s3Client.GetPreSignedURL(getUrlRequest);
         }
