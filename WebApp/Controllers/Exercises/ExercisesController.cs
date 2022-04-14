@@ -174,7 +174,7 @@ namespace WebApp.Controllers.Exercises
         public async Task<ActionResult<UploadFileUrlResponse>> UploadAttachment(
             Guid exerciseId,
             [Required] string fileName,
-            [Required] string mimeType,
+            string mimeType,
             [Required] long contentLength,
             [FromServices] IAttachmentsService attachmentsService)
         {

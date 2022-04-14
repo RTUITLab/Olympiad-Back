@@ -167,7 +167,7 @@
         }
         if (AttachmentsProvider is null)
         {
-               await NotificationService.Open(new NotificationConfig
+            await NotificationService.Open(new NotificationConfig
                 {
                     Message = "Нет возможности работать с файлами",
                     Description = $"Внутренняя ошибка работы системы, на данный момент невозможно работать с приложенными файлами",
@@ -184,6 +184,11 @@
             message.Content = new StreamContent(files.File.OpenReadStream(files.File.Size));
             message.Content.Headers.Add("Content-Type", files.File.ContentType);
             await HttpClient.SendAsync(message);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't upload attachment");
+            MessageService.ShowWarning("Не удалось загрузить файл");
         }
         finally
         {
