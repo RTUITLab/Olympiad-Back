@@ -126,7 +126,7 @@
         try
         {
             await SolutionsApi.RecheckSolution(SolutionId);
-            NotificationService.ShowError("Перепроверка задания началась, перезагрузите страницу");
+            NotificationService.ShowSuccess("Перепроверка задания началась, перезагрузите страницу");
         }
         catch (Exception ex)
         {
