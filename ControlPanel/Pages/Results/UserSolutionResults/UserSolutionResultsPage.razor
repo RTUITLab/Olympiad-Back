@@ -9,10 +9,11 @@
 @using PublicAPI.Responses.Users
 @using Olympiad.ControlPanel.Pages.Results.UserSolutionResults.Components
 
-@inject ILogger<UserSolutionResultsPage> logger
+@inject ILogger<UserSolutionResultsPage> Logger
 @inject NavigationManager NavigationManager
 @inject ISolutionsApi SolutionsApi
 @inject MessageService MessageService
+@inject NotificationService NotificationService
 
 <PageTitle>@(exercise?.Name ?? "Загрузка...") - @(user?.FirstName ?? "Загрузка...")</PageTitle>
 <AuthorizeView Context="userContext">
@@ -34,6 +35,28 @@
                     </BreadcrumbItem>
                 </Breadcrumb>
             </PageHeaderBreadcrumb>
+            <PageHeaderExtra>
+                <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger" @ref="actionsRef">
+                    <Overlay>
+                        <Menu Class="buttons-menu big-icon" Selectable="false" Mode="MenuMode.Inline" OnMenuItemClicked=@(() => actionsRef!.Close())>
+                            <Popconfirm Title="Вы действительно хотите перепроверить этого задания? Текущие проверки будут удалены, перепроверка может занять время"
+                                        OkText="Перепроверить"
+                                        CancelText="Отмена"
+                                        OnConfirm="RecheckSolution"
+                                        Style="width: 100%">
+                                <MenuItem Title="Перепроверить"
+                                          Key="recheck"
+                                          Style="@($"color: {BaseColors.Warning}; width: 100%;")"
+                                          Icon="@IconType.Outline.Sync"
+                                          Disabled="loading" />
+                            </Popconfirm>
+                        </Menu>
+                    </Overlay>
+                    <ChildContent>
+                        <Button Loading="loading">Действия <Icon Type="@IconType.Outline.Down" /></Button>
+                    </ChildContent>
+                </Dropdown>
+            </PageHeaderExtra>
             <PageHeaderContent>
                 <SolutionPageDescriptions solution="solution" />
             </PageHeaderContent>
@@ -42,9 +65,10 @@
         {
             <SolutionResultsTabs SolutionId="SolutionId"
                              BuildLogsAccent="@(solution?.Status <= SolutionStatus.CompileError)" />
-        } else if (exercise?.Type == ExerciseType.Docs)
+        }
+        else if (exercise?.Type == ExerciseType.Docs)
         {
-            <DocsSolutionResultsTable SolutionId="SolutionId"/>
+            <DocsSolutionResultsTable SolutionId="SolutionId" />
         }
     </Authorized>
 </AuthorizeView>
@@ -59,6 +83,9 @@
     [Parameter]
     public Guid SolutionId { get; set; }
 
+    private Dropdown? actionsRef;
+    private bool loading;
+
     private SolutionAnalyticsResponse? solution;
     private ExerciseInfo? exercise => solution?.Exercise;
     private ChallengeResponse? challenge => exercise?.Challenge;
@@ -67,10 +94,9 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        loading = true;
         try
         {
-            await Task.Delay(1000);
             solution = await SolutionsApi.GetInfoAboutSolution(SolutionId);
             if (solution.User.Id != UserId)
             {
@@ -84,10 +110,32 @@
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Can't load solution info");
-            NavigationManager.NavigateTo($"results/{ChallengeId}/user/{UserId}");
-            await MessageService.Warn("Невозможно загрузить данные о решении");
-            return;
+            Logger.LogWarning(ex, "Can't load solution info");
+            NavigationManager.NavigateTo(Routes.Results.UserCHallengeResults(ChallengeId, UserId));
+            MessageService.ShowWarning("Невозможно загрузить данные о решении");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task RecheckSolution()
+    {
+        loading = true;
+        try
+        {
+            await SolutionsApi.RecheckSolution(SolutionId);
+            NotificationService.ShowError("Перепроверка задания началась, перезагрузите страницу");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Can't recheck solution");
+            NotificationService.ShowError("Не удалось начать перепроверку");
+        }
+        finally
+        {
+            loading = false;
         }
     }
 }

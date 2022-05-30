@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Solutions;
+using Olympiad.Services;
 using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared;
 using Olympiad.Shared.Extensions;
@@ -277,6 +278,27 @@ namespace WebApp.Controllers
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
 
             return File(solutionContent, "application/octet-stream", $"Program{ProgramRuntime.GetFileExtensionForRuntime(solution.Language)}");
+        }
+
+
+        [HttpPost("recheck/{solutionId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> RecheckSolution(
+            [FromServices] IQueueChecker queueChecker,
+            [FromRoute] Guid solutionId)
+        {
+            var recheckedSolutionsCount = await ReCheckHelper.ReCheckSolutions(
+                        context,
+                        queueChecker,
+                        db => db.Solutions
+                            .Where(s => s.Exercise.Type == ExerciseType.Code)
+                            .Where(s => s.Id == solutionId),
+                        m =>
+                        {
+                            logger.LogInformation(m);
+                            return Task.CompletedTask;
+                        });
+            return recheckedSolutionsCount == 1 ? Ok() as ActionResult : NotFound("no solution to recheck");
         }
     }
 }

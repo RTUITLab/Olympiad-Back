@@ -17,9 +17,9 @@
                 <Button OnClick=@(() => helpRef?.Show()) Icon="@IconType.Outline.InfoCircle">Справка</Button>
             </SpaceItem>
             <SpaceItem>
-                <Dropdown Trigger="@(new Trigger[] { Trigger.Click })">
+                <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger">
                     <Overlay>   
-                        <Menu Selectable="false" Mode="MenuMode.Inline" Class="buttons-menu big-icon">
+                        <Menu Selectable="false" Mode="MenuMode.Inline" Class="buttons-menu big-icon" OnMenuItemClicked=@(() => actionsRef!.Close())>
                             <InputFile @ref="inputFileRef" style="display: none" OnChange="TestGroupsFilesSelected" accept=".json" />
                             <MenuItem Title="Загрузить"
                                       Key="upload"
@@ -42,7 +42,7 @@
                                         Style="width: 100%">
                                     <MenuItem Title="Перепроверить"
                                           Key="recheck"
-                                          Style="color: #faad14; width: 100%;"
+                                          Style="@($"color: {BaseColors.Warning}; width: 100%;")"
                                           Icon="@IconType.Outline.Sync"
                                           Disabled="loading" />
                                 </Popconfirm>
@@ -55,7 +55,7 @@
                                     <MenuItem Title="Удалить все группы"
                                           Disabled="loading"
                                           Key="delete_all"
-                                          Style="color: #ff4d4f;"
+                                          Style="@($"color: {BaseColors.Error};")"
                                           Icon="@IconType.Outline.Delete" />
                                 </Popconfirm>
 
@@ -125,6 +125,7 @@
     [CascadingParameter]
     public ILogsService? LogsService { get; set; }
 
+    private Dropdown? actionsRef;
     private InputFile? inputFileRef;
     private bool loading = true;
     private List<ExercisesTestDataGroupResponse>? exercisesTestDataGroups;
@@ -170,7 +171,7 @@
         {
             Logger.LogWarning(ex, "can't create test data group");
             LogsService?.LogInfoObject($"Ошибка при создании тестовой группы. Подробности в консоли (F12)", ex.Message);
-            await NotificationService.Error(new NotificationConfig
+            NotificationService.ShowError(new NotificationConfig
                 {
                     Message = "Ошибка при создании тестовой группы",
                     Description = "Пожалуйста, проверьте правильность структуры файла с группами тестов",
@@ -206,22 +207,17 @@
     private async Task RecheckExerciseSolutions()
     {
         loading = true;
-        Task notifyTask;
         try
         {
             var recheckedSolutionsCount = await ExercisesApi.RecheckExerciseSolutions(ExerciseId);
-            notifyTask = NotificationService.Open(new NotificationConfig
-                {
-                    NotificationType = recheckedSolutionsCount > 0 ? NotificationType.Success : NotificationType.Info,
-                    Message = $"Начата перепроверка решений: {recheckedSolutionsCount}"
-                });
+            NotificationService.Show(
+                    $"Начата перепроверка решений: {recheckedSolutionsCount}",
+                    recheckedSolutionsCount > 0 ? NotificationType.Success : NotificationType.Info);
         }
         finally
         {
             loading = false;
         }
-        StateHasChanged();
-        await notifyTask;
     }
 
     private async Task DeleteOneGroup(ExercisesTestDataGroupResponse group)
@@ -286,7 +282,7 @@
             var errorMessage = "Ошибка при чтении файла";
             Logger.LogWarning(ex, "error while reading file");
             LogsService?.LogInfo(errorMessage, ex.Message);
-            await NotificationService.Error(new NotificationConfig
+            NotificationService.ShowError(new NotificationConfig
                 {
                     Message = errorMessage,
                     Btn = LogsService?.OpenLogsButton("Открыть логи")
@@ -295,7 +291,7 @@
         }
         if (testGroups.Any(g => string.IsNullOrWhiteSpace(g.Title) || g.Title?.Length > ExerciseDataLimitations.MAX_GROUP_TITLE_LENGTH))
         {
-            await NotificationService.Error(new NotificationConfig
+            NotificationService.ShowError(new NotificationConfig
                 {
                     Message = "Названия тестовых групп являются обязательными.",
                     Description = "Минимальная длина названия группы - 1 символ. Максимальная - 100 символов."
@@ -305,7 +301,7 @@
         if (testGroups.Select(g => g.Title).Distinct().Count() != testGroups.Count ||
             testGroups.Select(g => g.Title).Intersect(exercisesTestDataGroups.Select(g => g.Title)).Any())
         {
-            await NotificationService.Error(new NotificationConfig
+            NotificationService.ShowError(new NotificationConfig
                 {
                     Message = "Названия групп тестов должны быть уникальны",
                     Description = "Если есть необходимость отредактировать существующую группу - необходимо её удалить, потом загрузить новый файл, содержащий эту группу"
@@ -316,7 +312,7 @@
         var noTestsGroup = testGroups.FirstOrDefault(g => g.Cases?.Any() != true);
         if (noTestsGroup is not null)
         {
-            await NotificationService.Error(new NotificationConfig
+            NotificationService.ShowError(new NotificationConfig
                 {
                     Message = "В каждой группе должен быть как минимум один тест",
                     Description = $"В группе {noTestsGroup.Title} нет тест-кейсов"

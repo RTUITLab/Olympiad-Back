@@ -24,7 +24,8 @@ public interface ISolutionsApi
     [Get("/api/solutions/analytics/{solutionId}/checksForDataGroup")]
     Task<List<SolutionCheckResponse>> GetChecksForDataGroup(Guid solutionId, Guid testDataGroupId);
 
-
+    [Post("/api/check/recheck/{solutionId}")]
+    Task RecheckSolution(Guid solutionId);
 
     [Get("/api/check/download/{solutionId}")]
     Task<string> GetSolutionSource(Guid solutionId);
