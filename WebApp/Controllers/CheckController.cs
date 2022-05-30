@@ -250,6 +250,7 @@ namespace WebApp.Controllers
         {
             return context
                 .Solutions
+                .Where(s => s.Exercise.Type == ExerciseType.Code)
                 .GroupBy(s => s.Status)
                 .Select(g => new SolutionsStatisticResponse { SolutionStatus = g.Key.ToString(), Count = g.Count() })
                 .ToListAsync();
