@@ -165,85 +165,85 @@ stages:
           Dockerfile: '$(Pipeline.Workspace)/$(artifactName)/Dockerfile'
           buildContext: '$(Pipeline.Workspace)/$(artifactName)'
           tags: ${{variables.imageTags}}
-
-- stage: deploy
-  condition: and(succeeded(), ${{variables.deployService}})
-  jobs:
-    - deployment: DeployApi
-      displayName: Deploy api
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
-      strategy:
-        runOnce:
-          on:
-            failure:
-              steps:
-                - download: none
-                - task: SSH@0
-                  inputs:
-                    sshEndpoint: 'swarm manager'
-                    runOptions: 'commands'
-                    commands: 'docker service rollback ${{variables.apiServiceName}}'
-                    readyTimeout: '20000'
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) ${{variables.apiServiceName}}'
-                  readyTimeout: '20000'
-    - deployment: DeployExecutor
-      displayName: Deploy executor
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
-      strategy:
-        runOnce:
-          on:
-            failure:
-              steps:
-                - download: none
-                - task: SSH@0
-                  inputs:
-                    sshEndpoint: 'swarm manager'
-                    runOptions: 'commands'
-                    commands: 'docker service rollback ${{variables.executorServiceName}}'
-                    readyTimeout: '20000'
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) ${{variables.executorServiceName}}'
-                  readyTimeout: '20000'
-    - deployment: DeployControlPanel
-      displayName: Deploy control panel
-      pool:
-        vmImage: 'ubuntu-latest'
-      environment: ${{variables.deployEnvironment}}
-      strategy:
-        runOnce:
-          on:
-            failure:
-              steps:
-                - download: none
-                - task: SSH@0
-                  inputs:
-                    sshEndpoint: 'swarm manager'
-                    runOptions: 'commands'
-                    commands: 'docker service rollback ${{variables.controlPanelServiceName}}'
-                    readyTimeout: '20000'
-          deploy:
-            steps:
-              - download: none
-              - task: SSH@0
-                inputs:
-                  sshEndpoint: 'swarm manager'
-                  runOptions: 'commands'
-                  commands: 'docker service update --image rtuitlab/olympiad-control-panel:$(Build.BuildId) ${{variables.controlPanelServiceName}}'
-                  readyTimeout: '20000'
+# deploy deprecated
+# - stage: deploy
+#   condition: and(succeeded(), ${{variables.deployService}})
+#   jobs:
+#     - deployment: DeployApi
+#       displayName: Deploy api
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       environment: ${{variables.deployEnvironment}}
+#       strategy:
+#         runOnce:
+#           on:
+#             failure:
+#               steps:
+#                 - download: none
+#                 - task: SSH@0
+#                   inputs:
+#                     sshEndpoint: 'swarm manager'
+#                     runOptions: 'commands'
+#                     commands: 'docker service rollback ${{variables.apiServiceName}}'
+#                     readyTimeout: '20000'
+#           deploy:
+#             steps:
+#               - download: none
+#               - task: SSH@0
+#                 inputs:
+#                   sshEndpoint: 'swarm manager'
+#                   runOptions: 'commands'
+#                   commands: 'docker service update --image rtuitlab/olympiad-api:$(Build.BuildId) ${{variables.apiServiceName}}'
+#                   readyTimeout: '20000'
+#     - deployment: DeployExecutor
+#       displayName: Deploy executor
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       environment: ${{variables.deployEnvironment}}
+#       strategy:
+#         runOnce:
+#           on:
+#             failure:
+#               steps:
+#                 - download: none
+#                 - task: SSH@0
+#                   inputs:
+#                     sshEndpoint: 'swarm manager'
+#                     runOptions: 'commands'
+#                     commands: 'docker service rollback ${{variables.executorServiceName}}'
+#                     readyTimeout: '20000'
+#           deploy:
+#             steps:
+#               - download: none
+#               - task: SSH@0
+#                 inputs:
+#                   sshEndpoint: 'swarm manager'
+#                   runOptions: 'commands'
+#                   commands: 'docker service update --image rtuitlab/olympiad-executor:$(Build.BuildId) ${{variables.executorServiceName}}'
+#                   readyTimeout: '20000'
+#     - deployment: DeployControlPanel
+#       displayName: Deploy control panel
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       environment: ${{variables.deployEnvironment}}
+#       strategy:
+#         runOnce:
+#           on:
+#             failure:
+#               steps:
+#                 - download: none
+#                 - task: SSH@0
+#                   inputs:
+#                     sshEndpoint: 'swarm manager'
+#                     runOptions: 'commands'
+#                     commands: 'docker service rollback ${{variables.controlPanelServiceName}}'
+#                     readyTimeout: '20000'
+#           deploy:
+#             steps:
+#               - download: none
+#               - task: SSH@0
+#                 inputs:
+#                   sshEndpoint: 'swarm manager'
+#                   runOptions: 'commands'
+#                   commands: 'docker service update --image rtuitlab/olympiad-control-panel:$(Build.BuildId) ${{variables.controlPanelServiceName}}'
+#                   readyTimeout: '20000'
