@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 using Executor.Models.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Models.Exercises;
 using Olympiad.Shared.Models;
 using Models.Solutions;
 using PublicAPI.Requests;
 using PublicAPI.Responses.Solutions;
 using PublicAPI.Responses.ExercisesTestData;
 using Olympiad.Shared;
+using Olympiad.Shared.JsonConverters;
+using System.Text.Json;
 
 namespace Executor
 {
@@ -26,7 +27,7 @@ namespace Executor
         private readonly IOptions<UserInfo> options;
         private readonly ILogger<DbManager> logger;
         private readonly HttpClient client;
-
+        private readonly JsonSerializerOptions jsonOptions;
 
         public DbManager(
             IOptions<UserInfo> options,
@@ -38,6 +39,9 @@ namespace Executor
 
             logger.LogInformation($"user name : {options.Value.UserName}");
             client = httpClientFactory.CreateClient(DbManagerHttpClientName);
+            jsonOptions = new JsonSerializerOptions();
+            jsonOptions.PropertyNameCaseInsensitive = true;
+            jsonOptions.Converters.AddCustomConverters();
         }
         public Task<ExerciseDataResponse[]> GetExerciseData(Guid exId)
         {
@@ -87,12 +91,12 @@ namespace Executor
             try
             {
                 var strResponse = await client.GetStringAsync(path);
-                return JsonConvert.DeserializeObject<T>(strResponse);
+                return System.Text.Json.JsonSerializer.Deserialize<T>(strResponse, jsonOptions);
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex.Message);
-                logger.LogWarning($"cant invoke GET action with path >{path}<, try auth", ex);
+                logger.LogWarning(ex, "cant invoke GET action with path {Path}, try auth", path);
                 await Authorize();
                 return await Invoke<T>(path);
             }
@@ -102,7 +106,7 @@ namespace Executor
         private async Task<T> InvokePost<T>(string path, HttpContent content = null)
         {
             var strResponse = await (await InvokePostInternal(path, content)).Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(strResponse);
+            return System.Text.Json.JsonSerializer.Deserialize<T>(strResponse, jsonOptions);
         }
 
         private async Task<HttpResponseMessage> InvokePostInternal(string path, HttpContent content = null)
