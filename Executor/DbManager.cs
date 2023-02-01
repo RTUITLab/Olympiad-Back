@@ -106,6 +106,10 @@ namespace Executor
         private async Task<T> InvokePost<T>(string path, HttpContent content = null)
         {
             var strResponse = await (await InvokePostInternal(path, content)).Content.ReadAsStringAsync();
+            if (typeof(T) == typeof(object))
+            {
+                return (T)new object();
+            }
             return System.Text.Json.JsonSerializer.Deserialize<T>(strResponse, jsonOptions);
         }
 
