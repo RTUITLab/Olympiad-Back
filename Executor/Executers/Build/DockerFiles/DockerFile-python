@@ -1,3 +1,4 @@
 ﻿FROM python:3.9.0
+RUN pip install numpy
 COPY ./Program.py /src/Program.py
 CMD python /src/Program.py
