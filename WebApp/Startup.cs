@@ -34,6 +34,7 @@ using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Services.SolutionCheckQueue;
 using WebApp.Services.Solutions;
 using Olympiad.Shared.JsonConverters;
+using Npgsql;
 
 namespace WebApp
 {
@@ -60,13 +61,22 @@ namespace WebApp
             services.Configure<S3StorageSettings>(Configuration.GetSection(nameof(S3StorageSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
+            {
                 services
                     .AddDbContext<ApplicationDbContext>(options =>
                         options.UseInMemoryDatabase("local"));
+            }
             else
-                services
-                .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
+            {
+
+                var dataSource = new NpgsqlDataSourceBuilder(Configuration.GetConnectionString("PostgresDataBase"))
+                    .EnableDynamicJson()
+                    .Build();
+                services.AddDbContext<ApplicationDbContext>(options =>
+                {
+                    options.UseNpgsql(dataSource, npgsql => npgsql.MigrationsAssembly(nameof(WebApp)));
+                });
+            }
 
             services.AddJwtGenerator(Configuration, out var jwtAppSettingOptions);
             services.AddScoped<IUserAuthorizationService, UserAuthorizationService>();
@@ -261,12 +271,12 @@ namespace WebApp
                 .Skip(1)
                 .Select(kvp => kvp.Value)
                 .ToArray();
+            Console.WriteLine(string.Join("========", origins));
             app.UseCors(builder =>
                 builder
-                    .WithOrigins(origins)
+                    .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
 
             app.UseSwagger(c => { c.RouteTemplate = "api/{documentName}/swagger.json"; });
             app.UseSwaggerUI(c =>

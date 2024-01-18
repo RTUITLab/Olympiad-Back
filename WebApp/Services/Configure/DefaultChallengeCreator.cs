@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Models;
 using Models.Exercises;
+using Olympiad.Shared;
 using Olympiad.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace WebApp.Services.Configure
         private readonly ILogger<DefaultChallengeCreator> logger;
 
         public DefaultChallengeCreator(
-            ApplicationDbContext dbContext, 
+            ApplicationDbContext dbContext,
             IOptions<DefaultChallengeSettings> options,
             ILogger<DefaultChallengeCreator> logger)
         {
@@ -48,8 +49,15 @@ namespace WebApp.Services.Configure
                     ExerciseName = ex.Title,
                     ExerciseTask = ex.Description,
                     Type = ExerciseType.Code,
-                    ExerciseDataGroups = new List<ExerciseDataGroup>
+                    Restrictions = new ExerciseRestrictions
                     {
+                        Code = new CodeRestrictions
+                        {
+                            AllowedRuntimes = ProgramRuntime.List.Select(l => l.Value).ToList()
+                        }
+                    },
+                    ExerciseDataGroups =
+                    [
                         new ExerciseDataGroup
                         {
                             Title = "public tests",
@@ -72,7 +80,7 @@ namespace WebApp.Services.Configure
                                 OutData = td.Output
                             }).ToList()
                         }
-                    }
+                    ]
                 }).ToList()
             };
             dbContext.Challenges.Add(newChallenge);

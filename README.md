@@ -38,7 +38,7 @@ First, install .Net Core 3.1
         "SmtpUseSsl": true|false
 	},
     "AccountSettings": {
-        "IsRegisterAvailable": true|false // if false - new users can be added only via admin panel
+        "IsRegisterAvailable": true|false // if false - new users can be added only via control panel
 	},
     "DefaultUserSettings": {
         "Email": "email of user, which can be created",
@@ -67,7 +67,7 @@ First, install .Net Core 3.1
 ```
 
 You must use connection string to your real Postgres database in the field  ```ConnectionStrings:PostgresDataBase```, for example:
-> _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;Integrated Security=true;_ 
+> _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;_ 
 
 
 3. Use ```dotnet run``` to start web app in Development environment (appsettings.Development.json will be used)
