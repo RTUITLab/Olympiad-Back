@@ -32,4 +32,35 @@
     <ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="SupportedRuntimes\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SupportedRuntimes\C.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\CPP.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\CSHAPR.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\FPAS.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\JAVA.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\JS.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\PASABC.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SupportedRuntimes\PYTHON.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

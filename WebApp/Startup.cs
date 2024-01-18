@@ -7,9 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Models;
-using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using WebApp.Services;
@@ -22,7 +20,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
-using WebApp.Formatting;
 using Olympiad.Shared;
 using System.Security.Claims;
 using Olympiad.Services.Authorization;
@@ -211,6 +208,7 @@ namespace WebApp
             services.AddSignalR();
             services.AddTransient<NotifyUsersService>();
             services.AddTransient<UserSolutionsReportCreator>();
+            services.AddSingleton<ISupportedRuntimesService, FromFilesCachedSupportedRuntimesService>();
         }
 
         private static void AddS3AttachmentStorage(IServiceCollection services)
@@ -278,7 +276,7 @@ namespace WebApp
                     .AllowAnyMethod()
                     .AllowAnyHeader());
 
-            app.UseSwagger(c => { c.RouteTemplate = "api/{documentName}/swagger.json"; });
+            app.UseSwagger(c => { c.RouteTemplate = "api/v1/swagger.json"; });
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/api/v1/swagger.json", "My API V1");
@@ -293,6 +291,7 @@ namespace WebApp
             app.UseEndpoints(ep =>
             {
                 ep.MapControllers();
+                ep.MapSwagger();
                 ep.MapHub<SolutionStatusHub>("/api/hubs/solutionStatus");
             });
         }
