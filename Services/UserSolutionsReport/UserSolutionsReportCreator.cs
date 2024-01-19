@@ -1,5 +1,4 @@
-﻿using Ganss.XSS;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Models;
 using Olympiad.Shared.Models;
 using Olympiad.Shared.Services;
@@ -8,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Olympiad.Services.UserSolutionsReport
 {
