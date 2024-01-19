@@ -31,9 +31,6 @@ Task("RestoreSolution")
    DotNetRestore(executorProject);
 
    DotNetRestore(controlPanelProject);
-   DotNetTool("libman restore", new DotNetToolSettings {
-      WorkingDirectory = controlPanelProjectDir
-   });
 });
 
 Task("BuildApi")
