@@ -10,7 +10,7 @@ namespace WebApp.Services.Solutions
     public interface ISolutionsService
     {
         Task<Solution> PostCodeSolution(string fileBody, ProgramRuntime runtime, Guid exerciseId, Guid authorId, CodeSolutionChecks postSolutionChecks = CodeSolutionChecks.CodeAlreadySent | CodeSolutionChecks.TooManyPost);
-        Task<(Solution solution, string[] uploadUrls)> PostDocsSolution(Guid exerciseId, Guid authorId, List<SolutionDocumentRequest> files, CodeSolutionChecks solutionChecks);
+        Task<Solution> PostDocsSolution(Guid exerciseId, Guid authorId, SolutionDocumentRequest[] files, CodeSolutionChecks solutionChecks);
 
         [Flags]
         public enum CodeSolutionChecks

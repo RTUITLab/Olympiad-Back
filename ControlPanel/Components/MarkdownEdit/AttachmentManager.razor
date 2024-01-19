@@ -178,12 +178,7 @@
         loading = true;
         try
         {
-            var url = await AttachmentsProvider.GetUploadUrl(files.File.Name, files.File.Size, files.File.ContentType);
-            var message = new HttpRequestMessage(HttpMethod.Put, url);
-            message.Headers.Add("x-amz-acl", "public-read");
-            message.Content = new StreamContent(files.File.OpenReadStream(files.File.Size));
-            message.Content.Headers.Add("Content-Type", files.File.ContentType ?? "binary/octet-stream");
-            await HttpClient.SendAsync(message);
+            await AttachmentsProvider.UploadAttachment(files.File.Name, files.File.Size, files.File.ContentType ?? "binary/octet-stream", files.File.OpenReadStream(files.File.Size));
         }
         catch (Exception ex)
         {

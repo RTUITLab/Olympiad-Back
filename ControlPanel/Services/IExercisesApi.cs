@@ -1,9 +1,7 @@
-﻿using DocumentFormat.OpenXml.Office2010.ExcelAc;
-using Refit;
+﻿using Refit;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.IO;
 using PublicAPI.Requests.Exercises;
 using PublicAPI.Responses;
 using PublicAPI.Responses.ExercisesTestData;
@@ -31,8 +29,9 @@ public interface IExercisesApi
     [Delete("/api/exercises/{exerciseId}/attachment/{fileName}")]
     public Task DeleteExerciseAttachmentAsync(Guid exerciseId, string fileName);
 
-    [Get("/api/exercises/{exerciseId}/attachment/upload/{fileName}")]
-    public Task<UploadFileUrlResponse> GetUploadAttachmentUrl(Guid exerciseId, string mimeType, long contentLength, string fileName);
+    [Multipart]
+    [Post("/api/exercises/{exerciseId}/attachment/upload")]
+    public Task<UploadFileUrlResponse> UploadAttachment(Guid exerciseId, [AliasAs("attachment")] IEnumerable<StreamPart> streams);
 
     [Get("/api/exercises/all/withtests")]
     public Task<List<ExerciseWithTestCasesCountResponse>> GetExercisesWithTestsAsync(Guid challengeId);
