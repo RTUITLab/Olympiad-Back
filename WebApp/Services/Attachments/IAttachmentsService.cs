@@ -9,8 +9,8 @@ namespace WebApp.Services.Attachments;
 public interface IAttachmentsService
 {
     Task<List<(string fileName, string contentType)>> GetAttachmentsForExercise(Guid exerciseId);
-    string GetUploadUrlForExercise(Guid exerciseId, string contentType, ByteSize uploadSize, string fileName);
-    string GetUrlForExerciseAttachment(Guid exerciseId, string fileName);
+    Task UploadExerciseAttachment(Guid exerciseId, string contentType, string fileName, Stream fileContent);
+    Task<(Stream fileStream, string contentType)> GetExerciseAttachment(Guid solutionId, string fileName);
     Task DeleteExerciseAttachment(Guid exerciseId, string fileName);
 
 

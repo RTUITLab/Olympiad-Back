@@ -1,5 +1,6 @@
 ﻿using PublicAPI.Responses;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Olympiad.ControlPanel.Components.MarkdownEdit
@@ -12,7 +13,7 @@ namespace Olympiad.ControlPanel.Components.MarkdownEdit
         /// </summary>
         string CurrentEditableEntityKey { get; }
         Task<List<AttachmentResponse>> GetAttachments();
-        Task<string> GetUploadUrl(string fileName, long fileSize, string mimeType);
+        Task UploadAttachment(string fileName, long fileSize, string mimeType, Stream content);
         string GetAttachmentUrl(string fileName);
         Task DeleteAttachment(string fileName);
     }

@@ -22,7 +22,9 @@ public class S3AttachmentsService : IAttachmentsService
         this.options = options.Value;
     }
 
-    
+    private static string ExercisesAttachmentsKey(Guid exerciseId) => $"exercises/{exerciseId}";
+    private static string ExerciseAttachmentKey(Guid exerciseId, string fileName) => $"{ExercisesAttachmentsKey(exerciseId)}/{fileName}";
+
 
     public async Task<List<(string fileName, string contentType)>> GetAttachmentsForExercise(Guid exerciseId)
     {
@@ -38,7 +40,7 @@ public class S3AttachmentsService : IAttachmentsService
             .Select(o => s3Client.GetObjectMetadataAsync(options.BucketName, o.Key))
             .ToList();
         await Task.WhenAll(metaDataRequests);
-        return 
+        return
             targetObjects
             .Zip(metaDataRequests.Select(t => t.Result), (o, m) => (Path.GetFileName(o.Key), m.Headers.ContentType))
             .ToList();
@@ -53,30 +55,27 @@ public class S3AttachmentsService : IAttachmentsService
         });
     }
 
-    public string GetUploadUrlForExercise(Guid exerciseId, string contentType, ByteSize uploadSize, string fileName)
+    public async Task UploadExerciseAttachment(Guid exerciseId, string contentType, string fileName, Stream fileContent)
     {
-        var getUrlRequest = new GetPreSignedUrlRequest
+        var response = await s3Client.PutObjectAsync(new PutObjectRequest
         {
             BucketName = options.BucketName,
             Key = ExerciseAttachmentKey(exerciseId, fileName),
-            Protocol = options.ServiceUrl.StartsWith("https") ? Protocol.HTTPS : Protocol.HTTP,
-            Expires = DateTime.UtcNow.Add(TimeSpan.FromHours(1)),
-            Verb = HttpVerb.PUT
-        };
-        // Set public access to object
-        getUrlRequest.Headers["x-amz-acl"] = "public-read";
-        getUrlRequest.Headers["Content-Length"] = ((long)uploadSize.Bytes).ToString();
-        getUrlRequest.ContentType = contentType ?? "binary/octet-stream";
-
-        return s3Client.GetPreSignedURL(getUrlRequest);
+            ContentType = contentType,
+            InputStream = fileContent,
+            AutoCloseStream = true,
+        });
+        if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
+        {
+            throw new Exception($"Can't upload file {fileName} for exercise {exerciseId}"); // TODO: soecific exception
+        }
     }
 
-    public string GetUrlForExerciseAttachment(Guid exerciseId, string fileName)
+    public async Task<(Stream fileStream, string contentType)> GetExerciseAttachment(Guid exerciseId, string fileName)
     {
-        return $"{options.ServiceUrl}/{options.BucketName}/{ExercisesAttachmentsKey(exerciseId)}/{Uri.EscapeDataString(fileName)}";
+        return await GetFileByKey(ExerciseAttachmentKey(exerciseId, fileName));
     }
-    private string ExercisesAttachmentsKey(Guid exerciseId) => $"exercises/{exerciseId}";
-    private string ExerciseAttachmentKey(Guid exerciseId, string fileName) => $"{ExercisesAttachmentsKey(exerciseId)}/{fileName}";
+
 
     private string SolutionDocumentsKey(Guid solutionId) => $"solutions/{solutionId}/documents";
     private string SolutionDocumentKey(Guid solutionId, string fileName) => $"{SolutionDocumentsKey(solutionId)}/{fileName}";
@@ -99,10 +98,15 @@ public class S3AttachmentsService : IAttachmentsService
 
     public async Task<(Stream fileStream, string contentType)> GetSolutionDocument(Guid solutionId, string fileName)
     {
-        var response = await s3Client.GetObjectAsync(options.BucketName, SolutionDocumentKey(solutionId, fileName));
+        return await GetFileByKey(SolutionDocumentKey(solutionId, fileName));
+    }
+
+    private async Task<(Stream fileStream, string contentType)> GetFileByKey(string key)
+    {
+        var response = await s3Client.GetObjectAsync(options.BucketName, key);
         if (response.HttpStatusCode != System.Net.HttpStatusCode.OK)
         {
-            throw new ArgumentException($"Can't get file for solution {solutionId} and file {fileName}");
+            throw new ArgumentException($"Can't get file by key {key}");
         }
         return (response.ResponseStream, response.Headers.ContentType);
     }

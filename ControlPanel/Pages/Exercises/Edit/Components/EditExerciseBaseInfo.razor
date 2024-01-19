@@ -7,6 +7,8 @@
 @using Humanizer
 @using PublicAPI.Responses
 @using PublicAPI.Responses.Exercises
+@using System.IO
+@using Refit
 
 @inject IExercisesApi ExercisesApi
 @inject ILogger<EditExerciseBaseInfo> Logger
@@ -126,9 +128,12 @@
             return attachmentLinkGenerator.GetExerciseLink(ExerciseId, fileName);
         }
 
-        public async Task<string> GetUploadUrl(string fileName, long fileSize, string mimeType)
+        public async Task UploadAttachment(string fileName, long fileSize, string mimeType, Stream content)
         {
-            return (await exercisesApi.GetUploadAttachmentUrl(ExerciseId, mimeType, fileSize, fileName)).Url;
+            await exercisesApi.UploadAttachment(ExerciseId, new List<StreamPart>
+            {
+                new StreamPart(content, fileName, mimeType)
+            });
         }
 
         public Task DeleteAttachment(string fileName)
