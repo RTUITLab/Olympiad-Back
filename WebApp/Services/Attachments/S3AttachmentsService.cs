@@ -81,26 +81,6 @@ public class S3AttachmentsService : IAttachmentsService
     private string SolutionDocumentsKey(Guid solutionId) => $"solutions/{solutionId}/documents";
     private string SolutionDocumentKey(Guid solutionId, string fileName) => $"{SolutionDocumentsKey(solutionId)}/{fileName}";
 
-
-    public string GetUploadUrlForSolutionDocument(Guid solutionId, string contentType, ByteSize uploadSize, string fileName)
-    {
-        var getUrlRequest = new GetPreSignedUrlRequest
-        {
-            BucketName = options.BucketName,
-            Key = SolutionDocumentKey(solutionId, fileName),
-            Protocol = options.ServiceUrl.StartsWith("https") ? Protocol.HTTPS : Protocol.HTTP,
-            Expires = DateTime.UtcNow.Add(TimeSpan.FromHours(1)),
-            Verb = HttpVerb.PUT
-        };
-        // Set public access to object
-        getUrlRequest.Headers["x-amz-acl"] = "public-read";
-        getUrlRequest.Headers["Content-Length"] = ((long)uploadSize.Bytes).ToString();
-        getUrlRequest.ContentType = contentType;
-
-        return s3Client.GetPreSignedURL(getUrlRequest);
-    }
-
-
     public async Task UploadSolutionDocument(Guid solutionId, string contentType, string fileName, Stream fileContent)
     {
         var response = await s3Client.PutObjectAsync(new PutObjectRequest

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,15 +8,12 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using ByteSizeLib;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Models;
-using Models.Solutions;
 using Olympiad.Services;
 using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared;
@@ -28,7 +24,6 @@ using PublicAPI.Responses.Solutions;
 using WebApp.Extensions;
 using WebApp.Models;
 using WebApp.Services.Attachments;
-using WebApp.Services.Interfaces;
 using WebApp.Services.Solutions;
 
 namespace WebApp.Controllers
