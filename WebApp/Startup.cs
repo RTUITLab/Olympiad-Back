@@ -269,10 +269,9 @@ namespace WebApp
                 .Skip(1)
                 .Select(kvp => kvp.Value)
                 .ToArray();
-            Console.WriteLine(string.Join("========", origins));
             app.UseCors(builder =>
                 builder
-                    .AllowAnyOrigin()
+                    .WithOrigins(origins)
                     .AllowAnyMethod()
                     .AllowAnyHeader());
 
