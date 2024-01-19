@@ -35,7 +35,10 @@ namespace WebApp.Services.Solutions
             this.logger = logger;
         }
 
-        public async Task<(Solution solution, string[] uploadUrls)> PostDocsSolution(Guid exerciseId, Guid authorId, List<SolutionDocumentRequest> files, ISolutionsService.CodeSolutionChecks solutionChecks)
+        public async Task<Solution> PostDocsSolution(
+            Guid exerciseId, Guid authorId, 
+            SolutionDocumentRequest[] files, 
+            ISolutionsService.CodeSolutionChecks solutionChecks)
         {
             var now = DateTimeOffset.UtcNow;
             await HandleGeneralChecks(exerciseId, authorId, solutionChecks, now);
@@ -45,7 +48,7 @@ namespace WebApp.Services.Solutions
             {
                 await CheckFielsCorrect(exerciseId, files);
             }
-            Solution solution = new Solution()
+            var solution = new Solution()
             {
                 ExerciseId = exerciseId,
                 UserId = authorId,
@@ -63,20 +66,23 @@ namespace WebApp.Services.Solutions
                 }
             };
             context.Solutions.Add(solution);
-            
-            await context.SaveChangesAsync();
 
-            var uploadUrls = files.Select(d => attachmentsService.GetUploadUrlForSolutionDocument(solution.Id, d.MimeType, d.Size, d.Name)).ToArray();
-            return (solution, uploadUrls);
+            foreach (var file in files)
+            {
+                await attachmentsService.UploadSolutionDocument(solution.Id, file.MimeType, file.Name, file.Content);
+            }
+
+            await context.SaveChangesAsync();
+            return solution;
         }
 
-        private async Task CheckFielsCorrect(Guid exerciseId, List<SolutionDocumentRequest> files)
+        private async Task CheckFielsCorrect(Guid exerciseId, SolutionDocumentRequest[] files)
         {
             var targetExercise = await context
                 .Exercises
                 .AsNoTracking()
                 .SingleOrDefaultAsync(e => e.ExerciseID == exerciseId);
-            if (targetExercise.Restrictions?.Docs?.Documents?.Count != files.Count ||
+            if (targetExercise.Restrictions?.Docs?.Documents?.Count != files.Length ||
                 targetExercise.Restrictions.Docs.Documents
                     .Zip(files, (expect, fromUser) => expect.MaxSize >= fromUser.Size.Bytes && expect.AllowedExtensions.Contains(Path.GetExtension(fromUser.Name)))
                     .Any(success => !success))

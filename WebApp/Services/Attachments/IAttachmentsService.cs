@@ -1,6 +1,7 @@
 ﻿using ByteSizeLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace WebApp.Services.Attachments
@@ -14,7 +15,7 @@ namespace WebApp.Services.Attachments
 
 
         string GetUploadUrlForSolutionDocument(Guid solutionId, string contentType, ByteSize uploadSize, string fileName);
-        string GetUrlForSolutionDocument(Guid solutionId, string fileName);
-
+        Task UploadSolutionDocument(Guid solutionId, string contentType, string fileName, Stream fileContent);
+        Task<(Stream fileStream, string contentType)> GetSolutionDocument(Guid solutionId, string fileName);
     }
 }

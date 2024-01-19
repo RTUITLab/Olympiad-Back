@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using ByteSizeLib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -143,18 +144,24 @@ namespace WebApp.Controllers
         [HttpPost("docs/{exerciseId}")]
         public async Task<ActionResult<CreatedDocsExerciseSolutionResponse>> PostDocsSolution(
             Guid exerciseId,
-            [FromBody] DocsExerciseSolutionRequest request)
+            List<IFormFile> files)
         {
             try
             {
-                var result = await solutionsService.PostDocsSolution(exerciseId, UserId, request.Files, ISolutionsService.CodeSolutionChecks.All);
-                var solutionResponse = mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(result.solution));
+                var solution = await solutionsService.PostDocsSolution(exerciseId, UserId, files.Select(f => new SolutionDocumentRequest
+                {
+                    Name = f.FileName,
+                    MimeType = f.ContentType,
+                    Size = ByteSize.FromBytes(f.Length),
+                    Content = f.OpenReadStream(),
+                }).ToArray(),
+                ISolutionsService.CodeSolutionChecks.All);
+                var solutionResponse = mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
                 // TODO: handmade
-                solutionResponse.Documents = result.solution.DocumentsResult.Files.Select(mapper.Map<SolutionDocumentResponse>).ToList();
+                solutionResponse.Documents = solution.DocumentsResult.Files.Select(mapper.Map<SolutionDocumentResponse>).ToList();
                 return new CreatedDocsExerciseSolutionResponse
                 {
                     Solution = solutionResponse,
-                    UploadUrls = result.uploadUrls
                 };
             }
             catch (ISolutionsService.ChallengeNotAvailableException)
@@ -224,9 +231,10 @@ namespace WebApp.Controllers
         }
         [AllowAnonymous]
         [HttpGet("{solutionId:guid}/document/{fileName}")]
-        public ActionResult Get(Guid solutionId, string fileName, [FromServices] IAttachmentsService attachmentsService)
+        public async Task<ActionResult> Get(Guid solutionId, string fileName, [FromServices] IAttachmentsService attachmentsService)
         {
-            return Redirect(attachmentsService.GetUrlForSolutionDocument(solutionId, fileName));
+            var (fileStream, contentType) = await attachmentsService.GetSolutionDocument(solutionId, fileName);
+            return File(fileStream, contentType, fileName);
         }
 
         [HttpGet]

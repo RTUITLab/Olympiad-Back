@@ -7,14 +7,14 @@ services:
            - ASPNETCORE_ENVIRONMENT=Development
            - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;
            - RabbitMqQueueSettings__Uri=amqp://rabbitmq-user:password@rabbitmq:5672
-           - S3StorageSettings__ServiceUrl=http://s3:8000
+           - S3StorageSettings__ServiceUrl=http://cloudserver-front:8000
         restart: on-failure
         ports:
             - 5501:5501
         depends_on:
             - postgres
             - rabbitmq
-            - s3
+            - cloudserver-front
     control-panel:
         build: ${BACK_CONTEXT:-.}/deploy/control-panel
         ports:
@@ -52,10 +52,9 @@ services:
         restart: on-failure
         environment:
             - RABBITMQ_DEFAULT_PASS=password
-    s3:
+    cloudserver-front:
         image: zenko/cloudserver
         environment:
-          ENDPOINT: 'localhost:5505'
           REMOTE_MANAGEMENT_DISABLE: '1'
           S3BACKEND: 'file'
           LOG_LEVEL: trace
