@@ -38,7 +38,7 @@ First, install .Net Core 3.1
         "SmtpUseSsl": true|false
 	},
     "AccountSettings": {
-        "IsRegisterAvailable": true|false // if false - new users can be added only via admin panel
+        "IsRegisterAvailable": true|false // if false - new users can be added only via control panel
 	},
     "DefaultUserSettings": {
         "Email": "email of user, which can be created",
@@ -67,7 +67,7 @@ First, install .Net Core 3.1
 ```
 
 You must use connection string to your real Postgres database in the field  ```ConnectionStrings:PostgresDataBase```, for example:
-> _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;Integrated Security=true;_ 
+> _User ID=postgres;Password=password;Server=127.0.0.1;Port=5432;Database=TestDBdotnet;_ 
 
 
 3. Use ```dotnet run``` to start web app in Development environment (appsettings.Development.json will be used)
@@ -113,17 +113,4 @@ You must have **Docker** installed on the system you want to run Executor on. Ac
 
 ## How to run self hosted executor on Windows machine:
 
-1. Install [dotnet core sdk 3.1](https://dotnet.microsoft.com/download)
-
-2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
-
-3. In docker desktop settings set flag __Expose daemon on tcp://localhost:2375 without TLS__
-
-4. Do steps 1,2 from [run executor](#Executor)
-
-5. In _appsettings.Secret.json_ set field _CONSOLE\_MODE_ to _StatusReporting_.
-
-6. Run command in _./Executor_ folder:
-```bash
-dotnet run -c Release
-```
+Can be run only with linux docker daemon

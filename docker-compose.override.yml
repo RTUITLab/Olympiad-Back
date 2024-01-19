@@ -5,7 +5,7 @@ services:
         build: ${BACK_CONTEXT:-.}/deploy/api
         environment:
            - ASPNETCORE_ENVIRONMENT=Development
-           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;Integrated Security=true;
+           - ConnectionStrings__PostgresDataBase=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=olympiad_dev_db;
            - RabbitMqQueueSettings__Uri=amqp://rabbitmq-user:password@rabbitmq:5672
            - S3StorageSettings__ServiceUrl=http://s3:8000
         restart: on-failure

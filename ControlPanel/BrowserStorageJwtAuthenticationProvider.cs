@@ -1,7 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
 using Olympiad.ControlPanel.Services;
 using PublicAPI.Responses;
 using System.Linq;
@@ -59,8 +58,6 @@ public class BrowserStorageJwtAuthenticationProvider : AuthenticationStateProvid
     private AuthenticationState HandleMeResult(GetMeResult meInfo, string loginType)
     {
         accessTokenProvider.AccessToken = meInfo.Token;
-        //httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", meInfo.Token);
-
         var baseClaims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, meInfo.Id.ToString()),
                     new Claim(ClaimTypes.Name, meInfo.FirstName),

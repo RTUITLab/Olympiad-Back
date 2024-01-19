@@ -7,6 +7,7 @@ using Olympiad.Shared;
 using PublicAPI.Requests;
 using PublicAPI.Requests.Challenges;
 using PublicAPI.Requests.Exercises;
+using System;
 
 namespace WebApp.Formatting.RequestMappers
 {
@@ -21,6 +22,8 @@ namespace WebApp.Formatting.RequestMappers
             CreateMap<UpdateAccountInfoRequest, User>();
 
             CreateMap<UpdateChallengeInfoRequest, Challenge>()
+                .ForMember(c => c.StartTime, map => map.MapFrom(s => s.StartTime.HasValue ? s.StartTime.Value.ToUniversalTime() : (DateTimeOffset?)null))
+                .ForMember(c => c.EndTime, map => map.MapFrom(s => s.EndTime.HasValue ? s.EndTime.Value.ToUniversalTime() : (DateTimeOffset?)null))
                 .ForMember(c => c.ChallengeAccessType, map => map.MapFrom(ucir => ucir.AccessType));
 
             CreateMap<CreateTestCaseRequest, ExerciseData>()

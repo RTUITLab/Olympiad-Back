@@ -2,25 +2,24 @@
 using Olympiad.Shared;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Models.Exercises
 {
-    public class ExerciseRestrictions
+    public sealed class ExerciseRestrictions
     {
         public CodeRestrictions Code { get; set; }
         public DocsRestrictions Docs { get; set; }
     }
-    public class CodeRestrictions
+    public sealed class CodeRestrictions
     {
         public List<string> AllowedRuntimes { get; set; }
     }
 
-    public class DocsRestrictions
+    public sealed class DocsRestrictions
     {
         public List<DocumentRestriction> Documents { get; set; }
     }
-    public class DocumentRestriction
+    public sealed class DocumentRestriction
     {
         public List<string> AllowedExtensions { get; set; }
         /// <summary>

@@ -7,9 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Models;
-using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using WebApp.Services;
@@ -22,7 +20,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Olympiad.Shared.Models.Settings;
 using WebApp.Hubs;
-using WebApp.Formatting;
 using Olympiad.Shared;
 using System.Security.Claims;
 using Olympiad.Services.Authorization;
@@ -34,6 +31,7 @@ using Olympiad.Services.UserSolutionsReport;
 using Olympiad.Services.SolutionCheckQueue;
 using WebApp.Services.Solutions;
 using Olympiad.Shared.JsonConverters;
+using Npgsql;
 
 namespace WebApp
 {
@@ -60,13 +58,22 @@ namespace WebApp
             services.Configure<S3StorageSettings>(Configuration.GetSection(nameof(S3StorageSettings)));
 
             if (Configuration.GetValue<bool>("IN_MEMORY_DB"))
+            {
                 services
                     .AddDbContext<ApplicationDbContext>(options =>
                         options.UseInMemoryDatabase("local"));
+            }
             else
-                services
-                .AddDbContext<ApplicationDbContext>(options =>
-                    options.UseNpgsql(Configuration.GetConnectionString("PostgresDataBase"), npgsql => npgsql.MigrationsAssembly(nameof(WebApp))));
+            {
+
+                var dataSource = new NpgsqlDataSourceBuilder(Configuration.GetConnectionString("PostgresDataBase"))
+                    .EnableDynamicJson()
+                    .Build();
+                services.AddDbContext<ApplicationDbContext>(options =>
+                {
+                    options.UseNpgsql(dataSource, npgsql => npgsql.MigrationsAssembly(nameof(WebApp)));
+                });
+            }
 
             services.AddJwtGenerator(Configuration, out var jwtAppSettingOptions);
             services.AddScoped<IUserAuthorizationService, UserAuthorizationService>();
@@ -201,6 +208,7 @@ namespace WebApp
             services.AddSignalR();
             services.AddTransient<NotifyUsersService>();
             services.AddTransient<UserSolutionsReportCreator>();
+            services.AddSingleton<ISupportedRuntimesService, FromFilesCachedSupportedRuntimesService>();
         }
 
         private static void AddS3AttachmentStorage(IServiceCollection services)
@@ -265,10 +273,9 @@ namespace WebApp
                 builder
                     .WithOrigins(origins)
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
 
-            app.UseSwagger(c => { c.RouteTemplate = "api/{documentName}/swagger.json"; });
+            app.UseSwagger(c => { c.RouteTemplate = "api/v1/swagger.json"; });
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/api/v1/swagger.json", "My API V1");
@@ -283,6 +290,7 @@ namespace WebApp
             app.UseEndpoints(ep =>
             {
                 ep.MapControllers();
+                ep.MapSwagger();
                 ep.MapHub<SolutionStatusHub>("/api/hubs/solutionStatus");
             });
         }

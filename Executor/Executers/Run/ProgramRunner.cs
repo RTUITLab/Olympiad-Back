@@ -54,7 +54,7 @@ namespace Executor.Executers.Run
             if (blackList.Contains(solutionId))
             {
                 // TODO what?
-                logger.LogError($"solution from black list {solutionId}");
+                logger.LogError("solution from black list {SolutionId}", solutionId);
                 return;
             }
 
