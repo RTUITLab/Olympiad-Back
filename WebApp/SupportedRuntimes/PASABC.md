@@ -1,7 +1,14 @@
 pasabc
 Pascal ABC
 .pas
-Для языка `Pascal ABC` используется компилятор PascalABC.NET 3.7.1.
+Для языка `Pascal ABC` используется компилятор PascalABC.NET 3.9.0.
+
+### Пример
+```pasabc
+begin
+  write('Hello, World!');
+end.
+```
 
 # Сборка
 ```bash

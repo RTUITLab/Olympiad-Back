@@ -1,7 +1,12 @@
 csharp
 C#
 .cs
-Для языка `C#` используется .Net Core 3.1.
+Для языка `C#` используется .Net 8.0.
+
+## Пример
+```csharp
+Console.WriteLine("Hello, World!");
+```
 
 # Сборка
 ```bash
