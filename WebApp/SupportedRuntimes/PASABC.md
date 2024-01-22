@@ -1,4 +1,6 @@
+pasabc
 Pascal ABC
+.pas
 Для языка `Pascal ABC` используется компилятор PascalABC.NET 3.7.1.
 
 # Сборка

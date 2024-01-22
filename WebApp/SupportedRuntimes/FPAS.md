@@ -1,4 +1,6 @@
+fpas
 Free Pascal
+.pas
 Для языка `Pascal` используется компилятор Free Pascal 3.0.4.
 
 # Сборка

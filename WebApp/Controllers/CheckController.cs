@@ -280,7 +280,8 @@ namespace WebApp.Controllers
                 return BadRequest("Can't get solution raw for not code type exercise");
             }
             var solutionContent = Encoding.UTF8.GetBytes(solution.Raw);
-
+            // to read from js
+            Response.Headers.Append("Access-Control-Expose-Headers", "Content-Disposition");
             return File(solutionContent, "application/octet-stream", $"Program{ProgramRuntime.GetFileExtensionForRuntime(solution.Language)}");
         }
 
