@@ -6,11 +6,9 @@ using Models;
 using Olympiad.Services.SolutionCheckQueue;
 using Olympiad.Shared.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WebApp.Services.Interfaces;
 
 namespace WebApp.Services
 {
@@ -28,34 +26,32 @@ namespace WebApp.Services
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (true)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = serviceProvider.CreateScope())
+                using var scope = serviceProvider.CreateScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var queue = scope.ServiceProvider.GetRequiredService<IQueueChecker>();
+                var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
+                var targetSolutions = await dbContext
+                    .Solutions
+                    .Where(s => s.Exercise.Type == ExerciseType.Code)
+                    .Where(s => s.Exercise.ExerciseDataGroups.Any())
+                    .Where(s => s.Status == SolutionStatus.InProcessing)
+                    .Where(s => s.StartCheckingTime < oldTime || s.StartCheckingTime == null)
+                    .ToListAsync(cancellationToken: stoppingToken);
+                if (targetSolutions.Count == 0)
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    var queue = scope.ServiceProvider.GetRequiredService<IQueueChecker>();
-                    var oldTime = DateTime.UtcNow - TimeSpan.FromMinutes(2);
-                    var targetSolutions = await dbContext
-                        .Solutions
-                        .Where(s => s.Exercise.Type == ExerciseType.Code)
-                        .Where(s => s.Exercise.ExerciseDataGroups.Any())
-                        .Where(s => s.Status == SolutionStatus.InProcessing)
-                        .Where(s => s.StartCheckingTime < oldTime || s.StartCheckingTime == null)
-                        .ToListAsync();
-                    if (!targetSolutions.Any())
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(30));
-                        continue;
-                    }
-                    logger.LogInformation($"find {targetSolutions.Count} old solutions, reset");
-                    targetSolutions.ForEach(s =>
-                    {
-                        s.Status = SolutionStatus.InQueue;
-                        s.StartCheckingTime = null;
-                        queue.PutInQueue(s.Id);
-                    });
-                    await dbContext.SaveChangesAsync();
+                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                    continue;
                 }
+                logger.LogInformation("Found {OldSolutionsCount} old solutions, reset", targetSolutions.Count);
+                targetSolutions.ForEach(s =>
+                {
+                    s.Status = SolutionStatus.InQueue;
+                    s.StartCheckingTime = null;
+                    queue.PutInQueue(s.Id);
+                });
+                await dbContext.SaveChangesAsync(stoppingToken);
             }
         }
     }

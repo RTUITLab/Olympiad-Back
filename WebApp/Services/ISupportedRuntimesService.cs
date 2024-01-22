@@ -24,11 +24,20 @@ public sealed class FromFilesCachedSupportedRuntimesService : ISupportedRuntimes
     private SupportedRuntime[] ReadFromDirectory()
     {
         return Directory.GetFiles("./SupportedRuntimes")
-            .Select(f => File.ReadAllText(f))
+            .Select(File.ReadAllText)
             .Select(f =>
             {
-                var lineBreakPosition = f.IndexOf('\n');
-                return new SupportedRuntime(f[..lineBreakPosition], f[(lineBreakPosition + 1)..]);
+                var webKeyEndPosition = f.IndexOf('\n');
+                var webKey = f[..webKeyEndPosition];
+                
+                var humanTitleEndPosition = f.IndexOf('\n', webKeyEndPosition + 1);
+                var humanTitle = f[(webKeyEndPosition + 1)..humanTitleEndPosition];
+                
+                var acceptFileNameEndPosition = f.IndexOf('\n', humanTitleEndPosition + 1);
+                var acceptFileName = f[(humanTitleEndPosition + 1)..acceptFileNameEndPosition];
+
+                var description = f[(acceptFileNameEndPosition + 1)..];
+                return new SupportedRuntime(webKey, humanTitle, acceptFileName, description);
             })
             .ToArray();
     }
