@@ -1,7 +1,11 @@
 js
 JavaScript
 .js
-Для языка `Java Script` используется Node.JS 14.15.4
+Для языка `Java Script` используется Node.JS 20.11.0
+
+```js
+console.log("Hello, World!")
+```
 
 # Запуск
 ```bash

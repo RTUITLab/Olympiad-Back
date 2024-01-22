@@ -1,4 +1,4 @@
-﻿FROM openjdk:15
+﻿FROM openjdk:21
 
 COPY ./Main.java /src/Main.java
 RUN javac -encoding UTF8 /src/Main.java
