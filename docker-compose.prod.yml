@@ -6,7 +6,7 @@ services:
             - JwtIssuerOptions__SecretKey=${JWT_SECRET_KEY?place jwt secret key! JWT_SECRET_KEY}
             - ConnectionStrings__PostgresDataBase=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
             - AccountSettings__EmailDomain=${GENERATE_USER_EMAIL_DOMAIN?pass email generating domain GENERATE_USER_EMAIL_DOMAIN}
-            - RabbitMqQueueSettings__Uri=${RABBITMQ_URI?pass rabbitmq connection uri RABBITMQ_URI}
+            - RabbitMqQueueSettings__Uri=amqp://rabbitmq-admin-user:${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}@rabbitmq:5672
             - S3StorageSettings__ServiceUrl=${S3_SERVICE_URL? Place S3 storage url S3_SERVICE_URL}
             - S3StorageSettings__AccessKeyId=${S3_SERVICE_ACCESS_KEY_ID? Place S3 access key id S3_SERVICE_ACCESS_KEY_ID}
             - S3StorageSettings__SecretAccessKey=${S3_SERVICE_SECRET_ACCESS_KEY? Place S3 access key id S3_SERVICE_SECRET_ACCESS_KEY}
@@ -29,7 +29,7 @@ services:
             - StartSettings__PrivateDockerRegistry__Password=${OLYMPIAD_PRIVATE_REGISTRY_PASSWORD?pass olympiad private registry password OLYMPIAD_PRIVATE_REGISTRY_PASSWORD}
             - UserInfo__UserName=${EXECUTOR_USER_LOGIN?pass user login for executor service EXECUTOR_USER_LOGIN}
             - UserInfo__Password=${EXECUTOR_USER_PASSWORD?pass user password for executor service EXECUTOR_USER_PASSWORD}
-            - RabbitMqQueueSettings__Uri=${RABBITMQ_URI?pass rabbitmq connection uri RABBITMQ_URI}
+            - RabbitMqQueueSettings__Uri=amqp://rabbitmq-admin-user:${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}@rabbitmq:5672
         deploy:
             placement:
                 max_replicas_per_node: 1
@@ -68,4 +68,5 @@ services:
                 max-file: '10'
                 max-size: 200k
         environment:
+            - RABBITMQ_DEFAULT_USER=rabbitmq-admin-user
             - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}
