@@ -17,7 +17,7 @@
                 <Button OnClick=@(() => helpRef?.Show()) Icon="@IconType.Outline.InfoCircle">Справка</Button>
             </SpaceItem>
             <SpaceItem>
-                <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger">
+                <Dropdown Trigger="DrowdownHelpers.OnlyClickTrigger" @ref="actionsRef">
                     <Overlay>   
                         <Menu Selectable="false" Mode="MenuMode.Inline" Class="buttons-menu big-icon" OnMenuItemClicked=@(() => actionsRef!.Close())>
                             <InputFile @ref="inputFileRef" style="display: none" OnChange="TestGroupsFilesSelected" accept=".json" />

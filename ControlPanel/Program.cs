@@ -28,7 +28,7 @@ builder.Services.AddScoped<IDiffer, Differ>();
 Uri baseAddress;
 if (builder.HostEnvironment.IsDevelopment())
 {
-    baseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl"));
+    baseAddress = new Uri(builder.Configuration.GetConnectionString("ApiBaseUrl")!);
 }
 else
 {
@@ -84,7 +84,7 @@ void RegisterApiServices(WebAssemblyHostBuilder builder)
         builder.Services.AddScoped<T>(sp => RestService.For<T>(baseAddress.ToString(), new RefitSettings
         {
             ContentSerializer = jsonSerializer,
-            AuthorizationHeaderValueGetter = () => Task.FromResult(sp.GetRequiredService<AccessTokenProvider>().AccessToken ?? "")
+            AuthorizationHeaderValueGetter = (_, _) => Task.FromResult(sp.GetRequiredService<AccessTokenProvider>().AccessToken ?? "")
         }));
     }
 

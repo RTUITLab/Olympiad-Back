@@ -14,48 +14,49 @@
 @inject MessageService MessageService
 @inject ILogger<TempPredProfIndex> Logger
 
-<Paragraph>
-    1. Выберите соревнование, в котором должен участвовать человек
-</Paragraph>
-<Select Placeholder="Выберите соревнование для приглашения"
-        @bind-Value="selectedChallenge"
-        DataSource="allChallenges" TItem="ChallengeResponse" TItemValue="ChallengeResponse"
-        LabelName="@nameof(ChallengeResponse.Name)">
-    <ItemTemplate>
-        @context.Name
-    </ItemTemplate>
-</Select>
-@if (selectedChallenge is not null)
-{
+<Spin Spinning="loading">
     <Paragraph>
-        2. Выберите время, когда он должен начать работу
+        1. Выберите соревнование, в котором должен участвовать человек
     </Paragraph>
-    <Select Placeholder="Время начала"
-        @bind-Value="selectedTimeSlot"
-        DataSource="timeSplots" TItem="TimeOnly" TItemValue="TimeOnly">
+    <Select Placeholder="Выберите соревнование для приглашения"
+            @bind-Value="selectedChallenge"
+            DataSource="allChallenges" TItem="ChallengeResponse" TItemValue="ChallengeResponse"
+            LabelName="@nameof(ChallengeResponse.Name)">
+        <ItemTemplate>
+            @context.Name
+        </ItemTemplate>
     </Select>
-}
-@if (selectedTimeSlot != default)
-{
-    <Paragraph>
-        3. Найдите нужного человека, и нажмике кнопку "Выдать доступ"
-    </Paragraph>
-    <Paragraph>
-        Распечатайте открывшуюся страницу, на которой будут находиться его персональные логин и пароль
-    </Paragraph>
-    <UsersSearchTable>
-        <UserExtra>
-            <Button Type="@ButtonType.Primary" OnClick="() => GiveAccess(context)">Выдать доступ</Button>
-        </UserExtra>
-    </UsersSearchTable>
-}
+    @if (selectedChallenge is not null)
+    {
+        <Paragraph>
+            2. Выберите время, когда он должен начать работу
+        </Paragraph>
+        <Select Placeholder="Время начала"
+            @bind-Value="selectedTimeSlot"
+            DataSource="timeSplots" TItem="TimeOnly" TItemValue="TimeOnly">
+        </Select>
+    }
+    @if (selectedTimeSlot != default)
+    {
+        <Paragraph>
+            3. Найдите нужного человека, и нажмике кнопку "Выдать доступ"
+        </Paragraph>
+        <Paragraph>
+            Распечатайте открывшуюся страницу, на которой будут находиться его персональные логин и пароль
+        </Paragraph>
+        <UsersSearchTable>
+            <UserExtra>
+                <Button Type="@ButtonType.Primary" OnClick="() => GiveAccess(context)">Выдать доступ</Button>
+            </UserExtra>
+        </UsersSearchTable>
+    }
+</Spin>
 
 
 @code {
     private List<ChallengeResponse>? allChallenges;
     private ChallengeResponse? selectedChallenge;
     private TimeOnly selectedTimeSlot;
-    private TimeOnly defultTime;
 
     private bool loading = true;
 
