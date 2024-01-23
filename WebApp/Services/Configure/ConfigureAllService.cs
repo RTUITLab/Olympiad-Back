@@ -30,7 +30,7 @@ namespace WebApp.Services.Configure
         private async Task Configure(Type targetType, CancellationToken cancellationToken)
         {
             var tryNum = 0;
-            var delay = TimeSpan.FromSeconds(5); ;
+            var delay = TimeSpan.FromSeconds(5);
             while (tryNum++ < 5)
             {
                 try
