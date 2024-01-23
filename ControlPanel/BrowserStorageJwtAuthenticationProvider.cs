@@ -10,7 +10,11 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Olympiad.ControlPanel;
-public class BrowserStorageJwtAuthenticationProvider : AuthenticationStateProvider, ILoginRefresh
+public class BrowserStorageJwtAuthenticationProvider(
+    ILocalStorageService localStorageService,
+    ISessionStorageService sessionStorageService,
+    AccessTokenProvider accessTokenProvider,
+    HttpClient httpClient) : AuthenticationStateProvider, ILoginRefresh
 {
     public const string LOGIN_TYPE_CLAIM = nameof(BrowserStorageJwtAuthenticationProvider) + "_" + nameof(LOGIN_TYPE_CLAIM);
     public const string TEMP_LOGIN = nameof(TEMP_LOGIN);
@@ -19,22 +23,11 @@ public class BrowserStorageJwtAuthenticationProvider : AuthenticationStateProvid
     private static readonly AuthenticationState EMPTY_STATE = new(new ClaimsPrincipal());
     private const string LOCAL_STORAGE_ACCESS_TOKEN_KEY = "userToken";
 
-    private readonly ILocalStorageService localStorageService;
-    private readonly ISessionStorageService sessionStorageService;
-    private readonly AccessTokenProvider accessTokenProvider;
-    private readonly HttpClient httpClient;
+    private readonly ILocalStorageService localStorageService = localStorageService;
+    private readonly ISessionStorageService sessionStorageService = sessionStorageService;
+    private readonly AccessTokenProvider accessTokenProvider = accessTokenProvider;
+    private readonly HttpClient httpClient = httpClient;
 
-    public BrowserStorageJwtAuthenticationProvider(
-        ILocalStorageService localStorageService,
-        ISessionStorageService sessionStorageService,
-        AccessTokenProvider accessTokenProvider,
-        HttpClient httpClient)
-    {
-        this.localStorageService = localStorageService;
-        this.sessionStorageService = sessionStorageService;
-        this.accessTokenProvider = accessTokenProvider;
-        this.httpClient = httpClient;
-    }
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var loginType = TEMP_LOGIN;

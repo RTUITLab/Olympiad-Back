@@ -7,9 +7,9 @@
     <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>-->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AntDesign" Version="0.10.5" />
-    <PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
-    <PackageReference Include="Blazored.SessionStorage" Version="2.2.0" />
+    <PackageReference Include="AntDesign" Version="0.17.3.1" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
+    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageReference Include="BlazorTextDiff" Version="0.0.1" />
     <PackageReference Include="ByteSize" Version="2.1.2" />
     <PackageReference Include="ClosedXML" Version="0.102.2" />

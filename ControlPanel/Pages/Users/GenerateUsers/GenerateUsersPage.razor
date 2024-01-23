@@ -2,6 +2,7 @@
 @using CsvHelper.Configuration
 @using Olympiad.Shared
 @using System.Text.RegularExpressions
+@using System.Diagnostics
 
 
 
@@ -138,7 +139,10 @@
             {
                 await csv.ReadAsync();
                 csv.ReadHeader();
-
+                if (csv.Parser.Record is null)
+                {
+                    throw new UnreachableException("null record wgile csvb parsing");
+                }
                 var builder = new UsersGenerateModelBuilder(csv.Parser.Record);
                 while (await csv.ReadAsync())
                 {

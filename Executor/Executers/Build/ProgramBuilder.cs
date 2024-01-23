@@ -17,6 +17,7 @@ using Executor.Models.Settings;
 using PublicAPI.Requests;
 using System.Text.Json;
 using Olympiad.Shared;
+using System.Threading;
 
 namespace Executor.Executers.Build
 {
@@ -163,7 +164,7 @@ namespace Executor.Executers.Build
             var buildParameters = new ImageBuildParameters
             {
                 Dockerfile = "DockerFile",
-                Tags = new[] { imageName }
+                Tags = [imageName]
             };
             if (startOptions.PrivateDockerRegistry != null) {
                 buildParameters.AuthConfigs = new Dictionary<string, AuthConfig>
@@ -177,10 +178,13 @@ namespace Executor.Executers.Build
                     }
                 };
             }
-
-            var outStream = await dockerClient.Images.BuildImageFromDockerfileAsync(archStream, buildParameters);
-            using var streamReader = new StreamReader(outStream);
-            return await streamReader.ReadToEndAsync();
+            var jsonOutputHolder = new JsonOutputHolder();
+            await dockerClient.Images.BuildImageFromDockerfileAsync(buildParameters, archStream,
+                authConfigs: [],
+                headers: new Dictionary<string, string>(),
+                progress: jsonOutputHolder,
+                CancellationToken.None);
+            return jsonOutputHolder.BuildOutputToString();
         }
         private static async Task CreateTarGz(
             string tgzFilename, 
@@ -202,6 +206,18 @@ namespace Executor.Executers.Build
                 tarOutputStream.CloseEntry();
             }
             tarOutputStream.Close();
+        }
+        private class JsonOutputHolder : IProgress<JSONMessage>
+        {
+            private readonly LinkedList<JSONMessage> messages = new();
+            public void Report(JSONMessage value)
+            {
+                messages.AddLast(value);
+            }
+            public string BuildOutputToString()
+            {
+                return string.Join("\n", messages.Select(s => JsonSerializer.Serialize(s)));
+            }
         }
     }
 }

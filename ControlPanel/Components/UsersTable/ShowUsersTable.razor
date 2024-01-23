@@ -63,7 +63,7 @@
     [Parameter]
     public string TableScrollY { get; set; } = "50vh";
     [Parameter]
-    public TableSize? TableSize { get; set; }
+    public TableSize TableSize { get; set; } = TableSize.Default;
     [Parameter]
     public RenderFragment<ListResponseWithMatch<UserInfoResponse>?>? TitleTemplate { get; set; }
     [Parameter]

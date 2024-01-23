@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Components.Web;
 using DiffPlex.DiffBuilder;
 using DiffPlex;
 using System.Threading.Tasks;
-using Ardalis.SmartEnum.SystemTextJson;
 using Olympiad.Shared.JsonConverters;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

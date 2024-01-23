@@ -8,18 +8,15 @@ using System.Threading.Tasks;
 
 namespace WebApp.Services.Configure
 {
-    public class ConfigureAllService : IHostedService
+    public class ConfigureAllService(
+        ConfigureAllService.ServicesList servicesList,
+        IServiceScopeFactory serviceScopeFactory,
+        ILogger<ConfigureAllService> logger) : IHostedService
     {
-        private readonly ServicesList servicesList;
-        private readonly IServiceScopeFactory serviceScopeFactory;
-        private readonly ILogger<ConfigureAllService> logger;
+        private readonly ServicesList servicesList = servicesList;
+        private readonly IServiceScopeFactory serviceScopeFactory = serviceScopeFactory;
+        private readonly ILogger<ConfigureAllService> logger = logger;
 
-        public ConfigureAllService(ServicesList servicesList, IServiceScopeFactory serviceScopeFactory, ILogger<ConfigureAllService> logger)
-        {
-            this.servicesList = servicesList;
-            this.serviceScopeFactory = serviceScopeFactory;
-            this.logger = logger;
-        }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             logger.LogInformation("Start configuring app");
@@ -33,14 +30,14 @@ namespace WebApp.Services.Configure
         private async Task Configure(Type targetType, CancellationToken cancellationToken)
         {
             var tryNum = 0;
-            var delay = TimeSpan.FromSeconds(5);;
+            var delay = TimeSpan.FromSeconds(5); ;
             while (tryNum++ < 5)
             {
                 try
                 {
-                    logger.LogInformation("Configuring {workType} try #{tryNum}", targetType.Name, tryNum);
+                    logger.LogInformation("Configuring {WorkType} try #{TryNum}", targetType.Name, tryNum);
                     using var scope = serviceScopeFactory.CreateScope();
-                    if (!(scope.ServiceProvider.GetService(targetType) is IConfigureWork work))
+                    if (scope.ServiceProvider.GetService(targetType) is not IConfigureWork work)
                     {
                         throw new ArgumentException($"type must implements {nameof(IConfigureWork)}", nameof(targetType));
                     }
@@ -49,7 +46,7 @@ namespace WebApp.Services.Configure
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(ex, "Error while configuring type {workType}, wait {delay} to retry");
+                    logger.LogWarning(ex, "Error while configuring type {WorkType}, wait {Delay} to retry", targetType.Name, delay);
                 }
             }
             throw new Exception("Can't configre app on startup, please read logs. Crashing...");
@@ -59,14 +56,9 @@ namespace WebApp.Services.Configure
         {
             return Task.CompletedTask;
         }
-        public class ServicesList
+        public class ServicesList(List<Type> servicesTypes)
         {
-            public List<Type> ServicesTypes { get; }
-
-            public ServicesList(List<Type> servicesTypes)
-            {
-                ServicesTypes = servicesTypes;
-            }
+            public List<Type> ServicesTypes { get; } = servicesTypes;
         }
     }
 }

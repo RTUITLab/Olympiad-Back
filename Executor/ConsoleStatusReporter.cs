@@ -77,8 +77,7 @@ namespace Executor
                         break;
                     case ExecuteWorkerStatus.Build:
                         var solutionId = worker.Current.Id;
-                        currentMessage = solutionId == null ? "null" :
-                            $"{solutionId} {worker.builder.CurrentBuildTime:hh\\:mm\\:ss}";
+                        currentMessage = $"{solutionId} {worker.builder.CurrentBuildTime:hh\\:mm\\:ss}";
                         status = "BUILD";
                         lang = worker.Current.Language;
                         break;
