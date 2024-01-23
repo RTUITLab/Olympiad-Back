@@ -4,7 +4,7 @@ Pascal ABC
 Для языка `Pascal ABC` используется компилятор PascalABC.NET 3.9.0.
 
 ### Пример
-```pasabc
+```pascal
 begin
   write('Hello, World!');
 end.

@@ -5,7 +5,7 @@ Free Pascal
 
 
 ## Пример
-```
+```pascal
 program Hello;
 begin
   writeln ('Hello, World!')
