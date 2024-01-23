@@ -30,8 +30,7 @@
         <FormItem Label="Задание" Required>
             <CascadingValue Value="attachmentsProvider as IAttachmentsProvider">
                 <MarkdownTextArea @bind-Value="exerciseModel.Task"
-                                  MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH"
-                                  Label="Задание">
+                                  MaxLength="@ExerciseLimitations.MAX_EXERCISE_TASK_LENGTH">
                     <TitleTemplate>
                         <Text>@exerciseModel.Title</Text>
                         <Text Type="@TextElementType.Secondary">Текст задания (@Exercise?.Challenge.Name)</Text>

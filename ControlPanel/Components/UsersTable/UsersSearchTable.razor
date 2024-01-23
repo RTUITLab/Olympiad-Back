@@ -16,8 +16,8 @@
                         GetUsersFunction="GetUsers"
                         TableScrollY="@TableScrollY"
                         TableSize="TableSize"
-                        UserExtra="UserExtra"
-                        FooterExtra="FooterExtra">
+                        UserExtra="UserExtra!"
+                        FooterExtra="FooterExtra!">
             <TitleTemplate>
                 <SelectClaimsForm Claims="usersSelectionModel.Claims" ClaimsChanged="UpdateClaims" />
             </TitleTemplate>
@@ -36,7 +36,7 @@
     [Parameter]
     public string? TableScrollY { get; set; }
     [Parameter]
-    public TableSize? TableSize { get; set; }
+    public TableSize TableSize { get; set; } = TableSize.Default;
     [Parameter]
     public RenderFragment<UserInfoResponse>? UserExtra { get; set; }
     [Parameter]

@@ -1,13 +1,22 @@
-﻿<Tooltip Title="@Render"><Icon Type="@IconType.Outline.InfoCircle" /></Tooltip>
+﻿<Tooltip>
+    <TitleTemplate>
+        @if (string.IsNullOrEmpty(Text))
+        {
+            <text>@Text</text>
+        }
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+    </TitleTemplate>
+    <ChildContent>
+        <Icon Type="@IconType.Outline.InfoCircle" />
+    </ChildContent>
+</Tooltip>
 
 @code {
     [Parameter]
     public string? Text { get; set; }
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-
-    private OneOf.OneOf<string, RenderFragment, MarkupString> Render => 
-        !string.IsNullOrEmpty(Text) ? Text :
-        ChildContent != null ? ChildContent: ""
-    ;
 }

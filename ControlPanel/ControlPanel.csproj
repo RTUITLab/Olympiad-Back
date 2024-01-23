@@ -1,36 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<RootNamespace>Olympiad.ControlPanel</RootNamespace>
-		<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-		<!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>-->
-	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="AntDesign" Version="0.10.5" />
-		<PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
-		<PackageReference Include="Blazored.SessionStorage" Version="2.2.0" />
-		<PackageReference Include="BlazorTextDiff" Version="0.0.1" />
-		<PackageReference Include="ByteSize" Version="2.1.1" />
-		<PackageReference Include="ClosedXML" Version="0.95.4" />
-		<PackageReference Include="CsvHelper" Version="27.2.1" />
-		<PackageReference Include="HtmlSanitizer" Version="8.0.811" />
-		<PackageReference Include="Humanizer.Core.ru" Version="2.13.14" />
-		<PackageReference Include="Markdig" Version="0.26.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="6.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.1.*" />
-		<PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
-		<PackageReference Include="OneOf" Version="3.0.205" />
-		<PackageReference Include="Refit" Version="6.1.15" />
-		<PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
-	</ItemGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Olympiad.ControlPanel</RootNamespace>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>-->
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AntDesign" Version="0.17.3.1" />
+    <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
+    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    <PackageReference Include="BlazorTextDiff" Version="0.0.1" />
+    <PackageReference Include="ByteSize" Version="2.1.2" />
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
+    <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="HtmlSanitizer" Version="8.0.811" />
+    <PackageReference Include="Humanizer.Core.ru" Version="2.14.1" />
+    <PackageReference Include="Markdig" Version="0.34.0" />
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
+    <PackageReference Include="OneOf" Version="3.0.263" />
+    <PackageReference Include="Refit" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PublicAPI\PublicAPI.csproj" />
+  </ItemGroup>
 </Project>

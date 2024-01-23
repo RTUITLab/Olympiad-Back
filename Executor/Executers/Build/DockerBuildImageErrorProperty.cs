@@ -1,15 +1,13 @@
-﻿using System;
+﻿using Docker.DotNet.Models;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Linq;
 
-namespace Executor.Executers.Build
+namespace Executor.Executers.Build;
+
+class DockerBuildImageErrorProperty : BuildProperty
 {
-    class DockerBuildImageErrorProperty : BuildProperty
+    public override bool IsCompilationFailed(IEnumerable<JSONMessage> logs)
     {
-        public override bool IsCompilationFailed(string logs)
-        {
-            return (logs?.Contains("\"error\":") == true) && (logs?.Contains("\"errorDetail\":") == true);
-        }
+        return logs.Any(l => l.Stream?.Contains("\"error\":") == true) && (logs.Any(l => l.Stream?.Contains("\"errorDetail\":") == true));
     }
 }

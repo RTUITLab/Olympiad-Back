@@ -1,11 +1,14 @@
-﻿namespace Executor.Executers.Build
-{
-    class ContainsInLogsProperty : DockerBuildImageErrorProperty
-    {
-        public string BuildFailedCondition { get; set; }
+﻿using Docker.DotNet.Models;
+using System.Collections.Generic;
+using System.Linq;
 
-        public override bool IsCompilationFailed(string logs) =>
-            base.IsCompilationFailed(logs) ||
-            logs?.Contains(BuildFailedCondition) == true;
-    }
+namespace Executor.Executers.Build;
+
+class ContainsInLogsProperty : DockerBuildImageErrorProperty
+{
+    public string BuildFailedCondition { get; set; }
+
+    public override bool IsCompilationFailed(IEnumerable<JSONMessage> logs) =>
+        base.IsCompilationFailed(logs) ||
+        logs.Any(l => l.Stream?.Contains(BuildFailedCondition) == true);
 }

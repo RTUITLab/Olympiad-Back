@@ -2,7 +2,7 @@
 @using Markdig
 <Card>
     <CardTabs>
-        <Tabs DefaultActiveKey="area" @bind-ActiveKey="activeTab" TabBarStyle="color: red;" OnChange="OnChangeTab">
+        <Tabs DefaultActiveKey="area" @bind-ActiveKey="activeTab" OnChange="OnChangeTab">
             <TabPane Key="area">
                 <TabTemplate>
                     <Tooltip Title="@("Редактирование")" Placement="Placement.Bottom">
@@ -66,8 +66,6 @@
     /// </summary>
     [Parameter]
     public RenderFragment? TitleTemplate { get; set; }
-    [Parameter]
-    public string Label { get; set; }
 
     private void OnChangeTab(string newKey)
     {
