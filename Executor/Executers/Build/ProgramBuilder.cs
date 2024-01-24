@@ -126,7 +126,7 @@ partial class ProgramBuilder
         var buildProperty = buildProperties[lang];
 
         var sourceDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
-        logger.LogDebug($"new dir is {sourceDir.FullName}");
+        logger.LogDebug("New dir is {NewDitName}", sourceDir.FullName);
 
         await PrepareBuildFiles(lang, raw, GetFileNameForRuntime(lang), sourceDir);
 
@@ -160,6 +160,7 @@ partial class ProgramBuilder
         var buildParameters = new ImageBuildParameters
         {
             Dockerfile = "DockerFile",
+            NoCache = true,
             Tags = [imageName]
         };
         if (startOptions.PrivateDockerRegistry != null)
@@ -171,6 +172,7 @@ partial class ProgramBuilder
                     {
                         Username = startOptions.PrivateDockerRegistry.Login,
                         Password = startOptions.PrivateDockerRegistry.Password,
+                        ServerAddress = startOptions.PrivateDockerRegistry.Address,
                     }
                 }
             };
