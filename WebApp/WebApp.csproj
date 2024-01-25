@@ -6,7 +6,15 @@
     <UserSecretsId>019fac11-53ee-40a3-b9ff-73a9ebc9c214</UserSecretsId>
   </PropertyGroup>
 
-  <ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release' And $(SENTRY_URL) != ''">
+        <SentryUrl>$(SENTRY_URL)</SentryUrl>
+        <SentryOrg>$(SENTRY_ORG)</SentryOrg>
+        <SentryProject>$(SENTRY_PROJECT)</SentryProject>
+        <SentryUploadSymbols>true</SentryUploadSymbols>
+        <EmbedAllSources>true</EmbedAllSources>
+    </PropertyGroup>
+
+    <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.305.14" />
@@ -23,6 +31,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageReference Include="Sentry.AspNetCore" Version="3.41.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
   </ItemGroup>
