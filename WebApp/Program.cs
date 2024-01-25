@@ -1,30 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using WebApp;
 
-namespace WebApp
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            BuildWebHost(args).Run();
-        }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(app =>app
-                        .AddJsonFile("appsettings.Local.json", true)
-                        .AddJsonFile("appsettings.Build.json", true)
-                        .AddEnvironmentVariables()
-                        .AddCommandLine(args))
-                .UseStartup<Startup>()
-                .Build();
-    }
-}
+var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", true);
+builder.Configuration.AddJsonFile("appsettings.Build.json", true);
+
+builder.WebHost.UseSentry();
+
+Startup.ConfigureServices(builder.Services, builder.Configuration);
+
+var app = builder.Build();
+
+Startup.ConfigurePipeline(app, builder.Environment, builder.Configuration);
+
+app.Run();
+

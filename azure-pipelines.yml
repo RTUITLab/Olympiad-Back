@@ -72,6 +72,10 @@ stages:
       displayName: build service
       env:
         BUILD_NUMBER: $(Build.BuildId)
+        SENTRY_AUTH_TOKEN: $(SENTRY_AUTH_TOKEN)
+        SENTRY_ORG: $(SENTRY_ORG)
+        SENTRY_PROJECT: $(SENTRY_PROJECT)
+        SENTRY_URL: $(SENTRY_URL)
       inputs:
         script: 'build.cake'
         target: $(cakeTarget)
