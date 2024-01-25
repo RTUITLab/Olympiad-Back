@@ -5,66 +5,64 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using PublicAPI.Responses;
 
-namespace WebApp.Controllers
+namespace WebApp.Controllers;
+
+[Produces("application/json")]
+[Route("api/Comment")]
+[Authorize(Roles = "User")]
+public class CommentController : AuthorizeController
 {
-    [Produces("application/json")]
-    [Route("api/Comment")]
-    [Authorize(Roles = "User")]
-    public class CommentController : AuthorizeController
+    private readonly ApplicationDbContext context;
+
+    public CommentController(UserManager<User> userManager,
+        ApplicationDbContext context) : base(userManager)
     {
-        private readonly ApplicationDbContext context;
+        this.context = context;
+    }
 
-        public CommentController(UserManager<User> userManager,
-            ApplicationDbContext context) : base(userManager)
+    [HttpPost]
+    public async Task<IActionResult> PostComment()
+    {
+        string reviewBody;
+
+        using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
         {
-            this.context = context;
+            reviewBody = await reader.ReadToEndAsync();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostComment()
+        var comment = new Comment()
         {
-            string reviewBody;
+            Raw = reviewBody,
+            UserId = UserId,
+            Time = DateTimeOffset.UtcNow
+        };
 
-            using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
-            {
-                reviewBody = await reader.ReadToEndAsync();
-            }
+        await context.Comments.AddAsync(comment);
+        await context.SaveChangesAsync();
+        return Ok();
+    }
 
-            Comment comment = new Comment()
+    [HttpGet]
+    [Route("{pageNum}")]
+    [Authorize(Roles = "Admin")]
+    public ActionResult<IEnumerable<CommentResponse>> GetComments(int pageNum)
+    {
+        return context
+            .Comments
+            .Skip((pageNum - 1) * 10)
+            .Take(10)
+            .Select(C => new CommentResponse
             {
-                Raw = reviewBody,
                 UserId = UserId,
-                Time = DateTime.Now
-            };
-
-            await context.Comments.AddAsync(comment);
-            await context.SaveChangesAsync();
-            return Ok();
-        }
-
-        [HttpGet]
-        [Route("{pageNum}")]
-        [Authorize(Roles = "Admin")]
-        public ActionResult<IEnumerable<CommentResponce>> GetComments(int pageNum)
-        {
-            return context
-                .Comments
-                .Skip((pageNum - 1) * 10)
-                .Take(10)
-                .Select(C => new CommentResponce
-                {
-                    UserId = UserId,
-                    UserName = context.Users.FirstOrDefault(P => P.Id == C.UserId).FirstName,
-                    Raw = C.Raw,
-                    Time = C.Time
-                })
-                .ToList();
-        }
+                UserName = context.Users.FirstOrDefault(P => P.Id == C.UserId).FirstName,
+                Raw = C.Raw,
+                Time = C.Time
+            })
+            .ToList();
     }
 }

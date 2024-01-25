@@ -32,6 +32,7 @@ using Olympiad.Services.SolutionCheckQueue;
 using WebApp.Services.Solutions;
 using Olympiad.Shared.JsonConverters;
 using Npgsql;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace WebApp;
 
@@ -65,6 +66,9 @@ public static class Startup
                 options.UseNpgsql(dataSource, npgsql => npgsql.MigrationsAssembly(nameof(WebApp)));
             });
         }
+
+        services.AddDataProtection()
+            .PersistKeysToDbContext<ApplicationDbContext>();
 
         services.AddJwtGenerator(configuration, out var jwtAppSettingOptions);
         services.AddScoped<IUserAuthorizationService, UserAuthorizationService>();
