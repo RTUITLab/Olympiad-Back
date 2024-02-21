@@ -67,7 +67,8 @@ namespace WebApp.Services.Solutions
 
             foreach (var file in files)
             {
-                await attachmentsService.UploadSolutionDocument(solution.Id, file.MimeType, file.Name, file.Content);
+                // Получение потока нужно делать последовательно, файл за файлом, потому поток из файла обернут в функцию
+                await attachmentsService.UploadSolutionDocument(solution.Id, file.MimeType, file.Name, file.ContentFunc());
             }
 
             await context.SaveChangesAsync();

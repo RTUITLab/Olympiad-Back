@@ -148,7 +148,7 @@ namespace WebApp.Controllers
                     Name = f.FileName,
                     MimeType = f.ContentType,
                     Size = ByteSize.FromBytes(f.Length),
-                    Content = f.OpenReadStream(),
+                    ContentFunc = () => f.OpenReadStream(),
                 }).ToArray(),
                 ISolutionsService.CodeSolutionChecks.All);
                 var solutionResponse = mapper.Map<SolutionResponse>(mapper.Map<SolutionInternalModel>(solution));
@@ -172,7 +172,6 @@ namespace WebApp.Controllers
                 return Conflict("Incorrect files");
             }
         }
-
 
         [HttpGet]
         public async Task<List<SolutionResponse>> Get()
