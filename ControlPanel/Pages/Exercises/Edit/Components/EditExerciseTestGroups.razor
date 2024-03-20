@@ -254,12 +254,12 @@
         }
 
         var file = files.File;
-        var maxFileSize = ByteSize.FromMegaBytes(1);
+        var maxFileSize = ByteSize.FromMegaBytes(10);
         if (ByteSize.FromBytes(file.Size) > maxFileSize)
         {
             await NotificationService.Error(new NotificationConfig
                 {
-                    Message = "Максимальный размер файла с тестами : 1 мегабайт"
+                    Message = "Максимальный размер файла с тестами : 10 мегабайт"
                 });
             return null;
         }
