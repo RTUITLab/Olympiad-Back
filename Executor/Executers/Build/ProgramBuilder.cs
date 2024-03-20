@@ -15,6 +15,8 @@ using Executor.Models.Settings;
 using PublicAPI.Requests;
 using Olympiad.Shared;
 using System.Threading;
+using System.Xml.Linq;
+using Executor.Utils;
 
 namespace Executor.Executers.Build;
 
@@ -147,6 +149,11 @@ partial class ProgramBuilder
         if (startOptions.PrivateDockerRegistry != null)
         {
             var image = dockerFile[0].Split(' ')[1];
+            if (startOptions.PrivateDockerRegistry != null)
+            {
+                var (name, tag) = ImageNameParser.Parse(image);
+                image = $"{name.Replace(".", "-").Replace("/", "-")}:{tag}"; // replace for work with deep images";
+            }
             dockerFile[0] = $"FROM {startOptions.PrivateDockerRegistry.Address}/{image}";
         }
         await File.WriteAllLinesAsync(Path.Combine(sourceDir.FullName, "DockerFile"), dockerFile, new UTF8Encoding(false));
@@ -161,25 +168,24 @@ partial class ProgramBuilder
         {
             Dockerfile = "DockerFile",
             NoCache = true,
-            Tags = [imageName]
+            Tags = [imageName],
+            
         };
+        AuthConfig[] authConfigs = [];
         if (startOptions.PrivateDockerRegistry != null)
         {
-            buildParameters.AuthConfigs = new Dictionary<string, AuthConfig>
-            {
-                { startOptions.PrivateDockerRegistry.Address,
-                    new AuthConfig
+            authConfigs = [
+                new AuthConfig
                     {
                         Username = startOptions.PrivateDockerRegistry.Login,
                         Password = startOptions.PrivateDockerRegistry.Password,
                         ServerAddress = startOptions.PrivateDockerRegistry.Address,
                     }
-                }
-            };
+                ];
         }
         var jsonOutputHolder = new JsonOutputHolder();
         await dockerClient.Images.BuildImageFromDockerfileAsync(buildParameters, archStream,
-            authConfigs: [],
+            authConfigs: authConfigs,
             headers: new Dictionary<string, string>(),
             progress: jsonOutputHolder,
             CancellationToken.None);

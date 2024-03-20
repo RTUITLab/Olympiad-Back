@@ -2,11 +2,9 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Olympiad.Shared.Models;
-using Models.Exercises;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using System.Text.RegularExpressions;
@@ -14,16 +12,18 @@ using Microsoft.Extensions.Logging;
 using PublicAPI.Requests;
 using System.Collections.Generic;
 using Executor.Models.Settings;
-using System.Security.Cryptography.X509Certificates;
 using PublicAPI.Responses.ExercisesTestData;
+using System.Buffers;
+using Executor.Utils;
 
 namespace Executor.Executers.Run
 {
-    class ProgramRunner
+    partial class ProgramRunner
     {
         private readonly ISolutionsBase solutionsBase;
         private readonly IDockerClient dockerClient;
         private readonly RunningSettings runningSettings;
+        private readonly AutoDeleteTempFileProvider autoDeleteTempFileProvider;
         private readonly ILogger<ProgramRunner> logger;
         private readonly List<Guid> blackList = new List<Guid>();
 
@@ -42,11 +42,13 @@ namespace Executor.Executers.Run
             ISolutionsBase solutionsBase,
             IDockerClient dockerClient,
             RunningSettings runningSettings,
+            AutoDeleteTempFileProvider autoDeleteTempFileProvider,
             ILogger<ProgramRunner> logger)
         {
             this.solutionsBase = solutionsBase;
             this.dockerClient = dockerClient;
             this.runningSettings = runningSettings;
+            this.autoDeleteTempFileProvider = autoDeleteTempFileProvider;
             this.logger = logger;
         }
         public async Task RunAndCheckSolution(Guid solutionId, ExerciseDataResponse[] testData)
@@ -134,10 +136,10 @@ namespace Executor.Executers.Run
                         localStatus = SolutionStatus.RunTimeError;
                     else if (string.Equals(stdout, exampleOut))
                         localStatus = SolutionStatus.Successful;
+                    else if (duration > TimeSpan.FromSeconds(5))
+                        localStatus = SolutionStatus.TooLongWork;
                     else
                         localStatus = SolutionStatus.WrongAnswer;
-                    if (duration > TimeSpan.FromSeconds(10))
-                        localStatus = SolutionStatus.TooLongWork;
 
                     await solutionsBase.SaveLog(solutionId, data.Id, new SolutionCheckRequest
                     {
@@ -167,61 +169,74 @@ namespace Executor.Executers.Run
 
         private async Task<(string stdout, string stderr, TimeSpan duration)> Run(string imageName, string input)
         {
+            using var tempFile = autoDeleteTempFileProvider.GetTempFile();
+            await File.WriteAllTextAsync(tempFile.LocalFilePath, input);
             var container = await dockerClient.Containers.CreateContainerAsync(new CreateContainerParameters
             {
                 Image = imageName,
                 OpenStdin = true,
                 NetworkDisabled = true,
-                StdinOnce = true
+                StdinOnce = true,
+                HostConfig = new HostConfig
+                {
+                    AutoRemove = true,
+                    Binds = [$"{tempFile.HostFilePath}:/var/input_data"]
+                }
             });
-            var result = ("", "", TimeSpan.Zero);
-            Exception exception = null;
             try
             {
-                var (stdout, stderr, duration) = await RunContainer(container.ID, input);
+                var (stdout, stderr, duration) = await RunContainer(container.ID);
                 stdout = Clean(stdout);
                 stderr = Clean(stderr);
-                result = (stdout, stderr, duration);
+                return (stdout, stderr, duration);
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "error while checking solution");
-                exception = ex;
+                throw;
             }
-            await dockerClient.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters { Force = true });
-            if (exception != null)
-                throw exception;
-            return result;
         }
 
-        private async Task<(string stdout, string stderr, TimeSpan duration)> RunContainer(string containerId, string input)
+        private async Task<(string stdout, string stderr, TimeSpan duration)> RunContainer(string containerId)
         {
             var started = await dockerClient.Containers.StartContainerAsync(containerId, new ContainerStartParameters());
             if (!started)
-                throw new Exception($"Cant start container {containerId}");
+                throw new Exception($"Can't start container {containerId}");
 
-            var readStream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = false, Stderr = true, Stdout = true });
-            var writeStream = await dockerClient.Containers.AttachContainerAsync(containerId, false, new ContainerAttachParameters { Stream = true, Stdin = true, Stderr = false, Stdout = false });
-
-            var inStream = new MemoryStream(Encoding.UTF8.GetBytes(input));
+            var logs = await dockerClient.Containers.GetContainerLogsAsync(containerId, false, new ContainerLogsParameters { ShowStderr = true, ShowStdout = true, Follow = true });
             var startTime = DateTime.UtcNow;
-            await writeStream.CopyFromAsync(inStream, CancellationToken.None);
-            writeStream.CloseWrite();
-            var readTask = readStream.ReadOutputToEndAsync(CancellationToken.None);
 
-            if (await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), readTask) == readTask)
+            var containerWaitTask = dockerClient.Containers.WaitContainerAsync(containerId);
+            await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), containerWaitTask);
+
+            var duration = DateTime.UtcNow - startTime;
+            try
             {
-                var (stdout, stderr) = readTask.Result;
-                return (stdout, stderr, DateTime.UtcNow - startTime);
+                var inspect = await dockerClient.Containers.InspectContainerAsync(containerId);
+                if (inspect.State.Running)
+                {
+                    await dockerClient.Containers.KillContainerAsync(containerId, new ContainerKillParameters());
+                }
             }
-            return ("", "", TimeSpan.MaxValue); // TODO read all output streams
+            catch (DockerContainerNotFoundException) { } // контейнер уже умер, это хорошо
+            catch (DockerApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                logger.LogDebug(ex, "container already killed");
+            }
+            var (stdout, stderr) = await logs.ReadOutputToEndAsync(CancellationToken.None);
+            return (stdout, stderr, duration);
         }
 
         private static string Clean(string input)
         {
-            input = Regex.Replace(input, @"[\u0000-\u0009]+", string.Empty);
-            input = Regex.Replace(input, @"[\u000B-\u001F]+", string.Empty).Trim();
+            input = CleanRegexRange1().Replace(input, string.Empty);
+            input = CleanRegexRange2().Replace(input, string.Empty).Trim();
             return input;
         }
+
+        [GeneratedRegex(@"[\u0000-\u0009]+")]
+        private static partial Regex CleanRegexRange1();
+        [GeneratedRegex(@"[\u000B-\u001F]+")]
+        private static partial Regex CleanRegexRange2();
     }
 }

@@ -1,4 +1,4 @@
 ﻿FROM gcc:13.2.0
 COPY ./Program.c /src/Program.c
 RUN gcc -lm -o /app /src/Program.c
-CMD /app 
+CMD /app < /var/input_data

@@ -3,4 +3,4 @@
 COPY ./Program.pas /src/src/Program.pas
 WORKDIR /src/src/
 RUN fpc Program.pas
-CMD ./Program
+CMD ./Program < /var/input_data

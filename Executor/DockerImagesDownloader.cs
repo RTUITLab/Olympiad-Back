@@ -1,6 +1,7 @@
 ﻿using Docker.DotNet;
 using Docker.DotNet.Models;
 using Executor.Models.Settings;
+using Executor.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -24,9 +25,7 @@ public partial class DockerImagesDownloader(
             .ToList();
         foreach (var (imageName, lang) in dockerFileInfos)
         {
-            var parsed = GetImageRegex().Match(imageName);
-            var name = parsed.Groups[1].Value;
-            var tag = parsed.Groups[2].Value;
+            var (name , tag) = ImageNameParser.Parse(imageName);
 
             logger.LogInformation("Creating image for {Language}", lang);
             if (options.Value.PrivateDockerRegistry != null)
@@ -87,7 +86,4 @@ public partial class DockerImagesDownloader(
             Tag = tag
         }, authConfig, progress);
     }
-
-    [GeneratedRegex("([^:]+):([^:]+)")]
-    private static partial Regex GetImageRegex();
 }

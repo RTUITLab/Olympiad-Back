@@ -28,6 +28,7 @@ namespace Olympiad.Services
             Func<string, Task> logger)
         {
             var solutionViews = await solutionsSelector(dbContext)
+                .AsSingleQuery()
                 .Select(s => new { s.Id, checks = s.SolutionChecks.Select(ch => ch.Id), logs = s.SolutionBuildLogs.Select(bl => bl.Id) })
                 .ToListAsync();
             await logger($"Loaded {solutionViews.Count} ids");

@@ -1,4 +1,4 @@
 ﻿FROM python:3.12.1
 RUN pip install numpy
 COPY ./Program.py /src/Program.py
-CMD python /src/Program.py
+CMD python /src/Program.py < /var/input_data

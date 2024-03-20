@@ -1,4 +1,4 @@
-﻿FROM mono:6.12.0.182
+﻿FROM capchik/pascalabcnet:latest
 
 RUN apt-get update && apt-get -y install locales
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
@@ -6,8 +6,9 @@ RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-RUN curl https://pascalabc.net/downloads/PascalABCNETLinux.zip --output /home/pasabc.zip && apt-get install -y zip && unzip /home/pasabc.zip "PascalABCNETLinux/*" -d /pasbuilder && apt-get purge -y zip
-COPY ./Program.pas /src/src/Program.pas
-WORKDIR /src/src/
-RUN mono /pasbuilder/PascalABCNETLinux/pabcnetcclear.exe Program.pas
-CMD mono Program.exe
+
+WORKDIR /src
+COPY ./Program.pas Program.pas
+RUN mono /pasabcnet/pabcnetcclear.exe Program.pas
+
+CMD mono Program.exe < /var/input_data

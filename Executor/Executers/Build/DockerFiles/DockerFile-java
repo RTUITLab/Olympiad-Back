@@ -3,4 +3,4 @@
 COPY ./Main.java /src/Main.java
 RUN javac -encoding UTF8 /src/Main.java
 
-CMD java -cp /src Main
+CMD java -cp /src Main < /var/input_data

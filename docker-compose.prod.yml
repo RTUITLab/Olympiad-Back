@@ -30,6 +30,8 @@ services:
             - UserInfo__UserName=${EXECUTOR_USER_LOGIN?pass user login for executor service EXECUTOR_USER_LOGIN}
             - UserInfo__Password=${EXECUTOR_USER_PASSWORD?pass user password for executor service EXECUTOR_USER_PASSWORD}
             - RabbitMqQueueSettings__Uri=amqp://rabbitmq-admin-user:${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}@rabbitmq:5672
+            - AutoDeleteTempFileProviderOptions__LocalTempFilesRootFolder=/custom-temp-dir
+            - AutoDeleteTempFileProviderOptions__HostTempFilesRootFolder=${HOST_TEMP_FOLDER_FOR_INPUT?pass host temp fodler for input}
         deploy:
             placement:
                 max_replicas_per_node: 1
@@ -42,6 +44,8 @@ services:
             options:
                 max-size: "200k"
                 max-file: "10"
+        volumes:
+            - ${HOST_TEMP_FOLDER_FOR_INPUT?pass host temp fodler for input}:/custom-temp-dir
     control-panel:
         deploy:
             resources:

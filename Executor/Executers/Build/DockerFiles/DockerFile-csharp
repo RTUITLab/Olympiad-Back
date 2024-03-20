@@ -3,4 +3,4 @@
 RUN mkdir src && cd /src && dotnet new console && rm Program.cs
 COPY ./Program.cs /src/Program.cs
 RUN dotnet build /src/src.csproj -o /pub -c Release --no-dependencies --no-restore
-CMD dotnet /pub/src.dll
+CMD dotnet /pub/src.dll < /var/input_data
