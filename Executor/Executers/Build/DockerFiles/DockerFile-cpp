@@ -1,4 +1,4 @@
 ﻿FROM gcc:13.2.0
 COPY ./Program.cpp /src/Program.cpp
 RUN g++ /src/Program.cpp
-CMD /a.out
+CMD /a.out < /var/input_data

@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Executor.Models.Settings;
+using Executor.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -85,6 +86,8 @@ class Program
             .Configure<UserInfo>(configuration.GetSection(nameof(UserInfo)))
             .ConfigureAndValidate<RabbitMqQueueSettings>(configuration.GetSection(nameof(RabbitMqQueueSettings)))
             .ConfigureAndValidate<RunningSettings>(configuration.GetSection(nameof(RunningSettings)))
+            .ConfigureAndValidate<AutoDeleteTempFileProviderOptions>(configuration.GetSection(nameof(AutoDeleteTempFileProviderOptions)))
+            .AddSingleton<AutoDeleteTempFileProvider>()
             .AddTransient<ISolutionsBase, DbManager>()
             .AddSingleton<Executor>()
             .AddSingleton<ConsoleStatusReporter>()

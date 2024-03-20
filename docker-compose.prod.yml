@@ -12,11 +12,6 @@ services:
             - S3StorageSettings__SecretAccessKey=${S3_SERVICE_SECRET_ACCESS_KEY? Place S3 access key id S3_SERVICE_SECRET_ACCESS_KEY}
             - S3StorageSettings__ForcePathStyle=${S3_SERVICE_FORCE_PATH_STYLE? Place S3 force path style mode S3_SERVICE_FORCE_PATH_STYLE}
             - S3StorageSettings__BucketName=${S3_SERVICE_BUCKET_NAME? Place S3 bucket name S3_SERVICE_BUCKET_NAME}
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.5"
-                    memory: 400M
         logging:
             driver: "json-file"
             options:
@@ -30,27 +25,19 @@ services:
             - UserInfo__UserName=${EXECUTOR_USER_LOGIN?pass user login for executor service EXECUTOR_USER_LOGIN}
             - UserInfo__Password=${EXECUTOR_USER_PASSWORD?pass user password for executor service EXECUTOR_USER_PASSWORD}
             - RabbitMqQueueSettings__Uri=amqp://rabbitmq-admin-user:${RABBITMQ_PASSWORD?pass rabbitmq password RABBITMQ_PASSWORD}@rabbitmq:5672
+            - AutoDeleteTempFileProviderOptions__LocalTempFilesRootFolder=/custom-temp-dir
+            - AutoDeleteTempFileProviderOptions__HostTempFilesRootFolder=${HOST_TEMP_FOLDER_FOR_INPUT?pass host temp fodler for input}
         deploy:
             placement:
                 max_replicas_per_node: 1
-            resources:
-                limits:
-                    cpus: "0.5"
-                    memory: 500M
         logging:
             driver: "json-file"
             options:
                 max-size: "200k"
                 max-file: "10"
+        volumes:
+            - ${HOST_TEMP_FOLDER_FOR_INPUT?pass host temp fodler for input}:/custom-temp-dir
     control-panel:
-        deploy:
-            resources:
-                limits:
-                    cpus: '0.1'
-                    memory: 50M
-                reservations:
-                    cpus: '0.05'
-                    memory: 20M
         logging:
             driver: json-file
             options:
@@ -60,7 +47,7 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '0.2'
+                    cpus: '1'
                     memory: 500M
         logging:
             driver: json-file

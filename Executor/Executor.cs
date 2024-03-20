@@ -18,12 +18,13 @@ using System.Xml.XPath;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Olympiad.Shared.Models.Settings;
+using Executor.Utils;
 
 namespace Executor
 {
     class Executor
     {
-        private ISolutionsBase solutionBase;
+        private readonly ISolutionsBase solutionBase;
         private readonly IOptions<RabbitMqQueueSettings> rabbitMQOptinos;
         private readonly ILogger<Executor> logger;
         public readonly List<ExecuteWorker> executeWorkers;
@@ -33,6 +34,7 @@ namespace Executor
             ISolutionsBase solutionBase,
             IDockerClient dockerClient,
             ILoggerFactory loggerFactory,
+            AutoDeleteTempFileProvider autoDeleteTempFileProvider,
             IOptions<RunningSettings> runningOptions,
             IOptions<RabbitMqQueueSettings> rabbitMQOptinos,
             IOptions<StartSettings> startOptions,
@@ -48,6 +50,7 @@ namespace Executor
                                     dockerClient,
                                     runningOptions.Value,
                                     startOptions.Value,
+                                    autoDeleteTempFileProvider,
                                     loggerFactory)
                         )
                 .ToList();

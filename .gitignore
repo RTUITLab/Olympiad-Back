@@ -292,3 +292,4 @@ postgres-data
 /ControlPanel/wwwroot/js/lib
 
 s3-data/
+/Executor/temp
