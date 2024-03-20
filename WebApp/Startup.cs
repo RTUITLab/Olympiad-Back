@@ -122,7 +122,7 @@ public static class Startup
                     // If is executor
                     if (context.HttpContext.Request.Headers.TryGetValue("Executor-Version", out var executorVersion))
                     {
-                        context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("ExecutorVersion", executorVersion) }));
+                        context.Principal.AddIdentity(new ClaimsIdentity([new("ExecutorVersion", executorVersion)]));
                     }
                     return Task.CompletedTask;
                 }
